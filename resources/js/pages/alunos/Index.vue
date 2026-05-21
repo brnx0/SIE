@@ -4,18 +4,14 @@ import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem, type Paginated } from '@/types';
 import type { Aluno } from '@/types/aluno';
-import { Head, Link, router, usePage } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import { Pencil, Plus, Search, Trash2 } from 'lucide-vue-next';
-import { computed, ref, watch } from 'vue';
+import { ref, watch } from 'vue';
 
 const props = defineProps<{
     alunos: Paginated<Aluno>;
     filters: { search: string };
 }>();
-
-const page = usePage<{ flash: { success?: string; error?: string } }>();
-const flashSuccess = computed(() => page.props.flash?.success);
-const flashError = computed(() => page.props.flash?.error);
 
 const search = ref(props.filters.search ?? '');
 
@@ -49,13 +45,6 @@ const formatDate = (iso: string) => {
     <Head title="Alunos" />
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex flex-col gap-6 p-4 md:p-6">
-            <div v-if="flashSuccess" class="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-900/20 dark:text-emerald-300">
-                {{ flashSuccess }}
-            </div>
-            <div v-if="flashError" class="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:border-rose-900/50 dark:bg-rose-900/20 dark:text-rose-300">
-                {{ flashError }}
-            </div>
-
             <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                     <h1 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">Alunos</h1>
@@ -71,7 +60,7 @@ const formatDate = (iso: string) => {
             <div class="flex flex-col gap-3 sm:flex-row">
                 <div class="relative flex-1">
                     <Search class="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input v-model="search" placeholder="Buscar por nome ou CPF..." class="pl-9" />
+                    <Input v-model="search" placeholder="Buscar por matrícula, nome ou CPF..." class="pl-9" />
                 </div>
             </div>
 
@@ -79,6 +68,7 @@ const formatDate = (iso: string) => {
                 <table class="w-full text-sm">
                     <thead class="bg-muted/50 text-left text-xs uppercase tracking-wide text-muted-foreground">
                         <tr>
+                            <th class="px-4 py-3">Matrícula</th>
                             <th class="px-4 py-3">Nome</th>
                             <th class="px-4 py-3">CPF</th>
                             <th class="px-4 py-3">Nascimento</th>
@@ -88,9 +78,12 @@ const formatDate = (iso: string) => {
                     </thead>
                     <tbody class="divide-y">
                         <tr v-if="alunos.data.length === 0">
-                            <td colspan="5" class="px-4 py-12 text-center text-muted-foreground">Nenhum aluno cadastrado.</td>
+                            <td colspan="6" class="px-4 py-12 text-center text-muted-foreground">Nenhum aluno cadastrado.</td>
                         </tr>
                         <tr v-for="aluno in alunos.data" :key="aluno.aln_id" class="transition-colors hover:bg-muted/30">
+                            <td class="px-4 py-3 font-mono tabular-nums text-muted-foreground">
+                                {{ aluno.aln_nr_matricula ?? '—' }}
+                            </td>
                             <td class="px-4 py-3 font-medium">
                                 <div class="flex items-center gap-3">
                                     <div class="grid size-9 place-items-center overflow-hidden rounded-full bg-sky-100 text-xs font-semibold text-sky-700 dark:bg-sky-900/50 dark:text-sky-300">

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import FlashToaster from '@/components/common/FlashToaster.vue';
 import AppContent from '@/components/layout/AppContent.vue';
 import AppShell from '@/components/layout/AppShell.vue';
 import AppSidebar from '@/components/layout/AppSidebar.vue';
@@ -21,5 +22,6 @@ withDefaults(defineProps<Props>(), {
             <AppSidebarHeader :breadcrumbs="breadcrumbs" />
             <slot />
         </AppContent>
+        <FlashToaster />
     </AppShell>
 </template>

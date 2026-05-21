@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\Aluno;
 
+use App\Models\Municipio;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -29,6 +30,7 @@ class Aluno extends Model
         'aln_mun_id_nasc',
         'aln_cpf',
         'aln_cd_inep',
+        'aln_nr_matricula',
         'aln_nr_certidao',
         'aln_filiacao_1',
         'aln_filiacao_2',
@@ -48,6 +50,7 @@ class Aluno extends Model
     protected $casts = [
         'aln_dt_nascimento' => 'date',
         'aln_cor_raca' => 'integer',
+        'aln_nr_matricula' => 'integer',
         'aln_fl_ativo' => 'boolean',
     ];
 

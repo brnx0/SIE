@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Escola;
 
-use App\Http\Requests\StoreEscolaRequest;
-use App\Http\Requests\UpdateEscolaRequest;
-use App\Models\Escola;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Escola\StoreEscolaRequest;
+use App\Http\Requests\Escola\UpdateEscolaRequest;
+use App\Models\Escola\Escola;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;

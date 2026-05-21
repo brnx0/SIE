@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Escola;
 
+use App\Models\Parametro\ParametroEntidade;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -15,8 +16,22 @@ class StoreEscolaRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $strip = fn ($v) => is_string($v) ? preg_replace('/\D/', '', $v) : $v;
+        $params = ParametroEntidade::firstOrFail();
+
+        $nome = $this->input('esc_nome');
+        $apelido = $this->input('esc_apelido');
+        if ($params->par_fl_nome_escola_caixa_alta) {
+            if (is_string($nome)) {
+                $nome = mb_strtoupper($nome, 'UTF-8');
+            }
+            if (is_string($apelido)) {
+                $apelido = mb_strtoupper($apelido, 'UTF-8');
+            }
+        }
 
         $this->merge([
+            'esc_nome' => $nome,
+            'esc_apelido' => $apelido,
             'esc_cnpj' => $this->filled('esc_cnpj') ? $strip($this->input('esc_cnpj')) : null,
             'esc_cd_inep' => $this->filled('esc_cd_inep') ? $strip($this->input('esc_cd_inep')) : null,
             'esc_cep' => $this->filled('esc_cep') ? $strip($this->input('esc_cep')) : null,

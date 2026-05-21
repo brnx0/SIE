@@ -5,7 +5,13 @@ import NavUser from '@/components/layout/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { Link } from '@inertiajs/vue3';
 import { LayoutDashboard, LifeBuoy, UserPlus, Cog} from 'lucide-vue-next';
+import { computed } from 'vue';
+import { usePage } from '@inertiajs/vue3';
+import type { SharedData } from '@/types';
 import AppLogo from './AppLogo.vue';
+
+const page = usePage<SharedData>();
+const isAdmin = computed(() => page.props.auth?.user?.role === 'admin');
 
 const overview = [
     { title: 'Painel', href: '/dashboard', icon: LayoutDashboard },
@@ -17,20 +23,21 @@ const cadastros = [
         icon: UserPlus,
         children: [
             { title: 'Alunos', href: '/alunos' },
+            { title: 'Funcionários', href: '/funcionarios' },
             { title: 'Escolas', href: '/escolas' },
         ],
     },
 ];
-const administracao: any[] = [
+const administracao = computed<any[]>(() => [
     {
-        title: 'Sistema', 
+        title: 'Sistema',
         icon: Cog,
-        children:[
-            { title: 'Usuários', href: '/users' }
-        ]
-        
-}
-]
+        children: [
+            { title: 'Usuários', href: '/users' },
+            ...(isAdmin.value ? [{ title: 'Parâmetros', href: '/parametros' }] : []),
+        ],
+    },
+]);
 
 const footerNavItems = [
     { title: 'Suporte', href: '#', icon: LifeBuoy },

@@ -2,6 +2,7 @@
 import CharCounter from '@/components/common/CharCounter.vue';
 import FormLabel from '@/components/common/FormLabel.vue';
 import InputError from '@/components/common/InputError.vue';
+import HomonimoDialog, { type HomonimoMatch } from '@/components/aluno/HomonimoDialog.vue';
 import MunicipioCombobox from '@/components/aluno/MunicipioCombobox.vue';
 import Switch from '@/components/common/Switch.vue';
 import Tabs from '@/components/common/Tabs.vue';
@@ -16,8 +17,9 @@ import { COR_RACA } from '@/lib/corRaca';
 import { PAISES } from '@/lib/paises';
 import { TIPOS_SANGUINEOS } from '@/lib/tiposSanguineos';
 import { UFS } from '@/lib/ufs';
+import type { SharedData, SystemParams } from '@/types';
 import type { Aluno, AlunoFormData, Municipio } from '@/types/aluno';
-import { Link, useForm } from '@inertiajs/vue3';
+import { Link, useForm, usePage } from '@inertiajs/vue3';
 import { Camera, ChevronLeft, ChevronRight, Loader2, LoaderCircle, Save, Trash2, Upload } from 'lucide-vue-next';
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 
@@ -26,12 +28,33 @@ const props = defineProps<{
     initial?: Aluno;
 }>();
 
+const page = usePage<SharedData>();
+const DEFAULT_PARAMS: SystemParams = {
+    nome_pessoa_caixa_alta: true,
+    nome_escola_caixa_alta: true,
+    alertar_homonimos: false,
+    alertar_acentos_nomes: false,
+    validar_idade_serie: false,
+    gerar_matricula_auto: true,
+    validar_carga_prof: false,
+    cpf_obrigatorio: false,
+    fardamento_obrigatorio: false,
+    tipo_validacao_carga: 'avisar',
+};
+const params = computed<SystemParams>(() => page.props.params ?? DEFAULT_PARAMS);
+const cpfRequired = computed(() => params.value.cpf_obrigatorio);
+const nomeUppercase = computed(() => params.value.nome_pessoa_caixa_alta);
+const alertarAcentos = computed(() => params.value.alertar_acentos_nomes);
+
+const ACCENT_RE = /[̀-ͯ]|[À-ÖØ-öø-ÿ]/;
+const nomeAcentoWarning = computed(() => alertarAcentos.value && ACCENT_RE.test(form?.aln_nome ?? ''));
+
 const TABS = ['dados-pessoais', 'documentacao', 'filiacao-contato', 'complementares'] as const;
 type TabId = (typeof TABS)[number];
 
 const TAB_FIELDS: Record<TabId, string[]> = {
     'dados-pessoais': ['aln_nome', 'aln_dt_nascimento', 'aln_sexo', 'aln_cor_raca', 'aln_pais_origem', 'aln_mun_id_nasc'],
-    documentacao: ['aln_cpf', 'aln_cd_inep', 'aln_nr_certidao'],
+    documentacao: ['aln_cpf', 'aln_cd_inep', 'aln_nr_matricula', 'aln_nr_certidao'],
     'filiacao-contato': [
         'aln_filiacao_1',
         'aln_filiacao_2',
@@ -76,6 +99,7 @@ const form = useForm<AlunoFormData>({
 
     aln_cpf: props.initial?.aln_cpf ?? '',
     aln_cd_inep: props.initial?.aln_cd_inep ?? '',
+    aln_nr_matricula: props.initial?.aln_nr_matricula ?? null,
     aln_nr_certidao: props.initial?.aln_nr_certidao ?? '',
 
     aln_filiacao_1: props.initial?.aln_filiacao_1 ?? '',
@@ -93,6 +117,7 @@ const form = useForm<AlunoFormData>({
 
     aln_foto: null,
     aln_fl_ativo: props.initial?.aln_fl_ativo ?? true,
+    confirm_homonimo: false,
     _method: props.mode === 'edit' ? 'put' : 'post',
 
     saude: {
@@ -105,6 +130,16 @@ const form = useForm<AlunoFormData>({
 watch(dataBR, (v) => {
     form.aln_dt_nascimento = v && v.length === 10 ? parseDateBR(v) : '';
 });
+
+// Uppercase em tempo real conforme parâmetro.
+watch(
+    () => form.aln_nome,
+    (v) => {
+        if (!nomeUppercase.value || typeof v !== 'string') return;
+        const up = v.toLocaleUpperCase('pt-BR');
+        if (up !== v) form.aln_nome = up;
+    },
+);
 
 const activeTab = ref<TabId>('dados-pessoais');
 
@@ -145,9 +180,29 @@ const goToFirstErrorTab = () => {
 
 const submitLabel = computed(() => (props.mode === 'create' ? 'Cadastrar aluno' : 'Salvar alterações'));
 
+// Homônimo flow — detecta via ValidationException com chave 'homonimo' (JSON)
+const homonimoOpen = ref(false);
+const homonimoMatches = ref<HomonimoMatch[]>([]);
+
+const handleErrors = (errors: Record<string, string>) => {
+    const raw = errors.homonimo;
+    if (raw) {
+        try {
+            const parsed = JSON.parse(raw) as HomonimoMatch[];
+            homonimoMatches.value = parsed;
+            homonimoOpen.value = true;
+            delete form.errors.homonimo;
+            return;
+        } catch {
+            // não era JSON — segue fluxo normal
+        }
+    }
+    goToFirstErrorTab();
+};
+
 const submit = () => {
     const opts = {
-        onError: () => goToFirstErrorTab(),
+        onError: (errors: Record<string, string>) => handleErrors(errors),
         preserveScroll: true,
         forceFormData: true,
     };
@@ -157,6 +212,17 @@ const submit = () => {
     } else if (props.initial) {
         form.post(`/alunos/${props.initial.aln_id}`, opts);
     }
+};
+
+const confirmHomonimo = () => {
+    form.confirm_homonimo = true;
+    homonimoOpen.value = false;
+    submit();
+};
+
+const cancelHomonimo = () => {
+    homonimoOpen.value = false;
+    form.confirm_homonimo = false;
 };
 
 const next = () => {
@@ -219,6 +285,21 @@ const initials = computed(() => {
 
 <template>
     <form @submit.prevent="submit" novalidate class="grid gap-6">
+        <div class="flex items-center justify-between">
+            <Link href="/alunos">
+                <Button type="button" variant="outline">Cancelar</Button>
+            </Link>
+            <Button
+                type="submit"
+                :disabled="form.processing"
+                class="bg-sky-600 text-white hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-400"
+            >
+                <LoaderCircle v-if="form.processing" class="mr-2 size-4 animate-spin" />
+                <Save v-else class="mr-2 size-4" />
+                {{ submitLabel }}
+            </Button>
+        </div>
+
         <Tabs v-model="activeTab">
             <TabsList>
                 <TabsTrigger value="dados-pessoais" :has-error="tabHasError('dados-pessoais')">
@@ -306,6 +387,9 @@ const initials = computed(() => {
                             <InputError :message="form.errors.aln_nome" />
                             <CharCounter :value="form.aln_nome" :max="100" />
                         </div>
+                        <p v-if="nomeAcentoWarning" class="text-xs text-amber-600 dark:text-amber-400">
+                            Atenção: o sistema está configurado para alertar sobre acentos em nomes. Recomenda-se remover acentuação.
+                        </p>
                     </div>
 
                     <div class="grid gap-2">
@@ -380,8 +464,26 @@ const initials = computed(() => {
             <!-- Aba 2 -->
             <TabsContent value="documentacao">
                 <div class="grid gap-4 rounded-xl border bg-card p-6 shadow-sm sm:grid-cols-2">
+                    <div class="grid gap-2 sm:col-span-2">
+                        <Label for="aln_nr_matricula">Matrícula</Label>
+                        <Input
+                            id="aln_nr_matricula"
+                            type="number"
+                            min="1"
+                            step="1"
+                            inputmode="numeric"
+                            v-model.number="form.aln_nr_matricula"
+                            placeholder="Deixe vazio para gerar automaticamente"
+                            class="font-mono tracking-wider"
+                        />
+                        <p class="text-xs text-muted-foreground">
+                            Em branco: gerada automaticamente. Editável, mas não pode ser duplicada.
+                        </p>
+                        <InputError :message="form.errors.aln_nr_matricula" />
+                    </div>
+
                     <div class="grid gap-2">
-                        <FormLabel :for="'aln_cpf'" :required="true">CPF</FormLabel>
+                        <FormLabel :for="'aln_cpf'" :required="cpfRequired">CPF</FormLabel>
                         <Input
                             id="aln_cpf"
                             v-model="form.aln_cpf"
@@ -389,7 +491,7 @@ const initials = computed(() => {
                             inputmode="numeric"
                             placeholder="000.000.000-00"
                             maxlength="14"
-                            :required="true"
+                            :required="cpfRequired"
                         />
                         <InputError :message="form.errors.aln_cpf" />
                     </div>
@@ -593,40 +695,32 @@ const initials = computed(() => {
             </TabsContent>
         </Tabs>
 
-        <!-- Rodapé -->
-        <div class="flex flex-col-reverse items-stretch justify-between gap-2 border-t pt-4 sm:flex-row sm:items-center">
-            <Link href="/alunos">
-                <Button type="button" variant="outline" class="w-full sm:w-auto">Cancelar</Button>
-            </Link>
-
-            <div class="flex gap-2">
-                <Button
-                    type="button"
-                    variant="outline"
-                    :disabled="isFirst"
-                    @click="prev"
-                >
-                    <ChevronLeft class="mr-1 size-4" /> Anterior
-                </Button>
-                <Button
-                    v-if="!isLast"
-                    type="button"
-                    @click="next"
-                    class="bg-sky-600 text-white hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-400"
-                >
-                    Próximo <ChevronRight class="ml-1 size-4" />
-                </Button>
-                <Button
-                    v-else
-                    type="submit"
-                    :disabled="form.processing"
-                    class="bg-sky-600 text-white hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-400"
-                >
-                    <LoaderCircle v-if="form.processing" class="mr-2 size-4 animate-spin" />
-                    <Save v-else class="mr-2 size-4" />
-                    {{ submitLabel }}
-                </Button>
-            </div>
+        <!-- Navegação entre abas -->
+        <div class="flex justify-end gap-2">
+            <Button
+                type="button"
+                variant="outline"
+                :disabled="isFirst"
+                @click="prev"
+            >
+                <ChevronLeft class="mr-1 size-4" /> Anterior
+            </Button>
+            <Button
+                v-if="!isLast"
+                type="button"
+                variant="outline"
+                @click="next"
+            >
+                Próximo <ChevronRight class="ml-1 size-4" />
+            </Button>
         </div>
     </form>
+
+    <HomonimoDialog
+        v-model:open="homonimoOpen"
+        :matches="homonimoMatches"
+        :processing="form.processing"
+        @confirm="confirmHomonimo"
+        @cancel="cancelHomonimo"
+    />
 </template>

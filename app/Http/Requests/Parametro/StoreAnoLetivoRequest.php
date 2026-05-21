@@ -1,0 +1,81 @@
+<?php
+
+namespace App\Http\Requests\Parametro;
+
+use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+
+class StoreAnoLetivoRequest extends FormRequest
+{
+    public function authorize(): bool
+    {
+        return $this->user()?->role === 'admin';
+    }
+
+    public function rules(): array
+    {
+        $id = $this->route('anoLetivo')?->anl_id;
+
+        return [
+            'anl_ano' => [
+                'required', 'integer', 'between:1980,2999',
+                Rule::unique('cfg_ano_letivo', 'anl_ano')->ignore($id, 'anl_id')->whereNull('anl_deleted_at'),
+            ],
+            'anl_dt_inicio_ano' => ['required', 'date'],
+            'anl_dt_inicio_1sem' => ['required', 'date', 'after_or_equal:anl_dt_inicio_ano'],
+            'anl_dt_inicio_2sem' => ['required', 'date', 'after:anl_dt_inicio_1sem'],
+            'anl_dt_fim' => ['required', 'date', 'after:anl_dt_inicio_2sem'],
+            'anl_dt_censo' => ['nullable', 'date'],
+            'anl_fl_em_exercicio' => ['boolean'],
+            'anl_fl_progressao_parcial' => ['boolean'],
+            'anl_fl_aprovacao_conselho_freq' => ['boolean'],
+        ];
+    }
+
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $v) {
+            $ano = (int) $this->input('anl_ano');
+            if (! $ano) {
+                return;
+            }
+
+            foreach (['anl_dt_inicio_ano', 'anl_dt_inicio_1sem', 'anl_dt_inicio_2sem', 'anl_dt_fim', 'anl_dt_censo'] as $field) {
+                $val = $this->input($field);
+                if (! $val) {
+                    continue;
+                }
+                $year = (int) date('Y', strtotime($val));
+                if ($year !== $ano) {
+                    $v->errors()->add($field, "O campo :attribute deve estar dentro do ano {$ano}.");
+                }
+            }
+        });
+    }
+
+    public function attributes(): array
+    {
+        return [
+            'anl_ano' => 'ano',
+            'anl_dt_inicio_ano' => 'data de início do ano',
+            'anl_dt_inicio_1sem' => 'data de início do 1º semestre',
+            'anl_dt_inicio_2sem' => 'data de início do 2º semestre',
+            'anl_dt_fim' => 'fim do ano',
+            'anl_dt_censo' => 'data do censo',
+            'anl_fl_em_exercicio' => 'ano em exercício',
+            'anl_fl_progressao_parcial' => 'possui progressão parcial',
+            'anl_fl_aprovacao_conselho_freq' => 'aprovação por conselho por frequência',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'anl_dt_inicio_1sem.after_or_equal' => 'A :attribute deve ser igual ou posterior à data de início do ano.',
+            'anl_dt_inicio_2sem.after' => 'A :attribute deve ser posterior à data de início do 1º semestre.',
+            'anl_dt_fim.after' => 'O :attribute deve ser posterior à data de início do 2º semestre.',
+            'anl_ano.unique' => 'Já existe um ano letivo cadastrado com este ano.',
+        ];
+    }
+}

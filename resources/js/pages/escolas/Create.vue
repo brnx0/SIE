@@ -13,7 +13,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 <template>
     <Head title="Nova escola" />
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="mx-auto flex w-full max-w-6xl flex-col gap-2 p-4 md:p-6">
+        <div class="mx-auto flex w-[95%] flex-col gap-2 p-4 md:p-6">
             <div>
                 <h1 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">Cadastrar escola</h1>
                 <p class="text-sm text-slate-500 dark:text-slate-400">

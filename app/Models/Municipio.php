@@ -26,7 +26,8 @@ class Municipio extends Model
         }
 
         if ($term) {
-            $query->where('mun_nome', 'ilike', "%{$term}%");
+            // unaccent + ilike → case + accent insensitive (Postgres).
+            $query->whereRaw('unaccent(mun_nome) ILIKE unaccent(?)', ["%{$term}%"]);
         }
 
         return $query->orderBy('mun_nome');

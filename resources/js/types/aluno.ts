@@ -26,8 +26,9 @@ export interface Aluno {
     aln_cor_raca: CorRaca;
     aln_pais_origem: string;
     aln_mun_id_nasc: number;
-    aln_cpf: string;
+    aln_cpf: string | null;
     aln_cd_inep: string | null;
+    aln_nr_matricula: number | null;
     aln_nr_certidao: string | null;
     aln_filiacao_1: string | null;
     aln_filiacao_2: string | null;
@@ -56,6 +57,7 @@ export interface AlunoFormData {
     aln_mun_id_nasc: number | null;
     aln_cpf: string;
     aln_cd_inep: string;
+    aln_nr_matricula: number | string | null;
     aln_nr_certidao: string;
     aln_filiacao_1: string;
     aln_filiacao_2: string;

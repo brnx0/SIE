@@ -11,6 +11,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call(MunicipioSeeder::class);
+        $this->call(ParametroEntidadeSeeder::class);
 
         User::updateOrCreate(
             ['email' => 'admin@sie.local'],

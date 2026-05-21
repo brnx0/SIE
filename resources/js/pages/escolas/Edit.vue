@@ -16,7 +16,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 <template>
     <Head :title="`Editar ${escola.esc_apelido || escola.esc_nome}`" />
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="mx-auto flex w-full max-w-6xl flex-col gap-2 p-4 md:p-6">
+        <div class="mx-auto flex w-[95%] flex-col gap-2 p-4 md:p-6">
             <div>
                 <h1 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">Editar escola</h1>
                 <p class="text-sm text-slate-500 dark:text-slate-400">{{ escola.esc_nome }}</p>

@@ -18,7 +18,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 <template>
     <Head :title="`Editar — ${user.name}`" />
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="mx-auto flex w-full max-w-3xl flex-col gap-6 p-4 md:p-6">
+        <div class="mx-auto flex w-[95%] flex-col gap-6 p-4 md:p-6">
             <div>
                 <h1 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">Editar funcionário</h1>
                 <p class="text-sm text-slate-500 dark:text-slate-400">Atualize informações de acesso e perfil de {{ user.name }}.</p>

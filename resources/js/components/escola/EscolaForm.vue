@@ -25,9 +25,10 @@ import {
     TURNOS_ESCOLARES,
     ZONAS,
 } from '@/lib/escolaEnums';
+import type { SharedData, SystemParams } from '@/types';
 import type { Municipio } from '@/types/aluno';
 import type { Bairro, Escola, EscolaFormData, GerenciaRegional } from '@/types/escola';
-import { Link, useForm } from '@inertiajs/vue3';
+import { Link, useForm, usePage } from '@inertiajs/vue3';
 import { Building2, Camera, ChevronLeft, ChevronRight, Loader2, LoaderCircle, Save, Trash2, Upload } from 'lucide-vue-next';
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 
@@ -35,6 +36,22 @@ const props = defineProps<{
     mode: 'create' | 'edit';
     initial?: Escola;
 }>();
+
+const page = usePage<SharedData>();
+const DEFAULT_PARAMS: SystemParams = {
+    nome_pessoa_caixa_alta: true,
+    nome_escola_caixa_alta: true,
+    alertar_homonimos: false,
+    alertar_acentos_nomes: false,
+    validar_idade_serie: false,
+    gerar_matricula_auto: true,
+    validar_carga_prof: false,
+    cpf_obrigatorio: false,
+    fardamento_obrigatorio: false,
+    tipo_validacao_carga: 'avisar',
+};
+const params = computed<SystemParams>(() => page.props.params ?? DEFAULT_PARAMS);
+const escolaUppercase = computed(() => params.value.nome_escola_caixa_alta);
 
 const TABS = ['identificacao', 'contato'] as const;
 type TabId = (typeof TABS)[number];
@@ -116,6 +133,24 @@ const form = useForm<EscolaFormData>({
     esc_logo: null,
     _method: props.mode === 'edit' ? 'put' : 'post',
 });
+
+// Uppercase em tempo real conforme parâmetros.
+watch(
+    () => form.esc_nome,
+    (v) => {
+        if (!escolaUppercase.value || typeof v !== 'string') return;
+        const up = v.toLocaleUpperCase('pt-BR');
+        if (up !== v) form.esc_nome = up;
+    },
+);
+watch(
+    () => form.esc_apelido,
+    (v) => {
+        if (!escolaUppercase.value || typeof v !== 'string') return;
+        const up = v.toLocaleUpperCase('pt-BR');
+        if (up !== v) form.esc_apelido = up;
+    },
+);
 
 const activeTab = ref<TabId>('identificacao');
 
@@ -237,6 +272,21 @@ const isLast = computed(() => activeTab.value === TABS[TABS.length - 1]);
 
 <template>
     <form @submit.prevent="submit" novalidate class="grid gap-6">
+        <div class="flex items-center justify-between">
+            <Link href="/escolas">
+                <Button type="button" variant="outline">Cancelar</Button>
+            </Link>
+            <Button
+                type="submit"
+                :disabled="form.processing"
+                class="bg-sky-600 text-white hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-400"
+            >
+                <LoaderCircle v-if="form.processing" class="mr-2 size-4 animate-spin" />
+                <Save v-else class="mr-2 size-4" />
+                {{ submitLabel }}
+            </Button>
+        </div>
+
         <Tabs v-model="activeTab">
             <TabsList>
                 <TabsTrigger value="identificacao" :has-error="tabHasError('identificacao')">1. Identificação</TabsTrigger>
@@ -593,24 +643,14 @@ const isLast = computed(() => activeTab.value === TABS[TABS.length - 1]);
 
         </Tabs>
 
-        <div class="flex flex-col-reverse items-stretch justify-between gap-2 border-t pt-4 sm:flex-row sm:items-center">
-            <Link href="/escolas">
-                <Button type="button" variant="outline" class="w-full sm:w-auto">Cancelar</Button>
-            </Link>
-
-            <div class="flex gap-2">
-                <Button type="button" variant="outline" :disabled="isFirst" @click="prev">
-                    <ChevronLeft class="mr-1 size-4" /> Anterior
-                </Button>
-                <Button v-if="!isLast" type="button" @click="next" class="bg-sky-600 text-white hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-400">
-                    Próximo <ChevronRight class="ml-1 size-4" />
-                </Button>
-                <Button v-else type="submit" :disabled="form.processing" class="bg-sky-600 text-white hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-400">
-                    <LoaderCircle v-if="form.processing" class="mr-2 size-4 animate-spin" />
-                    <Save v-else class="mr-2 size-4" />
-                    {{ submitLabel }}
-                </Button>
-            </div>
+        <!-- Navegação entre abas -->
+        <div class="flex justify-end gap-2">
+            <Button type="button" variant="outline" :disabled="isFirst" @click="prev">
+                <ChevronLeft class="mr-1 size-4" /> Anterior
+            </Button>
+            <Button v-if="!isLast" type="button" variant="outline" @click="next">
+                Próximo <ChevronRight class="ml-1 size-4" />
+            </Button>
         </div>
     </form>
 </template>
