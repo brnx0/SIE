@@ -46,8 +46,7 @@ const cpfRequired = computed(() => params.value.cpf_obrigatorio);
 const nomeUppercase = computed(() => params.value.nome_pessoa_caixa_alta);
 const alertarAcentos = computed(() => params.value.alertar_acentos_nomes);
 
-const ACCENT_RE = /[̀-ͯ]|[À-ÖØ-öø-ÿ]/;
-const nomeAcentoWarning = computed(() => alertarAcentos.value && ACCENT_RE.test(form?.aln_nome ?? ''));
+const stripAccents = (str: string) => str.normalize('NFD').replace(/[̀-ͯ]/g, '');
 
 const TABS = ['dados-pessoais', 'documentacao', 'filiacao-contato', 'complementares'] as const;
 type TabId = (typeof TABS)[number];
@@ -131,13 +130,14 @@ watch(dataBR, (v) => {
     form.aln_dt_nascimento = v && v.length === 10 ? parseDateBR(v) : '';
 });
 
-// Uppercase em tempo real conforme parâmetro.
 watch(
     () => form.aln_nome,
     (v) => {
-        if (!nomeUppercase.value || typeof v !== 'string') return;
-        const up = v.toLocaleUpperCase('pt-BR');
-        if (up !== v) form.aln_nome = up;
+        if (typeof v !== 'string') return;
+        let next = v;
+        if (alertarAcentos.value) next = stripAccents(next);
+        if (nomeUppercase.value) next = next.toLocaleUpperCase('pt-BR');
+        if (next !== v) form.aln_nome = next;
     },
 );
 
@@ -387,8 +387,8 @@ const initials = computed(() => {
                             <InputError :message="form.errors.aln_nome" />
                             <CharCounter :value="form.aln_nome" :max="100" />
                         </div>
-                        <p v-if="nomeAcentoWarning" class="text-xs text-amber-600 dark:text-amber-400">
-                            Atenção: o sistema está configurado para alertar sobre acentos em nomes. Recomenda-se remover acentuação.
+                        <p v-if="alertarAcentos" class="flex items-center gap-1.5 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-700 dark:border-amber-700/50 dark:bg-amber-900/20 dark:text-amber-400">
+                            <span class="font-semibold">Atenção:</span> sistema configurado para nomes sem acentuação — acentos são removidos automaticamente.
                         </p>
                     </div>
 

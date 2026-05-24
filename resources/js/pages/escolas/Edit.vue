@@ -2,10 +2,17 @@
 import EscolaForm from '@/components/escola/EscolaForm.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
+import type { AnoLetivoOption, EscolaSegmento } from '@/types/escola_segmento';
 import type { Escola } from '@/types/escola';
+import type { Segmento } from '@/types/segmento';
 import { Head } from '@inertiajs/vue3';
 
-const props = defineProps<{ escola: Escola }>();
+const props = defineProps<{
+    escola: Escola;
+    escolaSegmentos: EscolaSegmento[];
+    segmentos: Pick<Segmento, 'seg_id' | 'seg_nome_reduzido'>[];
+    anosLetivos: AnoLetivoOption[];
+}>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Escolas', href: '/escolas' },
@@ -21,7 +28,13 @@ const breadcrumbs: BreadcrumbItem[] = [
                 <h1 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">Editar escola</h1>
                 <p class="text-sm text-slate-500 dark:text-slate-400">{{ escola.esc_nome }}</p>
             </div>
-            <EscolaForm mode="edit" :initial="escola" />
+            <EscolaForm
+                mode="edit"
+                :initial="escola"
+                :escola-segmentos="escolaSegmentos"
+                :segmentos="segmentos"
+                :anos-letivos="anosLetivos"
+            />
         </div>
     </AppLayout>
 </template>

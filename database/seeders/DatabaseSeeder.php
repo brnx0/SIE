@@ -12,6 +12,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call(MunicipioSeeder::class);
         $this->call(ParametroEntidadeSeeder::class);
+        $this->call(SegmentoSeeder::class);
 
         User::updateOrCreate(
             ['email' => 'admin@sie.local'],

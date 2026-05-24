@@ -24,7 +24,14 @@ const cadastros = [
         children: [
             { title: 'Alunos', href: '/alunos' },
             { title: 'Funcionários', href: '/funcionarios' },
-            { title: 'Escolas', href: '/escolas' },
+            {
+                title: 'Rede de Ensino',
+                children: [
+                    { title: 'Segmentos', href: '/segmentos' },
+                    { title: 'Séries', href: '/series' },
+                    { title: 'Escolas', href: '/escolas' },
+                ],
+            },
         ],
     },
 ];

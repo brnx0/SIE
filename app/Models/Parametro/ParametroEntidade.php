@@ -6,6 +6,7 @@ use App\Models\Municipio;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 
 class ParametroEntidade extends Model
@@ -67,6 +68,11 @@ class ParametroEntidade extends Model
 
     public static function current(): self
     {
-        return static::firstOrFail();
+        return Cache::remember('parametro_entidade', 3600, fn () => static::firstOrFail());
+    }
+
+    public static function clearCache(): void
+    {
+        Cache::forget('parametro_entidade');
     }
 }

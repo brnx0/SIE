@@ -55,6 +55,8 @@ class ParametroController extends Controller
             $entidade->update($data);
         });
 
+        ParametroEntidade::clearCache();
+
         return to_route('parametros.edit')->with('success', 'Parâmetros atualizados com sucesso.');
     }
 }

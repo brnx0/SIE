@@ -4,6 +4,10 @@ use App\Http\Controllers\Aluno\AlunoController;
 use App\Http\Controllers\Api\BairroController;
 use App\Http\Controllers\Api\GerenciaRegionalController;
 use App\Http\Controllers\Api\MunicipioController;
+use App\Http\Controllers\Api\SerieController as SerieApiController;
+use App\Http\Controllers\Escola\EscolaSegmentoController;
+use App\Http\Controllers\Segmento\SegmentoController;
+use App\Http\Controllers\Serie\SerieController;
 use App\Http\Controllers\Escola\EscolaController;
 use App\Http\Controllers\Funcionario\FuncionarioController;
 use App\Http\Controllers\Parametro\AnoLetivoController;
@@ -25,8 +29,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::resource('alunos', AlunoController::class)->except(['show']);
     Route::resource('escolas', EscolaController::class)->except(['show']);
+    Route::prefix('escolas/{escola}/segmentos')->name('escolas.segmentos.')->group(function () {
+        Route::post('/', [EscolaSegmentoController::class, 'store'])->name('store');
+        Route::put('/{esg}', [EscolaSegmentoController::class, 'update'])->name('update');
+        Route::delete('/{esg}', [EscolaSegmentoController::class, 'destroy'])->name('destroy');
+    });
+    Route::resource('segmentos', SegmentoController::class)->except(['show']);
+    Route::resource('series', SerieController::class)->except(['show']);
     Route::resource('funcionarios', FuncionarioController::class)->except(['show']);
 
+    Route::get('api/series', [SerieApiController::class, 'bySegmento'])->name('api.series.bySegmento');
     Route::get('api/municipios', [MunicipioController::class, 'search'])->name('api.municipios.search');
     Route::get('api/municipios/by-ibge/{codigo}', [MunicipioController::class, 'byIbge'])->name('api.municipios.byIbge');
     Route::get('api/bairros', [BairroController::class, 'search'])->name('api.bairros.search');

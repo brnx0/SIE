@@ -15,10 +15,17 @@ import { Link, usePage } from '@inertiajs/vue3';
 import { ChevronRight } from 'lucide-vue-next';
 import type { Component } from 'vue';
 
-interface NavChild {
+interface NavLeaf {
     title: string;
     href: string;
 }
+
+interface NavGroup {
+    title: string;
+    children: NavLeaf[];
+}
+
+type NavChild = NavLeaf | NavGroup;
 
 interface NavItem {
     title: string;
@@ -26,6 +33,8 @@ interface NavItem {
     icon: Component;
     children?: NavChild[];
 }
+
+const isGroup = (child: NavChild): child is NavGroup => 'children' in child;
 
 defineProps<{
     items: NavItem[];
@@ -35,8 +44,14 @@ defineProps<{
 const page = usePage<SharedData>();
 
 const isActive = (href?: string) => !!href && page.url.startsWith(href);
+
+const isChildActive = (child: NavChild): boolean =>
+    isGroup(child)
+        ? child.children.some((c) => isActive(c.href))
+        : isActive(child.href);
+
 const isGroupActive = (item: NavItem) =>
-    item.children?.some((c) => isActive(c.href)) ?? false;
+    item.children?.some((c) => isChildActive(c)) ?? false;
 </script>
 
 <template>
@@ -71,13 +86,44 @@ const isGroupActive = (item: NavItem) =>
                         </CollapsibleTrigger>
                         <CollapsibleContent>
                             <SidebarMenuSub>
-                                <SidebarMenuSubItem v-for="child in item.children" :key="child.title">
-                                    <SidebarMenuSubButton as-child :is-active="isActive(child.href)">
-                                        <Link :href="child.href">
-                                            <span>{{ child.title }}</span>
-                                        </Link>
-                                    </SidebarMenuSubButton>
-                                </SidebarMenuSubItem>
+                                <template v-for="child in item.children" :key="child.title">
+                                    <!-- Leaf -->
+                                    <SidebarMenuSubItem v-if="!isGroup(child)">
+                                        <SidebarMenuSubButton as-child :is-active="isActive(child.href)">
+                                            <Link :href="child.href">
+                                                <span>{{ child.title }}</span>
+                                            </Link>
+                                        </SidebarMenuSubButton>
+                                    </SidebarMenuSubItem>
+
+                                    <!-- Group (2nd level) -->
+                                    <Collapsible
+                                        v-else
+                                        :default-open="isChildActive(child)"
+                                        as-child
+                                        class="group/subcollapsible"
+                                    >
+                                        <SidebarMenuSubItem>
+                                            <CollapsibleTrigger as-child>
+                                                <SidebarMenuSubButton :is-active="isChildActive(child)" class="font-medium">
+                                                    <span>{{ child.title }}</span>
+                                                    <ChevronRight class="ml-auto size-3.5 transition-transform duration-200 group-data-[state=open]/subcollapsible:rotate-90" />
+                                                </SidebarMenuSubButton>
+                                            </CollapsibleTrigger>
+                                            <CollapsibleContent>
+                                                <SidebarMenuSub class="ml-2 border-l pl-2">
+                                                    <SidebarMenuSubItem v-for="leaf in child.children" :key="leaf.title">
+                                                        <SidebarMenuSubButton as-child :is-active="isActive(leaf.href)">
+                                                            <Link :href="leaf.href">
+                                                                <span>{{ leaf.title }}</span>
+                                                            </Link>
+                                                        </SidebarMenuSubButton>
+                                                    </SidebarMenuSubItem>
+                                                </SidebarMenuSub>
+                                            </CollapsibleContent>
+                                        </SidebarMenuSubItem>
+                                    </Collapsible>
+                                </template>
                             </SidebarMenuSub>
                         </CollapsibleContent>
                     </SidebarMenuItem>

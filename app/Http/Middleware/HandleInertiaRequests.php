@@ -63,7 +63,7 @@ class HandleInertiaRequests extends Middleware
     protected function parametrosFlags(): array
     {
         try {
-            $p = ParametroEntidade::query()->first();
+            $p = ParametroEntidade::current();
         } catch (\Throwable) {
             $p = null;
         }

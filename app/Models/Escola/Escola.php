@@ -4,6 +4,7 @@ namespace App\Models\Escola;
 
 use App\Models\Municipio;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -69,5 +70,10 @@ class Escola extends Model
     public function gerencia(): BelongsTo
     {
         return $this->belongsTo(GerenciaRegional::class, 'esc_ger_id', 'ger_id');
+    }
+
+    public function segmentos(): HasMany
+    {
+        return $this->hasMany(EscolaSegmento::class, 'esc_id', 'esc_id');
     }
 }

@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Escola\StoreEscolaRequest;
 use App\Http\Requests\Escola\UpdateEscolaRequest;
 use App\Models\Escola\Escola;
+use App\Models\Parametro\AnoLetivo;
+use App\Models\Segmento\Segmento;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -68,8 +70,22 @@ class EscolaController extends Controller
             'gerencia:ger_id,ger_nome,ger_sigla,ger_uf',
         ]);
 
+        $escolaSegmentos = $escola->segmentos()
+            ->with([
+                'segmento:seg_id,seg_nome_reduzido,seg_nome_completo',
+                'anoLetivoInicio:anl_id,anl_ano,anl_fl_em_exercicio',
+                'anoLetivoFim:anl_id,anl_ano,anl_fl_em_exercicio',
+                'serieInicio:ser_id,ser_nome',
+                'serieFim:ser_id,ser_nome',
+            ])
+            ->orderBy('anl_id_inicio', 'desc')
+            ->get();
+
         return Inertia::render('escolas/Edit', [
-            'escola' => $escola,
+            'escola'           => $escola,
+            'escolaSegmentos'  => $escolaSegmentos,
+            'segmentos'        => Segmento::where('seg_fl_ativo', true)->orderBy('seg_ordem')->get(['seg_id', 'seg_nome_reduzido']),
+            'anosLetivos'      => AnoLetivo::orderBy('anl_ano', 'desc')->get(['anl_id', 'anl_ano', 'anl_fl_em_exercicio']),
         ]);
     }
 

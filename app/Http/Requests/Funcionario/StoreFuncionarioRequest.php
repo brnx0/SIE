@@ -13,7 +13,7 @@ class StoreFuncionarioRequest extends FormRequest
 
     protected function parametros(): ParametroEntidade
     {
-        return $this->parametros ??= ParametroEntidade::firstOrFail();
+        return $this->parametros ??= ParametroEntidade::current();
     }
 
     public function authorize(): bool

@@ -30,11 +30,17 @@ import type { Municipio } from '@/types/aluno';
 import type { Bairro, Escola, EscolaFormData, GerenciaRegional } from '@/types/escola';
 import { Link, useForm, usePage } from '@inertiajs/vue3';
 import { Building2, Camera, ChevronLeft, ChevronRight, Loader2, LoaderCircle, Save, Trash2, Upload } from 'lucide-vue-next';
+import EscolaSegmentosTab from '@/components/escola/tabs/EscolaSegmentosTab.vue';
+import type { AnoLetivoOption, EscolaSegmento } from '@/types/escola_segmento';
+import type { Segmento } from '@/types/segmento';
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 
 const props = defineProps<{
     mode: 'create' | 'edit';
     initial?: Escola;
+    escolaSegmentos?: EscolaSegmento[];
+    segmentos?: Pick<Segmento, 'seg_id' | 'seg_nome_reduzido'>[];
+    anosLetivos?: AnoLetivoOption[];
 }>();
 
 const page = usePage<SharedData>();
@@ -53,8 +59,12 @@ const DEFAULT_PARAMS: SystemParams = {
 const params = computed<SystemParams>(() => page.props.params ?? DEFAULT_PARAMS);
 const escolaUppercase = computed(() => params.value.nome_escola_caixa_alta);
 
-const TABS = ['identificacao', 'contato'] as const;
-type TabId = (typeof TABS)[number];
+type TabId = 'identificacao' | 'contato' | 'segmentos';
+const TABS = computed<TabId[]>(() =>
+    props.mode === 'edit'
+        ? ['identificacao', 'contato', 'segmentos']
+        : ['identificacao', 'contato']
+);
 
 const TAB_FIELDS: Record<TabId, string[]> = {
     identificacao: [
@@ -70,6 +80,7 @@ const TAB_FIELDS: Record<TabId, string[]> = {
         'esc_latitude', 'esc_longitude', 'esc_caixa_postal',
         'esc_ddd', 'esc_telefone_fixo', 'esc_fax', 'esc_telefone_2', 'esc_telefone_3', 'esc_email', 'esc_site',
     ],
+    segmentos: [],
 };
 
 const currentMunicipio = ref<Municipio | null>(props.initial?.municipio ?? null);
@@ -238,7 +249,7 @@ onBeforeUnmount(() => {
 });
 
 const goToFirstErrorTab = () => {
-    for (const tab of TABS) {
+    for (const tab of TABS.value) {
         if (tabHasError(tab)) {
             activeTab.value = tab;
             return;
@@ -259,15 +270,15 @@ const submit = () => {
 };
 
 const next = () => {
-    const idx = TABS.indexOf(activeTab.value);
-    if (idx < TABS.length - 1) activeTab.value = TABS[idx + 1];
+    const idx = TABS.value.indexOf(activeTab.value);
+    if (idx < TABS.value.length - 1) activeTab.value = TABS.value[idx + 1];
 };
 const prev = () => {
-    const idx = TABS.indexOf(activeTab.value);
-    if (idx > 0) activeTab.value = TABS[idx - 1];
+    const idx = TABS.value.indexOf(activeTab.value);
+    if (idx > 0) activeTab.value = TABS.value[idx - 1];
 };
-const isFirst = computed(() => activeTab.value === TABS[0]);
-const isLast = computed(() => activeTab.value === TABS[TABS.length - 1]);
+const isFirst = computed(() => activeTab.value === TABS.value[0]);
+const isLast = computed(() => activeTab.value === TABS.value[TABS.value.length - 1]);
 </script>
 
 <template>
@@ -291,6 +302,7 @@ const isLast = computed(() => activeTab.value === TABS[TABS.length - 1]);
             <TabsList>
                 <TabsTrigger value="identificacao" :has-error="tabHasError('identificacao')">1. Identificação</TabsTrigger>
                 <TabsTrigger value="contato" :has-error="tabHasError('contato')">2. Endereço e Contato</TabsTrigger>
+                <TabsTrigger v-if="mode === 'edit'" value="segmentos">3. Segmentos</TabsTrigger>
             </TabsList>
 
             <!-- Aba 1: Identificação -->
@@ -433,7 +445,7 @@ const isLast = computed(() => activeTab.value === TABS[TABS.length - 1]);
                     </div>
 
                     <div class="grid gap-2">
-                        <FormLabel :required="true">Gerência Regional</FormLabel>
+                        <FormLabel>Gerência Regional</FormLabel>
                         <GerenciaCombobox
                             :model-value="form.esc_ger_id"
                             :initial="initialGerencia"
@@ -639,6 +651,16 @@ const isLast = computed(() => activeTab.value === TABS[TABS.length - 1]);
                         <InputError :message="form.errors.esc_site" />
                     </div>
                 </div>
+            </TabsContent>
+
+            <!-- Aba 3: Segmentos (apenas modo edição) -->
+            <TabsContent v-if="mode === 'edit' && initial" value="segmentos">
+                <EscolaSegmentosTab
+                    :esc-id="initial.esc_id"
+                    :escola-segmentos="escolaSegmentos ?? []"
+                    :segmentos="segmentos ?? []"
+                    :anos-letivos="anosLetivos ?? []"
+                />
             </TabsContent>
 
         </Tabs>

@@ -16,7 +16,7 @@ class StoreEscolaRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $strip = fn ($v) => is_string($v) ? preg_replace('/\D/', '', $v) : $v;
-        $params = ParametroEntidade::firstOrFail();
+        $params = ParametroEntidade::current();
 
         $nome = $this->input('esc_nome');
         $apelido = $this->input('esc_apelido');
@@ -86,7 +86,7 @@ class StoreEscolaRequest extends FormRequest
             'esc_situacao_func' => ['required', 'integer', Rule::in([1, 2, 3])],
             'esc_regulamentada_conselho' => ['nullable', 'boolean'],
             'esc_turno_escolar' => ['nullable', 'string', 'max:20'],
-            'esc_ger_id' => ['required', 'integer', 'exists:edu_gerencia_regional,ger_id'],
+            'esc_ger_id' => ['nullable', 'integer', 'exists:edu_gerencia_regional,ger_id'],
             'esc_orgao_regional_ensino' => ['nullable', 'string', 'max:120'],
             'esc_fl_creche' => ['boolean'],
             'esc_fl_predio_compartilhado' => ['boolean'],
