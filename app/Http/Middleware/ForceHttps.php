@@ -9,25 +9,25 @@ use Symfony\Component\HttpFoundation\Response;
 
 class ForceHttps
 {
-    public function handle(Request $request, Closure $next): Response
-    {
-        if (! app()->environment('local', 'testing') && ! $request->secure()) {
-            return redirect()->secure($request->getRequestUri(), 301);
-        }
-
-        if (! app()->environment('local', 'testing')) {
-            URL::forceScheme('https');
-        }
-
-        $response = $next($request);
-
-        if (! app()->environment('local', 'testing')) {
-            $response->headers->set(
-                'Strict-Transport-Security',
-                'max-age=31536000; includeSubDomains'
-            );
-        }
-
-        return $response;
+public function handle(Request $request, Closure $next): Response
+{
+    if (! config('app.force_https')) {
+        return $next($request);
     }
+
+    if (! $request->secure()) {
+        return redirect()->secure($request->getRequestUri(), 301);
+    }
+
+    URL::forceScheme('https');
+
+    $response = $next($request);
+
+    $response->headers->set(
+        'Strict-Transport-Security',
+        'max-age=31536000; includeSubDomains'
+    );
+
+    return $response;
+}
 }
