@@ -32,8 +32,14 @@ class StoreAlunoRequest extends FormRequest
             $nome = mb_strtoupper($nome, 'UTF-8');
         }
 
+        $nomeSocial = $this->input('aln_nome_social');
+        if ($params->par_fl_nome_pessoa_caixa_alta && is_string($nomeSocial) && $nomeSocial !== '') {
+            $nomeSocial = mb_strtoupper($nomeSocial, 'UTF-8');
+        }
+
         $this->merge([
-            'aln_nome' => $nome,
+            'aln_nome'        => $nome,
+            'aln_nome_social' => $this->filled('aln_nome_social') ? $nomeSocial : null,
             'aln_cpf' => $this->filled('aln_cpf') ? $strip($this->input('aln_cpf')) : null,
             'aln_cep' => $this->filled('aln_cep') ? $strip($this->input('aln_cep')) : null,
             'aln_telefone' => $this->filled('aln_telefone') ? $strip($this->input('aln_telefone')) : null,
@@ -49,7 +55,8 @@ class StoreAlunoRequest extends FormRequest
         $cpfRule = $params->par_fl_cpf_obrigatorio ? 'required' : 'nullable';
 
         return [
-            'aln_nome' => ['required', 'string', 'max:100'],
+            'aln_nome'        => ['required', 'string', 'max:100'],
+            'aln_nome_social' => ['nullable', 'string', 'max:100'],
             'aln_dt_nascimento' => ['required', 'date', 'before:today'],
             'aln_sexo' => ['required', Rule::in(['M', 'F'])],
             'aln_cor_raca' => ['required', 'integer', Rule::in([0, 1, 2, 3, 4, 5])],
@@ -61,7 +68,7 @@ class StoreAlunoRequest extends FormRequest
             'aln_nr_matricula' => ['nullable', 'integer', 'min:1', Rule::unique('edu_aluno', 'aln_nr_matricula')->ignore($alunoId, 'aln_id')->whereNull('aln_deleted_at')],
             'aln_nr_certidao' => ['nullable', 'string', 'max:32'],
 
-            'aln_filiacao_1' => ['nullable', 'string', 'max:100'],
+            'aln_filiacao_1' => ['required', 'string', 'max:100'],
             'aln_filiacao_2' => ['nullable', 'string', 'max:100'],
 
             'aln_cep' => ['nullable', 'digits:8'],
@@ -103,7 +110,8 @@ class StoreAlunoRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'aln_nome' => 'nome completo',
+            'aln_nome'        => 'nome completo',
+            'aln_nome_social' => 'nome social',
             'aln_dt_nascimento' => 'data de nascimento',
             'aln_sexo' => 'sexo',
             'aln_cor_raca' => 'cor / raça',

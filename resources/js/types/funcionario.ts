@@ -3,6 +3,7 @@ import type { Municipio, Sexo, CorRaca } from '@/types/aluno';
 export interface Funcionario {
     fun_id: number;
     fun_nome: string;
+    fun_nome_social: string | null;
     fun_dt_nascimento: string;
     fun_sexo: Sexo;
     fun_cor_raca: CorRaca;
@@ -64,6 +65,7 @@ export interface Funcionario {
 
 export interface FuncionarioFormData {
     fun_nome: string;
+    fun_nome_social: string;
     fun_dt_nascimento: string;
     fun_sexo: Sexo | '';
     fun_cor_raca: CorRaca | null;

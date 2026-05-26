@@ -24,6 +24,7 @@ class Funcionario extends Model
     protected $fillable = [
         // Dados pessoais
         'fun_nome',
+        'fun_nome_social',
         'fun_dt_nascimento',
         'fun_sexo',
         'fun_cor_raca',

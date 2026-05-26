@@ -46,7 +46,7 @@ return new class extends Migration
             $t->unsignedTinyInteger('esc_proprietario_imovel')->nullable();
             $t->unsignedTinyInteger('esc_forma_ocupacao')->nullable();
             $t->unsignedTinyInteger('esc_situacao_func'); // 1=Atividade,2=Paralisada,3=Extinta
-            $t->boolean('esc_regulamentada_conselho')->nullable();
+            $t->boolean('esc_regulamentada_conselho');
             $t->string('esc_turno_escolar', 20)->nullable();
             $t->unsignedBigInteger('esc_ger_id')->nullable();
             $t->string('esc_orgao_regional_ensino', 120)->nullable();

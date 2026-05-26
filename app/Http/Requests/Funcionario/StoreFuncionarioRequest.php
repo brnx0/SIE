@@ -2,8 +2,10 @@
 
 namespace App\Http\Requests\Funcionario;
 
+use App\Models\Funcionario\Funcionario;
 use App\Models\Parametro\ParametroEntidade;
 use App\Rules\Cpf;
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -31,8 +33,14 @@ class StoreFuncionarioRequest extends FormRequest
             $nome = mb_strtoupper($nome, 'UTF-8');
         }
 
+        $nomeSocial = $this->input('fun_nome_social');
+        if ($params->par_fl_nome_pessoa_caixa_alta && is_string($nomeSocial) && $nomeSocial !== '') {
+            $nomeSocial = mb_strtoupper($nomeSocial, 'UTF-8');
+        }
+
         $this->merge([
-            'fun_nome' => $nome,
+            'fun_nome'        => $nome,
+            'fun_nome_social' => $this->filled('fun_nome_social') ? $nomeSocial : null,
             'fun_cpf' => $this->filled('fun_cpf') ? $strip($this->input('fun_cpf')) : null,
             'fun_cep' => $this->filled('fun_cep') ? $strip($this->input('fun_cep')) : null,
             'fun_telefone' => $this->filled('fun_telefone') ? $strip($this->input('fun_telefone')) : null,
@@ -49,14 +57,15 @@ class StoreFuncionarioRequest extends FormRequest
 
         return [
             // Dados pessoais
-            'fun_nome' => ['required', 'string', 'max:100'],
+            'fun_nome'        => ['required', 'string', 'max:100'],
+            'fun_nome_social' => ['nullable', 'string', 'max:100'],
             'fun_dt_nascimento' => ['required', 'date', 'before:today'],
             'fun_sexo' => ['required', Rule::in(['M', 'F'])],
             'fun_cor_raca' => ['required', 'integer', Rule::in([0, 1, 2, 3, 4, 5])],
             'fun_nacionalidade' => ['required', 'string', 'max:60'],
             'fun_pais_origem' => ['required', 'string', 'max:60'],
             'fun_mun_id_nasc' => ['required', 'integer', 'exists:edu_municipio,mun_id'],
-            'fun_cpf' => ['required', 'digits:11', new Cpf, Rule::unique('edu_funcionario', 'fun_cpf')->ignore($funId, 'fun_id')->whereNull('fun_deleted_at')],
+            'fun_cpf' => ['required', 'digits:11', new Cpf],
             'fun_religiao' => ['nullable', 'string', 'max:60'],
             'fun_escolaridade' => ['required', 'integer', Rule::in([1, 2, 3, 4, 5, 6, 7, 8])],
             'fun_estado_civil' => ['required', 'integer', Rule::in([1, 2, 3, 4, 5])],
@@ -106,10 +115,36 @@ class StoreFuncionarioRequest extends FormRequest
         ];
     }
 
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $v) {
+            // Pula se CPF já tem erro de formato/validade
+            if ($v->errors()->has('fun_cpf') || ! $this->filled('fun_cpf')) {
+                return;
+            }
+
+            $funId = $this->route('funcionario')?->fun_id;
+
+            $existing = Funcionario::withTrashed()
+                ->where('fun_cpf', $this->input('fun_cpf'))
+                ->when($funId, fn ($q) => $q->where('fun_id', '!=', $funId))
+                ->first(['fun_nome', 'fun_deleted_at']);
+
+            if ($existing) {
+                $label = $existing->fun_nome;
+                if (! is_null($existing->fun_deleted_at)) {
+                    $label .= ' (registro excluído)';
+                }
+                $v->errors()->add('fun_cpf', "CPF já cadastrado para: {$label}.");
+            }
+        });
+    }
+
     public function attributes(): array
     {
         return [
-            'fun_nome' => 'nome completo',
+            'fun_nome'        => 'nome completo',
+            'fun_nome_social' => 'nome social',
             'fun_dt_nascimento' => 'data de nascimento',
             'fun_sexo' => 'sexo',
             'fun_cor_raca' => 'etnia / cor / raça',

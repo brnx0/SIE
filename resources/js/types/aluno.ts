@@ -21,6 +21,7 @@ export type CorRaca = 0 | 1 | 2 | 3 | 4 | 5;
 export interface Aluno {
     aln_id: number;
     aln_nome: string;
+    aln_nome_social: string | null;
     aln_dt_nascimento: string;
     aln_sexo: Sexo;
     aln_cor_raca: CorRaca;
@@ -50,6 +51,7 @@ export interface Aluno {
 
 export interface AlunoFormData {
     aln_nome: string;
+    aln_nome_social: string;
     aln_dt_nascimento: string;
     aln_sexo: Sexo | '';
     aln_cor_raca: CorRaca | null;

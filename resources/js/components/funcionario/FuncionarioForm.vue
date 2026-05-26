@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import CharCounter from '@/components/common/CharCounter.vue';
+import CpfDuplicadoDialog from '@/components/funcionario/CpfDuplicadoDialog.vue';
 import FormLabel from '@/components/common/FormLabel.vue';
 import InputError from '@/components/common/InputError.vue';
 import MunicipioCombobox from '@/components/aluno/MunicipioCombobox.vue';
@@ -57,7 +58,7 @@ type TabId = (typeof TABS)[number];
 
 const TAB_FIELDS: Record<TabId, string[]> = {
     'dados-pessoais': [
-        'fun_nome', 'fun_dt_nascimento', 'fun_sexo', 'fun_cor_raca',
+        'fun_nome', 'fun_nome_social', 'fun_dt_nascimento', 'fun_sexo', 'fun_cor_raca',
         'fun_nacionalidade', 'fun_pais_origem', 'fun_mun_id_nasc',
         'fun_cpf', 'fun_religiao', 'fun_escolaridade', 'fun_estado_civil',
         'fun_povo_indigena', 'fun_cd_censo',
@@ -104,6 +105,7 @@ const dataCertidaoBR = ref(formatDateBR(props.initial?.fun_certidao_dt_emissao))
 const form = useForm<FuncionarioFormData>({
     // Dados pessoais
     fun_nome: props.initial?.fun_nome ?? '',
+    fun_nome_social: props.initial?.fun_nome_social ?? '',
     fun_dt_nascimento: props.initial?.fun_dt_nascimento ?? '',
     fun_sexo: props.initial?.fun_sexo ?? '',
     fun_cor_raca: props.initial?.fun_cor_raca ?? null,
@@ -182,6 +184,21 @@ watch(
 );
 
 const activeTab = ref<TabId>('dados-pessoais');
+
+// CPF duplicado — dialog
+const CPF_DUP_PREFIX = 'CPF já cadastrado para: ';
+const cpfDuplicadoOpen = ref(false);
+const cpfDuplicadoOwner = computed(() => {
+    const err = form.errors.fun_cpf ?? '';
+    if (!err.startsWith(CPF_DUP_PREFIX)) return null;
+    return err.slice(CPF_DUP_PREFIX.length).replace(/\.$/, '');
+});
+watch(cpfDuplicadoOwner, (owner) => {
+    if (owner) {
+        activeTab.value = 'documentacao';
+        cpfDuplicadoOpen.value = true;
+    }
+});
 
 const tabHasError = (tab: TabId): boolean => {
     const fields = TAB_FIELDS[tab];
@@ -407,6 +424,20 @@ const initials = computed(() => {
                         </div>
                     </div>
 
+                    <div class="grid gap-2 sm:col-span-2">
+                        <FormLabel :for="'fun_nome_social'">Nome social</FormLabel>
+                        <Input
+                            id="fun_nome_social"
+                            v-model="form.fun_nome_social"
+                            maxlength="100"
+                            placeholder="Preencha apenas se o funcionário utiliza nome social"
+                        />
+                        <div class="flex justify-between gap-2">
+                            <InputError :message="form.errors.fun_nome_social" />
+                            <CharCounter :value="form.fun_nome_social" :max="100" />
+                        </div>
+                    </div>
+
                     <div class="grid gap-2">
                         <FormLabel :for="'fun_dt_nascimento'" :required="true">Data de nascimento</FormLabel>
                         <Input
@@ -446,7 +477,7 @@ const initials = computed(() => {
                             maxlength="14"
                             :required="true"
                         />
-                        <InputError :message="form.errors.fun_cpf" />
+                        <InputError :message="cpfDuplicadoOwner ? '' : form.errors.fun_cpf" />
                     </div>
 
                     <div class="grid gap-2">
@@ -896,4 +927,11 @@ const initials = computed(() => {
             </Button>
         </div>
     </form>
+
+    <CpfDuplicadoDialog
+        v-if="cpfDuplicadoOwner"
+        :open="cpfDuplicadoOpen"
+        :owner="cpfDuplicadoOwner"
+        @update:open="cpfDuplicadoOpen = $event"
+    />
 </template>

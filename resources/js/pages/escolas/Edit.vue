@@ -5,6 +5,8 @@ import { type BreadcrumbItem } from '@/types';
 import type { AnoLetivoOption, EscolaSegmento } from '@/types/escola_segmento';
 import type { Escola } from '@/types/escola';
 import type { Segmento } from '@/types/segmento';
+import type { CensoEscolarResumo } from '@/types/censo';
+import type { AnoLetivo } from '@/types/parametro';
 import { Head } from '@inertiajs/vue3';
 
 const props = defineProps<{
@@ -12,6 +14,10 @@ const props = defineProps<{
     escolaSegmentos: EscolaSegmento[];
     segmentos: Pick<Segmento, 'seg_id' | 'seg_nome_reduzido'>[];
     anosLetivos: AnoLetivoOption[];
+    anoLetivoAtual: Pick<AnoLetivo, 'anl_id' | 'anl_ano' | 'anl_dt_censo' | 'anl_fl_em_exercicio'> | null;
+    censoHistorico: CensoEscolarResumo[];
+    censoAtual: Pick<CensoEscolarResumo, 'cen_id' | 'cen_anl_id'> | null;
+    censoPreviousExists: boolean;
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -34,6 +40,10 @@ const breadcrumbs: BreadcrumbItem[] = [
                 :escola-segmentos="escolaSegmentos"
                 :segmentos="segmentos"
                 :anos-letivos="anosLetivos"
+                :ano-letivo-atual="anoLetivoAtual"
+                :censo-historico="censoHistorico"
+                :censo-atual="censoAtual"
+                :censo-previous-exists="censoPreviousExists"
             />
         </div>
     </AppLayout>

@@ -31,7 +31,7 @@ class Escola extends Model
         'esc_dep_administrativa', 'esc_proprietario_imovel', 'esc_forma_ocupacao',
         'esc_situacao_func', 'esc_regulamentada_conselho', 'esc_turno_escolar',
         'esc_ger_id', 'esc_orgao_regional_ensino',
-        'esc_fl_creche', 'esc_fl_predio_compartilhado', 'esc_fl_sorteio_vagas',
+        'esc_fl_predio_compartilhado', 'esc_fl_sorteio_vagas',
         'esc_fl_ativo',
     ];
 
@@ -42,7 +42,6 @@ class Escola extends Model
         'esc_forma_ocupacao' => 'integer',
         'esc_situacao_func' => 'integer',
         'esc_regulamentada_conselho' => 'boolean',
-        'esc_fl_creche' => 'boolean',
         'esc_fl_predio_compartilhado' => 'boolean',
         'esc_fl_sorteio_vagas' => 'boolean',
         'esc_fl_ativo' => 'boolean',
@@ -75,5 +74,10 @@ class Escola extends Model
     public function segmentos(): HasMany
     {
         return $this->hasMany(EscolaSegmento::class, 'esc_id', 'esc_id');
+    }
+
+    public function censos(): HasMany
+    {
+        return $this->hasMany(CensoEscolar::class, 'cen_esc_id', 'esc_id');
     }
 }

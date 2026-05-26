@@ -101,6 +101,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar série' : 'Salvar alter
                     v-model="form.ser_nome"
                     maxlength="100"
                     autofocus
+                    class="uppercase"
                 />
                 <InputError :message="form.errors.ser_nome" />
             </div>

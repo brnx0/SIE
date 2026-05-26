@@ -52,7 +52,7 @@ const TABS = ['dados-pessoais', 'documentacao', 'filiacao-contato', 'complementa
 type TabId = (typeof TABS)[number];
 
 const TAB_FIELDS: Record<TabId, string[]> = {
-    'dados-pessoais': ['aln_nome', 'aln_dt_nascimento', 'aln_sexo', 'aln_cor_raca', 'aln_pais_origem', 'aln_mun_id_nasc'],
+    'dados-pessoais': ['aln_nome', 'aln_nome_social', 'aln_dt_nascimento', 'aln_sexo', 'aln_cor_raca', 'aln_pais_origem', 'aln_mun_id_nasc'],
     documentacao: ['aln_cpf', 'aln_cd_inep', 'aln_nr_matricula', 'aln_nr_certidao'],
     'filiacao-contato': [
         'aln_filiacao_1',
@@ -90,6 +90,7 @@ const dataBR = ref(formatDateBR(props.initial?.aln_dt_nascimento));
 
 const form = useForm<AlunoFormData>({
     aln_nome: props.initial?.aln_nome ?? '',
+    aln_nome_social: props.initial?.aln_nome_social ?? '',
     aln_dt_nascimento: props.initial?.aln_dt_nascimento ?? '',
     aln_sexo: props.initial?.aln_sexo ?? '',
     aln_cor_raca: props.initial?.aln_cor_raca ?? null,
@@ -392,6 +393,20 @@ const initials = computed(() => {
                         </p>
                     </div>
 
+                    <div class="grid gap-2 sm:col-span-2">
+                        <FormLabel for="aln_nome_social">Nome social</FormLabel>
+                        <Input
+                            id="aln_nome_social"
+                            v-model="form.aln_nome_social"
+                            maxlength="100"
+                            placeholder="Preencha apenas se o aluno utiliza nome social"
+                        />
+                        <div class="flex justify-between gap-2">
+                            <InputError :message="form.errors.aln_nome_social" />
+                            <CharCounter :value="form.aln_nome_social" :max="100" />
+                        </div>
+                    </div>
+
                     <div class="grid gap-2">
                         <FormLabel :for="'aln_dt_nascimento'" :required="true">Data de nascimento</FormLabel>
                         <Input
@@ -533,7 +548,7 @@ const initials = computed(() => {
                             <h3 class="text-sm font-semibold">Filiação</h3>
                         </div>
                         <div class="grid gap-2">
-                            <Label for="aln_filiacao_1">Filiação 1</Label>
+                            <FormLabel for="aln_filiacao_1" :required="true">Filiação 1</FormLabel>
                             <Input id="aln_filiacao_1" v-model="form.aln_filiacao_1" maxlength="100" />
                             <div class="flex justify-between gap-2">
                                 <InputError :message="form.errors.aln_filiacao_1" />

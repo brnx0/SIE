@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Escola;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Escola\StoreEscolaRequest;
 use App\Http\Requests\Escola\UpdateEscolaRequest;
+use App\Models\Escola\CensoEscolar;
 use App\Models\Escola\Escola;
 use App\Models\Parametro\AnoLetivo;
 use App\Models\Segmento\Segmento;
@@ -81,11 +82,34 @@ class EscolaController extends Controller
             ->orderBy('anl_id_inicio', 'desc')
             ->get();
 
+        $anoLetivoAtual = AnoLetivo::where('anl_fl_em_exercicio', true)
+            ->first(['anl_id', 'anl_ano', 'anl_dt_censo', 'anl_fl_em_exercicio']);
+
+        $censoHistorico = CensoEscolar::where('cen_esc_id', $escola->esc_id)
+            ->with('anoLetivo:anl_id,anl_ano,anl_dt_censo')
+            ->orderBy('cen_anl_id', 'desc')
+            ->get(['cen_id', 'cen_anl_id', 'cen_created_at', 'cen_updated_at']);
+
+        $censoAtual = $anoLetivoAtual
+            ? CensoEscolar::where('cen_esc_id', $escola->esc_id)
+                ->where('cen_anl_id', $anoLetivoAtual->anl_id)
+                ->first(['cen_id', 'cen_anl_id'])
+            : null;
+
+        $censoPrevious = CensoEscolar::where('cen_esc_id', $escola->esc_id)
+            ->when($anoLetivoAtual, fn ($q) => $q->where('cen_anl_id', '!=', $anoLetivoAtual->anl_id))
+            ->orderBy('cen_anl_id', 'desc')
+            ->exists();
+
         return Inertia::render('escolas/Edit', [
             'escola'           => $escola,
             'escolaSegmentos'  => $escolaSegmentos,
             'segmentos'        => Segmento::where('seg_fl_ativo', true)->orderBy('seg_ordem')->get(['seg_id', 'seg_nome_reduzido']),
             'anosLetivos'      => AnoLetivo::orderBy('anl_ano', 'desc')->get(['anl_id', 'anl_ano', 'anl_fl_em_exercicio']),
+            'anoLetivoAtual'   => $anoLetivoAtual,
+            'censoHistorico'   => $censoHistorico,
+            'censoAtual'       => $censoAtual,
+            'censoPreviousExists' => $censoPrevious,
         ]);
     }
 

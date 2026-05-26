@@ -15,6 +15,7 @@ class StoreSerieRequest extends FormRequest
     {
         $this->merge([
             'ser_fl_ativo' => $this->boolean('ser_fl_ativo'),
+            'ser_nome'     => mb_strtoupper($this->input('ser_nome', ''), 'UTF-8'),
         ]);
     }
 

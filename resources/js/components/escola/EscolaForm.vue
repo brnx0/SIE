@@ -31,7 +31,10 @@ import type { Bairro, Escola, EscolaFormData, GerenciaRegional } from '@/types/e
 import { Link, useForm, usePage } from '@inertiajs/vue3';
 import { Building2, Camera, ChevronLeft, ChevronRight, Loader2, LoaderCircle, Save, Trash2, Upload } from 'lucide-vue-next';
 import EscolaSegmentosTab from '@/components/escola/tabs/EscolaSegmentosTab.vue';
+import EscolaCensoTab from '@/components/escola/tabs/EscolaCensoTab.vue';
 import type { AnoLetivoOption, EscolaSegmento } from '@/types/escola_segmento';
+import type { CensoEscolarResumo } from '@/types/censo';
+import type { AnoLetivo } from '@/types/parametro';
 import type { Segmento } from '@/types/segmento';
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 
@@ -41,6 +44,10 @@ const props = defineProps<{
     escolaSegmentos?: EscolaSegmento[];
     segmentos?: Pick<Segmento, 'seg_id' | 'seg_nome_reduzido'>[];
     anosLetivos?: AnoLetivoOption[];
+    anoLetivoAtual?: Pick<AnoLetivo, 'anl_id' | 'anl_ano' | 'anl_dt_censo' | 'anl_fl_em_exercicio'> | null;
+    censoHistorico?: CensoEscolarResumo[];
+    censoAtual?: Pick<CensoEscolarResumo, 'cen_id' | 'cen_anl_id'> | null;
+    censoPreviousExists?: boolean;
 }>();
 
 const page = usePage<SharedData>();
@@ -55,14 +62,15 @@ const DEFAULT_PARAMS: SystemParams = {
     cpf_obrigatorio: false,
     fardamento_obrigatorio: false,
     tipo_validacao_carga: 'avisar',
+    
 };
 const params = computed<SystemParams>(() => page.props.params ?? DEFAULT_PARAMS);
 const escolaUppercase = computed(() => params.value.nome_escola_caixa_alta);
 
-type TabId = 'identificacao' | 'contato' | 'segmentos';
+type TabId = 'identificacao' | 'contato' | 'segmentos' | 'censo';
 const TABS = computed<TabId[]>(() =>
     props.mode === 'edit'
-        ? ['identificacao', 'contato', 'segmentos']
+        ? ['identificacao', 'contato', 'segmentos', 'censo']
         : ['identificacao', 'contato']
 );
 
@@ -72,7 +80,7 @@ const TAB_FIELDS: Record<TabId, string[]> = {
         'esc_dep_administrativa', 'esc_proprietario_imovel', 'esc_forma_ocupacao',
         'esc_situacao_func', 'esc_regulamentada_conselho', 'esc_turno_escolar',
         'esc_ger_id', 'esc_orgao_regional_ensino',
-        'esc_fl_creche', 'esc_fl_predio_compartilhado', 'esc_fl_sorteio_vagas',
+        'esc_fl_predio_compartilhado', 'esc_fl_sorteio_vagas',
     ],
     contato: [
         'esc_cep', 'esc_logradouro', 'esc_numero', 'esc_complemento',
@@ -81,6 +89,7 @@ const TAB_FIELDS: Record<TabId, string[]> = {
         'esc_ddd', 'esc_telefone_fixo', 'esc_fax', 'esc_telefone_2', 'esc_telefone_3', 'esc_email', 'esc_site',
     ],
     segmentos: [],
+    censo: [],
 };
 
 const currentMunicipio = ref<Municipio | null>(props.initial?.municipio ?? null);
@@ -136,11 +145,9 @@ const form = useForm<EscolaFormData>({
     esc_turno_escolar: props.initial?.esc_turno_escolar ?? '',
     esc_ger_id: props.initial?.esc_ger_id ?? null,
     esc_orgao_regional_ensino: props.initial?.esc_orgao_regional_ensino ?? '',
-    esc_fl_creche: props.initial?.esc_fl_creche ?? false,
     esc_fl_predio_compartilhado: props.initial?.esc_fl_predio_compartilhado ?? false,
     esc_fl_sorteio_vagas: props.initial?.esc_fl_sorteio_vagas ?? false,
     esc_fl_ativo: props.initial?.esc_fl_ativo ?? true,
-
     esc_logo: null,
     _method: props.mode === 'edit' ? 'put' : 'post',
 });
@@ -303,6 +310,7 @@ const isLast = computed(() => activeTab.value === TABS.value[TABS.value.length -
                 <TabsTrigger value="identificacao" :has-error="tabHasError('identificacao')">1. Identificação</TabsTrigger>
                 <TabsTrigger value="contato" :has-error="tabHasError('contato')">2. Endereço e Contato</TabsTrigger>
                 <TabsTrigger v-if="mode === 'edit'" value="segmentos">3. Segmentos</TabsTrigger>
+                <TabsTrigger v-if="mode === 'edit'" value="censo">4. Censo</TabsTrigger>
             </TabsList>
 
             <!-- Aba 1: Identificação -->
@@ -462,14 +470,14 @@ const isLast = computed(() => activeTab.value === TABS.value[TABS.value.length -
                     </div>
 
                     <div class="grid gap-2">
-                        <Label for="esc_regulamentada_conselho">Regulamentada pelo Conselho</Label>
+                        <FormLabel for="esc_regulamentada_conselho" :required="true"> Regulamentada pelo Conselho</FormLabel>
                         <select
                             id="esc_regulamentada_conselho"
-                            :value="form.esc_regulamentada_conselho === null ? '' : form.esc_regulamentada_conselho ? '1' : '0'"
+                            :value="form.esc_regulamentada_conselho != null ? form.esc_regulamentada_conselho ? 1 : 0 : ''"
                             @change="(e) => { const v = (e.target as HTMLSelectElement).value; form.esc_regulamentada_conselho = v === '' ? null : v === '1'; }"
                             class="h-10 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
                         >
-                            <option value="">Não informado</option>
+                            <option value="">Selecione...</option>
                             <option value="1">Sim</option>
                             <option value="0">Não</option>
                         </select>
@@ -487,11 +495,6 @@ const isLast = computed(() => activeTab.value === TABS.value[TABS.value.length -
                             <option v-for="t in TURNOS_ESCOLARES" :key="t" :value="t">{{ t }}</option>
                         </select>
                         <InputError :message="form.errors.esc_turno_escolar" />
-                    </div>
-
-                    <div class="flex items-center gap-3 sm:col-span-2">
-                        <Switch id="esc_fl_creche" v-model="form.esc_fl_creche" />
-                        <Label for="esc_fl_creche" class="text-sm font-normal">Possui Creche</Label>
                     </div>
 
                     <div class="flex items-center gap-3 sm:col-span-2">
@@ -660,6 +663,17 @@ const isLast = computed(() => activeTab.value === TABS.value[TABS.value.length -
                     :escola-segmentos="escolaSegmentos ?? []"
                     :segmentos="segmentos ?? []"
                     :anos-letivos="anosLetivos ?? []"
+                />
+            </TabsContent>
+
+            <!-- Aba 4: Censo (apenas modo edição) -->
+            <TabsContent v-if="mode === 'edit' && initial" value="censo">
+                <EscolaCensoTab
+                    :esc-id="initial.esc_id"
+                    :ano-letivo-atual="anoLetivoAtual ?? null"
+                    :censo-historico="censoHistorico ?? []"
+                    :censo-atual="censoAtual ?? null"
+                    :censo-previous-exists="censoPreviousExists ?? false"
                 />
             </TabsContent>
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Serie;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Serie\StoreSerieRequest;
+use App\Models\Escola\EscolaSegmento;
 use App\Models\Segmento\Segmento;
 use App\Models\Serie\Serie;
 use Illuminate\Http\RedirectResponse;
@@ -64,6 +65,14 @@ class SerieController extends Controller
 
     public function destroy(Serie $serie): RedirectResponse
     {
+        $inUse = EscolaSegmento::where('ser_id_inicio', $serie->ser_id)
+            ->orWhere('ser_id_fim', $serie->ser_id)
+            ->exists();
+
+        if ($inUse) {
+            return to_route('series.index')->with('error', 'Série vinculada a escolas e não pode ser removida.');
+        }
+
         $serie->delete();
 
         return to_route('series.index')->with('success', 'Série removida com sucesso.');

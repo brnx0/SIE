@@ -23,6 +23,7 @@ class Aluno extends Model
 
     protected $fillable = [
         'aln_nome',
+        'aln_nome_social',
         'aln_dt_nascimento',
         'aln_sexo',
         'aln_cor_raca',
