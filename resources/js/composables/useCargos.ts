@@ -1,13 +1,13 @@
-import type { Municipio } from '@/types/aluno';
+import type { Cargo } from '@/types/funcionario';
 import { ref } from 'vue';
 import { apiFetch } from '@/lib/apiFetch';
 
-export function useMunicipios() {
+export function useCargos() {
     const loading = ref(false);
-    const items = ref<Municipio[]>([]);
+    const items = ref<Cargo[]>([]);
     let controller: AbortController | null = null;
 
-    async function search(q: string, uf?: string): Promise<void> {
+    async function search(q: string): Promise<void> {
         if (controller) controller.abort();
         controller = new AbortController();
 
@@ -15,9 +15,8 @@ export function useMunicipios() {
         try {
             const params = new URLSearchParams();
             if (q) params.set('q', q);
-            if (uf) params.set('uf', uf);
 
-            const res = await apiFetch(`/api/municipios?${params.toString()}`, {
+            const res = await apiFetch(`/api/cargos?${params.toString()}`, {
                 signal: controller.signal,
                 headers: { Accept: 'application/json' },
             });
@@ -36,17 +35,5 @@ export function useMunicipios() {
         }
     }
 
-    async function byIbge(codigo: string): Promise<Municipio | null> {
-        try {
-            const res = await apiFetch(`/api/municipios/by-ibge/${codigo}`, {
-                headers: { Accept: 'application/json' },
-            });
-            if (!res.ok) return null;
-            return await res.json();
-        } catch {
-            return null;
-        }
-    }
-
-    return { loading, items, search, byIbge };
+    return { loading, items, search };
 }

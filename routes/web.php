@@ -10,7 +10,11 @@ use App\Http\Controllers\Escola\EscolaSegmentoController;
 use App\Http\Controllers\Segmento\SegmentoController;
 use App\Http\Controllers\Serie\SerieController;
 use App\Http\Controllers\Escola\EscolaController;
+use App\Http\Controllers\Api\CargoController as CargoApiController;
+use App\Http\Controllers\Api\EscolaController as EscolaApiController;
+use App\Http\Controllers\Funcionario\FuncionarioAdmissaoController;
 use App\Http\Controllers\Funcionario\FuncionarioController;
+use App\Http\Controllers\Funcionario\FuncionarioLotacaoController;
 use App\Http\Controllers\Parametro\AnoLetivoController;
 use App\Http\Controllers\Parametro\ParametroController;
 use App\Http\Controllers\UsersController;
@@ -44,6 +48,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('segmentos', SegmentoController::class)->except(['show']);
     Route::resource('series', SerieController::class)->except(['show'])->parameters(['series' => 'serie']);
     Route::resource('funcionarios', FuncionarioController::class)->except(['show']);
+    Route::prefix('funcionarios/{funcionario}/admissoes')->name('funcionarios.admissoes.')->group(function () {
+        Route::post('/', [FuncionarioAdmissaoController::class, 'store'])->name('store');
+        Route::put('/{admissao}', [FuncionarioAdmissaoController::class, 'update'])->name('update');
+        Route::delete('/{admissao}', [FuncionarioAdmissaoController::class, 'destroy'])->name('destroy');
+    });
+    Route::prefix('funcionarios/{funcionario}/admissoes/{admissao}/lotacoes')->name('funcionarios.admissoes.lotacoes.')->group(function () {
+        Route::post('/', [FuncionarioLotacaoController::class, 'store'])->name('store');
+        Route::put('/{lotacao}', [FuncionarioLotacaoController::class, 'update'])->name('update');
+        Route::delete('/{lotacao}', [FuncionarioLotacaoController::class, 'destroy'])->name('destroy');
+    });
 
     Route::get('api/series', [SerieApiController::class, 'bySegmento'])->name('api.series.bySegmento');
     Route::get('api/municipios', [MunicipioController::class, 'search'])->name('api.municipios.search');
@@ -51,6 +65,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('api/bairros', [BairroController::class, 'search'])->name('api.bairros.search');
     Route::post('api/bairros', [BairroController::class, 'store'])->name('api.bairros.store');
     Route::get('api/gerencias', [GerenciaRegionalController::class, 'search'])->name('api.gerencias.search');
+    Route::get('api/cargos', [CargoApiController::class, 'search'])->name('api.cargos.search');
+    Route::get('api/escolas', [EscolaApiController::class, 'search'])->name('api.escolas.search');
 
     Route::middleware('can:admin')->group(function () {
         Route::get('parametros', [ParametroController::class, 'edit'])->name('parametros.edit');

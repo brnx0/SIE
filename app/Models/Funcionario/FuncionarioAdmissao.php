@@ -14,6 +14,11 @@ class FuncionarioAdmissao extends Model
     protected $table = 'edu_funcionario_admissao';
     protected $primaryKey = 'adm_id';
 
+    public function getRouteKeyName(): string
+    {
+        return 'adm_id';
+    }
+
     const CREATED_AT = 'adm_created_at';
     const UPDATED_AT = 'adm_updated_at';
     const DELETED_AT = 'adm_deleted_at';
@@ -23,14 +28,11 @@ class FuncionarioAdmissao extends Model
         'adm_matricula',
         'adm_dt_admissao',
         'adm_crg_id',
-        'adm_carga_horaria',
-        'adm_tipo_carga',
         'adm_escolaridade_admissao',
     ];
 
     protected $casts = [
         'adm_dt_admissao' => 'date',
-        'adm_carga_horaria' => 'decimal:2',
         'adm_escolaridade_admissao' => 'integer',
     ];
 

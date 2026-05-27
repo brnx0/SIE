@@ -1,5 +1,6 @@
 import type { GerenciaRegional } from '@/types/escola';
 import { ref } from 'vue';
+import { apiFetch } from '@/lib/apiFetch';
 
 export function useGerencias() {
     const loading = ref(false);
@@ -16,7 +17,7 @@ export function useGerencias() {
             if (q) params.set('q', q);
             if (uf) params.set('uf', uf);
 
-            const res = await fetch(`/api/gerencias?${params.toString()}`, {
+            const res = await apiFetch(`/api/gerencias?${params.toString()}`, {
                 signal: controller.signal,
                 headers: { Accept: 'application/json' },
             });

@@ -48,8 +48,7 @@ class AnoLetivoController extends Controller
 
     public function destroy(AnoLetivo $anoLetivo): RedirectResponse
     {
-        $anoLetivo->delete();
-
-        return to_route('parametros.edit')->with('success', 'Ano letivo removido com sucesso.');
+        return $this->safeDelete($anoLetivo)
+            ?? to_route('parametros.edit')->with('success', 'Ano letivo removido com sucesso.');
     }
 }

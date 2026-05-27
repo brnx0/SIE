@@ -32,12 +32,11 @@ class EscolaSegmentoController extends Controller
 
     public function destroy(Escola $escola, int $esg): RedirectResponse
     {
-        EscolaSegmento::where('esg_id', $esg)
+        $escolaSegmento = EscolaSegmento::where('esg_id', $esg)
             ->where('esc_id', $escola->esc_id)
-            ->firstOrFail()
-            ->delete();
+            ->firstOrFail();
 
-        return to_route('escolas.edit', $escola)
-            ->with('success', 'Segmento removido com sucesso.');
+        return $this->safeDelete($escolaSegmento)
+            ?? to_route('escolas.edit', $escola)->with('success', 'Segmento removido com sucesso.');
     }
 }

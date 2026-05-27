@@ -33,6 +33,7 @@ class Escola extends Model
         'esc_ger_id', 'esc_orgao_regional_ensino',
         'esc_fl_predio_compartilhado', 'esc_fl_sorteio_vagas',
         'esc_fl_ativo',
+        'esc_resolucao_num', 'esc_cme_portaria_num', 'esc_dt_publicacao', 'esc_fundamentacao_legal',
     ];
 
     protected $casts = [
@@ -47,6 +48,7 @@ class Escola extends Model
         'esc_fl_ativo' => 'boolean',
         'esc_latitude' => 'decimal:7',
         'esc_longitude' => 'decimal:7',
+        'esc_dt_publicacao' => 'date',
     ];
 
     protected $appends = ['esc_logo_url'];

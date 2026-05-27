@@ -63,6 +63,11 @@ export interface Escola {
     esc_fl_sorteio_vagas: boolean;
     esc_fl_ativo: boolean;
 
+    esc_resolucao_num: string | null;
+    esc_cme_portaria_num: string | null;
+    esc_dt_publicacao: string | null;
+    esc_fundamentacao_legal: string | null;
+
     municipio?: Municipio | null;
     bairro?: Bairro | null;
     gerencia?: GerenciaRegional | null;
@@ -107,6 +112,11 @@ export interface EscolaFormData {
     esc_fl_predio_compartilhado: boolean;
     esc_fl_sorteio_vagas: boolean;
     esc_fl_ativo: boolean;
+
+    esc_resolucao_num: string;
+    esc_cme_portaria_num: string;
+    esc_dt_publicacao: string;
+    esc_fundamentacao_legal: string;
 
     esc_logo: File | null;
     _method?: 'put' | 'post';

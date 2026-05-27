@@ -11,10 +11,16 @@ return new class extends Migration
         Schema::create('edu_funcionario_lotacao', function (Blueprint $t) {
             $t->bigIncrements('lot_id');
             $t->unsignedBigInteger('lot_adm_id');
-            $t->unsignedBigInteger('lot_esc_id');           // Escola
-            $t->unsignedBigInteger('lot_crg_id');           // Cargo desempenhado
-            $t->unsignedSmallInteger('lot_ano_inicio');
-            $t->unsignedSmallInteger('lot_ano_fim')->nullable();
+            $t->unsignedBigInteger('lot_esc_id');
+            $t->unsignedBigInteger('lot_crg_id');
+
+            $t->string('lot_vinculo', 30);
+            $t->string('lot_situacao_funcional', 40)->nullable();
+            $t->string('lot_criterio_acesso', 100)->nullable();
+            $t->date('lot_dt_inicio');
+            $t->date('lot_dt_fim')->nullable();
+            $t->boolean('lot_fl_ativo')->default(true);
+            $t->json('lot_funcoes_sala_aula')->nullable();
 
             $t->timestamp('lot_created_at')->nullable();
             $t->timestamp('lot_updated_at')->nullable();

@@ -136,8 +136,8 @@ class EscolaController extends Controller
         if ($escola->esc_logo) {
             Storage::disk('public')->delete($escola->esc_logo);
         }
-        $escola->delete();
 
-        return to_route('escolas.index')->with('success', 'Escola removida com sucesso.');
+        return $this->safeDelete($escola)
+            ?? to_route('escolas.index')->with('success', 'Escola removida com sucesso.');
     }
 }

@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import AdmissaoLotacaoTab from '@/components/funcionario/AdmissaoLotacaoTab.vue';
 import CharCounter from '@/components/common/CharCounter.vue';
 import CpfDuplicadoDialog from '@/components/funcionario/CpfDuplicadoDialog.vue';
+import FuncionarioHomonimoDialog, { type FuncionarioHomonimoMatch } from '@/components/funcionario/FuncionarioHomonimoDialog.vue';
 import FormLabel from '@/components/common/FormLabel.vue';
 import InputError from '@/components/common/InputError.vue';
 import MunicipioCombobox from '@/components/aluno/MunicipioCombobox.vue';
@@ -53,7 +55,7 @@ const DEFAULT_PARAMS: SystemParams = {
 const params = computed<SystemParams>(() => page.props.params ?? DEFAULT_PARAMS);
 const nomeUppercase = computed(() => params.value.nome_pessoa_caixa_alta);
 
-const TABS = ['dados-pessoais', 'documentacao', 'endereco-contato'] as const;
+const TABS = ['dados-pessoais', 'documentacao', 'endereco-contato', 'admissao-lotacao'] as const;
 type TabId = (typeof TABS)[number];
 
 const TAB_FIELDS: Record<TabId, string[]> = {
@@ -77,6 +79,7 @@ const TAB_FIELDS: Record<TabId, string[]> = {
         'fun_bairro', 'fun_cidade', 'fun_uf',
         'fun_telefone', 'fun_celular', 'fun_email',
     ],
+    'admissao-lotacao': [],
 };
 
 const formatDateBR = (iso: string | null | undefined): string => {
@@ -159,6 +162,7 @@ const form = useForm<FuncionarioFormData>({
 
     fun_foto: null,
     fun_fl_ativo: props.initial?.fun_fl_ativo ?? true,
+    confirm_homonimo: false,
     _method: props.mode === 'edit' ? 'put' : 'post',
 });
 
@@ -200,6 +204,35 @@ watch(cpfDuplicadoOwner, (owner) => {
     }
 });
 
+// Homônimo flow — detecta via ValidationException com chave 'homonimo' (JSON)
+const homonimoOpen = ref(false);
+const homonimoMatches = ref<FuncionarioHomonimoMatch[]>([]);
+
+const handleHomonimo = (errors: Record<string, string>) => {
+    const raw = errors.homonimo;
+    if (raw) {
+        try {
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed) && parsed.length) {
+                homonimoMatches.value = parsed;
+                homonimoOpen.value = true;
+                delete form.errors.homonimo;
+            }
+        } catch {}
+    }
+};
+
+const confirmarHomonimo = () => {
+    form.confirm_homonimo = true;
+    homonimoOpen.value = false;
+    submit();
+};
+
+const cancelarHomonimo = () => {
+    homonimoOpen.value = false;
+    form.confirm_homonimo = false;
+};
+
 const tabHasError = (tab: TabId): boolean => {
     const fields = TAB_FIELDS[tab];
     return fields.some((f) => Boolean((form.errors as Record<string, string>)[f]));
@@ -240,7 +273,13 @@ const submitLabel = computed(() => (props.mode === 'create' ? 'Cadastrar funcion
 
 const submit = () => {
     const opts = {
-        onError: () => goToFirstErrorTab(),
+        onError: (errors: Record<string, string>) => {
+            handleHomonimo(errors);
+            goToFirstErrorTab();
+        },
+        onSuccess: () => {
+            form.confirm_homonimo = false;
+        },
         preserveScroll: true,
         forceFormData: true,
     };
@@ -339,6 +378,9 @@ const initials = computed(() => {
                 </TabsTrigger>
                 <TabsTrigger value="endereco-contato" :has-error="tabHasError('endereco-contato')">
                     3. Endereço e Contato
+                </TabsTrigger>
+                <TabsTrigger value="admissao-lotacao" :has-error="tabHasError('admissao-lotacao')">
+                    4. Admissão / Lotação
                 </TabsTrigger>
             </TabsList>
 
@@ -905,6 +947,14 @@ const initials = computed(() => {
                 </div>
 
             </TabsContent>
+
+            <!-- Aba 4: Admissão / Lotação -->
+            <TabsContent value="admissao-lotacao">
+                <div v-if="mode === 'create'" class="rounded-xl border-2 border-dashed bg-card py-12 text-center text-sm text-muted-foreground shadow-sm">
+                    Salve o funcionário primeiro para gerenciar admissões e lotações.
+                </div>
+                <AdmissaoLotacaoTab v-else-if="initial" :funcionario="initial" />
+            </TabsContent>
         </Tabs>
 
         <!-- Navegação entre abas -->
@@ -933,5 +983,14 @@ const initials = computed(() => {
         :open="cpfDuplicadoOpen"
         :owner="cpfDuplicadoOwner"
         @update:open="cpfDuplicadoOpen = $event"
+    />
+
+    <FuncionarioHomonimoDialog
+        :open="homonimoOpen"
+        :matches="homonimoMatches"
+        :processing="form.processing"
+        @update:open="homonimoOpen = $event"
+        @confirm="confirmarHomonimo"
+        @cancel="cancelarHomonimo"
     />
 </template>

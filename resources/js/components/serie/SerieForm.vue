@@ -8,6 +8,7 @@ import type { Segmento } from '@/types/segmento';
 import type { Serie, SerieFormData } from '@/types/serie';
 import { Link, useForm } from '@inertiajs/vue3';
 import { ChevronLeft, LoaderCircle, Save } from 'lucide-vue-next';
+import { watch } from 'vue';
 
 const props = defineProps<{
     mode: 'create' | 'edit';
@@ -27,6 +28,8 @@ const form = useForm<SerieFormData>({
     ser_nr_ordenacao:        props.initial?.ser_nr_ordenacao ?? 0,
     ser_ordem_no_segmento:   props.initial?.ser_ordem_no_segmento ?? null,
     ser_fl_ativo:            props.initial?.ser_fl_ativo ?? true,
+    ser_tipo_avaliacao:      props.initial?.ser_tipo_avaliacao ?? [],
+    ser_tipo_avaliacao_descritiva: props.initial?.ser_tipo_avaliacao_descritiva ?? '',
     _method: props.mode === 'edit' ? 'put' : undefined,
 });
 
@@ -38,6 +41,18 @@ const submit = () => {
         form.post(`/series/${props.initial.ser_id}`, opts);
     }
 };
+
+const toggleAvaliacao = (val: string) => {
+    const idx = form.ser_tipo_avaliacao.indexOf(val);
+    if (idx >= 0) form.ser_tipo_avaliacao.splice(idx, 1);
+    else form.ser_tipo_avaliacao.push(val);
+};
+
+const hasDescritiva = () => form.ser_tipo_avaliacao.includes('descritiva');
+
+watch(() => form.ser_tipo_avaliacao, (v) => {
+    if (!v.includes('descritiva')) form.ser_tipo_avaliacao_descritiva = '';
+}, { deep: true });
 
 const submitLabel = props.mode === 'create' ? 'Cadastrar série' : 'Salvar alterações';
 </script>
@@ -155,6 +170,47 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar série' : 'Salvar alter
             <div class="flex items-center gap-3 self-end pb-1">
                 <Switch id="ser_fl_ativo" v-model="form.ser_fl_ativo" />
                 <FormLabel for="ser_fl_ativo" class="font-normal">Ativo</FormLabel>
+            </div>
+
+            <!-- Separador -->
+            <div class="sm:col-span-4 border-t" />
+
+            <!-- Tipo de Avaliação (multi-select) -->
+            <div class="grid gap-2 sm:col-span-2">
+                <FormLabel>Tipo de Avaliação</FormLabel>
+                <div class="flex flex-wrap gap-x-6 gap-y-2">
+                    <label v-for="opt in [
+                        { value: 'diagnostico', label: 'Avaliação por Diagnóstico' },
+                        { value: 'conceitual', label: 'Avaliação Conceitual' },
+                        { value: 'numerica', label: 'Avaliação Numérica' },
+                        { value: 'descritiva', label: 'Avaliação Descritiva' },
+                    ]" :key="opt.value" class="flex items-center gap-2 text-sm">
+                        <input
+                            type="checkbox"
+                            :checked="form.ser_tipo_avaliacao.includes(opt.value)"
+                            @change="toggleAvaliacao(opt.value)"
+                            class="size-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                        />
+                        {{ opt.label }}
+                    </label>
+                </div>
+                <InputError :message="form.errors.ser_tipo_avaliacao" />
+            </div>
+
+            <!-- Tipo de Avaliação Descritiva -->
+            <div class="grid gap-2 sm:col-span-2">
+                <FormLabel for="ser_tipo_avaliacao_descritiva" :required="hasDescritiva()">Tipo de Avaliação Descritiva</FormLabel>
+                <select
+                    id="ser_tipo_avaliacao_descritiva"
+                    v-model="form.ser_tipo_avaliacao_descritiva"
+                    :disabled="!hasDescritiva()"
+                    class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                    <option value="">Selecione...</option>
+                    <option value="por_aluno">Por Aluno</option>
+                    <option value="por_unidade">Por Unidade</option>
+                </select>
+                <InputError :message="form.errors.ser_tipo_avaliacao_descritiva" />
             </div>
 
             <!-- Separador -->

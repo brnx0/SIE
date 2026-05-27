@@ -113,9 +113,9 @@ class AlunoController extends Controller
         if ($aluno->aln_foto) {
             Storage::disk('public')->delete($aluno->aln_foto);
         }
-        $aluno->delete();
 
-        return to_route('alunos.index')->with('success', 'Aluno removido com sucesso.');
+        return $this->safeDelete($aluno)
+            ?? to_route('alunos.index')->with('success', 'Aluno removido com sucesso.');
     }
 
     /**

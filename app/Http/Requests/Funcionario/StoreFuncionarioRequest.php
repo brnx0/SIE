@@ -125,17 +125,13 @@ class StoreFuncionarioRequest extends FormRequest
 
             $funId = $this->route('funcionario')?->fun_id;
 
-            $existing = Funcionario::withTrashed()
+            $existing = Funcionario::query()
                 ->where('fun_cpf', $this->input('fun_cpf'))
                 ->when($funId, fn ($q) => $q->where('fun_id', '!=', $funId))
-                ->first(['fun_nome', 'fun_deleted_at']);
+                ->first(['fun_nome']);
 
             if ($existing) {
-                $label = $existing->fun_nome;
-                if (! is_null($existing->fun_deleted_at)) {
-                    $label .= ' (registro excluído)';
-                }
-                $v->errors()->add('fun_cpf', "CPF já cadastrado para: {$label}.");
+                $v->errors()->add('fun_cpf', "CPF já cadastrado para: {$existing->fun_nome}.");
             }
         });
     }

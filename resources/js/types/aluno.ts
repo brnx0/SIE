@@ -13,6 +13,26 @@ export interface AlunoSaude {
     als_tipo_sanguineo: TipoSanguineo | '' | null;
     als_ds_alergias: string | null;
     als_fl_pcd: boolean;
+    als_contato_emergencia: string | null;
+    als_telefone_emergencia: string | null;
+    als_plano_saude: string | null;
+    als_cartao_sus: string | null;
+    als_alergia_a: string | null;
+    als_remedio_febre: string | null;
+    als_remedio_cefaleia: string | null;
+    als_patologias: string[] | null;
+    als_outra_doenca: string | null;
+    als_patologias_infancia: string[] | null;
+    als_outra_doenca_infancia: string | null;
+    als_deficiencias: string[] | null;
+    als_transtornos_globais: string[] | null;
+    als_transtornos_aprendizagem: string[] | null;
+    als_deficiencia_outro: string | null;
+    als_fl_altas_habilidades: boolean;
+    als_cid: string | null;
+    als_observacao: string | null;
+    als_clinicas: string[] | null;
+    als_recursos_inep: string[] | null;
 }
 
 export type Sexo = 'M' | 'F';
@@ -79,6 +99,26 @@ export interface AlunoFormData {
         als_tipo_sanguineo: TipoSanguineo | '';
         als_ds_alergias: string;
         als_fl_pcd: boolean;
+        als_contato_emergencia: string;
+        als_telefone_emergencia: string;
+        als_plano_saude: string;
+        als_cartao_sus: string;
+        als_alergia_a: string;
+        als_remedio_febre: string;
+        als_remedio_cefaleia: string;
+        als_patologias: string[];
+        als_outra_doenca: string;
+        als_patologias_infancia: string[];
+        als_outra_doenca_infancia: string;
+        als_deficiencias: string[];
+        als_transtornos_globais: string[];
+        als_transtornos_aprendizagem: string[];
+        als_deficiencia_outro: string;
+        als_fl_altas_habilidades: boolean;
+        als_cid: string;
+        als_observacao: string;
+        als_clinicas: string[];
+        als_recursos_inep: string[];
     };
     [key: string]: any;
 }

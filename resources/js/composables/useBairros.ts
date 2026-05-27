@@ -1,5 +1,6 @@
 import type { Bairro } from '@/types/escola';
 import { ref } from 'vue';
+import { apiFetch } from '@/lib/apiFetch';
 
 export function useBairros() {
     const loading = ref(false);
@@ -16,7 +17,7 @@ export function useBairros() {
             if (q) params.set('q', q);
             if (munId) params.set('mun_id', String(munId));
 
-            const res = await fetch(`/api/bairros?${params.toString()}`, {
+            const res = await apiFetch(`/api/bairros?${params.toString()}`, {
                 signal: controller.signal,
                 headers: { Accept: 'application/json' },
             });
@@ -35,7 +36,7 @@ export function useBairros() {
     async function create(munId: number, nome: string): Promise<Bairro | null> {
         try {
             const csrf = document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content;
-            const res = await fetch('/api/bairros', {
+            const res = await apiFetch('/api/bairros', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

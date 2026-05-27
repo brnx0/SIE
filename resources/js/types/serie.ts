@@ -13,6 +13,8 @@ export interface Serie {
     ser_nr_ordenacao: number;
     ser_ordem_no_segmento: number;
     ser_fl_ativo: boolean;
+    ser_tipo_avaliacao: string[] | null;
+    ser_tipo_avaliacao_descritiva: 'por_aluno' | 'por_unidade' | null;
     ser_created_at: string | null;
     ser_updated_at: string | null;
     segmento?: Pick<Segmento, 'seg_id' | 'seg_nome_reduzido'>;
@@ -30,6 +32,8 @@ export interface SerieFormData {
     ser_nr_ordenacao: number | null;
     ser_ordem_no_segmento: number | null;
     ser_fl_ativo: boolean;
+    ser_tipo_avaliacao: string[];
+    ser_tipo_avaliacao_descritiva: string;
     _method?: 'put' | 'post';
     [key: string]: unknown;
 }

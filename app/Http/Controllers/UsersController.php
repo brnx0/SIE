@@ -104,8 +104,7 @@ class UsersController extends Controller{
             return back()->with('error', 'Você não pode excluir sua própria conta.');
         }
 
-        $user->delete();
-
-        return to_route('users.index')->with('success', 'Usuário removido com sucesso.');
+        return $this->safeDelete($user)
+            ?? to_route('users.index')->with('success', 'Usuário removido com sucesso.');
     }
 }

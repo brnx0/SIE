@@ -81,8 +81,8 @@ class StoreEscolaRequest extends FormRequest
 
             // Administrativo
             'esc_dep_administrativa' => ['required', 'integer', Rule::in([1, 2, 3, 4])],
-            'esc_proprietario_imovel' => ['nullable', 'integer', Rule::in([1, 2, 3, 4])],
-            'esc_forma_ocupacao' => ['nullable', 'integer', Rule::in([1, 2, 3, 4])],
+            'esc_proprietario_imovel' => ['required', 'integer', Rule::in([1, 2, 3, 4])],
+            'esc_forma_ocupacao' => ['required', 'integer', Rule::in([1, 2, 3, 4])],
             'esc_situacao_func' => ['required', 'integer', Rule::in([1, 2, 3])],
             'esc_regulamentada_conselho' => ['required', 'boolean'],
             'esc_turno_escolar' => ['nullable', 'string', 'max:20'],
@@ -91,6 +91,12 @@ class StoreEscolaRequest extends FormRequest
             'esc_fl_predio_compartilhado' => ['boolean'],
             'esc_fl_sorteio_vagas' => ['boolean'],
             'esc_fl_ativo' => ['boolean'],
+
+            // Ata de autorização
+            'esc_resolucao_num' => ['nullable', 'string', 'max:50'],
+            'esc_cme_portaria_num' => ['nullable', 'string', 'max:50'],
+            'esc_dt_publicacao' => ['nullable', 'date'],
+            'esc_fundamentacao_legal' => ['nullable', 'string', 'max:2000'],
         ];
     }
 
@@ -131,6 +137,10 @@ class StoreEscolaRequest extends FormRequest
             'esc_orgao_regional_ensino' => 'órgão regional de ensino',
             'esc_fl_predio_compartilhado' => 'prédio compartilhado',
             'esc_fl_sorteio_vagas' => 'participa do sorteio de vagas',
+            'esc_resolucao_num' => 'resolução nº',
+            'esc_cme_portaria_num' => 'CME portaria nº',
+            'esc_dt_publicacao' => 'data de publicação',
+            'esc_fundamentacao_legal' => 'fundamentação legal',
         ];
     }
 }

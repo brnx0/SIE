@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Serie;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreSerieRequest extends FormRequest
 {
@@ -33,6 +34,17 @@ class StoreSerieRequest extends FormRequest
             'ser_nr_ordenacao'        => ['nullable', 'integer'],
             'ser_ordem_no_segmento'   => ['required', 'integer'],
             'ser_fl_ativo'            => ['boolean'],
+            'ser_tipo_avaliacao'      => ['nullable', 'array'],
+            'ser_tipo_avaliacao.*'    => ['string', Rule::in(['diagnostico', 'conceitual', 'numerica', 'descritiva'])],
+            'ser_tipo_avaliacao_descritiva' => [
+                Rule::when(
+                    fn () => is_array($this->input('ser_tipo_avaliacao')) && in_array('descritiva', $this->input('ser_tipo_avaliacao')),
+                    ['required'],
+                    ['nullable']
+                ),
+                'string',
+                Rule::in(['por_aluno', 'por_unidade']),
+            ],
         ];
     }
 
@@ -49,6 +61,8 @@ class StoreSerieRequest extends FormRequest
             'ser_serie_equivalente'   => 'série equivalente',
             'ser_nr_ordenacao'        => 'nº para ordenação',
             'ser_ordem_no_segmento'   => 'ordem da série no segmento',
+            'ser_tipo_avaliacao'      => 'tipo de avaliação',
+            'ser_tipo_avaliacao_descritiva' => 'tipo de avaliação descritiva',
         ];
     }
 }

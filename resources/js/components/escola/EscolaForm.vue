@@ -67,11 +67,11 @@ const DEFAULT_PARAMS: SystemParams = {
 const params = computed<SystemParams>(() => page.props.params ?? DEFAULT_PARAMS);
 const escolaUppercase = computed(() => params.value.nome_escola_caixa_alta);
 
-type TabId = 'identificacao' | 'contato' | 'segmentos' | 'censo';
+type TabId = 'identificacao' | 'contato' | 'ata-autorizacao' | 'segmentos' | 'censo';
 const TABS = computed<TabId[]>(() =>
     props.mode === 'edit'
-        ? ['identificacao', 'contato', 'segmentos', 'censo']
-        : ['identificacao', 'contato']
+        ? ['identificacao', 'contato', 'ata-autorizacao', 'segmentos', 'censo']
+        : ['identificacao', 'contato', 'ata-autorizacao']
 );
 
 const TAB_FIELDS: Record<TabId, string[]> = {
@@ -87,6 +87,9 @@ const TAB_FIELDS: Record<TabId, string[]> = {
         'esc_bai_id', 'esc_mun_id', 'esc_zona', 'esc_localizacao_dif',
         'esc_latitude', 'esc_longitude', 'esc_caixa_postal',
         'esc_ddd', 'esc_telefone_fixo', 'esc_fax', 'esc_telefone_2', 'esc_telefone_3', 'esc_email', 'esc_site',
+    ],
+    'ata-autorizacao': [
+        'esc_resolucao_num', 'esc_cme_portaria_num', 'esc_dt_publicacao', 'esc_fundamentacao_legal',
     ],
     segmentos: [],
     censo: [],
@@ -148,6 +151,12 @@ const form = useForm<EscolaFormData>({
     esc_fl_predio_compartilhado: props.initial?.esc_fl_predio_compartilhado ?? false,
     esc_fl_sorteio_vagas: props.initial?.esc_fl_sorteio_vagas ?? false,
     esc_fl_ativo: props.initial?.esc_fl_ativo ?? true,
+
+    esc_resolucao_num: props.initial?.esc_resolucao_num ?? '',
+    esc_cme_portaria_num: props.initial?.esc_cme_portaria_num ?? '',
+    esc_dt_publicacao: props.initial?.esc_dt_publicacao ?? '',
+    esc_fundamentacao_legal: props.initial?.esc_fundamentacao_legal ?? '',
+
     esc_logo: null,
     _method: props.mode === 'edit' ? 'put' : 'post',
 });
@@ -309,8 +318,9 @@ const isLast = computed(() => activeTab.value === TABS.value[TABS.value.length -
             <TabsList>
                 <TabsTrigger value="identificacao" :has-error="tabHasError('identificacao')">1. Identificação</TabsTrigger>
                 <TabsTrigger value="contato" :has-error="tabHasError('contato')">2. Endereço e Contato</TabsTrigger>
-                <TabsTrigger v-if="mode === 'edit'" value="segmentos">3. Segmentos</TabsTrigger>
-                <TabsTrigger v-if="mode === 'edit'" value="censo">4. Censo</TabsTrigger>
+                <TabsTrigger value="ata-autorizacao" :has-error="tabHasError('ata-autorizacao')">3. Ata de Autorização</TabsTrigger>
+                <TabsTrigger v-if="mode === 'edit'" value="segmentos">4. Segmentos</TabsTrigger>
+                <TabsTrigger v-if="mode === 'edit'" value="censo">5. Censo</TabsTrigger>
             </TabsList>
 
             <!-- Aba 1: Identificação -->
@@ -425,7 +435,7 @@ const isLast = computed(() => activeTab.value === TABS.value[TABS.value.length -
                     </div>
 
                     <div class="grid gap-2">
-                        <Label for="esc_proprietario_imovel">Proprietário do Imóvel</Label>
+                        <FormLabel :for="'esc_proprietario_imovel'" :required="true">Proprietário do Imóvel</FormLabel>
                         <select
                             id="esc_proprietario_imovel"
                             :value="form.esc_proprietario_imovel === '' ? '' : form.esc_proprietario_imovel"
@@ -439,7 +449,7 @@ const isLast = computed(() => activeTab.value === TABS.value[TABS.value.length -
                     </div>
 
                     <div class="grid gap-2">
-                        <Label for="esc_forma_ocupacao">Forma de Ocupação</Label>
+                        <FormLabel :for="'esc_forma_ocupacao'" :required="true">Forma de Ocupação</FormLabel>
                         <select
                             id="esc_forma_ocupacao"
                             :value="form.esc_forma_ocupacao === '' ? '' : form.esc_forma_ocupacao"
@@ -656,7 +666,42 @@ const isLast = computed(() => activeTab.value === TABS.value[TABS.value.length -
                 </div>
             </TabsContent>
 
-            <!-- Aba 3: Segmentos (apenas modo edição) -->
+            <!-- Aba 3: Ata de Autorização -->
+            <TabsContent value="ata-autorizacao">
+                <div class="grid gap-6 sm:grid-cols-3">
+                    <div class="grid gap-2">
+                        <Label for="esc_resolucao_num">Resolução Nº</Label>
+                        <Input id="esc_resolucao_num" v-model="form.esc_resolucao_num" maxlength="50" />
+                        <InputError :message="form.errors.esc_resolucao_num" />
+                    </div>
+
+                    <div class="grid gap-2">
+                        <Label for="esc_cme_portaria_num">CME Portaria Nº</Label>
+                        <Input id="esc_cme_portaria_num" v-model="form.esc_cme_portaria_num" maxlength="50" />
+                        <InputError :message="form.errors.esc_cme_portaria_num" />
+                    </div>
+
+                    <div class="grid gap-2">
+                        <Label for="esc_dt_publicacao">Data de Publicação</Label>
+                        <Input id="esc_dt_publicacao" type="date" v-model="form.esc_dt_publicacao" />
+                        <InputError :message="form.errors.esc_dt_publicacao" />
+                    </div>
+
+                    <div class="grid gap-2 sm:col-span-3">
+                        <Label for="esc_fundamentacao_legal">Fundamentação Legal</Label>
+                        <textarea
+                            id="esc_fundamentacao_legal"
+                            v-model="form.esc_fundamentacao_legal"
+                            maxlength="2000"
+                            rows="5"
+                            class="rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-sky-500"
+                        />
+                        <InputError :message="form.errors.esc_fundamentacao_legal" />
+                    </div>
+                </div>
+            </TabsContent>
+
+            <!-- Aba 4: Segmentos (apenas modo edição) -->
             <TabsContent v-if="mode === 'edit' && initial" value="segmentos">
                 <EscolaSegmentosTab
                     :esc-id="initial.esc_id"
@@ -666,7 +711,7 @@ const isLast = computed(() => activeTab.value === TABS.value[TABS.value.length -
                 />
             </TabsContent>
 
-            <!-- Aba 4: Censo (apenas modo edição) -->
+            <!-- Aba 5: Censo (apenas modo edição) -->
             <TabsContent v-if="mode === 'edit' && initial" value="censo">
                 <EscolaCensoTab
                     :esc-id="initial.esc_id"

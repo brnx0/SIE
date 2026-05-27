@@ -90,6 +90,78 @@ class StoreAlunoRequest extends FormRequest
             'saude.als_tipo_sanguineo' => ['nullable', Rule::in(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'])],
             'saude.als_ds_alergias' => ['nullable', 'string'],
             'saude.als_fl_pcd' => ['boolean'],
+
+            'saude.als_contato_emergencia' => ['nullable', 'string', 'max:150'],
+            'saude.als_telefone_emergencia' => ['nullable', 'string', 'max:20'],
+            'saude.als_plano_saude' => ['nullable', 'string', 'max:100'],
+            'saude.als_cartao_sus' => ['nullable', 'string', 'max:20'],
+            'saude.als_alergia_a' => ['nullable', 'string', 'max:500'],
+            'saude.als_remedio_febre' => ['nullable', 'string', 'max:200'],
+            'saude.als_remedio_cefaleia' => ['nullable', 'string', 'max:200'],
+
+            'saude.als_patologias' => ['nullable', 'array'],
+            'saude.als_patologias.*' => ['string', Rule::in([
+                'Albinismo', 'Anemia Falciforme', 'Asma', 'Bronquite', 'Câncer', 'Convulsão',
+                'Conduta Típica', 'Desnutrição', 'Diabetes', 'Doenças Cardíacas',
+                'Doenças Cérebro Vascular', 'Doenças Hepáticas', 'Doenças Neurológicas',
+                'Doenças Psiquiátricas', 'Doença Renal Crônica', 'Epilepsia', 'Hanseníase',
+                'Hipertensão Arterial (HAR)', 'Imunossuprimidos (HIV)', 'Lúpus',
+                'Obesidade Mórbida', 'Pneumopatias', 'Reumatismo', 'Transplantados',
+            ])],
+            'saude.als_outra_doenca' => ['nullable', 'string', 'max:500'],
+
+            'saude.als_patologias_infancia' => ['nullable', 'array'],
+            'saude.als_patologias_infancia.*' => ['string', Rule::in([
+                'Catapora', 'Caxumba', 'Coqueluche', 'Escarlatina',
+                'Meningite', 'Poliomielite', 'Rubéola', 'Sarampo',
+            ])],
+            'saude.als_outra_doenca_infancia' => ['nullable', 'string', 'max:500'],
+
+            'saude.als_deficiencias' => ['nullable', 'array'],
+            'saude.als_deficiencias.*' => ['string', Rule::in([
+                'Cegueira', 'Baixa Visão', 'Visão Monocular', 'Surdez',
+                'Deficiência Auditiva', 'Surdocegueira', 'Deficiência Física',
+                'Deficiência Intelectual', 'Deficiência Múltipla',
+            ])],
+
+            'saude.als_transtornos_globais' => ['nullable', 'array'],
+            'saude.als_transtornos_globais.*' => ['string', Rule::in([
+                'Autismo Infantil - TEA', 'Síndrome de Asperger', 'Síndrome de Rett',
+                'Transt. Des. da Infância', 'Trans. Global de Desenvolvimento',
+                'Síndrome de Down', 'Microcefalia',
+            ])],
+
+            'saude.als_transtornos_aprendizagem' => ['nullable', 'array'],
+            'saude.als_transtornos_aprendizagem.*' => ['string', Rule::in([
+                'Discalculia ou outro transtorno da matemática e raciocínio lógico',
+                'Disgrafia, Disortografia ou outro transtorno da escrita e ortografia',
+                'Dislalia ou outro transtorno da linguagem e comunicação',
+                'Dislexia',
+                'Transtorno do Processamento Auditivo Central (TPAC)',
+                'TDAH (Transtorno do Déficit de Atenção com Hiperatividade)',
+            ])],
+
+            'saude.als_deficiencia_outro' => ['nullable', 'string', 'max:500'],
+            'saude.als_fl_altas_habilidades' => ['boolean'],
+            'saude.als_cid' => ['nullable', 'string', 'max:20'],
+            'saude.als_observacao' => ['nullable', 'string', 'max:2000'],
+
+            'saude.als_clinicas' => ['nullable', 'array'],
+            'saude.als_clinicas.*' => ['string', Rule::in([
+                'Fisioterapeuta', 'Psicopedagogo', 'Terapeuta Ocupacional',
+                'Fonoaudiólogo', 'Psicólogo', 'APAE',
+                'Outras Clínicas que o Aluno frequenta',
+            ])],
+
+            'saude.als_recursos_inep' => ['nullable', 'array'],
+            'saude.als_recursos_inep.*' => ['string', Rule::in([
+                'Auxílio ledor', 'Auxílio transcrição', 'Guia-Intérprete',
+                'Intérprete de Libras', 'Leitura Labial', 'Material Ditático em Braille',
+                'CD com áudio para deficiente visual', 'Prova em Vídeo em Libras',
+                'Tempo Adicional', 'Prova Ampliada (Fonte Tamanho 18)',
+                'Prova Ampliada (Fonte Tamanho 24)', 'Prova em Braile',
+                'Prova de L. Portuguesa como segunda língua p/ deficientes auditivos',
+            ])],
         ];
     }
 
@@ -136,6 +208,26 @@ class StoreAlunoRequest extends FormRequest
             'saude.als_tipo_sanguineo' => 'tipo sanguíneo',
             'saude.als_ds_alergias' => 'alergias / restrições',
             'saude.als_fl_pcd' => 'aluno PCD / TGD / AH',
+            'saude.als_contato_emergencia' => 'contato de emergência',
+            'saude.als_telefone_emergencia' => 'telefone de emergência',
+            'saude.als_plano_saude' => 'plano de saúde',
+            'saude.als_cartao_sus' => 'cartão do SUS',
+            'saude.als_alergia_a' => 'alergia a',
+            'saude.als_remedio_febre' => 'remédio para febre',
+            'saude.als_remedio_cefaleia' => 'remédio para cefaléia',
+            'saude.als_patologias' => 'patologias',
+            'saude.als_outra_doenca' => 'outra doença',
+            'saude.als_patologias_infancia' => 'patologias da infância',
+            'saude.als_outra_doenca_infancia' => 'outra doença da infância',
+            'saude.als_deficiencias' => 'deficiências',
+            'saude.als_transtornos_globais' => 'transtornos globais',
+            'saude.als_transtornos_aprendizagem' => 'transtornos de aprendizagem',
+            'saude.als_deficiencia_outro' => 'outra deficiência',
+            'saude.als_fl_altas_habilidades' => 'altas habilidades / superdotação',
+            'saude.als_cid' => 'CID',
+            'saude.als_observacao' => 'observação',
+            'saude.als_clinicas' => 'clínicas',
+            'saude.als_recursos_inep' => 'recursos INEP',
         ];
     }
 }

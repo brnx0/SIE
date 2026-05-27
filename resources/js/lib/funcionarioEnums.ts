@@ -53,3 +53,46 @@ export const TIPOS_CERTIDAO_CIVIL = [
     'Nascimento',
     'Casamento',
 ] as const;
+
+export const VINCULOS = [
+    'Comissionado',
+    'Concursado',
+    'Contratado CLT',
+    'Contrato Temporário',
+    'Contrato Terceirizado',
+    'Função Gratificada',
+] as const;
+
+export const SITUACOES_FUNCIONAIS = [
+    'Aposentadoria',
+    'Cedido(a)',
+    'Exonerado',
+    'Licença com Vencimento',
+    'Licença Médica',
+    'Licença sem Vencimento',
+    'Óbito',
+    'Permuta',
+    'Remanejado(a)',
+    'Término de Contrato',
+    'Transferido(a)',
+] as const;
+
+export const CRITERIOS_ACESSO = [
+    'Concurso Público',
+    'Concurso público específico para o cargo de gestor escolar',
+    'Exclusivamente por indicação/escolha da gestão',
+    'Exclusivamente por processo eleitoral com a participação da comunidade escolar',
+    'Processo seletivo qualificado e eleição com a participação da comunidade escolar',
+    'Ser proprietário(a) ou sócio(a)-proprietário(a) da escola',
+] as const;
+
+export const FUNCOES_SALA_AULA = [
+    'Docente',
+    'Auxiliar/assistente educacional',
+    'Guia-Intérprete de Libras',
+    'Tradutor-intérprete de Libras',
+    'Monitor de atividade complementar',
+    'Docente tutor (de módulo ou disciplina)',
+    'Docente Titular (de módulo ou disciplina) – EAD',
+    'Profissional de apoio escolar para aluno(a)s com deficiência (Lei 13.146/2015)',
+] as const;

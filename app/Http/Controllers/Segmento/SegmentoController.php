@@ -58,8 +58,7 @@ class SegmentoController extends Controller
 
     public function destroy(Segmento $segmento): RedirectResponse
     {
-        $segmento->delete();
-
-        return to_route('segmentos.index')->with('success', 'Segmento removido com sucesso.');
+        return $this->safeDelete($segmento)
+            ?? to_route('segmentos.index')->with('success', 'Segmento removido com sucesso.');
     }
 }

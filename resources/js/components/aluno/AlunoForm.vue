@@ -16,6 +16,10 @@ import { useViaCep } from '@/composables/useViaCep';
 import { COR_RACA } from '@/lib/corRaca';
 import { PAISES } from '@/lib/paises';
 import { TIPOS_SANGUINEOS } from '@/lib/tiposSanguineos';
+import {
+    PATOLOGIAS, PATOLOGIAS_INFANCIA, DEFICIENCIAS, TRANSTORNOS_GLOBAIS,
+    TRANSTORNOS_APRENDIZAGEM, CLINICAS, RECURSOS_INEP,
+} from '@/lib/alunoSaudeEnums';
 import { UFS } from '@/lib/ufs';
 import type { SharedData, SystemParams } from '@/types';
 import type { Aluno, AlunoFormData, Municipio } from '@/types/aluno';
@@ -67,7 +71,17 @@ const TAB_FIELDS: Record<TabId, string[]> = {
         'aln_telefone',
         'aln_email',
     ],
-    complementares: ['saude.als_tipo_sanguineo', 'saude.als_ds_alergias', 'saude.als_fl_pcd'],
+    complementares: [
+        'saude.als_tipo_sanguineo', 'saude.als_ds_alergias', 'saude.als_fl_pcd',
+        'saude.als_contato_emergencia', 'saude.als_telefone_emergencia',
+        'saude.als_plano_saude', 'saude.als_cartao_sus',
+        'saude.als_alergia_a', 'saude.als_remedio_febre', 'saude.als_remedio_cefaleia',
+        'saude.als_patologias', 'saude.als_outra_doenca',
+        'saude.als_patologias_infancia', 'saude.als_outra_doenca_infancia',
+        'saude.als_deficiencias', 'saude.als_transtornos_globais', 'saude.als_transtornos_aprendizagem',
+        'saude.als_deficiencia_outro', 'saude.als_fl_altas_habilidades', 'saude.als_cid', 'saude.als_observacao',
+        'saude.als_clinicas', 'saude.als_recursos_inep',
+    ],
 };
 
 const formatDateBR = (iso: string | null | undefined): string => {
@@ -124,6 +138,26 @@ const form = useForm<AlunoFormData>({
         als_tipo_sanguineo: props.initial?.saude?.als_tipo_sanguineo ?? '',
         als_ds_alergias: props.initial?.saude?.als_ds_alergias ?? '',
         als_fl_pcd: props.initial?.saude?.als_fl_pcd ?? false,
+        als_contato_emergencia: props.initial?.saude?.als_contato_emergencia ?? '',
+        als_telefone_emergencia: props.initial?.saude?.als_telefone_emergencia ?? '',
+        als_plano_saude: props.initial?.saude?.als_plano_saude ?? '',
+        als_cartao_sus: props.initial?.saude?.als_cartao_sus ?? '',
+        als_alergia_a: props.initial?.saude?.als_alergia_a ?? '',
+        als_remedio_febre: props.initial?.saude?.als_remedio_febre ?? '',
+        als_remedio_cefaleia: props.initial?.saude?.als_remedio_cefaleia ?? '',
+        als_patologias: props.initial?.saude?.als_patologias ?? [],
+        als_outra_doenca: props.initial?.saude?.als_outra_doenca ?? '',
+        als_patologias_infancia: props.initial?.saude?.als_patologias_infancia ?? [],
+        als_outra_doenca_infancia: props.initial?.saude?.als_outra_doenca_infancia ?? '',
+        als_deficiencias: props.initial?.saude?.als_deficiencias ?? [],
+        als_transtornos_globais: props.initial?.saude?.als_transtornos_globais ?? [],
+        als_transtornos_aprendizagem: props.initial?.saude?.als_transtornos_aprendizagem ?? [],
+        als_deficiencia_outro: props.initial?.saude?.als_deficiencia_outro ?? '',
+        als_fl_altas_habilidades: props.initial?.saude?.als_fl_altas_habilidades ?? false,
+        als_cid: props.initial?.saude?.als_cid ?? '',
+        als_observacao: props.initial?.saude?.als_observacao ?? '',
+        als_clinicas: props.initial?.saude?.als_clinicas ?? [],
+        als_recursos_inep: props.initial?.saude?.als_recursos_inep ?? [],
     },
 });
 
@@ -180,6 +214,12 @@ const goToFirstErrorTab = () => {
 };
 
 const submitLabel = computed(() => (props.mode === 'create' ? 'Cadastrar aluno' : 'Salvar alterações'));
+
+const toggleArrayItem = (arr: string[], item: string) => {
+    const idx = arr.indexOf(item);
+    if (idx >= 0) arr.splice(idx, 1);
+    else arr.push(item);
+};
 
 // Homônimo flow — detecta via ValidationException com chave 'homonimo' (JSON)
 const homonimoOpen = ref(false);
@@ -664,48 +704,282 @@ const initials = computed(() => {
                 </div>
             </TabsContent>
 
-            <!-- Aba 4 -->
+            <!-- Aba 4: Saúde e Acessibilidade -->
             <TabsContent value="complementares">
-                <div class="grid gap-4 rounded-xl border bg-card p-6 shadow-sm sm:grid-cols-2">
-                    <div class="sm:col-span-2">
-                        <h3 class="text-sm font-semibold">Saúde e Acessibilidade</h3>
-                        <p class="text-xs text-muted-foreground">Informações opcionais — preencha se houver dados disponíveis.</p>
+                <div class="space-y-6">
+
+                    <!-- Emergência / Contato -->
+                    <div class="rounded-xl border bg-card p-6 shadow-sm">
+                        <h3 class="mb-4 text-sm font-semibold">Contato de Emergência</h3>
+                        <div class="grid gap-4 sm:grid-cols-2">
+                            <div class="grid gap-2">
+                                <Label for="als_contato_emergencia">Contato (Emergência)</Label>
+                                <Input id="als_contato_emergencia" v-model="form.saude.als_contato_emergencia" maxlength="150" />
+                                <InputError :message="(form.errors as Record<string, string>)['saude.als_contato_emergencia']" />
+                            </div>
+                            <div class="grid gap-2">
+                                <Label for="als_telefone_emergencia">Telefone (Emergência)</Label>
+                                <Input id="als_telefone_emergencia" v-model="form.saude.als_telefone_emergencia" v-maska="'(##) #####-####'" inputmode="numeric" maxlength="20" placeholder="(00) 00000-0000" />
+                                <InputError :message="(form.errors as Record<string, string>)['saude.als_telefone_emergencia']" />
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="grid gap-2">
-                        <Label for="als_tipo_sanguineo">Tipo Sanguíneo / Fator RH</Label>
-                        <select
-                            id="als_tipo_sanguineo"
-                            v-model="form.saude.als_tipo_sanguineo"
-                            class="h-10 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
-                        >
-                            <option value="">Não informado</option>
-                            <option v-for="t in TIPOS_SANGUINEOS" :key="t" :value="t">{{ t }}</option>
-                        </select>
-                        <InputError :message="(form.errors as Record<string, string>)['saude.als_tipo_sanguineo']" />
+                    <!-- Saúde Básica -->
+                    <div class="rounded-xl border bg-card p-6 shadow-sm">
+                        <h3 class="mb-4 text-sm font-semibold">Saúde</h3>
+                        <div class="grid gap-4 sm:grid-cols-4">
+                            <div class="grid gap-2">
+                                <Label for="als_tipo_sanguineo">Tipo de Sangue</Label>
+                                <select
+                                    id="als_tipo_sanguineo"
+                                    v-model="form.saude.als_tipo_sanguineo"
+                                    class="h-10 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                                >
+                                    <option value="">Selecione...</option>
+                                    <option v-for="t in TIPOS_SANGUINEOS" :key="t" :value="t">{{ t }}</option>
+                                </select>
+                                <InputError :message="(form.errors as Record<string, string>)['saude.als_tipo_sanguineo']" />
+                            </div>
+                            <div class="grid gap-2">
+                                <Label for="als_plano_saude">Plano de Saúde</Label>
+                                <Input id="als_plano_saude" v-model="form.saude.als_plano_saude" maxlength="100" />
+                                <InputError :message="(form.errors as Record<string, string>)['saude.als_plano_saude']" />
+                            </div>
+                            <div class="grid gap-2 sm:col-span-2">
+                                <Label for="als_cartao_sus">Número do Cartão do SUS</Label>
+                                <Input id="als_cartao_sus" v-model="form.saude.als_cartao_sus" maxlength="20" />
+                                <InputError :message="(form.errors as Record<string, string>)['saude.als_cartao_sus']" />
+                            </div>
+
+                            <div class="grid gap-2 sm:col-span-2">
+                                <Label for="als_alergia_a">Alergia a</Label>
+                                <Input id="als_alergia_a" v-model="form.saude.als_alergia_a" maxlength="500" />
+                                <InputError :message="(form.errors as Record<string, string>)['saude.als_alergia_a']" />
+                            </div>
+                            <div class="grid gap-2 sm:col-span-2">
+                                <Label for="als_ds_alergias">Alergias / Restrições Alimentares</Label>
+                                <Input id="als_ds_alergias" v-model="form.saude.als_ds_alergias" maxlength="500" />
+                                <InputError :message="(form.errors as Record<string, string>)['saude.als_ds_alergias']" />
+                            </div>
+                        </div>
+
+                        <h4 class="mb-2 mt-4 text-xs font-semibold text-muted-foreground">Remédios Indicados</h4>
+                        <div class="grid gap-4 sm:grid-cols-2">
+                            <div class="grid gap-2">
+                                <Label for="als_remedio_febre">Febre</Label>
+                                <Input id="als_remedio_febre" v-model="form.saude.als_remedio_febre" maxlength="200" />
+                                <InputError :message="(form.errors as Record<string, string>)['saude.als_remedio_febre']" />
+                            </div>
+                            <div class="grid gap-2">
+                                <Label for="als_remedio_cefaleia">Cefaléia</Label>
+                                <Input id="als_remedio_cefaleia" v-model="form.saude.als_remedio_cefaleia" maxlength="200" />
+                                <InputError :message="(form.errors as Record<string, string>)['saude.als_remedio_cefaleia']" />
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="grid gap-2 sm:col-span-2">
-                        <Label for="als_ds_alergias">Alergias / Restrições</Label>
-                        <textarea
-                            id="als_ds_alergias"
-                            v-model="form.saude.als_ds_alergias"
-                            rows="3"
-                            class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
-                            placeholder="Descreva alergias alimentares, medicamentosas, restrições alimentares..."
-                        />
-                        <InputError :message="(form.errors as Record<string, string>)['saude.als_ds_alergias']" />
-                    </div>
+                    <!-- Patologias -->
+                    <fieldset class="rounded-xl border bg-card p-6 shadow-sm">
+                        <legend class="px-2 text-sm font-semibold">Patologia</legend>
+                        <div class="grid gap-x-6 gap-y-2 sm:grid-cols-3">
+                            <label
+                                v-for="p in PATOLOGIAS"
+                                :key="p"
+                                class="flex items-center gap-2 text-sm"
+                            >
+                                <input
+                                    type="checkbox"
+                                    :checked="form.saude.als_patologias.includes(p)"
+                                    @change="toggleArrayItem(form.saude.als_patologias, p)"
+                                    class="size-4 rounded border-gray-300 text-sky-600 focus:ring-sky-500"
+                                />
+                                {{ p }}
+                            </label>
+                        </div>
+                        <div class="mt-3 grid gap-2">
+                            <Label for="als_outra_doenca">Outra Doença</Label>
+                            <Input id="als_outra_doenca" v-model="form.saude.als_outra_doenca" maxlength="500" />
+                            <InputError :message="(form.errors as Record<string, string>)['saude.als_outra_doenca']" />
+                        </div>
+                    </fieldset>
 
-                    <div class="flex items-center gap-3 sm:col-span-2">
-                        <Switch
-                            id="als_fl_pcd"
-                            v-model="form.saude.als_fl_pcd"
-                        />
-                        <Label for="als_fl_pcd" class="text-sm font-normal">
-                            Aluno com Deficiência (PCD), TGD ou Altas Habilidades
-                        </Label>
-                    </div>
+                    <!-- Patologias Infância -->
+                    <fieldset class="rounded-xl border bg-card p-6 shadow-sm">
+                        <legend class="px-2 text-sm font-semibold">Patologias Contraídas na Infância</legend>
+                        <div class="grid gap-x-6 gap-y-2 sm:grid-cols-3">
+                            <label
+                                v-for="p in PATOLOGIAS_INFANCIA"
+                                :key="p"
+                                class="flex items-center gap-2 text-sm"
+                            >
+                                <input
+                                    type="checkbox"
+                                    :checked="form.saude.als_patologias_infancia.includes(p)"
+                                    @change="toggleArrayItem(form.saude.als_patologias_infancia, p)"
+                                    class="size-4 rounded border-gray-300 text-sky-600 focus:ring-sky-500"
+                                />
+                                {{ p }}
+                            </label>
+                        </div>
+                        <div class="mt-3 grid gap-2">
+                            <Label for="als_outra_doenca_infancia">Outra Doença</Label>
+                            <Input id="als_outra_doenca_infancia" v-model="form.saude.als_outra_doenca_infancia" maxlength="500" />
+                            <InputError :message="(form.errors as Record<string, string>)['saude.als_outra_doenca_infancia']" />
+                        </div>
+                    </fieldset>
+
+                    <!-- Deficiência / Transtornos / Altas Habilidades -->
+                    <fieldset class="rounded-xl border bg-card p-6 shadow-sm">
+                        <legend class="px-2 text-sm font-semibold">Tipo de Deficiência, Transtorno Global do Desenvolvimento ou Altas Habilidades/Superdotação</legend>
+
+                        <div class="grid gap-6 sm:grid-cols-3">
+                            <div>
+                                <h4 class="mb-2 text-xs font-semibold text-muted-foreground">Deficiência</h4>
+                                <div class="space-y-2">
+                                    <label
+                                        v-for="d in DEFICIENCIAS"
+                                        :key="d"
+                                        class="flex items-center gap-2 text-sm"
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            :checked="form.saude.als_deficiencias.includes(d)"
+                                            @change="toggleArrayItem(form.saude.als_deficiencias, d)"
+                                            class="size-4 rounded border-gray-300 text-sky-600 focus:ring-sky-500"
+                                        />
+                                        {{ d }}
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h4 class="mb-2 text-xs font-semibold text-muted-foreground">Transtorno Global de Desenvolvimento</h4>
+                                <div class="space-y-2">
+                                    <label
+                                        v-for="t in TRANSTORNOS_GLOBAIS"
+                                        :key="t"
+                                        class="flex items-center gap-2 text-sm"
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            :checked="form.saude.als_transtornos_globais.includes(t)"
+                                            @change="toggleArrayItem(form.saude.als_transtornos_globais, t)"
+                                            class="size-4 rounded border-gray-300 text-sky-600 focus:ring-sky-500"
+                                        />
+                                        {{ t }}
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h4 class="mb-2 text-xs font-semibold text-muted-foreground">Transtornos que Impactam a Aprendizagem</h4>
+                                <div class="space-y-2">
+                                    <label
+                                        v-for="t in TRANSTORNOS_APRENDIZAGEM"
+                                        :key="t"
+                                        class="flex items-center gap-2 text-sm"
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            :checked="form.saude.als_transtornos_aprendizagem.includes(t)"
+                                            @change="toggleArrayItem(form.saude.als_transtornos_aprendizagem, t)"
+                                            class="size-4 rounded border-gray-300 text-sky-600 focus:ring-sky-500"
+                                        />
+                                        {{ t }}
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 grid gap-4 sm:grid-cols-2">
+                            <div class="grid gap-2">
+                                <Label for="als_deficiencia_outro">Outro(a)</Label>
+                                <Input id="als_deficiencia_outro" v-model="form.saude.als_deficiencia_outro" maxlength="500" />
+                                <InputError :message="(form.errors as Record<string, string>)['saude.als_deficiencia_outro']" />
+                            </div>
+                        </div>
+
+                        <div class="mt-4 grid gap-4 sm:grid-cols-3">
+                            <div class="flex items-center gap-3">
+                                <Switch
+                                    id="als_fl_altas_habilidades"
+                                    v-model="form.saude.als_fl_altas_habilidades"
+                                />
+                                <Label for="als_fl_altas_habilidades" class="text-sm font-normal">
+                                    Altas Habilidades/Superdotação
+                                </Label>
+                            </div>
+                            <div class="grid gap-2">
+                                <Label for="als_cid">CID</Label>
+                                <Input id="als_cid" v-model="form.saude.als_cid" maxlength="20" />
+                                <InputError :message="(form.errors as Record<string, string>)['saude.als_cid']" />
+                            </div>
+                        </div>
+
+                        <div class="mt-4 grid gap-2">
+                            <Label for="als_observacao">Observação</Label>
+                            <textarea
+                                id="als_observacao"
+                                v-model="form.saude.als_observacao"
+                                rows="3"
+                                maxlength="2000"
+                                class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                            />
+                            <InputError :message="(form.errors as Record<string, string>)['saude.als_observacao']" />
+                        </div>
+
+                        <div class="mt-4 flex items-center gap-3">
+                            <Switch
+                                id="als_fl_pcd"
+                                v-model="form.saude.als_fl_pcd"
+                            />
+                            <Label for="als_fl_pcd" class="text-sm font-normal">
+                                Aluno com Deficiência (PCD), TGD ou Altas Habilidades
+                            </Label>
+                        </div>
+                    </fieldset>
+
+                    <!-- Clínica -->
+                    <fieldset class="rounded-xl border bg-card p-6 shadow-sm">
+                        <legend class="px-2 text-sm font-semibold">Clínica</legend>
+                        <div class="grid gap-x-6 gap-y-2 sm:grid-cols-2">
+                            <label
+                                v-for="c in CLINICAS"
+                                :key="c"
+                                class="flex items-center gap-2 text-sm"
+                            >
+                                <input
+                                    type="checkbox"
+                                    :checked="form.saude.als_clinicas.includes(c)"
+                                    @change="toggleArrayItem(form.saude.als_clinicas, c)"
+                                    class="size-4 rounded border-gray-300 text-sky-600 focus:ring-sky-500"
+                                />
+                                {{ c }}
+                            </label>
+                        </div>
+                    </fieldset>
+
+                    <!-- Recursos INEP -->
+                    <fieldset class="rounded-xl border bg-card p-6 shadow-sm">
+                        <legend class="px-2 text-sm font-semibold">Recursos necessários para a participação do aluno em avaliações do INEP (Prova Brasil, SAEB, outros)</legend>
+                        <div class="grid gap-x-6 gap-y-2 sm:grid-cols-2">
+                            <label
+                                v-for="r in RECURSOS_INEP"
+                                :key="r"
+                                class="flex items-center gap-2 text-sm"
+                            >
+                                <input
+                                    type="checkbox"
+                                    :checked="form.saude.als_recursos_inep.includes(r)"
+                                    @change="toggleArrayItem(form.saude.als_recursos_inep, r)"
+                                    class="size-4 rounded border-gray-300 text-sky-600 focus:ring-sky-500"
+                                />
+                                {{ r }}
+                            </label>
+                        </div>
+                    </fieldset>
+
                 </div>
             </TabsContent>
         </Tabs>

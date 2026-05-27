@@ -11,6 +11,11 @@ class FuncionarioLotacao extends Model
     protected $table = 'edu_funcionario_lotacao';
     protected $primaryKey = 'lot_id';
 
+    public function getRouteKeyName(): string
+    {
+        return 'lot_id';
+    }
+
     const CREATED_AT = 'lot_created_at';
     const UPDATED_AT = 'lot_updated_at';
 
@@ -18,13 +23,20 @@ class FuncionarioLotacao extends Model
         'lot_adm_id',
         'lot_esc_id',
         'lot_crg_id',
-        'lot_ano_inicio',
-        'lot_ano_fim',
+        'lot_vinculo',
+        'lot_situacao_funcional',
+        'lot_criterio_acesso',
+        'lot_dt_inicio',
+        'lot_dt_fim',
+        'lot_fl_ativo',
+        'lot_funcoes_sala_aula',
     ];
 
     protected $casts = [
-        'lot_ano_inicio' => 'integer',
-        'lot_ano_fim' => 'integer',
+        'lot_dt_inicio' => 'date',
+        'lot_dt_fim' => 'date',
+        'lot_fl_ativo' => 'boolean',
+        'lot_funcoes_sala_aula' => 'array',
     ];
 
     public function admissao(): BelongsTo

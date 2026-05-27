@@ -30,6 +30,8 @@ class Serie extends Model
         'ser_nr_ordenacao',
         'ser_ordem_no_segmento',
         'ser_fl_ativo',
+        'ser_tipo_avaliacao',
+        'ser_tipo_avaliacao_descritiva',
     ];
 
     protected $casts = [
@@ -40,6 +42,7 @@ class Serie extends Model
         'ser_nr_ordenacao'        => 'integer',
         'ser_ordem_no_segmento'   => 'integer',
         'ser_fl_ativo'            => 'boolean',
+        'ser_tipo_avaliacao'      => 'array',
     ];
 
     public function segmento(): BelongsTo

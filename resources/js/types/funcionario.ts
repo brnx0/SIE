@@ -1,5 +1,64 @@
 import type { Municipio, Sexo, CorRaca } from '@/types/aluno';
 
+export interface Cargo {
+    crg_id: number;
+    crg_nome: string;
+    crg_descricao: string | null;
+    crg_fl_ativo: boolean;
+}
+
+export interface Escola {
+    esc_id: number;
+    esc_nome: string;
+}
+
+export interface FuncionarioLotacao {
+    lot_id: number;
+    lot_adm_id: number;
+    lot_esc_id: number;
+    lot_crg_id: number;
+    lot_vinculo: string;
+    lot_situacao_funcional: string | null;
+    lot_criterio_acesso: string | null;
+    lot_dt_inicio: string;
+    lot_dt_fim: string | null;
+    lot_fl_ativo: boolean;
+    lot_funcoes_sala_aula: string[] | null;
+    escola?: Escola | null;
+    cargo?: Cargo | null;
+}
+
+export interface FuncionarioAdmissao {
+    adm_id: number;
+    adm_fun_id: number;
+    adm_matricula: string;
+    adm_dt_admissao: string;
+    adm_crg_id: number;
+    adm_escolaridade_admissao: number | null;
+    cargo?: Cargo | null;
+    lotacoes?: FuncionarioLotacao[];
+}
+
+export interface AdmissaoFormData {
+    adm_matricula: string;
+    adm_dt_admissao: string;
+    adm_crg_id: number | null;
+    adm_escolaridade_admissao: number | '' | null;
+}
+
+export interface LotacaoFormData {
+    lot_adm_id: number | null;
+    lot_esc_id: number | null;
+    lot_crg_id: number | null;
+    lot_vinculo: string;
+    lot_situacao_funcional: string;
+    lot_criterio_acesso: string;
+    lot_dt_inicio: string;
+    lot_dt_fim: string;
+    lot_fl_ativo: boolean;
+    lot_funcoes_sala_aula: string[];
+}
+
 export interface Funcionario {
     fun_id: number;
     fun_nome: string;
@@ -61,6 +120,7 @@ export interface Funcionario {
 
     municipio_nascimento?: Municipio | null;
     municipio_certidao?: Municipio | null;
+    admissoes?: FuncionarioAdmissao[];
 }
 
 export interface FuncionarioFormData {
@@ -119,6 +179,7 @@ export interface FuncionarioFormData {
 
     fun_foto: File | null;
     fun_fl_ativo: boolean;
+    confirm_homonimo: boolean;
     _method?: 'put' | 'post';
     [key: string]: any;
 }

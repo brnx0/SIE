@@ -13,9 +13,7 @@ return new class extends Migration
             $t->unsignedBigInteger('adm_fun_id');
             $t->string('adm_matricula', 30);
             $t->date('adm_dt_admissao');
-            $t->unsignedBigInteger('adm_crg_id');           // Cargo de admissão
-            $t->decimal('adm_carga_horaria', 6, 2);
-            $t->char('adm_tipo_carga', 1)->default('H');    // H = Horas, T = Tempos
+            $t->unsignedBigInteger('adm_crg_id');
             $t->unsignedTinyInteger('adm_escolaridade_admissao')->nullable();
 
             $t->timestamp('adm_created_at')->nullable();
