@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import ExportMenu from '@/components/common/ExportMenu.vue';
+import PerPageSelect from '@/components/common/PerPageSelect.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -10,16 +12,20 @@ import { ref, watch } from 'vue';
 
 const props = defineProps<{
     escolas: Paginated<Escola>;
-    filters: { search: string };
+    filters: { search: string; per_page: number };
 }>();
 
-const search = ref(props.filters.search ?? '');
+const search  = ref(props.filters.search ?? '');
+const perPage = ref(props.filters.per_page ?? 10);
+
 let timer: ReturnType<typeof setTimeout> | null = null;
-const apply = () => router.get('/escolas', { search: search.value }, { preserveState: true, replace: true });
-watch(search, () => {
-    if (timer) clearTimeout(timer);
-    timer = setTimeout(apply, 300);
-});
+const apply = (resetPage = false) => {
+    const params: Record<string, string | number> = { search: search.value, per_page: perPage.value };
+    if (!resetPage) params.page = props.escolas.current_page;
+    router.get('/escolas', params, { preserveState: true, replace: true });
+};
+watch(search, () => { if (timer) clearTimeout(timer); timer = setTimeout(() => apply(true), 300); });
+watch(perPage, () => apply(true));
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Escolas', href: '/escolas' }];
 
@@ -60,10 +66,14 @@ const situacaoClass = (s: number) => {
                 </Link>
             </div>
 
-            <div class="flex flex-col gap-3 sm:flex-row">
+            <div class="flex flex-wrap items-center gap-3">
                 <div class="relative flex-1">
                     <Search class="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                     <Input v-model="search" placeholder="Buscar por nome, apelido, INEP ou CNPJ..." class="pl-9" />
+                </div>
+                <div class="ml-auto flex items-center gap-3">
+                    <PerPageSelect v-model="perPage" />
+                    <ExportMenu base-url="/escolas/export" :filters="{ search }" />
                 </div>
             </div>
 
@@ -120,22 +130,13 @@ const situacaoClass = (s: number) => {
                         </tr>
                     </tbody>
                 </table>
-
-                <div v-if="escolas.last_page > 1" class="flex items-center justify-between border-t bg-muted/20 px-4 py-3 text-sm">
-                    <span class="text-muted-foreground">{{ escolas.from }}–{{ escolas.to }} de {{ escolas.total }}</span>
-                    <div class="flex flex-wrap gap-1">
-                        <Link
-                            v-for="(link, i) in escolas.links"
-                            :key="i"
-                            :href="link.url ?? '#'"
-                            v-html="link.label"
-                            :class="[
-                                'rounded-md px-3 py-1 text-xs',
-                                link.active ? 'bg-sky-600 text-white' : 'border bg-background hover:bg-muted',
-                                !link.url && 'pointer-events-none opacity-40',
-                            ]"
-                            preserve-scroll
-                        />
+                <div class="flex items-center justify-between border-t bg-muted/20 px-4 py-3 text-sm">
+                    <span class="text-muted-foreground">
+                        <template v-if="escolas.total > 0">{{ escolas.from }}–{{ escolas.to }} de {{ escolas.total }} registro{{ escolas.total !== 1 ? 's' : '' }}</template>
+                        <template v-else>Nenhum registro</template>
+                    </span>
+                    <div v-if="escolas.last_page > 1" class="flex flex-wrap gap-1">
+                        <Link v-for="(link, i) in escolas.links" :key="i" :href="link.url ?? '#'" v-html="link.label" :class="['rounded-md px-3 py-1 text-xs', link.active ? 'bg-sky-600 text-white' : 'border bg-background hover:bg-muted', !link.url && 'pointer-events-none opacity-40']" preserve-scroll />
                     </div>
                 </div>
             </div>

@@ -7,6 +7,8 @@ export const ESCOLARIDADES = [
     { value: 6, label: 'Ensino Superior Completo' },
     { value: 7, label: 'Pós-graduação' },
     { value: 8, label: 'Mestrado / Doutorado' },
+    { value: 9, label: 'Magistério' },
+    { value: 10, label: 'Graduação com Licenciatura' },
 ] as const;
 
 export const ESTADOS_CIVIS = [

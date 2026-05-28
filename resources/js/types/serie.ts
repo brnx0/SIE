@@ -15,9 +15,22 @@ export interface Serie {
     ser_fl_ativo: boolean;
     ser_tipo_avaliacao: string[] | null;
     ser_tipo_avaliacao_descritiva: 'por_aluno' | 'por_unidade' | null;
+    ser_promo_ser_id_1: number | null;
+    ser_promo_ser_id_2: number | null;
+    ser_cons_ser_id_1: number | null;
+    ser_cons_ser_id_2: number | null;
     ser_created_at: string | null;
     ser_updated_at: string | null;
     segmento?: Pick<Segmento, 'seg_id' | 'seg_nome_reduzido'>;
+    promoSerie1?: SerieResumo | null;
+    promoSerie2?: SerieResumo | null;
+    consSerie1?: SerieResumo | null;
+    consSerie2?: SerieResumo | null;
+}
+
+export interface SerieResumo {
+    ser_id: number;
+    ser_nome: string;
 }
 
 export interface SerieFormData {
@@ -34,6 +47,10 @@ export interface SerieFormData {
     ser_fl_ativo: boolean;
     ser_tipo_avaliacao: string[];
     ser_tipo_avaliacao_descritiva: string;
+    ser_promo_ser_id_1: number | null;
+    ser_promo_ser_id_2: number | null;
+    ser_cons_ser_id_1: number | null;
+    ser_cons_ser_id_2: number | null;
     _method?: 'put' | 'post';
     [key: string]: unknown;
 }

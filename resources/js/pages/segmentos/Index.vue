@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import ExportMenu from '@/components/common/ExportMenu.vue';
+import PerPageSelect from '@/components/common/PerPageSelect.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -10,16 +12,26 @@ import { ref, watch } from 'vue';
 
 const props = defineProps<{
     segmentos: Paginated<Segmento>;
-    filters: { search: string };
+    filters: { search: string; per_page: number };
 }>();
 
-const search = ref(props.filters.search ?? '');
+const search  = ref(props.filters.search ?? '');
+const perPage = ref(props.filters.per_page ?? 10);
+
 let timer: ReturnType<typeof setTimeout> | null = null;
-const apply = () => router.get('/segmentos', { search: search.value }, { preserveState: true, replace: true });
+
+const apply = (resetPage = false) => {
+    const params: Record<string, string | number> = { search: search.value, per_page: perPage.value };
+    if (!resetPage) params.page = props.segmentos.current_page;
+    router.get('/segmentos', params, { preserveState: true, replace: true });
+};
+
 watch(search, () => {
     if (timer) clearTimeout(timer);
-    timer = setTimeout(apply, 300);
+    timer = setTimeout(() => apply(true), 300);
 });
+
+watch(perPage, () => apply(true));
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Segmentos', href: '/segmentos' }];
 
@@ -45,9 +57,19 @@ const remove = (seg: Segmento) => {
                 </Link>
             </div>
 
-            <div class="relative max-w-sm">
-                <Search class="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                <Input v-model="search" placeholder="Buscar por nome ou INEP..." class="pl-9" />
+            <!-- Barra de filtros + exportação -->
+            <div class="flex flex-wrap items-center gap-3">
+                <div class="relative flex-1 max-w-sm">
+                    <Search class="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input v-model="search" placeholder="Buscar por nome ou INEP..." class="pl-9" />
+                </div>
+                <div class="ml-auto flex items-center gap-3">
+                    <PerPageSelect v-model="perPage" />
+                    <ExportMenu
+                        base-url="/segmentos/export"
+                        :filters="{ search }"
+                    />
+                </div>
             </div>
 
             <div class="overflow-hidden rounded-xl border bg-card shadow-sm">
@@ -112,9 +134,14 @@ const remove = (seg: Segmento) => {
                     </tbody>
                 </table>
 
-                <div v-if="segmentos.last_page > 1" class="flex items-center justify-between border-t bg-muted/20 px-4 py-3 text-sm">
-                    <span class="text-muted-foreground">{{ segmentos.from }}–{{ segmentos.to }} de {{ segmentos.total }}</span>
-                    <div class="flex flex-wrap gap-1">
+                <div class="flex items-center justify-between border-t bg-muted/20 px-4 py-3 text-sm">
+                    <span class="text-muted-foreground">
+                        <template v-if="segmentos.total > 0">
+                            {{ segmentos.from }}–{{ segmentos.to }} de {{ segmentos.total }} registro{{ segmentos.total !== 1 ? 's' : '' }}
+                        </template>
+                        <template v-else>Nenhum registro</template>
+                    </span>
+                    <div v-if="segmentos.last_page > 1" class="flex flex-wrap gap-1">
                         <Link
                             v-for="(link, i) in segmentos.links"
                             :key="i"

@@ -2,7 +2,10 @@
 
 namespace App\Models;
 
+use App\Models\Escola\Escola;
+use App\Models\Funcionario\Funcionario;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -28,6 +31,8 @@ class User extends Authenticatable
         'role',
         'phone',
         'active',
+        'esc_id',
+        'fun_id',
     ];
 
     protected $hidden = [
@@ -39,8 +44,25 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-            'active' => 'boolean',
+            'password'          => 'hashed',
+            'active'            => 'boolean',
+            'esc_id'            => 'integer',
+            'fun_id'            => 'integer',
         ];
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+
+    public function escola(): BelongsTo
+    {
+        return $this->belongsTo(Escola::class, 'esc_id', 'esc_id');
+    }
+
+    public function funcionario(): BelongsTo
+    {
+        return $this->belongsTo(Funcionario::class, 'fun_id', 'fun_id');
     }
 }

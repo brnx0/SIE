@@ -59,6 +59,34 @@ export interface AnoLetivoFormData {
     [key: string]: any;
 }
 
+export type TipoUnidadeTipo = 'unidade_didatica' | 'bimestral' | 'fase' | 'semestral' | 'trimestral';
+
+export const TIPO_UNIDADE_LABELS: Record<TipoUnidadeTipo, string> = {
+    unidade_didatica: 'Unidade Didática',
+    bimestral:        'Bimestral',
+    fase:             'Fase',
+    semestral:        'Semestral',
+    trimestral:       'Trimestral',
+};
+
+export interface TipoUnidade {
+    tun_id: number;
+    tun_tipo: TipoUnidadeTipo;
+    tun_anl_id_inicio: number;
+    tun_anl_id_fim: number | null;
+    ano_letivo_inicio?: { anl_id: number; anl_ano: number } | null;
+    ano_letivo_fim?: { anl_id: number; anl_ano: number } | null;
+    tun_created_at?: string | null;
+    tun_updated_at?: string | null;
+}
+
+export interface TipoUnidadeFormData {
+    tun_tipo: TipoUnidadeTipo | '';
+    tun_anl_id_inicio: number | null;
+    tun_anl_id_fim: number | null;
+    _method?: 'put';
+}
+
 export interface ParametroEntidadeFormData {
     par_nome_entidade: string;
     par_msg_cab_secretaria: string;

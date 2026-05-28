@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Aluno;
 
+use App\Models\Funcionario\Funcionario;
 use App\Models\Parametro\ParametroEntidade;
 use App\Rules\Cpf;
 use Illuminate\Contracts\Validation\Validator;
@@ -168,13 +169,36 @@ class StoreAlunoRequest extends FormRequest
     public function withValidator(Validator $validator): void
     {
         $validator->after(function (Validator $v) {
-            if (! $this->parametros()->par_fl_alertar_acentos_nomes) {
+            // Valida acentos no nome
+            if ($this->parametros()->par_fl_alertar_acentos_nomes) {
+                $nome = (string) $this->input('aln_nome', '');
+                if ($nome !== '' && preg_match('/[\x{0300}-\x{036f}]|[À-ÖØ-öø-ÿ]/u', $nome)) {
+                    $v->errors()->add('aln_nome', 'O nome contém acentos. Conforme parâmetros do sistema, cadastre nomes sem acentuação.');
+                }
+            }
+
+            // Validação cruzada: CPF já existe em funcionário?
+            if ($v->errors()->has('aln_cpf') || ! $this->filled('aln_cpf')) {
                 return;
             }
-            $nome = (string) $this->input('aln_nome', '');
-            // Detecta caracteres acentuados (qualquer marca diacrítica).
-            if ($nome !== '' && preg_match('/[\x{0300}-\x{036f}]|[À-ÖØ-öø-ÿ]/u', $nome)) {
-                $v->errors()->add('aln_nome', 'O nome contém acentos. Conforme parâmetros do sistema, cadastre nomes sem acentuação.');
+
+            $cpf = $this->input('aln_cpf');
+            $dtNasc = $this->input('aln_dt_nascimento'); // formato Y-m-d
+
+            $funcionario = Funcionario::where('fun_cpf', $cpf)->first(['fun_nome', 'fun_dt_nascimento']);
+
+            if ($funcionario) {
+                $dtFun = $funcionario->fun_dt_nascimento
+                    ? $funcionario->fun_dt_nascimento->format('Y-m-d')
+                    : null;
+
+                if ($dtFun !== $dtNasc) {
+                    $v->errors()->add(
+                        'aln_cpf',
+                        "CPF já cadastrado para o funcionário {$funcionario->fun_nome}. " .
+                        'Para vincular o mesmo CPF, a data de nascimento deve ser idêntica.'
+                    );
+                }
             }
         });
     }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Funcionario;
 
+use App\Models\Aluno\Aluno;
 use App\Models\Funcionario\Funcionario;
 use App\Models\Parametro\ParametroEntidade;
 use App\Rules\Cpf;
@@ -67,7 +68,7 @@ class StoreFuncionarioRequest extends FormRequest
             'fun_mun_id_nasc' => ['required', 'integer', 'exists:edu_municipio,mun_id'],
             'fun_cpf' => ['required', 'digits:11', new Cpf],
             'fun_religiao' => ['nullable', 'string', 'max:60'],
-            'fun_escolaridade' => ['required', 'integer', Rule::in([1, 2, 3, 4, 5, 6, 7, 8])],
+            'fun_escolaridade' => ['required', 'integer', Rule::in([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])],
             'fun_estado_civil' => ['required', 'integer', Rule::in([1, 2, 3, 4, 5])],
             'fun_povo_indigena' => ['nullable', 'string', 'max:60'],
             'fun_cd_censo' => ['nullable', 'digits:12', Rule::unique('edu_funcionario', 'fun_cd_censo')->ignore($funId, 'fun_id')->whereNull('fun_deleted_at')],
@@ -123,15 +124,36 @@ class StoreFuncionarioRequest extends FormRequest
                 return;
             }
 
-            $funId = $this->route('funcionario')?->fun_id;
+            $cpf    = $this->input('fun_cpf');
+            $funId  = $this->route('funcionario')?->fun_id;
+            $dtNasc = $this->input('fun_dt_nascimento'); // formato Y-m-d
 
+            // Duplicidade dentro de funcionários
             $existing = Funcionario::query()
-                ->where('fun_cpf', $this->input('fun_cpf'))
+                ->where('fun_cpf', $cpf)
                 ->when($funId, fn ($q) => $q->where('fun_id', '!=', $funId))
                 ->first(['fun_nome']);
 
             if ($existing) {
                 $v->errors()->add('fun_cpf', "CPF já cadastrado para: {$existing->fun_nome}.");
+                return; // já com erro, não precisa checar aluno
+            }
+
+            // Validação cruzada: CPF já existe em aluno?
+            $aluno = Aluno::where('aln_cpf', $cpf)->first(['aln_nome', 'aln_dt_nascimento']);
+
+            if ($aluno) {
+                $dtAluno = $aluno->aln_dt_nascimento
+                    ? $aluno->aln_dt_nascimento->format('Y-m-d')
+                    : null;
+
+                if ($dtAluno !== $dtNasc) {
+                    $v->errors()->add(
+                        'fun_cpf',
+                        "CPF já cadastrado para o aluno {$aluno->aln_nome}. " .
+                        'Para vincular o mesmo CPF, a data de nascimento deve ser idêntica.'
+                    );
+                }
             }
         });
     }

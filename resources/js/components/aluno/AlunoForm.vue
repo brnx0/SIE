@@ -166,6 +166,21 @@ watch(dataBR, (v) => {
 });
 
 watch(
+    () => form.saude.als_fl_pcd,
+    (v) => {
+        if (!v) {
+            form.saude.als_deficiencias = [];
+            form.saude.als_transtornos_globais = [];
+            form.saude.als_transtornos_aprendizagem = [];
+            form.saude.als_deficiencia_outro = '';
+            form.saude.als_fl_altas_habilidades = false;
+            form.saude.als_cid = '';
+            form.saude.als_observacao = '';
+        }
+    },
+);
+
+watch(
     () => form.aln_nome,
     (v) => {
         if (typeof v !== 'string') return;
@@ -833,110 +848,114 @@ const initials = computed(() => {
                     <fieldset class="rounded-xl border bg-card p-6 shadow-sm">
                         <legend class="px-2 text-sm font-semibold">Tipo de Deficiência, Transtorno Global do Desenvolvimento ou Altas Habilidades/Superdotação</legend>
 
-                        <div class="grid gap-6 sm:grid-cols-3">
-                            <div>
-                                <h4 class="mb-2 text-xs font-semibold text-muted-foreground">Deficiência</h4>
-                                <div class="space-y-2">
-                                    <label
-                                        v-for="d in DEFICIENCIAS"
-                                        :key="d"
-                                        class="flex items-center gap-2 text-sm"
-                                    >
-                                        <input
-                                            type="checkbox"
-                                            :checked="form.saude.als_deficiencias.includes(d)"
-                                            @change="toggleArrayItem(form.saude.als_deficiencias, d)"
-                                            class="size-4 rounded border-gray-300 text-sky-600 focus:ring-sky-500"
-                                        />
-                                        {{ d }}
-                                    </label>
-                                </div>
-                            </div>
-
-                            <div>
-                                <h4 class="mb-2 text-xs font-semibold text-muted-foreground">Transtorno Global de Desenvolvimento</h4>
-                                <div class="space-y-2">
-                                    <label
-                                        v-for="t in TRANSTORNOS_GLOBAIS"
-                                        :key="t"
-                                        class="flex items-center gap-2 text-sm"
-                                    >
-                                        <input
-                                            type="checkbox"
-                                            :checked="form.saude.als_transtornos_globais.includes(t)"
-                                            @change="toggleArrayItem(form.saude.als_transtornos_globais, t)"
-                                            class="size-4 rounded border-gray-300 text-sky-600 focus:ring-sky-500"
-                                        />
-                                        {{ t }}
-                                    </label>
-                                </div>
-                            </div>
-
-                            <div>
-                                <h4 class="mb-2 text-xs font-semibold text-muted-foreground">Transtornos que Impactam a Aprendizagem</h4>
-                                <div class="space-y-2">
-                                    <label
-                                        v-for="t in TRANSTORNOS_APRENDIZAGEM"
-                                        :key="t"
-                                        class="flex items-center gap-2 text-sm"
-                                    >
-                                        <input
-                                            type="checkbox"
-                                            :checked="form.saude.als_transtornos_aprendizagem.includes(t)"
-                                            @change="toggleArrayItem(form.saude.als_transtornos_aprendizagem, t)"
-                                            class="size-4 rounded border-gray-300 text-sky-600 focus:ring-sky-500"
-                                        />
-                                        {{ t }}
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="mt-4 grid gap-4 sm:grid-cols-2">
-                            <div class="grid gap-2">
-                                <Label for="als_deficiencia_outro">Outro(a)</Label>
-                                <Input id="als_deficiencia_outro" v-model="form.saude.als_deficiencia_outro" maxlength="500" />
-                                <InputError :message="(form.errors as Record<string, string>)['saude.als_deficiencia_outro']" />
-                            </div>
-                        </div>
-
-                        <div class="mt-4 grid gap-4 sm:grid-cols-3">
-                            <div class="flex items-center gap-3">
-                                <Switch
-                                    id="als_fl_altas_habilidades"
-                                    v-model="form.saude.als_fl_altas_habilidades"
-                                />
-                                <Label for="als_fl_altas_habilidades" class="text-sm font-normal">
-                                    Altas Habilidades/Superdotação
-                                </Label>
-                            </div>
-                            <div class="grid gap-2">
-                                <Label for="als_cid">CID</Label>
-                                <Input id="als_cid" v-model="form.saude.als_cid" maxlength="20" />
-                                <InputError :message="(form.errors as Record<string, string>)['saude.als_cid']" />
-                            </div>
-                        </div>
-
-                        <div class="mt-4 grid gap-2">
-                            <Label for="als_observacao">Observação</Label>
-                            <textarea
-                                id="als_observacao"
-                                v-model="form.saude.als_observacao"
-                                rows="3"
-                                maxlength="2000"
-                                class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
-                            />
-                            <InputError :message="(form.errors as Record<string, string>)['saude.als_observacao']" />
-                        </div>
-
-                        <div class="mt-4 flex items-center gap-3">
+                        <!-- Flag PCD — vem primeiro -->
+                        <div class="mb-5 flex items-center gap-3">
                             <Switch
                                 id="als_fl_pcd"
                                 v-model="form.saude.als_fl_pcd"
                             />
-                            <Label for="als_fl_pcd" class="text-sm font-normal">
+                            <Label for="als_fl_pcd" class="text-sm font-medium">
                                 Aluno com Deficiência (PCD), TGD ou Altas Habilidades
                             </Label>
+                        </div>
+
+                        <!-- Conteúdo desabilitado quando flag inativa -->
+                        <div :class="{ 'pointer-events-none opacity-40': !form.saude.als_fl_pcd }">
+                            <div class="grid gap-6 sm:grid-cols-3">
+                                <div>
+                                    <h4 class="mb-2 text-xs font-semibold text-muted-foreground">Deficiência</h4>
+                                    <div class="space-y-2">
+                                        <label
+                                            v-for="d in DEFICIENCIAS"
+                                            :key="d"
+                                            class="flex items-center gap-2 text-sm"
+                                        >
+                                            <input
+                                                type="checkbox"
+                                                :checked="form.saude.als_deficiencias.includes(d)"
+                                                @change="toggleArrayItem(form.saude.als_deficiencias, d)"
+                                                class="size-4 rounded border-gray-300 text-sky-600 focus:ring-sky-500"
+                                            />
+                                            {{ d }}
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <h4 class="mb-2 text-xs font-semibold text-muted-foreground">Transtorno Global de Desenvolvimento</h4>
+                                    <div class="space-y-2">
+                                        <label
+                                            v-for="t in TRANSTORNOS_GLOBAIS"
+                                            :key="t"
+                                            class="flex items-center gap-2 text-sm"
+                                        >
+                                            <input
+                                                type="checkbox"
+                                                :checked="form.saude.als_transtornos_globais.includes(t)"
+                                                @change="toggleArrayItem(form.saude.als_transtornos_globais, t)"
+                                                class="size-4 rounded border-gray-300 text-sky-600 focus:ring-sky-500"
+                                            />
+                                            {{ t }}
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <h4 class="mb-2 text-xs font-semibold text-muted-foreground">Transtornos que Impactam a Aprendizagem</h4>
+                                    <div class="space-y-2">
+                                        <label
+                                            v-for="t in TRANSTORNOS_APRENDIZAGEM"
+                                            :key="t"
+                                            class="flex items-center gap-2 text-sm"
+                                        >
+                                            <input
+                                                type="checkbox"
+                                                :checked="form.saude.als_transtornos_aprendizagem.includes(t)"
+                                                @change="toggleArrayItem(form.saude.als_transtornos_aprendizagem, t)"
+                                                class="size-4 rounded border-gray-300 text-sky-600 focus:ring-sky-500"
+                                            />
+                                            {{ t }}
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mt-4 grid gap-4 sm:grid-cols-2">
+                                <div class="grid gap-2">
+                                    <Label for="als_deficiencia_outro">Outro(a)</Label>
+                                    <Input id="als_deficiencia_outro" v-model="form.saude.als_deficiencia_outro" maxlength="500" />
+                                    <InputError :message="(form.errors as Record<string, string>)['saude.als_deficiencia_outro']" />
+                                </div>
+                            </div>
+
+                            <div class="mt-4 grid gap-4 sm:grid-cols-3">
+                                <div class="flex items-center gap-3">
+                                    <Switch
+                                        id="als_fl_altas_habilidades"
+                                        v-model="form.saude.als_fl_altas_habilidades"
+                                    />
+                                    <Label for="als_fl_altas_habilidades" class="text-sm font-normal">
+                                        Altas Habilidades/Superdotação
+                                    </Label>
+                                </div>
+                                <div class="grid gap-2">
+                                    <Label for="als_cid">CID</Label>
+                                    <Input id="als_cid" v-model="form.saude.als_cid" maxlength="20" />
+                                    <InputError :message="(form.errors as Record<string, string>)['saude.als_cid']" />
+                                </div>
+                            </div>
+
+                            <div class="mt-4 grid gap-2">
+                                <Label for="als_observacao">Observação</Label>
+                                <textarea
+                                    id="als_observacao"
+                                    v-model="form.saude.als_observacao"
+                                    rows="3"
+                                    maxlength="2000"
+                                    class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                                />
+                                <InputError :message="(form.errors as Record<string, string>)['saude.als_observacao']" />
+                            </div>
                         </div>
                     </fieldset>
 

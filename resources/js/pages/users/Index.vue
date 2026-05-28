@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import ExportMenu from '@/components/common/ExportMenu.vue';
+import PerPageSelect from '@/components/common/PerPageSelect.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -9,27 +11,24 @@ import { ref, watch } from 'vue';
 
 const props = defineProps<{
     users: Paginated<User>;
-    filters: { search: string; role: string };
+    filters: { search: string; role: string; per_page: number };
     roles: Record<string, string>;
 }>();
 
-const search = ref(props.filters.search ?? '');
-const role = ref(props.filters.role ?? '');
+const search  = ref(props.filters.search ?? '');
+const role    = ref(props.filters.role ?? '');
+const perPage = ref(props.filters.per_page ?? 10);
 
 let timer: ReturnType<typeof setTimeout> | null = null;
-const apply = () => {
-    router.get('/users', { search: search.value, role: role.value }, { preserveState: true, replace: true });
+const apply = (resetPage = false) => {
+    const params: Record<string, string | number> = { search: search.value, role: role.value, per_page: perPage.value };
+    if (!resetPage) params.page = props.users.current_page;
+    router.get('/users', params, { preserveState: true, replace: true });
 };
-watch(search, () => {
-    if (timer) clearTimeout(timer);
-    timer = setTimeout(apply, 300);
-});
-watch(role, apply);
+watch(search, () => { if (timer) clearTimeout(timer); timer = setTimeout(() => apply(true), 300); });
+watch([role, perPage], () => apply(true));
 
-const breadcrumbs: BreadcrumbItem[] = [
-
-    { title: 'Usuários', href: '/users' },
-];
+const breadcrumbs: BreadcrumbItem[] = [{ title: 'Usuários', href: '/users' }];
 
 const roleClass = (key?: string) => {
     switch (key) {
@@ -47,33 +46,34 @@ const remove = (user: User) => {
 </script>
 
 <template>
-    <Head title="Funcionários" />
+    <Head title="Usuários" />
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex flex-col gap-6 p-4 md:p-6">
             <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                    <h1 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">Funcionários</h1>
+                    <h1 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">Usuários</h1>
                     <p class="text-sm text-slate-500 dark:text-slate-400">Gerencie professores, colaboradores e administradores do sistema.</p>
                 </div>
                 <Link href="/users/create">
                     <Button class="bg-sky-600 text-white hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-400">
-                        <Plus class="mr-2 size-4" /> Novo funcionário
+                        <Plus class="mr-2 size-4" /> Novo usuário
                     </Button>
                 </Link>
             </div>
 
-            <div class="flex flex-col gap-3 sm:flex-row">
+            <div class="flex flex-wrap items-center gap-3">
                 <div class="relative flex-1">
                     <Search class="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                     <Input v-model="search" placeholder="Buscar por nome ou e-mail..." class="pl-9" />
                 </div>
-                <select
-                    v-model="role"
-                    class="h-9 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring sm:w-56"
-                >
+                <select v-model="role" class="h-9 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring">
                     <option value="">Todos os perfis</option>
                     <option v-for="(label, key) in roles" :key="key" :value="key">{{ label }}</option>
                 </select>
+                <div class="ml-auto flex items-center gap-3">
+                    <PerPageSelect v-model="perPage" />
+                    <ExportMenu base-url="/users/export" :filters="{ search, role }" />
+                </div>
             </div>
 
             <div class="overflow-hidden rounded-xl border bg-card shadow-sm">
@@ -127,22 +127,13 @@ const remove = (user: User) => {
                         </tr>
                     </tbody>
                 </table>
-
-                <div v-if="users.last_page > 1" class="flex items-center justify-between border-t bg-muted/20 px-4 py-3 text-sm">
-                    <span class="text-muted-foreground">{{ users.from }}–{{ users.to }} de {{ users.total }}</span>
-                    <div class="flex flex-wrap gap-1">
-                        <Link
-                            v-for="(link, i) in users.links"
-                            :key="i"
-                            :href="link.url ?? '#'"
-                            v-html="link.label"
-                            :class="[
-                                'rounded-md px-3 py-1 text-xs',
-                                link.active ? 'bg-sky-600 text-white' : 'border bg-background hover:bg-muted',
-                                !link.url && 'pointer-events-none opacity-40',
-                            ]"
-                            preserve-scroll
-                        />
+                <div class="flex items-center justify-between border-t bg-muted/20 px-4 py-3 text-sm">
+                    <span class="text-muted-foreground">
+                        <template v-if="users.total > 0">{{ users.from }}–{{ users.to }} de {{ users.total }} registro{{ users.total !== 1 ? 's' : '' }}</template>
+                        <template v-else>Nenhum registro</template>
+                    </span>
+                    <div v-if="users.last_page > 1" class="flex flex-wrap gap-1">
+                        <Link v-for="(link, i) in users.links" :key="i" :href="link.url ?? '#'" v-html="link.label" :class="['rounded-md px-3 py-1 text-xs', link.active ? 'bg-sky-600 text-white' : 'border bg-background hover:bg-muted', !link.url && 'pointer-events-none opacity-40']" preserve-scroll />
                     </div>
                 </div>
             </div>

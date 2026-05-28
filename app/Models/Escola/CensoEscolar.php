@@ -42,7 +42,7 @@ class CensoEscolar extends Model
         // Seção 4
         'cen_eqp_antena', 'cen_eqp_computadores', 'cen_eqp_copiadora',
         'cen_eqp_impressora', 'cen_eqp_multifuncional', 'cen_eqp_scanner',
-        'cen_eqp_nenhum',
+        'cen_eqp_notebook', 'cen_eqp_nenhum',
         // Seção 5
         'cen_ens_dvd_qty', 'cen_ens_som_qty', 'cen_ens_tv_qty',
         'cen_ens_lousa_digital_qty', 'cen_ens_projetor_qty',
@@ -120,7 +120,7 @@ class CensoEscolar extends Model
         'cen_eqp_antena'             => 'boolean', 'cen_eqp_computadores'       => 'boolean',
         'cen_eqp_copiadora'          => 'boolean', 'cen_eqp_impressora'         => 'boolean',
         'cen_eqp_multifuncional'     => 'boolean', 'cen_eqp_scanner'            => 'boolean',
-        'cen_eqp_nenhum'             => 'boolean',
+        'cen_eqp_notebook'           => 'boolean', 'cen_eqp_nenhum'             => 'boolean',
         // integers seção 5
         'cen_ens_dvd_qty'            => 'integer', 'cen_ens_som_qty'            => 'integer',
         'cen_ens_tv_qty'             => 'integer', 'cen_ens_lousa_digital_qty'  => 'integer',

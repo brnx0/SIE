@@ -2,6 +2,7 @@
 import FormLabel from '@/components/common/FormLabel.vue';
 import InputError from '@/components/common/InputError.vue';
 import Switch from '@/components/common/Switch.vue';
+import SerieCombobox from '@/components/serie/SerieCombobox.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import type { Segmento } from '@/types/segmento';
@@ -30,6 +31,10 @@ const form = useForm<SerieFormData>({
     ser_fl_ativo:            props.initial?.ser_fl_ativo ?? true,
     ser_tipo_avaliacao:      props.initial?.ser_tipo_avaliacao ?? [],
     ser_tipo_avaliacao_descritiva: props.initial?.ser_tipo_avaliacao_descritiva ?? '',
+    ser_promo_ser_id_1:      props.initial?.ser_promo_ser_id_1 ?? null,
+    ser_promo_ser_id_2:      props.initial?.ser_promo_ser_id_2 ?? null,
+    ser_cons_ser_id_1:       props.initial?.ser_cons_ser_id_1 ?? null,
+    ser_cons_ser_id_2:       props.initial?.ser_cons_ser_id_2 ?? null,
     _method: props.mode === 'edit' ? 'put' : undefined,
 });
 
@@ -267,6 +272,71 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar série' : 'Salvar alter
                     class="max-w-xs"
                 />
                 <InputError :message="form.errors.ser_ordem_no_segmento" />
+            </div>
+
+            <!-- Separador -->
+            <div class="sm:col-span-4 border-t" />
+
+            <!-- Promoção e Conservação -->
+            <div class="grid gap-2 sm:col-span-4">
+                <h3 class="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                    Promoção e Conservação
+                </h3>
+                <p class="text-xs text-slate-400 dark:text-slate-500">
+                    Defina as séries de destino para alunos promovidos ou conservados nesta série.
+                </p>
+            </div>
+
+            <!-- Promoção 1 -->
+            <div class="grid gap-2 sm:col-span-2">
+                <FormLabel>Promoção — 1ª opção</FormLabel>
+                <SerieCombobox
+                    v-model="form.ser_promo_ser_id_1"
+                    :initial="initial?.promoSerie1 ?? null"
+                    :exclude="initial?.ser_id ?? null"
+                    placeholder="Selecionar série..."
+                    :invalid="!!form.errors.ser_promo_ser_id_1"
+                />
+                <InputError :message="form.errors.ser_promo_ser_id_1" />
+            </div>
+
+            <!-- Promoção 2 -->
+            <div class="grid gap-2 sm:col-span-2">
+                <FormLabel>Promoção — 2ª opção</FormLabel>
+                <SerieCombobox
+                    v-model="form.ser_promo_ser_id_2"
+                    :initial="initial?.promoSerie2 ?? null"
+                    :exclude="initial?.ser_id ?? null"
+                    placeholder="Selecionar série..."
+                    :invalid="!!form.errors.ser_promo_ser_id_2"
+                />
+                <InputError :message="form.errors.ser_promo_ser_id_2" />
+            </div>
+
+            <!-- Conservação 1 -->
+            <div class="grid gap-2 sm:col-span-2">
+                <FormLabel>Conservação — 1ª opção</FormLabel>
+                <SerieCombobox
+                    v-model="form.ser_cons_ser_id_1"
+                    :initial="initial?.consSerie1 ?? null"
+                    :exclude="initial?.ser_id ?? null"
+                    placeholder="Selecionar série..."
+                    :invalid="!!form.errors.ser_cons_ser_id_1"
+                />
+                <InputError :message="form.errors.ser_cons_ser_id_1" />
+            </div>
+
+            <!-- Conservação 2 -->
+            <div class="grid gap-2 sm:col-span-2">
+                <FormLabel>Conservação — 2ª opção</FormLabel>
+                <SerieCombobox
+                    v-model="form.ser_cons_ser_id_2"
+                    :initial="initial?.consSerie2 ?? null"
+                    :exclude="initial?.ser_id ?? null"
+                    placeholder="Selecionar série..."
+                    :invalid="!!form.errors.ser_cons_ser_id_2"
+                />
+                <InputError :message="form.errors.ser_cons_ser_id_2" />
             </div>
         </div>
     </form>

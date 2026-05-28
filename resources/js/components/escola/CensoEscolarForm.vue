@@ -91,6 +91,7 @@ const form = useForm<CensoFormData>({
     cen_eqp_impressora: props.censo.cen_eqp_impressora,
     cen_eqp_multifuncional: props.censo.cen_eqp_multifuncional,
     cen_eqp_scanner: props.censo.cen_eqp_scanner,
+    cen_eqp_notebook: props.censo.cen_eqp_notebook,
     cen_eqp_nenhum: props.censo.cen_eqp_nenhum,
     // Seção 5
     cen_ens_dvd_qty: n(props.censo.cen_ens_dvd_qty),
@@ -247,19 +248,19 @@ const cb = (field: keyof CensoFormData) => ({
                             { field: 'cen_dep_auditorio',          label: 'Auditório' },
                             { field: 'cen_dep_ban_pcd',            label: 'Banheiro PCD' },
                             { field: 'cen_dep_ban_infantil',       label: 'Banheiro infantil' },
-                            { field: 'cen_dep_ban_funcionarios',   label: 'Banheiro func.' },
+                            { field: 'cen_dep_ban_funcionarios',   label: 'Banheiro para funcionários' },
                             { field: 'cen_dep_ban_chuveiro',       label: 'Banheiro c/ chuveiro' },
                             { field: 'cen_dep_biblioteca',         label: 'Biblioteca' },
                             { field: 'cen_dep_cozinha',            label: 'Cozinha' },
                             { field: 'cen_dep_despensa',           label: 'Despensa' },
-                            { field: 'cen_dep_dorm_aluno',         label: 'Dormitório aluno' },
-                            { field: 'cen_dep_dorm_professor',     label: 'Dormitório prof.' },
+                            { field: 'cen_dep_dorm_aluno',         label: 'Dormitório para alunos' },
+                            { field: 'cen_dep_dorm_professor',     label: 'Dormitório para professores' },
                             { field: 'cen_dep_estudio_gravacao',   label: 'Estúdio gravação' },
                             { field: 'cen_dep_horta',              label: 'Horta' },
-                            { field: 'cen_dep_lab_ciencias',       label: 'Lab. Ciências' },
-                            { field: 'cen_dep_lab_informatica',    label: 'Lab. Informática' },
-                            { field: 'cen_dep_lab_robotica',       label: 'Lab. Robótica' },
-                            { field: 'cen_dep_lab_profissional',   label: 'Lab. Profissional' },
+                            { field: 'cen_dep_lab_ciencias',       label: 'Laboratório de Ciências' },
+                            { field: 'cen_dep_lab_informatica',    label: 'Laboratório de Informática' },
+                            { field: 'cen_dep_lab_robotica',       label: 'Laboratório de Robótica' },
+                            { field: 'cen_dep_lab_profissional',   label: 'Laboratório Profissional' },
                             { field: 'cen_dep_parque_infantil',    label: 'Parque infantil' },
                             { field: 'cen_dep_patio_coberto',      label: 'Pátio coberto' },
                             { field: 'cen_dep_patio_descoberto',   label: 'Pátio descoberto' },
@@ -272,12 +273,12 @@ const cb = (field: keyof CensoFormData) => ({
                             { field: 'cen_dep_sala_musica',        label: 'Sala de música' },
                             { field: 'cen_dep_sala_danca',         label: 'Sala de dança' },
                             { field: 'cen_dep_sala_multiuso',      label: 'Sala multiuso' },
-                            { field: 'cen_dep_sala_diretoria',     label: 'Sala diretoria' },
+                            { field: 'cen_dep_sala_diretoria',     label: 'Sala da diretoria' },
                             { field: 'cen_dep_sala_leitura',       label: 'Sala de leitura' },
-                            { field: 'cen_dep_sala_professores',   label: 'Sala professores' },
+                            { field: 'cen_dep_sala_professores',   label: 'Sala dos professores' },
                             { field: 'cen_dep_sala_aee',           label: 'Sala AEE' },
-                            { field: 'cen_dep_sala_secretaria',    label: 'Sala secretaria' },
-                            { field: 'cen_dep_sala_oficinas_prof', label: 'Sala oficinas prof.' },
+                            { field: 'cen_dep_sala_secretaria',    label: 'Sala da secretaria' },
+                            { field: 'cen_dep_sala_oficinas_prof', label: 'Sala de oficinas profissionais' },
                             { field: 'cen_dep_terreirao',          label: 'Terreirão' },
                             { field: 'cen_dep_vegetacao',          label: 'Vegetação' },
                             { field: 'cen_dep_viveiro',            label: 'Viveiro' },
@@ -298,7 +299,7 @@ const cb = (field: keyof CensoFormData) => ({
                     </h3>
                     <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
                         <label v-for="item in [
-                            { field: 'cen_ace_corrimao',           label: 'Corrimão' },
+                            { field: 'cen_ace_corrimao',           label: 'Corrimão e Guarda-Corpo' },
                             { field: 'cen_ace_elevador',           label: 'Elevador' },
                             { field: 'cen_ace_pisos_tateis',       label: 'Pisos táteis' },
                             { field: 'cen_ace_portas_80cm',        label: 'Portas ≥ 80 cm' },
@@ -323,15 +324,14 @@ const cb = (field: keyof CensoFormData) => ({
 
                 <!-- Seção 3: Salas de aula -->
                 <div class="rounded-xl border bg-card p-6 shadow-sm">
-                    <h3 class="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                        Quantidade de salas de aula
+                    <h3 class="mb-1 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                        Salas de aula de ensino regular
                     </h3>
+                    <p class="mb-4 text-xs text-slate-400 dark:text-slate-500">Informe apenas as salas utilizadas para ensino regular</p>
                     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         <div v-for="item in [
-                            { field: 'cen_sal_total',             label: 'Total de salas' },
                             { field: 'cen_sal_climatizadas',      label: 'Salas climatizadas' },
                             { field: 'cen_sal_pcd',               label: 'Salas adaptadas PCD' },
-                            { field: 'cen_sal_dentro_predio',     label: 'Salas dentro do prédio' },
                             { field: 'cen_sal_fora_predio',       label: 'Salas fora do prédio' },
                             { field: 'cen_sal_cantinho_leitura',  label: 'Cantinho de leitura' },
                         ]" :key="item.field" class="grid gap-2">
@@ -352,9 +352,10 @@ const cb = (field: keyof CensoFormData) => ({
 
                 <!-- Seção 4: Equipamentos técnico-administrativos -->
                 <div class="rounded-xl border bg-card p-6 shadow-sm">
-                    <h3 class="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                    <h3 class="mb-1 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                         Equipamentos técnico-administrativos
                     </h3>
+                    <p class="mb-4 text-xs text-slate-400 dark:text-slate-500">Marque apenas os equipamentos que estão em utilização</p>
                     <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
                         <label v-for="item in [
                             { field: 'cen_eqp_antena',          label: 'Antena parabólica' },
@@ -362,6 +363,7 @@ const cb = (field: keyof CensoFormData) => ({
                             { field: 'cen_eqp_copiadora',       label: 'Copiadora' },
                             { field: 'cen_eqp_impressora',      label: 'Impressora' },
                             { field: 'cen_eqp_multifuncional',  label: 'Multifuncional' },
+                            { field: 'cen_eqp_notebook',        label: 'Notebook / Chromebook' },
                             { field: 'cen_eqp_scanner',         label: 'Scanner' },
                             { field: 'cen_eqp_nenhum',          label: 'Nenhum' },
                         ]" :key="item.field"
@@ -477,13 +479,13 @@ const cb = (field: keyof CensoFormData) => ({
                         <div v-for="item in [
                             { field: 'cen_pro_agronomo_qty',            label: 'Agrônomo' },
                             { field: 'cen_pro_assist_social_qty',       label: 'Assistente social' },
-                            { field: 'cen_pro_aux_secretaria_qty',      label: 'Aux. de secretaria' },
-                            { field: 'cen_pro_aux_servicos_qty',        label: 'Aux. de serviços gerais' },
+                            { field: 'cen_pro_aux_secretaria_qty',      label: 'Auxiliar de secretaria' },
+                            { field: 'cen_pro_aux_servicos_qty',        label: 'Auxiliar de Serviços Gerais (ASG) / Porteiro(a)' },
                             { field: 'cen_pro_bibliotecario_qty',       label: 'Bibliotecário' },
                             { field: 'cen_pro_bombeiro_qty',            label: 'Bombeiro' },
-                            { field: 'cen_pro_coord_turno_qty',         label: 'Coord. de turno' },
-                            { field: 'cen_pro_coord_pedagogico_qty',    label: 'Coord. pedagógico' },
-                            { field: 'cen_pro_cozinha_qty',             label: 'Cozinheiro(a)' },
+                            { field: 'cen_pro_coord_turno_qty',         label: 'Coordenador(a) de turno' },
+                            { field: 'cen_pro_coord_pedagogico_qty',    label: 'Coordenador(a) pedagógico(a)' },
+                            { field: 'cen_pro_cozinha_qty',             label: 'Merendeiro(a)' },
                             { field: 'cen_pro_fonoaudiologo_qty',       label: 'Fonoaudiólogo' },
                             { field: 'cen_pro_interprete_libras_qty',   label: 'Intérprete de Libras' },
                             { field: 'cen_pro_orientador_comun_qty',    label: 'Orientador comunitário' },
@@ -582,7 +584,7 @@ const cb = (field: keyof CensoFormData) => ({
                     <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
                         <label v-for="item in [
                             { field: 'cen_org_assoc_pais',         label: 'Associação de pais' },
-                            { field: 'cen_org_assoc_pais_mestres', label: 'Assoc. pais e mestres' },
+                            { field: 'cen_org_assoc_pais_mestres', label: 'Associação de pais e mestres' },
                             { field: 'cen_org_conselho_escolar',   label: 'Conselho escolar' },
                             { field: 'cen_org_gremio',             label: 'Grêmio estudantil' },
                             { field: 'cen_org_outros',             label: 'Outros' },

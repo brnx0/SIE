@@ -25,7 +25,7 @@ class FuncionarioAdmissaoController extends Controller
             ],
             'adm_dt_admissao' => ['required', 'date'],
             'adm_crg_id' => ['required', 'integer', 'exists:edu_cargo,crg_id'],
-            'adm_escolaridade_admissao' => ['nullable', 'integer', Rule::in([1, 2, 3, 4, 5, 6, 7, 8])],
+            'adm_escolaridade_admissao' => ['nullable', 'integer', Rule::in([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])],
         ];
     }
 

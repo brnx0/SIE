@@ -29,7 +29,9 @@ const cadastros = [
                 children: [
                     { title: 'Segmentos', href: '/segmentos' },
                     { title: 'Séries', href: '/series' },
+                    { title: 'Disciplinas', href: '/disciplinas' },
                     { title: 'Escolas', href: '/escolas' },
+                    { title: 'Turmas', href: '/turmas' },
                 ],
             },
         ],

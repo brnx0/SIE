@@ -7,6 +7,8 @@ import { Head } from '@inertiajs/vue3';
 const props = defineProps<{
     user: User;
     roles: Record<string, string>;
+    escolas: { esc_id: number; esc_nome: string }[];
+    initialFuncionario?: { fun_id: number; fun_nome: string; fun_cpf: string | null } | null;
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -26,6 +28,8 @@ const breadcrumbs: BreadcrumbItem[] = [
             <UserForm
                 mode="edit"
                 :roles="roles"
+                :escolas="escolas"
+                :initialFuncionario="initialFuncionario"
                 :initial="{
                     id: user.id,
                     name: user.name,
@@ -33,6 +37,8 @@ const breadcrumbs: BreadcrumbItem[] = [
                     role: user.role,
                     phone: user.phone ?? '',
                     active: user.active ?? true,
+                    esc_id: (user as any).esc_id ?? null,
+                    fun_id: (user as any).fun_id ?? null,
                 }"
             />
         </div>

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Parametro\UpdateParametroEntidadeRequest;
 use App\Models\Parametro\AnoLetivo;
 use App\Models\Parametro\ParametroEntidade;
+use App\Models\Parametro\TipoUnidade;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -25,9 +26,15 @@ class ParametroController extends Controller
             ->orderByDesc('anl_ano')
             ->get();
 
+        $tipoUnidades = TipoUnidade::with([
+            'anoLetivoInicio:anl_id,anl_ano',
+            'anoLetivoFim:anl_id,anl_ano',
+        ])->orderBy('tun_anl_id_inicio')->get();
+
         return Inertia::render('parametros/Edit', [
-            'parametro' => $parametro,
-            'anosLetivos' => $anosLetivos,
+            'parametro'    => $parametro,
+            'anosLetivos'  => $anosLetivos,
+            'tipoUnidades' => $tipoUnidades,
         ]);
     }
 

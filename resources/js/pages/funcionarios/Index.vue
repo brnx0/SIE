@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import ExportMenu from '@/components/common/ExportMenu.vue';
+import PerPageSelect from '@/components/common/PerPageSelect.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -10,17 +12,20 @@ import { ref, watch } from 'vue';
 
 const props = defineProps<{
     funcionarios: Paginated<Funcionario>;
-    filters: { search: string };
+    filters: { search: string; per_page: number };
 }>();
 
-const search = ref(props.filters.search ?? '');
+const search  = ref(props.filters.search ?? '');
+const perPage = ref(props.filters.per_page ?? 10);
 
 let timer: ReturnType<typeof setTimeout> | null = null;
-const apply = () => router.get('/funcionarios', { search: search.value }, { preserveState: true, replace: true });
-watch(search, () => {
-    if (timer) clearTimeout(timer);
-    timer = setTimeout(apply, 300);
-});
+const apply = (resetPage = false) => {
+    const params: Record<string, string | number> = { search: search.value, per_page: perPage.value };
+    if (!resetPage) params.page = props.funcionarios.current_page;
+    router.get('/funcionarios', params, { preserveState: true, replace: true });
+};
+watch(search, () => { if (timer) clearTimeout(timer); timer = setTimeout(() => apply(true), 300); });
+watch(perPage, () => apply(true));
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Funcionários', href: '/funcionarios' }];
 
@@ -51,10 +56,14 @@ const formatCpf = (cpf: string | null) => {
                 </Link>
             </div>
 
-            <div class="flex flex-col gap-3 sm:flex-row">
+            <div class="flex flex-wrap items-center gap-3">
                 <div class="relative flex-1">
                     <Search class="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                     <Input v-model="search" placeholder="Buscar por nome ou CPF..." class="pl-9" />
+                </div>
+                <div class="ml-auto flex items-center gap-3">
+                    <PerPageSelect v-model="perPage" />
+                    <ExportMenu base-url="/funcionarios/export" :filters="{ search }" />
                 </div>
             </div>
 
@@ -85,18 +94,11 @@ const formatCpf = (cpf: string | null) => {
                             </td>
                             <td class="px-4 py-3 text-muted-foreground tabular-nums">{{ formatCpf(f.fun_cpf) }}</td>
                             <td class="px-4 py-3 text-muted-foreground">
-                                <span v-if="f.municipio_nascimento">
-                                    {{ f.municipio_nascimento.mun_nome }} — {{ f.municipio_nascimento.mun_uf }}
-                                </span>
+                                <span v-if="f.municipio_nascimento">{{ f.municipio_nascimento.mun_nome }} — {{ f.municipio_nascimento.mun_uf }}</span>
                                 <span v-else>—</span>
                             </td>
                             <td class="px-4 py-3">
-                                <span
-                                    :class="f.fun_fl_ativo
-                                        ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
-                                        : 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400'"
-                                    class="inline-flex rounded-full px-2 py-0.5 text-xs font-medium"
-                                >
+                                <span :class="f.fun_fl_ativo ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400'" class="inline-flex rounded-full px-2 py-0.5 text-xs font-medium">
                                     {{ f.fun_fl_ativo ? 'Ativo' : 'Inativo' }}
                                 </span>
                             </td>
@@ -113,22 +115,13 @@ const formatCpf = (cpf: string | null) => {
                         </tr>
                     </tbody>
                 </table>
-
-                <div v-if="funcionarios.last_page > 1" class="flex items-center justify-between border-t bg-muted/20 px-4 py-3 text-sm">
-                    <span class="text-muted-foreground">{{ funcionarios.from }}–{{ funcionarios.to }} de {{ funcionarios.total }}</span>
-                    <div class="flex flex-wrap gap-1">
-                        <Link
-                            v-for="(link, i) in funcionarios.links"
-                            :key="i"
-                            :href="link.url ?? '#'"
-                            v-html="link.label"
-                            :class="[
-                                'rounded-md px-3 py-1 text-xs',
-                                link.active ? 'bg-sky-600 text-white' : 'border bg-background hover:bg-muted',
-                                !link.url && 'pointer-events-none opacity-40',
-                            ]"
-                            preserve-scroll
-                        />
+                <div class="flex items-center justify-between border-t bg-muted/20 px-4 py-3 text-sm">
+                    <span class="text-muted-foreground">
+                        <template v-if="funcionarios.total > 0">{{ funcionarios.from }}–{{ funcionarios.to }} de {{ funcionarios.total }} registro{{ funcionarios.total !== 1 ? 's' : '' }}</template>
+                        <template v-else>Nenhum registro</template>
+                    </span>
+                    <div v-if="funcionarios.last_page > 1" class="flex flex-wrap gap-1">
+                        <Link v-for="(link, i) in funcionarios.links" :key="i" :href="link.url ?? '#'" v-html="link.label" :class="['rounded-md px-3 py-1 text-xs', link.active ? 'bg-sky-600 text-white' : 'border bg-background hover:bg-muted', !link.url && 'pointer-events-none opacity-40']" preserve-scroll />
                     </div>
                 </div>
             </div>

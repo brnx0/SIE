@@ -83,6 +83,7 @@ class UpdateCensoEscolarRequest extends FormRequest
             'cen_eqp_impressora'         => ['boolean'],
             'cen_eqp_multifuncional'     => ['boolean'],
             'cen_eqp_scanner'            => ['boolean'],
+            'cen_eqp_notebook'           => ['boolean'],
             'cen_eqp_nenhum'             => ['boolean'],
 
             // Seção 5 — Equipamentos de ensino (quantidades)

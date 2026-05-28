@@ -82,6 +82,7 @@ export interface CensoEscolar extends CensoEscolarResumo {
     cen_eqp_impressora: boolean;
     cen_eqp_multifuncional: boolean;
     cen_eqp_scanner: boolean;
+    cen_eqp_notebook: boolean;
     cen_eqp_nenhum: boolean;
 
     // Seção 5
@@ -247,6 +248,7 @@ export interface CensoFormData {
     cen_eqp_impressora: boolean;
     cen_eqp_multifuncional: boolean;
     cen_eqp_scanner: boolean;
+    cen_eqp_notebook: boolean;
     cen_eqp_nenhum: boolean;
 
     // Seção 5

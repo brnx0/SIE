@@ -2,10 +2,10 @@
 import ParametroForm from '@/components/parametro/ParametroForm.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import type { AnoLetivo, ParametroEntidade } from '@/types/parametro';
+import type { AnoLetivo, ParametroEntidade, TipoUnidade } from '@/types/parametro';
 import { Head } from '@inertiajs/vue3';
 
-defineProps<{ parametro: ParametroEntidade; anosLetivos: AnoLetivo[] }>();
+defineProps<{ parametro: ParametroEntidade; anosLetivos: AnoLetivo[]; tipoUnidades: TipoUnidade[] }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Parâmetros do Sistema', href: '/parametros' },
@@ -20,7 +20,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                 <h1 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">Parâmetros do Sistema</h1>
                 <p class="text-sm text-slate-500 dark:text-slate-400">Configurações gerais da entidade.</p>
             </div>
-            <ParametroForm :initial="parametro" :anos-letivos="anosLetivos" />
+            <ParametroForm :initial="parametro" :anos-letivos="anosLetivos" :tipo-unidades="tipoUnidades" />
         </div>
     </AppLayout>
 </template>
