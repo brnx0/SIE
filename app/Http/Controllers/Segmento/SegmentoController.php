@@ -127,7 +127,7 @@ class SegmentoController extends Controller
             'search'        => $request->input('search', ''),
         ])->render();
 
-        $mpdf = new Mpdf(['orientation' => 'L', 'format' => 'A4', 'margin_top' => 0, 'margin_bottom' => 0, 'margin_left' => 0, 'margin_right' => 0]);
+        $mpdf = new Mpdf(['orientation' => 'L', 'format' => 'A4', 'margin_top' => 0, 'margin_bottom' => 0, 'margin_left' => 0, 'margin_right' => 0, 'tempDir' => sys_get_temp_dir()]);
         $mpdf->WriteHTML($html);
 
         return response($mpdf->Output($filename, 'S'), 200, [
