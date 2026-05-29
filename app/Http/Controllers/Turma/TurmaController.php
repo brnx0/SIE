@@ -4,8 +4,11 @@ namespace App\Http\Controllers\Turma;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Turma\StoreTurmaRequest;
+use App\Models\Disciplina\Disciplina;
 use App\Models\Escola\Escola;
+use App\Models\Funcionario\Funcionario;
 use App\Models\Parametro\AnoLetivo;
+use App\Models\Parametro\GradeHorario;
 use App\Models\Turma\Turma;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -22,6 +25,12 @@ class TurmaController extends Controller
         't' => 'Tarde',
         'n' => 'Noite',
         'i' => 'Integral',
+    ];
+
+    private const TURNO_MAP = [
+        'MATUTINO'   => 'm',
+        'VESPERTINO' => 't',
+        'NOTURNO'    => 'n',
     ];
 
     public function index(Request $request): Response
@@ -78,9 +87,9 @@ class TurmaController extends Controller
 
     public function store(StoreTurmaRequest $request): RedirectResponse
     {
-        Turma::create($request->validated());
+        $turma = Turma::create($request->validated());
 
-        return to_route('turmas.index')->with('success', 'Turma cadastrada com sucesso.');
+        return to_route('turmas.edit', $turma)->with('success', 'Turma cadastrada com sucesso.');
     }
 
     public function edit(Turma $turma): Response
@@ -91,16 +100,29 @@ class TurmaController extends Controller
             'anoLetivo:anl_id,anl_ano',
             'segmento:seg_id,seg_nome_reduzido',
             'serie:ser_id,ser_nome',
+            'professores.funcionario:fun_id,fun_nome',
+            'professores.disciplina:dis_id,dis_nome',
+            'horarios.gradeHorario:grh_id,grh_hora,grh_ordem',
+            'horarios.funcionario:fun_id,fun_nome',
+            'horarios.disciplina:dis_id,dis_nome',
         ]);
 
         return Inertia::render('turmas/Edit', [
-            'turma'       => $turma,
-            'anosLetivos' => AnoLetivo::orderByDesc('anl_ano')->get(['anl_id', 'anl_ano']),
-            'escolas'     => $user->isAdmin()
+            'turma'                  => $turma,
+            'anosLetivos'            => AnoLetivo::orderByDesc('anl_ano')->get(['anl_id', 'anl_ano']),
+            'escolas'                => $user->isAdmin()
                 ? Escola::where('esc_fl_ativo', true)->orderBy('esc_nome')->get(['esc_id', 'esc_nome'])
                 : [],
-            'isAdmin'     => $user->isAdmin(),
-            'userEscola'  => $user->isAdmin() ? null : ['esc_id' => $user->esc_id, 'esc_nome' => $user->escola?->esc_nome],
+            'isAdmin'                => $user->isAdmin(),
+            'userEscola'             => $user->isAdmin() ? null : ['esc_id' => $user->esc_id, 'esc_nome' => $user->escola?->esc_nome],
+            'disciplinas'            => Disciplina::where('dis_fl_ativo', true)->orderBy('dis_nome')->get(['dis_id', 'dis_nome']),
+            'professoresDisponiveis' => Funcionario::whereHas('admissoes.lotacoes', fn ($q) =>
+                $q->where('lot_esc_id', $turma->tur_esc_id)
+            )->orderBy('fun_nome')->get(['fun_id', 'fun_nome']),
+            'gradeHorarios'          => GradeHorario::where('grh_seg_id', $turma->tur_seg_id)
+                ->when($turma->tur_turno !== 'INTEGRAL', fn ($q) => $q->where('grh_turno', self::TURNO_MAP[$turma->tur_turno] ?? $turma->tur_turno))
+                ->orderBy('grh_ordem')
+                ->get(['grh_id', 'grh_turno', 'grh_hora', 'grh_ordem']),
         ]);
     }
 
@@ -108,7 +130,7 @@ class TurmaController extends Controller
     {
         $turma->update($request->validated());
 
-        return to_route('turmas.index')->with('success', 'Turma atualizada com sucesso.');
+        return to_route('turmas.edit', $turma)->with('success', 'Turma atualizada com sucesso.');
     }
 
     public function destroy(Turma $turma): RedirectResponse

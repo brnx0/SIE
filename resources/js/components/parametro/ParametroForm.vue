@@ -7,12 +7,13 @@ import TabsContent from '@/components/common/TabsContent.vue';
 import TabsList from '@/components/common/TabsList.vue';
 import TabsTrigger from '@/components/common/TabsTrigger.vue';
 import AnoLetivoDialog from '@/components/parametro/AnoLetivoDialog.vue';
+import GradeHorariosTab from '@/components/parametro/GradeHorariosTab.vue';
 import Switch from '@/components/common/Switch.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import type { Municipio } from '@/types/aluno';
-import type { AnoLetivo, ParametroEntidade, ParametroEntidadeFormData, TipoUnidade, TipoUnidadeTipo } from '@/types/parametro';
+import type { AnoLetivo, GradeHorario, ParametroEntidade, ParametroEntidadeFormData, SegmentoResumo, TipoUnidade, TipoUnidadeTipo } from '@/types/parametro';
 import { TIPO_UNIDADE_LABELS } from '@/types/parametro';
 import { router, useForm } from '@inertiajs/vue3';
 import { Building2, Camera, CheckCircle2, LoaderCircle, Pencil, Plus, Save, Shield, Trash2, Upload, X } from 'lucide-vue-next';
@@ -22,9 +23,11 @@ const props = defineProps<{
     initial: ParametroEntidade;
     anosLetivos: AnoLetivo[];
     tipoUnidades: TipoUnidade[];
+    segmentos: SegmentoResumo[];
+    gradeHorarios: GradeHorario[];
 }>();
 
-const TABS = ['entidade', 'ano_letivo', 'unidade', 'cadastros'] as const;
+const TABS = ['entidade', 'ano_letivo', 'unidade', 'cadastros', 'grade'] as const;
 type TabId = (typeof TABS)[number];
 
 const TAB_FIELDS: Record<TabId, string[]> = {
@@ -255,6 +258,7 @@ const anoLetivoLabel = (anlId: number | null): string => {
                 <TabsTrigger value="ano_letivo" :has-error="tabHasError('ano_letivo')">2. Ano Letivo</TabsTrigger>
                 <TabsTrigger value="unidade" :has-error="tabHasError('unidade')">3. Unidade</TabsTrigger>
                 <TabsTrigger value="cadastros" :has-error="tabHasError('cadastros')">4. Cadastros</TabsTrigger>
+                <TabsTrigger value="grade">5. Grade de Horários</TabsTrigger>
             </TabsList>
 
             <!-- Aba 1: Entidade -->
@@ -626,6 +630,11 @@ const anoLetivoLabel = (anlId: number | null): string => {
                         </Button>
                     </div>
                 </form>
+            </TabsContent>
+
+            <!-- Aba 5: Grade de Horários -->
+            <TabsContent value="grade">
+                <GradeHorariosTab :grade-horarios="gradeHorarios" :segmentos="segmentos" />
             </TabsContent>
         </Tabs>
 

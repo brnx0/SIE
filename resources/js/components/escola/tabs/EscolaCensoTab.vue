@@ -37,9 +37,10 @@ const replicateDialogOpen = ref(false);
 
 function parseLocalDate(dt: string | null | undefined): Date | null {
     if (!dt) return null;
-    // Normalize: if bare date 'YYYY-MM-DD', append time to avoid UTC-midnight shift
-    const s = /^\d{4}-\d{2}-\d{2}$/.test(dt) ? dt + 'T00:00:00' : dt;
-    const d = new Date(s);
+    // Always extract YYYY-MM-DD portion and parse as local midnight to avoid UTC-offset shift
+    const dateOnly = dt.slice(0, 10);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateOnly)) return null;
+    const d = new Date(dateOnly + 'T00:00:00');
     return isNaN(d.getTime()) ? null : d;
 }
 

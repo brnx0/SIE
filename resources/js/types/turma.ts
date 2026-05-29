@@ -43,6 +43,45 @@ export const DIAS_SEMANA = [
 
 export type DiaSemana = 'dom' | 'seg' | 'ter' | 'qua' | 'qui' | 'sex' | 'sab';
 
+export interface TurmaHorario {
+    trh_id: number;
+    trh_tur_id: number;
+    trh_grh_id: number;
+    trh_dia: string;
+    trh_fun_id: number;
+    trh_dis_id: number;
+    trh_fl_tc: boolean;
+    gradeHorario?: { grh_id: number; grh_hora: string; grh_ordem: number } | null;
+    funcionario?: { fun_id: number; fun_nome: string } | null;
+    disciplina?: { dis_id: number; dis_nome: string } | null;
+}
+
+export interface GradeHorarioResumo {
+    grh_id: number;
+    grh_turno?: 'm' | 't' | 'n';
+    grh_hora: string;
+    grh_ordem: number;
+}
+
+export interface TurmaProfessor {
+    tup_id: number;
+    tup_tur_id: number;
+    tup_fun_id: number;
+    tup_dis_id: number;
+    funcionario?: { fun_id: number; fun_nome: string } | null;
+    disciplina?: { dis_id: number; dis_nome: string } | null;
+}
+
+export interface ProfessorResumo {
+    fun_id: number;
+    fun_nome: string;
+}
+
+export interface DisciplinaResumo {
+    dis_id: number;
+    dis_nome: string;
+}
+
 export interface Turma {
     tur_id: number;
     tur_esc_id: number;
@@ -68,6 +107,8 @@ export interface Turma {
     anoLetivo?: { anl_id: number; anl_ano: number } | null;
     segmento?: { seg_id: number; seg_nome_reduzido: string } | null;
     serie?: { ser_id: number; ser_nome: string } | null;
+    professores?: TurmaProfessor[];
+    horarios?: TurmaHorario[];
 }
 
 export interface TurmaFormData {

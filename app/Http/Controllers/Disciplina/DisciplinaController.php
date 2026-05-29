@@ -64,9 +64,9 @@ class DisciplinaController extends Controller
 
     public function store(StoreDisciplinaRequest $request): RedirectResponse
     {
-        Disciplina::create($request->validated());
+        $disciplina = Disciplina::create($request->validated());
 
-        return to_route('disciplinas.index')->with('success', 'Disciplina cadastrada com sucesso.');
+        return to_route('disciplinas.edit', $disciplina)->with('success', 'Disciplina cadastrada com sucesso.');
     }
 
     public function edit(Disciplina $disciplina): Response
@@ -81,7 +81,7 @@ class DisciplinaController extends Controller
     {
         $disciplina->update($request->validated());
 
-        return to_route('disciplinas.index')->with('success', 'Disciplina atualizada com sucesso.');
+        return to_route('disciplinas.edit', $disciplina)->with('success', 'Disciplina atualizada com sucesso.');
     }
 
     public function destroy(Disciplina $disciplina): RedirectResponse

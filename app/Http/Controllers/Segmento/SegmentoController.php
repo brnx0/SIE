@@ -52,9 +52,9 @@ class SegmentoController extends Controller
 
     public function store(StoreSegmentoRequest $request): RedirectResponse
     {
-        Segmento::create($request->validated());
+        $segmento = Segmento::create($request->validated());
 
-        return to_route('segmentos.index')->with('success', 'Segmento cadastrado com sucesso.');
+        return to_route('segmentos.edit', $segmento)->with('success', 'Segmento cadastrado com sucesso.');
     }
 
     public function edit(Segmento $segmento): Response
@@ -66,7 +66,7 @@ class SegmentoController extends Controller
     {
         $segmento->update($request->validated());
 
-        return to_route('segmentos.index')->with('success', 'Segmento atualizado com sucesso.');
+        return to_route('segmentos.edit', $segmento)->with('success', 'Segmento atualizado com sucesso.');
     }
 
     public function destroy(Segmento $segmento): RedirectResponse

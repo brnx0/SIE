@@ -83,9 +83,9 @@ class UsersController extends Controller
         $data['password'] = Hash::make($data['password']);
         $data['active']   = $data['active'] ?? true;
 
-        User::create($data);
+        $user = User::create($data);
 
-        return to_route('users.index')->with('success', 'Usuário cadastrado com sucesso.');
+        return to_route('users.edit', $user)->with('success', 'Usuário cadastrado com sucesso.');
     }
 
     public function edit(User $user): Response
@@ -123,7 +123,7 @@ class UsersController extends Controller
 
         $user->update($data);
 
-        return to_route('users.index')->with('success', 'Usuário atualizado com sucesso.');
+        return to_route('users.edit', $user)->with('success', 'Usuário atualizado com sucesso.');
     }
 
     public function destroy(User $user): RedirectResponse

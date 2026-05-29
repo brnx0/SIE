@@ -56,17 +56,17 @@ class EscolaController extends Controller
 
     public function store(StoreEscolaRequest $request): RedirectResponse
     {
-        DB::transaction(function () use ($request) {
+        $escola = DB::transaction(function () use ($request) {
             $data = $request->safe()->except(['esc_logo']);
 
             if ($request->hasFile('esc_logo')) {
                 $data['esc_logo'] = $request->file('esc_logo')->store('escolas', 'public');
             }
 
-            Escola::create($data);
+            return Escola::create($data);
         });
 
-        return to_route('escolas.index')->with('success', 'Escola cadastrada com sucesso.');
+        return to_route('escolas.edit', $escola)->with('success', 'Escola cadastrada com sucesso.');
     }
 
     public function edit(Escola $escola): Response
@@ -134,7 +134,7 @@ class EscolaController extends Controller
             $escola->update($data);
         });
 
-        return to_route('escolas.index')->with('success', 'Escola atualizada com sucesso.');
+        return to_route('escolas.edit', $escola)->with('success', 'Escola atualizada com sucesso.');
     }
 
     public function destroy(Escola $escola): RedirectResponse

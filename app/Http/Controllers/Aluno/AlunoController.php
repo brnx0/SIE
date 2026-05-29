@@ -56,7 +56,7 @@ class AlunoController extends Controller
     {
         $this->checkHomonimo($request);
 
-        DB::transaction(function () use ($request) {
+        $aluno = DB::transaction(function () use ($request) {
             $data = $request->safe()->except(['saude', 'aln_foto']);
 
             if ($request->hasFile('aln_foto')) {
@@ -72,9 +72,11 @@ class AlunoController extends Controller
 
             $aluno = Aluno::create($data);
             $aluno->saude()->create($request->input('saude', []));
+
+            return $aluno;
         });
 
-        return to_route('alunos.index')->with('success', 'Aluno cadastrado com sucesso.');
+        return to_route('alunos.edit', $aluno)->with('success', 'Aluno cadastrado com sucesso.');
     }
 
     public function edit(Aluno $aluno): Response
@@ -110,7 +112,7 @@ class AlunoController extends Controller
             }
         });
 
-        return to_route('alunos.index')->with('success', 'Aluno atualizado com sucesso.');
+        return to_route('alunos.edit', $aluno)->with('success', 'Aluno atualizado com sucesso.');
     }
 
     public function destroy(Aluno $aluno): RedirectResponse

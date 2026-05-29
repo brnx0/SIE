@@ -62,9 +62,9 @@ class SerieController extends Controller
 
     public function store(StoreSerieRequest $request): RedirectResponse
     {
-        Serie::create($request->validated());
+        $serie = Serie::create($request->validated());
 
-        return to_route('series.index')->with('success', 'Série cadastrada com sucesso.');
+        return to_route('series.edit', $serie)->with('success', 'Série cadastrada com sucesso.');
     }
 
     public function edit(Serie $serie): Response
@@ -86,7 +86,7 @@ class SerieController extends Controller
     {
         $serie->update($request->validated());
 
-        return to_route('series.index')->with('success', 'Série atualizada com sucesso.');
+        return to_route('series.edit', $serie)->with('success', 'Série atualizada com sucesso.');
     }
 
     public function destroy(Serie $serie): RedirectResponse

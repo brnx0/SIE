@@ -55,17 +55,17 @@ class FuncionarioController extends Controller
     {
         $this->checkHomonimo($request);
 
-        DB::transaction(function () use ($request) {
+        $funcionario = DB::transaction(function () use ($request) {
             $data = $request->safe()->except(['fun_foto']);
 
             if ($request->hasFile('fun_foto')) {
                 $data['fun_foto'] = $request->file('fun_foto')->store('funcionarios', 'public');
             }
 
-            Funcionario::create($data);
+            return Funcionario::create($data);
         });
 
-        return to_route('funcionarios.index')->with('success', 'Funcionário cadastrado com sucesso.');
+        return to_route('funcionarios.edit', $funcionario)->with('success', 'Funcionário cadastrado com sucesso.');
     }
 
     public function edit(Funcionario $funcionario): Response
@@ -100,7 +100,7 @@ class FuncionarioController extends Controller
             $funcionario->update($data);
         });
 
-        return to_route('funcionarios.index')->with('success', 'Funcionário atualizado com sucesso.');
+        return to_route('funcionarios.edit', $funcionario)->with('success', 'Funcionário atualizado com sucesso.');
     }
 
     protected function checkHomonimo(Request $request, ?int $excludeId = null): void

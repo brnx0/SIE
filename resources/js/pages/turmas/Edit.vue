@@ -3,7 +3,7 @@ import TurmaForm from '@/components/turma/TurmaForm.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import type { AnoLetivo } from '@/types/parametro';
-import type { EscolaResumo, Turma } from '@/types/turma';
+import type { DisciplinaResumo, EscolaResumo, GradeHorarioResumo, ProfessorResumo, Turma } from '@/types/turma';
 import { Head } from '@inertiajs/vue3';
 
 const props = defineProps<{
@@ -12,6 +12,9 @@ const props = defineProps<{
     escolas: EscolaResumo[];
     isAdmin: boolean;
     userEscola?: { esc_id: number; esc_nome: string } | null;
+    disciplinas: DisciplinaResumo[];
+    professoresDisponiveis: ProfessorResumo[];
+    gradeHorarios: GradeHorarioResumo[];
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -37,6 +40,11 @@ const breadcrumbs: BreadcrumbItem[] = [
                 :escolas="escolas"
                 :is-admin="isAdmin"
                 :user-escola="userEscola"
+                :professores="turma.professores ?? []"
+                :professores-disponiveis="professoresDisponiveis"
+                :disciplinas="disciplinas"
+                :horarios="turma.horarios ?? []"
+                :grade-horarios="gradeHorarios"
             />
         </div>
     </AppLayout>

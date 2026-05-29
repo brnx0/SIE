@@ -38,7 +38,6 @@ class TipoUnidade extends Model
     public const TIPOS = [
         'unidade_didatica' => 'Unidade Didática',
         'bimestral'        => 'Bimestral',
-        'fase'             => 'Fase',
         'semestral'        => 'Semestral',
         'trimestral'       => 'Trimestral',
     ];

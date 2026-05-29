@@ -8,6 +8,7 @@ use App\Models\Segmento\Segmento;
 use App\Models\Serie\Serie;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Turma extends Model
@@ -93,5 +94,15 @@ class Turma extends Model
     public function serie(): BelongsTo
     {
         return $this->belongsTo(Serie::class, 'tur_ser_id', 'ser_id');
+    }
+
+    public function professores(): HasMany
+    {
+        return $this->hasMany(TurmaProfessor::class, 'tup_tur_id', 'tur_id');
+    }
+
+    public function horarios(): HasMany
+    {
+        return $this->hasMany(TurmaHorario::class, 'trh_tur_id', 'tur_id');
     }
 }

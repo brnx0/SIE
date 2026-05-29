@@ -330,6 +330,7 @@ const cb = (field: keyof CensoFormData) => ({
                     <p class="mb-4 text-xs text-slate-400 dark:text-slate-500">Informe apenas as salas utilizadas para ensino regular</p>
                     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         <div v-for="item in [
+                            { field: 'cen_sal_total',             label: 'Quantidade de salas ensino regular' },
                             { field: 'cen_sal_climatizadas',      label: 'Salas climatizadas' },
                             { field: 'cen_sal_pcd',               label: 'Salas adaptadas PCD' },
                             { field: 'cen_sal_fora_predio',       label: 'Salas fora do prédio' },

@@ -8,6 +8,8 @@ use App\Http\Controllers\Api\SegmentoController as SegmentoApiController;
 use App\Http\Controllers\Api\SerieController as SerieApiController;
 use App\Http\Controllers\Disciplina\DisciplinaController;
 use App\Http\Controllers\Turma\TurmaController;
+use App\Http\Controllers\Turma\TurmaHorarioController;
+use App\Http\Controllers\Turma\TurmaProfessorController;
 use App\Http\Controllers\Escola\EscolaCensoController;
 use App\Http\Controllers\Escola\EscolaSegmentoController;
 use App\Http\Controllers\Segmento\SegmentoController;
@@ -20,6 +22,7 @@ use App\Http\Controllers\Funcionario\FuncionarioAdmissaoController;
 use App\Http\Controllers\Funcionario\FuncionarioController;
 use App\Http\Controllers\Funcionario\FuncionarioLotacaoController;
 use App\Http\Controllers\Parametro\AnoLetivoController;
+use App\Http\Controllers\Parametro\GradeHorarioController;
 use App\Http\Controllers\Parametro\ParametroController;
 use App\Http\Controllers\Parametro\TipoUnidadeController;
 use App\Http\Controllers\UsersController;
@@ -73,6 +76,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('turmas/export', [TurmaController::class, 'export'])->name('turmas.export');
     Route::resource('turmas', TurmaController::class)->except(['show']);
+    Route::prefix('turmas/{turma}/professores')->name('turmas.professores.')->group(function () {
+        Route::post('/', [TurmaProfessorController::class, 'store'])->name('store');
+        Route::delete('/{turmaProfessor}', [TurmaProfessorController::class, 'destroy'])->name('destroy');
+    });
+    Route::prefix('turmas/{turma}/horarios')->name('turmas.horarios.')->group(function () {
+        Route::get('grade-pdf', [TurmaHorarioController::class, 'gradePdf'])->name('grade-pdf');
+        Route::post('/', [TurmaHorarioController::class, 'store'])->name('store');
+        Route::delete('/{turmaHorario}', [TurmaHorarioController::class, 'destroy'])->name('destroy');
+    });
     Route::get('disciplinas/export', [DisciplinaController::class, 'export'])->name('disciplinas.export');
     Route::resource('disciplinas', DisciplinaController::class)->except(['show']);
 
@@ -102,6 +114,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('parametros/unidades', [TipoUnidadeController::class, 'store'])->name('parametros.unidades.store');
         Route::put('parametros/unidades/{tipoUnidade}', [TipoUnidadeController::class, 'update'])->name('parametros.unidades.update');
         Route::delete('parametros/unidades/{tipoUnidade}', [TipoUnidadeController::class, 'destroy'])->name('parametros.unidades.destroy');
+
+        Route::post('parametros/grade-horarios', [GradeHorarioController::class, 'store'])->name('parametros.grade-horarios.store');
+        Route::put('parametros/grade-horarios/{gradeHorario}', [GradeHorarioController::class, 'update'])->name('parametros.grade-horarios.update');
+        Route::delete('parametros/grade-horarios/{gradeHorario}', [GradeHorarioController::class, 'destroy'])->name('parametros.grade-horarios.destroy');
     });
 });
 
