@@ -59,16 +59,18 @@ export interface AnoLetivoFormData {
     [key: string]: any;
 }
 
-export type UnidadeTipo = 'bimestre' | 'trimestre' | 'semestre';
+export type UnidadeTipo = 'bimestre' | 'unidade' | 'trimestre' | 'semestre';
 
 export const UNIDADE_TIPO_LABELS: Record<UnidadeTipo, string> = {
     bimestre:  'Bimestral',
+    unidade:   'Por Unidade',
     trimestre: 'Trimestral',
     semestre:  'Semestral',
 };
 
 export const UNIDADE_LIMITES: Record<UnidadeTipo, number> = {
     bimestre:  4,
+    unidade:   4,
     trimestre: 3,
     semestre:  2,
 };

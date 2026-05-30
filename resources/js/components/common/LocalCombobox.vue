@@ -42,11 +42,24 @@ watch(
 const updatePosition = () => {
     if (!triggerEl.value) return;
     const rect = triggerEl.value.getBoundingClientRect();
-    dropdownStyle.value = {
-        top: `${rect.bottom + 4}px`,
-        left: `${rect.left}px`,
-        width: `${rect.width}px`,
-    };
+    const dropdownMaxH = 240 + 37; // max-h-60 (list) + search row
+    const spaceBelow = window.innerHeight - rect.bottom - 4;
+    const spaceAbove = rect.top - 4;
+    const openUpward = spaceBelow < dropdownMaxH && spaceAbove > spaceBelow;
+
+    dropdownStyle.value = openUpward
+        ? {
+              top: `${rect.top - 4}px`,
+              left: `${rect.left}px`,
+              width: `${rect.width}px`,
+              transform: 'translateY(-100%)',
+          }
+        : {
+              top: `${rect.bottom + 4}px`,
+              left: `${rect.left}px`,
+              width: `${rect.width}px`,
+              transform: '',
+          };
 };
 
 const choose = (item: { id: number; label: string }) => {
@@ -76,8 +89,16 @@ const handleOutside = (e: MouseEvent) => {
     }
 };
 
-onMounted(() => document.addEventListener('mousedown', handleOutside));
-onBeforeUnmount(() => document.removeEventListener('mousedown', handleOutside));
+onMounted(() => {
+    document.addEventListener('mousedown', handleOutside);
+    window.addEventListener('scroll', updatePosition, true);
+    window.addEventListener('resize', updatePosition);
+});
+onBeforeUnmount(() => {
+    document.removeEventListener('mousedown', handleOutside);
+    window.removeEventListener('scroll', updatePosition, true);
+    window.removeEventListener('resize', updatePosition);
+});
 </script>
 
 <template>

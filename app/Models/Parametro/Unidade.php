@@ -33,12 +33,14 @@ class Unidade extends Model
 
     public const LIMITES = [
         'bimestre'  => 4,
+        'unidade'   => 4,
         'trimestre' => 3,
         'semestre'  => 2,
     ];
 
     public const LABELS = [
         'bimestre'  => 'Bimestral',
+        'unidade'   => 'Por Unidade',
         'trimestre' => 'Trimestral',
         'semestre'  => 'Semestral',
     ];
