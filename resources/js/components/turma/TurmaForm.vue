@@ -2,7 +2,6 @@
 import EscolaCombobox from '@/components/funcionario/EscolaCombobox.vue';
 import FormLabel from '@/components/common/FormLabel.vue';
 import InputError from '@/components/common/InputError.vue';
-import Switch from '@/components/common/Switch.vue';
 import Tabs from '@/components/common/Tabs.vue';
 import TabsContent from '@/components/common/TabsContent.vue';
 import TabsList from '@/components/common/TabsList.vue';
@@ -11,7 +10,6 @@ import TurmaHorariosTab from '@/components/turma/tabs/TurmaHorariosTab.vue';
 import TurmaProfessoresTab from '@/components/turma/tabs/TurmaProfessoresTab.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { useSegmentosByEscola } from '@/composables/useSegmentosByEscola';
 import { useSeriesByEscolaSegmento } from '@/composables/useSeriesByEscolaSegmento';
 import type { AnoLetivo } from '@/types/parametro';
@@ -28,14 +26,15 @@ import type {
 import {
     DIAS_SEMANA,
     LOCAIS_DIFERENCIADOS,
+    SEMESTRES_TURMA,
     SITUACOES_TURMA,
     TIPOS_ATENDIMENTO,
     TIPOS_MEDIACAO,
     TURNOS,
 } from '@/types/turma';
 import { Link, useForm } from '@inertiajs/vue3';
-import { LoaderCircle, Save } from 'lucide-vue-next';
-import { watch } from 'vue';
+import { Lock, LoaderCircle, Save } from 'lucide-vue-next';
+import { computed, watch } from 'vue';
 
 const props = defineProps<{
     mode: 'create' | 'edit';
@@ -67,17 +66,23 @@ const form = useForm<TurmaFormData>({
     tur_nome:               props.initial?.tur_nome ?? '',
     tur_turno:              props.initial?.tur_turno ?? '',
     tur_capacidade:         props.initial?.tur_capacidade ?? '',
-    tur_tipo_atendimento:   props.initial?.tur_tipo_atendimento ?? 'NÃO SE APLICA',
+    tur_semestre:           props.initial?.tur_semestre ?? '',
+    tur_qt_expansao:        props.initial?.tur_qt_expansao ?? '',
+    tur_tipo_atendimento:   props.initial?.tur_tipo_atendimento ?? '',
     tur_situacao:           props.initial?.tur_situacao ?? 'ABERTA',
     tur_hora_inicio:        props.initial?.tur_hora_inicio ?? '',
     tur_hora_fim:           props.initial?.tur_hora_fim ?? '',
     tur_mediacao:           props.initial?.tur_mediacao ?? 'PRESENCIAL',
     tur_local_diferenciado: props.initial?.tur_local_diferenciado ?? 'NAO ESTA EM LOCAL DIFERENCIADO',
-    tur_fl_especial:        props.initial?.tur_fl_especial ?? false,
     tur_dias_funcionamento: props.initial?.tur_dias_funcionamento ?? ['seg', 'ter', 'qua', 'qui', 'sex'],
     tur_obs:                props.initial?.tur_obs ?? '',
     _method:                props.mode === 'edit' ? 'put' : undefined,
 });
+
+// Bloqueio de campos estruturais quando turma ABERTA (apenas no edit)
+const estruturalLocked = computed(
+    () => props.mode === 'edit' && props.initial?.tur_situacao === 'ABERTA',
+);
 
 // Cascata: escola + ano → segmentos
 const triggerSegmentos = () => {
@@ -130,6 +135,14 @@ const toggleDia = (dia: string) => {
 };
 
 const submit = () => {
+    form.transform((data) => ({
+        ...data,
+        tur_tipo_atendimento: data.tur_tipo_atendimento === '' ? null : data.tur_tipo_atendimento,
+        tur_qt_expansao:      data.tur_qt_expansao === '' ? null : data.tur_qt_expansao,
+        tur_mediacao:         data.tur_mediacao === '' ? null : data.tur_mediacao,
+        tur_local_diferenciado: data.tur_local_diferenciado === '' ? null : data.tur_local_diferenciado,
+    }));
+
     if (props.mode === 'create') {
         form.post('/turmas');
     } else {
@@ -164,6 +177,15 @@ const selectClass = (hasError: boolean) =>
 
             <TabsContent value="dados">
                 <div class="grid gap-6">
+                    <!-- Aviso de bloqueio quando turma já está ABERTA -->
+                    <div v-if="estruturalLocked" class="flex items-start gap-3 rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-200">
+                        <Lock class="mt-0.5 size-4 shrink-0" />
+                        <div>
+                            <p class="font-semibold">Turma ABERTA — campos estruturais bloqueados</p>
+                            <p class="mt-1 text-xs">Escola, ano letivo, segmento, série, turno e semestre não podem ser alterados após a turma estar aberta.</p>
+                        </div>
+                    </div>
+
                     <!-- Identificação -->
                     <div class="grid gap-4 rounded-xl border bg-card p-6 shadow-sm">
                         <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300">Identificação</h3>
@@ -171,7 +193,7 @@ const selectClass = (hasError: boolean) =>
                             <!-- Escola -->
                             <div class="grid gap-1.5 sm:col-span-6">
                                 <FormLabel :required="true">Escola</FormLabel>
-                                <template v-if="isAdmin">
+                                <template v-if="isAdmin && !estruturalLocked">
                                     <EscolaCombobox
                                         :model-value="form.tur_esc_id"
                                         :initial="initialEscola as any"
@@ -180,7 +202,7 @@ const selectClass = (hasError: boolean) =>
                                     />
                                 </template>
                                 <template v-else>
-                                    <Input :value="userEscola?.esc_nome ?? ''" disabled class="bg-muted" />
+                                    <Input :value="(initialEscola?.esc_nome ?? userEscola?.esc_nome) ?? ''" disabled class="bg-muted" />
                                 </template>
                                 <InputError :message="form.errors.tur_esc_id" />
                             </div>
@@ -188,7 +210,7 @@ const selectClass = (hasError: boolean) =>
                             <!-- Ano Letivo -->
                             <div class="grid gap-1.5 sm:col-span-3">
                                 <FormLabel :required="true">Ano Letivo</FormLabel>
-                                <select v-model="form.tur_anl_id" :class="selectClass(!!form.errors.tur_anl_id)">
+                                <select v-model="form.tur_anl_id" :disabled="estruturalLocked" :class="selectClass(!!form.errors.tur_anl_id)">
                                     <option :value="null">Selecione...</option>
                                     <option v-for="anl in anosLetivos" :key="anl.anl_id" :value="anl.anl_id">{{ anl.anl_ano }}</option>
                                 </select>
@@ -207,7 +229,7 @@ const selectClass = (hasError: boolean) =>
                                 <FormLabel :required="true">Segmento</FormLabel>
                                 <select
                                     v-model="form.tur_seg_id"
-                                    :disabled="!form.tur_esc_id || !form.tur_anl_id"
+                                    :disabled="estruturalLocked || !form.tur_esc_id || !form.tur_anl_id"
                                     :class="selectClass(!!form.errors.tur_seg_id)"
                                 >
                                     <option :value="null">{{ !form.tur_esc_id || !form.tur_anl_id ? 'Selecione escola e ano primeiro' : 'Selecione...' }}</option>
@@ -221,7 +243,7 @@ const selectClass = (hasError: boolean) =>
                                 <FormLabel :required="true">Série / Ano Escolarização</FormLabel>
                                 <select
                                     v-model="form.tur_ser_id"
-                                    :disabled="!form.tur_seg_id"
+                                    :disabled="estruturalLocked || !form.tur_seg_id"
                                     :class="selectClass(!!form.errors.tur_ser_id)"
                                 >
                                     <option :value="null">{{ !form.tur_seg_id ? 'Selecione segmento primeiro' : 'Selecione...' }}</option>
@@ -233,11 +255,21 @@ const selectClass = (hasError: boolean) =>
                             <!-- Turno -->
                             <div class="grid gap-1.5 sm:col-span-3">
                                 <FormLabel :required="true">Turno</FormLabel>
-                                <select v-model="form.tur_turno" :class="selectClass(!!form.errors.tur_turno)">
+                                <select v-model="form.tur_turno" :disabled="estruturalLocked" :class="selectClass(!!form.errors.tur_turno)">
                                     <option value="">Selecione...</option>
                                     <option v-for="(label, val) in TURNOS" :key="val" :value="val">{{ label }}</option>
                                 </select>
                                 <InputError :message="form.errors.tur_turno" />
+                            </div>
+
+                            <!-- Semestre -->
+                            <div class="grid gap-1.5 sm:col-span-3">
+                                <FormLabel :required="true">Semestre</FormLabel>
+                                <select v-model.number="form.tur_semestre" :disabled="estruturalLocked" :class="selectClass(!!form.errors.tur_semestre)">
+                                    <option :value="''">Selecione...</option>
+                                    <option v-for="s in SEMESTRES_TURMA" :key="s.value" :value="s.value">{{ s.label }}</option>
+                                </select>
+                                <InputError :message="form.errors.tur_semestre" />
                             </div>
 
                             <!-- Nome da Turma -->
@@ -254,6 +286,13 @@ const selectClass = (hasError: boolean) =>
                                 <InputError :message="form.errors.tur_capacidade" />
                             </div>
 
+                            <!-- Expansão -->
+                            <div class="grid gap-1.5 sm:col-span-2">
+                                <FormLabel>Expansão <span class="text-muted-foreground">(extra)</span></FormLabel>
+                                <Input v-model.number="form.tur_qt_expansao" type="number" min="0" max="999" placeholder="0" />
+                                <InputError :message="form.errors.tur_qt_expansao" />
+                            </div>
+
                             <!-- Situação -->
                             <div class="grid gap-1.5 sm:col-span-2">
                                 <FormLabel :required="true">Situação</FormLabel>
@@ -261,12 +300,6 @@ const selectClass = (hasError: boolean) =>
                                     <option v-for="s in SITUACOES_TURMA" :key="s" :value="s">{{ s }}</option>
                                 </select>
                                 <InputError :message="form.errors.tur_situacao" />
-                            </div>
-
-                            <!-- Turma Especial -->
-                            <div class="flex items-end gap-2 sm:col-span-2">
-                                <Switch id="tur_fl_especial" v-model="form.tur_fl_especial" />
-                                <Label for="tur_fl_especial" class="text-sm font-normal">Turma Especial</Label>
                             </div>
                         </div>
                     </div>
@@ -299,8 +332,9 @@ const selectClass = (hasError: boolean) =>
 
                             <!-- Tipo de Atendimento -->
                             <div class="grid gap-1.5 sm:col-span-3">
-                                <FormLabel :required="true">Tipo de Atendimento</FormLabel>
+                                <FormLabel>Tipo de Atendimento</FormLabel>
                                 <select v-model="form.tur_tipo_atendimento" :class="selectClass(!!form.errors.tur_tipo_atendimento)">
+                                    <option value="">Não informado</option>
                                     <option v-for="t in TIPOS_ATENDIMENTO" :key="t" :value="t">{{ t }}</option>
                                 </select>
                                 <InputError :message="form.errors.tur_tipo_atendimento" />

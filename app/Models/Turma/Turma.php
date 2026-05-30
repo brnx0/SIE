@@ -48,7 +48,19 @@ class Turma extends Model
 
     const SITUACOES = ['ABERTA', 'ENCERRADA'];
 
+    const SEMESTRES = [1, 2];
+
     const DIAS_SEMANA = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sab'];
+
+    // Campos estruturais bloqueados após turma ABERTA
+    const CAMPOS_ESTRUTURAIS = [
+        'tur_esc_id',
+        'tur_anl_id',
+        'tur_seg_id',
+        'tur_ser_id',
+        'tur_turno',
+        'tur_semestre',
+    ];
 
     protected $fillable = [
         'tur_esc_id',
@@ -59,20 +71,22 @@ class Turma extends Model
         'tur_nome',
         'tur_turno',
         'tur_capacidade',
+        'tur_semestre',
+        'tur_qt_expansao',
         'tur_tipo_atendimento',
         'tur_situacao',
         'tur_hora_inicio',
         'tur_hora_fim',
         'tur_mediacao',
         'tur_local_diferenciado',
-        'tur_fl_especial',
         'tur_dias_funcionamento',
         'tur_obs',
     ];
 
     protected $casts = [
-        'tur_capacidade'       => 'integer',
-        'tur_fl_especial'      => 'boolean',
+        'tur_capacidade'         => 'integer',
+        'tur_semestre'           => 'integer',
+        'tur_qt_expansao'        => 'integer',
         'tur_dias_funcionamento' => 'array',
     ];
 

@@ -177,6 +177,25 @@ const form = useForm<CensoFormData>({
     cen_amb_projetos_transversais: props.censo.cen_amb_projetos_transversais,
     cen_amb_nenhuma: props.censo.cen_amb_nenhuma,
 
+    // Seção 33 — Esgotamento sanitário
+    cen_esg_rede_publica:     props.censo.cen_esg_rede_publica     ?? false,
+    cen_esg_fossa_septica:    props.censo.cen_esg_fossa_septica    ?? false,
+    cen_esg_fossa_rudimentar: props.censo.cen_esg_fossa_rudimentar ?? false,
+    cen_esg_inexistente:      props.censo.cen_esg_inexistente      ?? false,
+
+    // Seção 34 — Destinação do lixo
+    cen_lxd_coleta:                props.censo.cen_lxd_coleta                ?? false,
+    cen_lxd_queima:                props.censo.cen_lxd_queima                ?? false,
+    cen_lxd_enterra:               props.censo.cen_lxd_enterra               ?? false,
+    cen_lxd_destinacao_licenciada: props.censo.cen_lxd_destinacao_licenciada ?? false,
+    cen_lxd_outra_area:            props.censo.cen_lxd_outra_area            ?? false,
+
+    // Seção 35 — Tratamento do lixo
+    cen_lxt_separacao:         props.censo.cen_lxt_separacao         ?? false,
+    cen_lxt_reaproveitamento:  props.censo.cen_lxt_reaproveitamento  ?? false,
+    cen_lxt_reciclagem:        props.censo.cen_lxt_reciclagem        ?? false,
+    cen_lxt_nao_faz:           props.censo.cen_lxt_nao_faz           ?? false,
+
     _method: 'put',
 });
 
@@ -309,6 +328,70 @@ const cb = (field: keyof CensoFormData) => ({
                             { field: 'cen_ace_sinalizacao_visual', label: 'Sinalização visual' },
                             { field: 'cen_ace_alarme_luminoso',    label: 'Alarme luminoso' },
                             { field: 'cen_ace_nenhuma',            label: 'Nenhuma das anteriores' },
+                        ]" :key="item.field"
+                            class="flex cursor-pointer items-center gap-2 rounded-lg border bg-white p-2.5 hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800"
+                        >
+                            <Checkbox v-bind="cb(item.field as keyof CensoFormData)" />
+                            <span class="text-sm leading-tight text-slate-700 dark:text-slate-200">{{ item.label }}</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Seção 33: Esgotamento sanitário -->
+                <div class="rounded-xl border bg-card p-6 shadow-sm">
+                    <h3 class="mb-1 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                        Esgotamento sanitário
+                    </h3>
+                    <p class="mb-3 text-xs text-muted-foreground">Assinalar mais de uma opção, se for o caso.</p>
+                    <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                        <label v-for="item in [
+                            { field: 'cen_esg_rede_publica',     label: 'Rede pública' },
+                            { field: 'cen_esg_fossa_septica',    label: 'Fossa séptica' },
+                            { field: 'cen_esg_fossa_rudimentar', label: 'Fossa rudimentar/comum' },
+                            { field: 'cen_esg_inexistente',      label: 'Não há esgotamento sanitário' },
+                        ]" :key="item.field"
+                            class="flex cursor-pointer items-center gap-2 rounded-lg border bg-white p-2.5 hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800"
+                        >
+                            <Checkbox v-bind="cb(item.field as keyof CensoFormData)" />
+                            <span class="text-sm leading-tight text-slate-700 dark:text-slate-200">{{ item.label }}</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Seção 34: Destinação do lixo -->
+                <div class="rounded-xl border bg-card p-6 shadow-sm">
+                    <h3 class="mb-1 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                        Destinação do lixo
+                    </h3>
+                    <p class="mb-3 text-xs text-muted-foreground">Assinalar mais de uma opção, se for o caso.</p>
+                    <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                        <label v-for="item in [
+                            { field: 'cen_lxd_coleta',                label: 'Serviço de coleta' },
+                            { field: 'cen_lxd_queima',                label: 'Queima' },
+                            { field: 'cen_lxd_enterra',               label: 'Enterra' },
+                            { field: 'cen_lxd_destinacao_licenciada', label: 'Leva a uma destinação final licenciada pelo poder público' },
+                            { field: 'cen_lxd_outra_area',            label: 'Descarta em outra área' },
+                        ]" :key="item.field"
+                            class="flex cursor-pointer items-center gap-2 rounded-lg border bg-white p-2.5 hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800"
+                        >
+                            <Checkbox v-bind="cb(item.field as keyof CensoFormData)" />
+                            <span class="text-sm leading-tight text-slate-700 dark:text-slate-200">{{ item.label }}</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Seção 35: Tratamento do lixo/resíduos -->
+                <div class="rounded-xl border bg-card p-6 shadow-sm">
+                    <h3 class="mb-1 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                        Tratamento do lixo/resíduos pela escola
+                    </h3>
+                    <p class="mb-3 text-xs text-muted-foreground">Assinalar mais de uma opção, se for o caso.</p>
+                    <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                        <label v-for="item in [
+                            { field: 'cen_lxt_separacao',        label: 'Separação do lixo/resíduos' },
+                            { field: 'cen_lxt_reaproveitamento', label: 'Reaproveitamento/reutilização' },
+                            { field: 'cen_lxt_reciclagem',       label: 'Reciclagem' },
+                            { field: 'cen_lxt_nao_faz',          label: 'Não faz tratamento' },
                         ]" :key="item.field"
                             class="flex cursor-pointer items-center gap-2 rounded-lg border bg-white p-2.5 hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800"
                         >
@@ -605,11 +688,12 @@ const cb = (field: keyof CensoFormData) => ({
                         Projeto Político-Pedagógico (PPP)
                     </h3>
                     <div class="flex flex-col gap-2">
-                        <Label>A escola possui PPP?</Label>
+                        <Label>O PPP da escola está atualizado até a data de referência do censo?</Label>
+                        <p class="text-xs text-muted-foreground">Data de referência: última quarta-feira de maio.</p>
                         <div class="flex flex-wrap gap-3">
                             <label v-for="opt in [
-                                { value: 2, label: 'Sim' },
-                                { value: 1, label: 'Não' },
+                                { value: 2, label: 'Sim, está atualizado' },
+                                { value: 1, label: 'Não está atualizado' },
                                 { value: 0, label: 'Não possui PPP' },
                             ]" :key="opt.value"
                                 class="flex cursor-pointer items-center gap-2 rounded-lg border px-4 py-2.5"

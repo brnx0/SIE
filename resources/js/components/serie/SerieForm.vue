@@ -313,26 +313,24 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar série' : 'Salvar alter
                 <InputError :message="form.errors.ser_promo_ser_id_2" />
             </div>
 
-            <!-- Conservação 1 -->
+            <!-- Conservação 1 (aluno conservado pode permanecer na mesma série) -->
             <div class="grid gap-2 sm:col-span-2">
                 <FormLabel>Conservação — 1ª opção</FormLabel>
                 <SerieCombobox
                     v-model="form.ser_cons_ser_id_1"
                     :initial="initial?.consSerie1 ?? null"
-                    :exclude="initial?.ser_id ?? null"
                     placeholder="Selecionar série..."
                     :invalid="!!form.errors.ser_cons_ser_id_1"
                 />
                 <InputError :message="form.errors.ser_cons_ser_id_1" />
             </div>
 
-            <!-- Conservação 2 -->
+            <!-- Conservação 2 (aluno conservado pode permanecer na mesma série) -->
             <div class="grid gap-2 sm:col-span-2">
                 <FormLabel>Conservação — 2ª opção</FormLabel>
                 <SerieCombobox
                     v-model="form.ser_cons_ser_id_2"
                     :initial="initial?.consSerie2 ?? null"
-                    :exclude="initial?.ser_id ?? null"
                     placeholder="Selecionar série..."
                     :invalid="!!form.errors.ser_cons_ser_id_2"
                 />

@@ -144,7 +144,7 @@ const close = () => emit('update:open', false);
 
                 <div class="flex items-center gap-3 sm:col-span-1">
                     <Switch id="anl_fl_progressao_parcial" v-model="form.anl_fl_progressao_parcial" />
-                    <Label for="anl_fl_progressao_parcial" class="text-sm font-normal">Possui Progressão Parcial?</Label>
+                    <Label for="anl_fl_progressao_parcial" class="text-sm font-normal">Possui Progressão Parcial</Label>
                 </div>
 
                 <div class="flex items-center gap-3 sm:col-span-1">

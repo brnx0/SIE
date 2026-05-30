@@ -178,6 +178,25 @@ class UpdateCensoEscolarRequest extends FormRequest
             'cen_amb_eventos'                => ['boolean'],
             'cen_amb_projetos_transversais'  => ['boolean'],
             'cen_amb_nenhuma'                => ['boolean'],
+
+            // Seção 33 — Esgotamento sanitário
+            'cen_esg_rede_publica'           => ['boolean'],
+            'cen_esg_fossa_septica'          => ['boolean'],
+            'cen_esg_fossa_rudimentar'       => ['boolean'],
+            'cen_esg_inexistente'            => ['boolean'],
+
+            // Seção 34 — Destinação do lixo
+            'cen_lxd_coleta'                 => ['boolean'],
+            'cen_lxd_queima'                 => ['boolean'],
+            'cen_lxd_enterra'                => ['boolean'],
+            'cen_lxd_destinacao_licenciada'  => ['boolean'],
+            'cen_lxd_outra_area'             => ['boolean'],
+
+            // Seção 35 — Tratamento do lixo
+            'cen_lxt_separacao'              => ['boolean'],
+            'cen_lxt_reaproveitamento'       => ['boolean'],
+            'cen_lxt_reciclagem'             => ['boolean'],
+            'cen_lxt_nao_faz'                => ['boolean'],
         ];
     }
 }

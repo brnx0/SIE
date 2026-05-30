@@ -82,6 +82,13 @@ class CensoEscolar extends Model
         'cen_fl_educ_ambiental', 'cen_amb_conteudo_curriculo', 'cen_amb_comp_curricular',
         'cen_amb_eixo_estruturante', 'cen_amb_eventos', 'cen_amb_projetos_transversais',
         'cen_amb_nenhuma',
+        // Seção 33 — Esgotamento sanitário
+        'cen_esg_rede_publica', 'cen_esg_fossa_septica', 'cen_esg_fossa_rudimentar', 'cen_esg_inexistente',
+        // Seção 34 — Destinação do lixo
+        'cen_lxd_coleta', 'cen_lxd_queima', 'cen_lxd_enterra',
+        'cen_lxd_destinacao_licenciada', 'cen_lxd_outra_area',
+        // Seção 35 — Tratamento do lixo
+        'cen_lxt_separacao', 'cen_lxt_reaproveitamento', 'cen_lxt_reciclagem', 'cen_lxt_nao_faz',
     ];
 
     protected $casts = [
@@ -167,6 +174,16 @@ class CensoEscolar extends Model
         'cen_amb_comp_curricular'    => 'boolean', 'cen_amb_eixo_estruturante'  => 'boolean',
         'cen_amb_eventos'            => 'boolean', 'cen_amb_projetos_transversais'=>'boolean',
         'cen_amb_nenhuma'            => 'boolean',
+        // seção 33
+        'cen_esg_rede_publica'       => 'boolean', 'cen_esg_fossa_septica'      => 'boolean',
+        'cen_esg_fossa_rudimentar'   => 'boolean', 'cen_esg_inexistente'        => 'boolean',
+        // seção 34
+        'cen_lxd_coleta'             => 'boolean', 'cen_lxd_queima'             => 'boolean',
+        'cen_lxd_enterra'            => 'boolean', 'cen_lxd_destinacao_licenciada' => 'boolean',
+        'cen_lxd_outra_area'         => 'boolean',
+        // seção 35
+        'cen_lxt_separacao'          => 'boolean', 'cen_lxt_reaproveitamento'   => 'boolean',
+        'cen_lxt_reciclagem'         => 'boolean', 'cen_lxt_nao_faz'            => 'boolean',
     ];
 
     public function escola(): BelongsTo

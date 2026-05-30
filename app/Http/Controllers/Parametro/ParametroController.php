@@ -7,7 +7,7 @@ use App\Http\Requests\Parametro\UpdateParametroEntidadeRequest;
 use App\Models\Parametro\AnoLetivo;
 use App\Models\Parametro\GradeHorario;
 use App\Models\Parametro\ParametroEntidade;
-use App\Models\Parametro\TipoUnidade;
+use App\Models\Parametro\Unidade;
 use App\Models\Segmento\Segmento;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
@@ -28,10 +28,10 @@ class ParametroController extends Controller
             ->orderByDesc('anl_ano')
             ->get();
 
-        $tipoUnidades = TipoUnidade::with([
-            'anoLetivoInicio:anl_id,anl_ano',
-            'anoLetivoFim:anl_id,anl_ano',
-        ])->orderBy('tun_anl_id_inicio')->get();
+        $unidades = Unidade::with('anoLetivo:anl_id,anl_ano')
+            ->orderBy('uni_anl_id')
+            ->orderBy('uni_numero')
+            ->get();
 
         $segmentos     = Segmento::where('seg_fl_ativo', true)->orderBy('seg_ordem')->get(['seg_id', 'seg_nome_reduzido', 'seg_nome_completo']);
         $gradeHorarios = GradeHorario::with('segmento:seg_id,seg_nome_reduzido')
@@ -43,7 +43,7 @@ class ParametroController extends Controller
         return Inertia::render('parametros/Edit', [
             'parametro'     => $parametro,
             'anosLetivos'   => $anosLetivos,
-            'tipoUnidades'  => $tipoUnidades,
+            'unidades'      => $unidades,
             'segmentos'     => $segmentos,
             'gradeHorarios' => $gradeHorarios,
         ]);

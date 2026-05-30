@@ -8,21 +8,21 @@ import TabsList from '@/components/common/TabsList.vue';
 import TabsTrigger from '@/components/common/TabsTrigger.vue';
 import AnoLetivoDialog from '@/components/parametro/AnoLetivoDialog.vue';
 import GradeHorariosTab from '@/components/parametro/GradeHorariosTab.vue';
+import UnidadeTab from '@/components/parametro/UnidadeTab.vue';
 import Switch from '@/components/common/Switch.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import type { Municipio } from '@/types/aluno';
-import type { AnoLetivo, GradeHorario, ParametroEntidade, ParametroEntidadeFormData, SegmentoResumo, TipoUnidade, TipoUnidadeTipo } from '@/types/parametro';
-import { TIPO_UNIDADE_LABELS } from '@/types/parametro';
+import type { AnoLetivo, GradeHorario, ParametroEntidade, ParametroEntidadeFormData, SegmentoResumo, Unidade } from '@/types/parametro';
 import { router, useForm } from '@inertiajs/vue3';
-import { Building2, Camera, CheckCircle2, LoaderCircle, Pencil, Plus, Save, Shield, Trash2, Upload, X } from 'lucide-vue-next';
-import { computed, onBeforeUnmount, reactive, ref } from 'vue';
+import { Building2, Camera, CheckCircle2, LoaderCircle, Pencil, Plus, Save, Shield, Trash2, Upload } from 'lucide-vue-next';
+import { computed, onBeforeUnmount, ref } from 'vue';
 
 const props = defineProps<{
     initial: ParametroEntidade;
     anosLetivos: AnoLetivo[];
-    tipoUnidades: TipoUnidade[];
+    unidades: Unidade[];
     segmentos: SegmentoResumo[];
     gradeHorarios: GradeHorario[];
 }>();
@@ -173,81 +173,6 @@ const fmtDateTime = (s?: string | null) => {
     return d.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 };
 
-// Tipo de Unidade
-const TIPO_UNIDADE_OPTIONS = Object.entries(TIPO_UNIDADE_LABELS) as [TipoUnidadeTipo, string][];
-
-const emptyTunForm = () => ({
-    tun_tipo: '' as TipoUnidadeTipo | '',
-    tun_anl_id_inicio: null as number | null,
-    tun_anl_id_fim: null as number | null,
-});
-
-const showTunForm = ref(false);
-const editingTun = ref<TipoUnidade | null>(null);
-const tunForm = reactive(emptyTunForm());
-const tunProcessing = ref(false);
-const tunErrors = ref<Record<string, string>>({});
-
-const openCreateTun = () => {
-    editingTun.value = null;
-    Object.assign(tunForm, emptyTunForm());
-    tunErrors.value = {};
-    showTunForm.value = true;
-};
-
-const openEditTun = (tun: TipoUnidade) => {
-    editingTun.value = tun;
-    tunForm.tun_tipo = tun.tun_tipo;
-    tunForm.tun_anl_id_inicio = tun.tun_anl_id_inicio;
-    tunForm.tun_anl_id_fim = tun.tun_anl_id_fim;
-    tunErrors.value = {};
-    showTunForm.value = true;
-};
-
-const cancelTun = () => {
-    showTunForm.value = false;
-    editingTun.value = null;
-    tunErrors.value = {};
-};
-
-const saveTun = () => {
-    tunProcessing.value = true;
-    tunErrors.value = {};
-    const data: Record<string, any> = {
-        tun_tipo: tunForm.tun_tipo,
-        tun_anl_id_inicio: tunForm.tun_anl_id_inicio,
-        tun_anl_id_fim: tunForm.tun_anl_id_fim ?? '',
-    };
-
-    if (editingTun.value) {
-        data._method = 'put';
-        router.post(`/parametros/unidades/${editingTun.value.tun_id}`, data, {
-            preserveScroll: true,
-            onSuccess: () => { showTunForm.value = false; editingTun.value = null; },
-            onError: (errs) => { tunErrors.value = errs; },
-            onFinish: () => { tunProcessing.value = false; },
-        });
-    } else {
-        router.post('/parametros/unidades', data, {
-            preserveScroll: true,
-            onSuccess: () => { showTunForm.value = false; },
-            onError: (errs) => { tunErrors.value = errs; },
-            onFinish: () => { tunProcessing.value = false; },
-        });
-    }
-};
-
-const removeTun = (tun: TipoUnidade) => {
-    const label = TIPO_UNIDADE_LABELS[tun.tun_tipo];
-    if (!confirm(`Remover o tipo de unidade "${label}"?`)) return;
-    router.delete(`/parametros/unidades/${tun.tun_id}`, { preserveScroll: true });
-};
-
-const anoLetivoLabel = (anlId: number | null): string => {
-    if (!anlId) return '—';
-    const anl = props.anosLetivos.find((a) => a.anl_id === anlId);
-    return anl ? String(anl.anl_ano) : String(anlId);
-};
 </script>
 
 <template>
@@ -442,120 +367,7 @@ const anoLetivoLabel = (anlId: number | null): string => {
 
             <!-- Aba 3: Unidade -->
             <TabsContent value="unidade">
-                <div class="grid gap-4 rounded-xl border bg-card p-6 shadow-sm">
-                    <div class="flex items-center justify-between gap-2">
-                        <h3 class="text-sm font-semibold">Tipos de Unidade cadastrados</h3>
-                        <Button v-if="!showTunForm" type="button" size="sm" class="bg-indigo-600 hover:bg-indigo-700" @click="openCreateTun">
-                            <Plus class="mr-2 size-4" /> Novo Tipo de Unidade
-                        </Button>
-                    </div>
-
-                    <!-- Tabela -->
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-sm">
-                            <thead class="bg-indigo-600 text-white">
-                                <tr>
-                                    <th class="px-3 py-2 font-semibold">Tipo</th>
-                                    <th class="px-3 py-2 font-semibold">Ano Início</th>
-                                    <th class="px-3 py-2 font-semibold">Ano Fim</th>
-                                    <th class="px-3 py-2 text-right font-semibold">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-if="tipoUnidades.length === 0">
-                                    <td colspan="4" class="px-3 py-6 text-center text-muted-foreground">
-                                        Nenhum tipo de unidade cadastrado.
-                                    </td>
-                                </tr>
-                                <tr
-                                    v-for="(tun, idx) in tipoUnidades"
-                                    :key="tun.tun_id"
-                                    :class="idx % 2 === 0 ? 'bg-white dark:bg-transparent' : 'bg-slate-50 dark:bg-slate-900/40'"
-                                >
-                                    <td class="px-3 py-2 font-medium">{{ TIPO_UNIDADE_LABELS[tun.tun_tipo] }}</td>
-                                    <td class="px-3 py-2">{{ tun.ano_letivo_inicio?.anl_ano ?? anoLetivoLabel(tun.tun_anl_id_inicio) }}</td>
-                                    <td class="px-3 py-2">{{ tun.ano_letivo_fim?.anl_ano ?? (tun.tun_anl_id_fim ? anoLetivoLabel(tun.tun_anl_id_fim) : '—') }}</td>
-                                    <td class="px-3 py-2 text-right">
-                                        <div class="flex justify-end gap-1">
-                                            <Button type="button" variant="ghost" size="sm" @click="openEditTun(tun)" aria-label="Editar">
-                                                <Pencil class="size-4" />
-                                            </Button>
-                                            <Button type="button" variant="ghost" size="sm" class="text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:hover:bg-rose-900/30" @click="removeTun(tun)" aria-label="Remover">
-                                                <Trash2 class="size-4" />
-                                            </Button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Formulário inline de criação/edição -->
-                    <div v-if="showTunForm" class="rounded-lg border bg-background p-4">
-                        <h4 class="mb-4 text-sm font-semibold">
-                            {{ editingTun ? 'Editar Tipo de Unidade' : 'Novo Tipo de Unidade' }}
-                        </h4>
-                        <div class="grid gap-4 sm:grid-cols-3">
-                            <!-- Tipo -->
-                            <div class="grid gap-1.5">
-                                <FormLabel for="tun_tipo" :required="true">Tipo</FormLabel>
-                                <select
-                                    id="tun_tipo"
-                                    v-model="tunForm.tun_tipo"
-                                    class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus:outline-none focus:ring-1 focus:ring-ring"
-                                    :class="{ 'border-red-500 ring-1 ring-red-500': tunErrors.tun_tipo }"
-                                >
-                                    <option value="">Selecione...</option>
-                                    <option v-for="[val, label] in TIPO_UNIDADE_OPTIONS" :key="val" :value="val">{{ label }}</option>
-                                </select>
-                                <InputError :message="tunErrors.tun_tipo" />
-                            </div>
-
-                            <!-- Ano Início -->
-                            <div class="grid gap-1.5">
-                                <FormLabel for="tun_anl_id_inicio" :required="true">Ano Letivo Início</FormLabel>
-                                <select
-                                    id="tun_anl_id_inicio"
-                                    v-model="tunForm.tun_anl_id_inicio"
-                                    class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus:outline-none focus:ring-1 focus:ring-ring"
-                                    :class="{ 'border-red-500 ring-1 ring-red-500': tunErrors.tun_anl_id_inicio }"
-                                >
-                                    <option :value="null">Selecione...</option>
-                                    <option v-for="anl in anosLetivos" :key="anl.anl_id" :value="anl.anl_id">{{ anl.anl_ano }}</option>
-                                </select>
-                                <InputError :message="tunErrors.tun_anl_id_inicio" />
-                            </div>
-
-                            <!-- Ano Fim -->
-                            <div class="grid gap-1.5">
-                                <FormLabel for="tun_anl_id_fim">Ano Letivo Fim <span class="text-muted-foreground">(opcional)</span></FormLabel>
-                                <select
-                                    id="tun_anl_id_fim"
-                                    v-model="tunForm.tun_anl_id_fim"
-                                    class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus:outline-none focus:ring-1 focus:ring-ring"
-                                    :class="{ 'border-red-500 ring-1 ring-red-500': tunErrors.tun_anl_id_fim }"
-                                >
-                                    <option :value="null">Sem fim (em vigor)</option>
-                                    <option v-for="anl in anosLetivos" :key="anl.anl_id" :value="anl.anl_id">{{ anl.anl_ano }}</option>
-                                </select>
-                                <InputError :message="tunErrors.tun_anl_id_fim" />
-                            </div>
-                        </div>
-
-                        <InputError v-if="tunErrors.overlap" :message="tunErrors.overlap" class="mt-3" />
-
-                        <div class="mt-4 flex justify-end gap-2">
-                            <Button type="button" variant="outline" size="sm" @click="cancelTun">
-                                <X class="mr-2 size-4" /> Cancelar
-                            </Button>
-                            <Button type="button" size="sm" class="bg-indigo-600 hover:bg-indigo-700" :disabled="tunProcessing" @click="saveTun">
-                                <LoaderCircle v-if="tunProcessing" class="mr-2 size-4 animate-spin" />
-                                <Save v-else class="mr-2 size-4" />
-                                Salvar
-                            </Button>
-                        </div>
-                    </div>
-                </div>
+                <UnidadeTab :unidades="unidades" :anos-letivos="anosLetivos" />
             </TabsContent>
 
             <!-- Aba 4: Cadastros -->

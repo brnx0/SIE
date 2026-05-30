@@ -18,8 +18,9 @@ class FuncionarioAdmissaoController extends Controller
                 'required',
                 'string',
                 'max:30',
+                // Matrícula pode repetir para o mesmo funcionário, mas é única entre funcionários distintos
                 Rule::unique('edu_funcionario_admissao', 'adm_matricula')
-                    ->where('adm_fun_id', $funcionario->fun_id)
+                    ->where(fn ($q) => $q->where('adm_fun_id', '!=', $funcionario->fun_id))
                     ->whereNull('adm_deleted_at')
                     ->ignore($admissaoId, 'adm_id'),
             ],

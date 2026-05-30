@@ -66,8 +66,14 @@ class SerieController extends Controller
         $q       = trim($request->input('q', ''));
         $exclude = $request->input('exclude');
 
+        // Normaliza ordinais (ª, º) e espaços extras tanto da query quanto do nome no banco
+        $qNorm = trim(preg_replace('/\s+/', ' ', str_replace(['ª', 'º'], '', $q)));
+
         $series = Serie::where('ser_fl_ativo', true)
-            ->when(strlen($q) >= 2, fn ($query) => $query->whereRaw('ser_nome ilike ?', ["%{$q}%"]))
+            ->when(strlen($qNorm) >= 2, fn ($query) => $query->whereRaw(
+                "regexp_replace(replace(replace(ser_nome, 'ª', ''), 'º', ''), '\\s+', ' ', 'g') ilike ?",
+                ["%{$qNorm}%"]
+            ))
             ->when($exclude, fn ($query) => $query->where('ser_id', '!=', (int) $exclude))
             ->orderBy('ser_ordem_no_segmento')
             ->limit(50)

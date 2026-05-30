@@ -40,6 +40,13 @@ class TurmaController extends Controller
             ? (int) $request->input('per_page')
             : 10;
 
+        $anosLetivos = AnoLetivo::orderByDesc('anl_ano')->get(['anl_id', 'anl_ano']);
+
+        // Sem filtro de ano letivo explícito → usa o maior ano cadastrado
+        if (! $request->filled('anl_id') && $anosLetivos->isNotEmpty()) {
+            $request->merge(['anl_id' => $anosLetivos->first()->anl_id]);
+        }
+
         $turmas = $this->baseQuery($request, $user)
             ->paginate($perPage)
             ->withQueryString();
@@ -50,7 +57,7 @@ class TurmaController extends Controller
                 $request->only(['esc_id', 'anl_id', 'seg_id', 'turno', 'situacao']),
                 ['per_page' => $perPage],
             ),
-            'anosLetivos' => AnoLetivo::orderByDesc('anl_ano')->get(['anl_id', 'anl_ano']),
+            'anosLetivos' => $anosLetivos,
             'escolas'     => $user->isAdmin()
                 ? Escola::where('esc_fl_ativo', true)->orderBy('esc_nome')->get(['esc_id', 'esc_nome'])
                 : [],
@@ -61,7 +68,15 @@ class TurmaController extends Controller
 
     public function export(Request $request): StreamedResponse|HttpResponse
     {
-        $user   = auth()->user();
+        $user = auth()->user();
+
+        if (! $request->filled('anl_id')) {
+            $anlId = AnoLetivo::orderByDesc('anl_ano')->value('anl_id');
+            if ($anlId) {
+                $request->merge(['anl_id' => $anlId]);
+            }
+        }
+
         $turmas = $this->baseQuery($request, $user)->get();
 
         if ($request->input('format') === 'pdf') {

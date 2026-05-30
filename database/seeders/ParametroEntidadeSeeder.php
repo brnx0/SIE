@@ -19,6 +19,10 @@ class ParametroEntidadeSeeder extends Seeder
                 'par_mun_id' => null,
                 'par_logomarca' => null,
                 'par_brasao' => null,
+                'par_fl_nome_pessoa_caixa_alta' => true,
+                'par_fl_nome_escola_caixa_alta' => true,
+                'par_fl_alertar_homonimos' => true,
+                'par_fl_alertar_acentos_nomes' => true,
             ],
         );
     }

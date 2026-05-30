@@ -24,7 +24,7 @@ use App\Http\Controllers\Funcionario\FuncionarioLotacaoController;
 use App\Http\Controllers\Parametro\AnoLetivoController;
 use App\Http\Controllers\Parametro\GradeHorarioController;
 use App\Http\Controllers\Parametro\ParametroController;
-use App\Http\Controllers\Parametro\TipoUnidadeController;
+use App\Http\Controllers\Parametro\UnidadeController;
 use App\Http\Controllers\UsersController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -111,9 +111,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('parametros/anos-letivos/{anoLetivo}', [AnoLetivoController::class, 'destroy'])
             ->scopeBindings()->name('parametros.anos-letivos.destroy');
 
-        Route::post('parametros/unidades', [TipoUnidadeController::class, 'store'])->name('parametros.unidades.store');
-        Route::put('parametros/unidades/{tipoUnidade}', [TipoUnidadeController::class, 'update'])->name('parametros.unidades.update');
-        Route::delete('parametros/unidades/{tipoUnidade}', [TipoUnidadeController::class, 'destroy'])->name('parametros.unidades.destroy');
+        Route::post('parametros/unidades', [UnidadeController::class, 'store'])->name('parametros.unidades.store');
+        Route::put('parametros/unidades/{unidade}', [UnidadeController::class, 'update'])->name('parametros.unidades.update');
+        Route::delete('parametros/unidades/{unidade}', [UnidadeController::class, 'destroy'])->name('parametros.unidades.destroy');
 
         Route::post('parametros/grade-horarios', [GradeHorarioController::class, 'store'])->name('parametros.grade-horarios.store');
         Route::put('parametros/grade-horarios/{gradeHorario}', [GradeHorarioController::class, 'update'])->name('parametros.grade-horarios.update');

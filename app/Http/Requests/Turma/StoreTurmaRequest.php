@@ -25,13 +25,14 @@ class StoreTurmaRequest extends FormRequest
             'tur_nome'             => ['required', 'string', 'max:20'],
             'tur_turno'            => ['required', Rule::in(Turma::TURNOS)],
             'tur_capacidade'       => ['required', 'integer', 'min:1', 'max:999'],
-            'tur_tipo_atendimento' => ['required', Rule::in(Turma::TIPOS_ATENDIMENTO)],
+            'tur_semestre'         => ['required', 'integer', Rule::in(Turma::SEMESTRES)],
+            'tur_qt_expansao'      => ['nullable', 'integer', 'min:0', 'max:999'],
+            'tur_tipo_atendimento' => ['nullable', Rule::in(Turma::TIPOS_ATENDIMENTO)],
             'tur_situacao'         => ['required', Rule::in(Turma::SITUACOES)],
             'tur_hora_inicio'      => ['nullable', 'date_format:H:i'],
             'tur_hora_fim'         => ['nullable', 'date_format:H:i', 'after:tur_hora_inicio'],
             'tur_mediacao'         => ['nullable', Rule::in(Turma::TIPOS_MEDIACAO)],
             'tur_local_diferenciado' => ['nullable', Rule::in(Turma::LOCAIS_DIFERENCIADOS)],
-            'tur_fl_especial'      => ['boolean'],
             'tur_dias_funcionamento' => ['nullable', 'array'],
             'tur_dias_funcionamento.*' => ['string', Rule::in(Turma::DIAS_SEMANA)],
             'tur_obs'              => ['nullable', 'string', 'max:2000'],
@@ -46,7 +47,8 @@ class StoreTurmaRequest extends FormRequest
             $serId  = (int) $this->input('tur_ser_id');
             $turno  = $this->input('tur_turno');
             $nome   = $this->input('tur_nome');
-            $turId  = $this->route('turma')?->tur_id;
+            $turma  = $this->route('turma');
+            $turId  = $turma?->tur_id;
 
             $exists = Turma::where('tur_esc_id', $escId)
                 ->where('tur_anl_id', $anlId)
@@ -58,6 +60,15 @@ class StoreTurmaRequest extends FormRequest
 
             if ($exists) {
                 $v->errors()->add('tur_nome', 'Já existe uma turma com este nome para a escola, ano letivo, série e turno informados.');
+            }
+
+            // Bloqueio de campos estruturais quando turma ABERTA (apenas no update)
+            if ($turma && $turma->tur_situacao === 'ABERTA') {
+                foreach (Turma::CAMPOS_ESTRUTURAIS as $campo) {
+                    if ($this->has($campo) && (string) $this->input($campo) !== (string) $turma->{$campo}) {
+                        $v->errors()->add($campo, 'Campo bloqueado: turma já está ABERTA.');
+                    }
+                }
             }
         });
     }
@@ -73,13 +84,14 @@ class StoreTurmaRequest extends FormRequest
             'tur_nome'               => 'nome da turma',
             'tur_turno'              => 'turno',
             'tur_capacidade'         => 'capacidade',
+            'tur_semestre'           => 'semestre',
+            'tur_qt_expansao'        => 'expansão de capacidade',
             'tur_tipo_atendimento'   => 'tipo de atendimento',
             'tur_situacao'           => 'situação',
             'tur_hora_inicio'        => 'hora início',
             'tur_hora_fim'           => 'hora fim',
             'tur_mediacao'           => 'tipo de mediação',
             'tur_local_diferenciado' => 'local de funcionamento',
-            'tur_fl_especial'        => 'turma especial',
             'tur_dias_funcionamento' => 'dias de funcionamento',
             'tur_obs'                => 'observação',
         ];

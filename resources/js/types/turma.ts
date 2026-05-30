@@ -31,6 +31,20 @@ export const LOCAIS_DIFERENCIADOS = [
 
 export const SITUACOES_TURMA = ['ABERTA', 'ENCERRADA'] as const;
 
+export const SEMESTRES_TURMA = [
+    { value: 1, label: '1º Semestre' },
+    { value: 2, label: '2º Semestre' },
+] as const;
+
+export const CAMPOS_ESTRUTURAIS_TURMA = [
+    'tur_esc_id',
+    'tur_anl_id',
+    'tur_seg_id',
+    'tur_ser_id',
+    'tur_turno',
+    'tur_semestre',
+] as const;
+
 export const DIAS_SEMANA = [
     { value: 'dom', label: 'Domingo' },
     { value: 'seg', label: 'Segunda' },
@@ -92,13 +106,14 @@ export interface Turma {
     tur_nome: string;
     tur_turno: TurnoTipo;
     tur_capacidade: number | null;
-    tur_tipo_atendimento: string;
+    tur_semestre: number;
+    tur_qt_expansao: number | null;
+    tur_tipo_atendimento: string | null;
     tur_situacao: string;
     tur_hora_inicio: string | null;
     tur_hora_fim: string | null;
     tur_mediacao: string | null;
     tur_local_diferenciado: string | null;
-    tur_fl_especial: boolean;
     tur_dias_funcionamento: DiaSemana[] | null;
     tur_obs: string | null;
     tur_created_at: string | null;
@@ -120,13 +135,14 @@ export interface TurmaFormData {
     tur_nome: string;
     tur_turno: TurnoTipo | '';
     tur_capacidade: number | '';
+    tur_semestre: number | '';
+    tur_qt_expansao: number | '';
     tur_tipo_atendimento: string;
     tur_situacao: string;
     tur_hora_inicio: string;
     tur_hora_fim: string;
     tur_mediacao: string;
     tur_local_diferenciado: string;
-    tur_fl_especial: boolean;
     tur_dias_funcionamento: DiaSemana[];
     tur_obs: string;
     _method?: 'put';

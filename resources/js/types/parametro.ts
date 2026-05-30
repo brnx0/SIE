@@ -59,24 +59,39 @@ export interface AnoLetivoFormData {
     [key: string]: any;
 }
 
-export type TipoUnidadeTipo = 'unidade_didatica' | 'bimestral' | 'semestral' | 'trimestral';
+export type UnidadeTipo = 'bimestre' | 'trimestre' | 'semestre';
 
-export const TIPO_UNIDADE_LABELS: Record<TipoUnidadeTipo, string> = {
-    unidade_didatica: 'Unidade Didática',
-    bimestral:        'Bimestral',
-    semestral:        'Semestral',
-    trimestral:       'Trimestral',
+export const UNIDADE_TIPO_LABELS: Record<UnidadeTipo, string> = {
+    bimestre:  'Bimestral',
+    trimestre: 'Trimestral',
+    semestre:  'Semestral',
 };
 
-export interface TipoUnidade {
-    tun_id: number;
-    tun_tipo: TipoUnidadeTipo;
-    tun_anl_id_inicio: number;
-    tun_anl_id_fim: number | null;
-    ano_letivo_inicio?: { anl_id: number; anl_ano: number } | null;
-    ano_letivo_fim?: { anl_id: number; anl_ano: number } | null;
-    tun_created_at?: string | null;
-    tun_updated_at?: string | null;
+export const UNIDADE_LIMITES: Record<UnidadeTipo, number> = {
+    bimestre:  4,
+    trimestre: 3,
+    semestre:  2,
+};
+
+export const UNIDADE_ORDINAL: Record<number, string> = {
+    1: '1º',
+    2: '2º',
+    3: '3º',
+    4: '4º',
+};
+
+export interface Unidade {
+    uni_id: number;
+    uni_anl_id: number;
+    uni_tipo: UnidadeTipo;
+    uni_numero: number;
+    uni_dt_inicio: string;
+    uni_dt_fim: string;
+    uni_dias_extensao: number | null;
+    uni_dt_fim_efetivo: string;
+    uni_created_at?: string | null;
+    uni_updated_at?: string | null;
+    ano_letivo?: { anl_id: number; anl_ano: number } | null;
 }
 
 export interface GradeHorario {
@@ -94,10 +109,12 @@ export interface SegmentoResumo {
     seg_nome_completo: string;
 }
 
-export interface TipoUnidadeFormData {
-    tun_tipo: TipoUnidadeTipo | '';
-    tun_anl_id_inicio: number | null;
-    tun_anl_id_fim: number | null;
+export interface UnidadeFormData {
+    uni_anl_id: number | null;
+    uni_tipo: UnidadeTipo | '';
+    uni_dt_inicio: string;
+    uni_dt_fim: string;
+    uni_dias_extensao: number | '';
     _method?: 'put';
 }
 
