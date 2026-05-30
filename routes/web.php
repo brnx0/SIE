@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Aluno\AlunoController;
 use App\Http\Controllers\Api\BairroController;
+use App\Http\Controllers\Api\DisciplinaController as DisciplinaApiController;
 use App\Http\Controllers\Api\GerenciaRegionalController;
 use App\Http\Controllers\Api\MunicipioController;
 use App\Http\Controllers\Api\SegmentoController as SegmentoApiController;
@@ -22,6 +23,7 @@ use App\Http\Controllers\Funcionario\FuncionarioAdmissaoController;
 use App\Http\Controllers\Funcionario\FuncionarioController;
 use App\Http\Controllers\Funcionario\FuncionarioLotacaoController;
 use App\Http\Controllers\Parametro\AnoLetivoController;
+use App\Http\Controllers\Parametro\GradeDisciplinarController;
 use App\Http\Controllers\Parametro\GradeHorarioController;
 use App\Http\Controllers\Parametro\ParametroController;
 use App\Http\Controllers\Parametro\UnidadeController;
@@ -100,6 +102,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('api/cargos', [CargoApiController::class, 'search'])->name('api.cargos.search');
     Route::get('api/escolas', [EscolaApiController::class, 'search'])->name('api.escolas.search');
     Route::get('api/funcionarios', [FuncionarioApiController::class, 'search'])->name('api.funcionarios.search');
+    Route::get('api/disciplinas/search', [DisciplinaApiController::class, 'search'])->name('api.disciplinas.search');
+    Route::get('api/grade-disciplinar', [GradeDisciplinarController::class, 'index'])->name('api.grade-disciplinar.index');
 
     Route::middleware('can:admin')->group(function () {
         Route::get('parametros', [ParametroController::class, 'edit'])->name('parametros.edit');
@@ -118,6 +122,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('parametros/grade-horarios', [GradeHorarioController::class, 'store'])->name('parametros.grade-horarios.store');
         Route::put('parametros/grade-horarios/{gradeHorario}', [GradeHorarioController::class, 'update'])->name('parametros.grade-horarios.update');
         Route::delete('parametros/grade-horarios/{gradeHorario}', [GradeHorarioController::class, 'destroy'])->name('parametros.grade-horarios.destroy');
+
+        Route::post('parametros/grade-disciplinar', [GradeDisciplinarController::class, 'store'])->name('parametros.grade-disciplinar.store');
+        Route::post('parametros/grade-disciplinar/clonar', [GradeDisciplinarController::class, 'clonar'])->name('parametros.grade-disciplinar.clonar');
+        Route::put('parametros/grade-disciplinar/{grade}', [GradeDisciplinarController::class, 'update'])->name('parametros.grade-disciplinar.update');
+        Route::patch('parametros/grade-disciplinar/{grade}/ordem', [GradeDisciplinarController::class, 'reordenar'])->name('parametros.grade-disciplinar.reordenar');
+        Route::delete('parametros/grade-disciplinar/{grade}', [GradeDisciplinarController::class, 'destroy'])->name('parametros.grade-disciplinar.destroy');
     });
 });
 

@@ -12,14 +12,15 @@ class SerieController extends Controller
 {
     public function bySegmento(Request $request): JsonResponse
     {
-        $segId = (int) $request->input('seg_id');
+        $segId       = (int) $request->input('seg_id');
+        $incluirIds  = $this->incluirIds($request);
 
-        $series = Serie::where('seg_id', $segId)
-            ->where('ser_fl_ativo', true)
-            ->orderBy('ser_ordem_no_segmento')
-            ->get(['ser_id', 'ser_nome']);
+        $query = Serie::where('seg_id', $segId);
+        $this->filtroAtivoOuIncluso($query, 'ser_fl_ativo', 'ser_id', $incluirIds);
 
-        return response()->json($series);
+        return response()->json(
+            $query->orderBy('ser_ordem_no_segmento')->get(['ser_id', 'ser_nome'])
+        );
     }
 
     /**
@@ -28,9 +29,10 @@ class SerieController extends Controller
      */
     public function byEscolaSegmento(Request $request): JsonResponse
     {
-        $escId = (int) $request->input('esc_id');
-        $anlId = (int) $request->input('anl_id');
-        $segId = (int) $request->input('seg_id');
+        $escId      = (int) $request->input('esc_id');
+        $anlId      = (int) $request->input('anl_id');
+        $segId      = (int) $request->input('seg_id');
+        $incluirIds = $this->incluirIds($request);
 
         if (! $escId || ! $anlId || ! $segId) {
             return response()->json([]);
@@ -52,29 +54,33 @@ class SerieController extends Controller
         $ordemInicio = $esg->serieInicio?->ser_ordem_no_segmento ?? 0;
         $ordemFim    = $esg->serieFim?->ser_ordem_no_segmento ?? PHP_INT_MAX;
 
-        $series = Serie::where('seg_id', $segId)
-            ->where('ser_fl_ativo', true)
-            ->whereBetween('ser_ordem_no_segmento', [$ordemInicio, $ordemFim])
-            ->orderBy('ser_ordem_no_segmento')
-            ->get(['ser_id', 'ser_nome']);
+        $query = Serie::where('seg_id', $segId)
+            ->whereBetween('ser_ordem_no_segmento', [$ordemInicio, $ordemFim]);
+        $this->filtroAtivoOuIncluso($query, 'ser_fl_ativo', 'ser_id', $incluirIds);
 
-        return response()->json($series);
+        return response()->json(
+            $query->orderBy('ser_ordem_no_segmento')->get(['ser_id', 'ser_nome'])
+        );
     }
 
     public function search(Request $request): JsonResponse
     {
-        $q       = trim($request->input('q', ''));
-        $exclude = $request->input('exclude');
+        $q          = trim($request->input('q', ''));
+        $exclude    = $request->input('exclude');
+        $incluirIds = $this->incluirIds($request);
 
         // Normaliza ordinais (ª, º) e espaços extras tanto da query quanto do nome no banco
         $qNorm = trim(preg_replace('/\s+/', ' ', str_replace(['ª', 'º'], '', $q)));
 
-        $series = Serie::where('ser_fl_ativo', true)
-            ->when(strlen($qNorm) >= 2, fn ($query) => $query->whereRaw(
+        $query = Serie::query();
+        $this->filtroAtivoOuIncluso($query, 'ser_fl_ativo', 'ser_id', $incluirIds);
+
+        $series = $query
+            ->when(strlen($qNorm) >= 2, fn ($q2) => $q2->whereRaw(
                 "regexp_replace(replace(replace(ser_nome, 'ª', ''), 'º', ''), '\\s+', ' ', 'g') ilike ?",
                 ["%{$qNorm}%"]
             ))
-            ->when($exclude, fn ($query) => $query->where('ser_id', '!=', (int) $exclude))
+            ->when($exclude, fn ($q2) => $q2->where('ser_id', '!=', (int) $exclude))
             ->orderBy('ser_ordem_no_segmento')
             ->limit(50)
             ->get(['ser_id', 'ser_nome']);

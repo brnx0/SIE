@@ -109,6 +109,34 @@ export interface SegmentoResumo {
     seg_nome_completo: string;
 }
 
+export interface DisciplinaResumo {
+    dis_id: number;
+    dis_nome: string;
+    dis_sigla?: string | null;
+}
+
+export interface GradeDisciplinar {
+    grd_id: number;
+    grd_anl_id: number;
+    grd_seg_id: number;
+    grd_ser_id: number;
+    grd_dis_id: number;
+    grd_ordem: number;
+    grd_nome_alternativo: string | null;
+    grd_fl_ativo: boolean;
+    disciplina?: DisciplinaResumo | null;
+}
+
+export interface GradeDisciplinarFormData {
+    grd_anl_id: number | null;
+    grd_seg_id: number | null;
+    grd_ser_id: number | null;
+    grd_dis_id: number | null;
+    grd_nome_alternativo: string;
+    grd_fl_ativo: boolean;
+    _method?: 'put';
+}
+
 export interface UnidadeFormData {
     uni_anl_id: number | null;
     uni_tipo: UnidadeTipo | '';

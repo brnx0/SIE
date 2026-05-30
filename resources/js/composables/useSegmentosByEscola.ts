@@ -7,7 +7,7 @@ export function useSegmentosByEscola() {
     const items = ref<SegmentoResumo[]>([]);
     let controller: AbortController | null = null;
 
-    async function search(escId: number, anlId: number): Promise<void> {
+    async function search(escId: number, anlId: number, incluirIds: number[] = []): Promise<void> {
         if (!escId || !anlId) {
             items.value = [];
             return;
@@ -19,6 +19,7 @@ export function useSegmentosByEscola() {
         loading.value = true;
         try {
             const params = new URLSearchParams({ esc_id: String(escId), anl_id: String(anlId) });
+            if (incluirIds.length) params.set('incluir_ids', incluirIds.join(','));
             const res = await apiFetch(`/api/segmentos/by-escola?${params.toString()}`, {
                 signal: controller.signal,
                 headers: { Accept: 'application/json' },

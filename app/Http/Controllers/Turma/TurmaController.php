@@ -8,6 +8,7 @@ use App\Models\Disciplina\Disciplina;
 use App\Models\Escola\Escola;
 use App\Models\Funcionario\Funcionario;
 use App\Models\Parametro\AnoLetivo;
+use App\Models\Parametro\GradeDisciplinar;
 use App\Models\Parametro\GradeHorario;
 use App\Models\Turma\Turma;
 use Illuminate\Http\RedirectResponse;
@@ -130,7 +131,12 @@ class TurmaController extends Controller
                 : [],
             'isAdmin'                => $user->isAdmin(),
             'userEscola'             => $user->isAdmin() ? null : ['esc_id' => $user->esc_id, 'esc_nome' => $user->escola?->esc_nome],
-            'disciplinas'            => Disciplina::where('dis_fl_ativo', true)->orderBy('dis_nome')->get(['dis_id', 'dis_nome']),
+            'disciplinas'            => Disciplina::whereIn('dis_id',
+                    GradeDisciplinar::where('grd_anl_id', $turma->tur_anl_id)
+                        ->where('grd_ser_id', $turma->tur_ser_id)
+                        ->where('grd_fl_ativo', true)
+                        ->pluck('grd_dis_id')
+                )->orderBy('dis_nome')->get(['dis_id', 'dis_nome']),
             'professoresDisponiveis' => Funcionario::whereHas('admissoes.lotacoes', fn ($q) =>
                 $q->where('lot_esc_id', $turma->tur_esc_id)
             )->orderBy('fun_nome')->get(['fun_id', 'fun_nome']),

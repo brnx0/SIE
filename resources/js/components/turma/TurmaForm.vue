@@ -87,7 +87,7 @@ const estruturalLocked = computed(
 // Cascata: escola + ano → segmentos
 const triggerSegmentos = () => {
     if (form.tur_esc_id && form.tur_anl_id) {
-        searchSegmentos(form.tur_esc_id, form.tur_anl_id);
+        searchSegmentos(form.tur_esc_id, form.tur_anl_id, form.tur_seg_id ? [form.tur_seg_id] : []);
     } else {
         clearSegmentos();
     }
@@ -113,7 +113,7 @@ watch(() => form.tur_seg_id, triggerSeries);
 // Se edit, pré-carrega segmentos e series
 if (props.mode === 'edit' && props.initial) {
     if (props.initial.tur_esc_id && props.initial.tur_anl_id) {
-        searchSegmentos(props.initial.tur_esc_id, props.initial.tur_anl_id).then(() => {
+        searchSegmentos(props.initial.tur_esc_id, props.initial.tur_anl_id, props.initial.tur_seg_id ? [props.initial.tur_seg_id] : []).then(() => {
             if (props.initial!.tur_seg_id) {
                 searchSeries(props.initial!.tur_esc_id, props.initial!.tur_anl_id, props.initial!.tur_seg_id);
             }
@@ -182,7 +182,7 @@ const selectClass = (hasError: boolean) =>
                         <Lock class="mt-0.5 size-4 shrink-0" />
                         <div>
                             <p class="font-semibold">Turma ABERTA — campos estruturais bloqueados</p>
-                            <p class="mt-1 text-xs">Escola, ano letivo, segmento, série, turno e semestre não podem ser alterados após a turma estar aberta.</p>
+                            <p class="mt-1 text-xs">Escola, ano letivo, segmento, série e semestre não podem ser alterados após a turma estar aberta.</p>
                         </div>
                     </div>
 
@@ -255,7 +255,7 @@ const selectClass = (hasError: boolean) =>
                             <!-- Turno -->
                             <div class="grid gap-1.5 sm:col-span-3">
                                 <FormLabel :required="true">Turno</FormLabel>
-                                <select v-model="form.tur_turno" :disabled="estruturalLocked" :class="selectClass(!!form.errors.tur_turno)">
+                                <select v-model="form.tur_turno" :class="selectClass(!!form.errors.tur_turno)">
                                     <option value="">Selecione...</option>
                                     <option v-for="(label, val) in TURNOS" :key="val" :value="val">{{ label }}</option>
                                 </select>

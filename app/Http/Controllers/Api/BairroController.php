@@ -11,16 +11,16 @@ class BairroController extends Controller
 {
     public function search(Request $request): JsonResponse
     {
-        $term = $request->string('q')->trim()->toString();
-        $munId = $request->integer('mun_id') ?: null;
+        $term       = $request->string('q')->trim()->toString();
+        $munId      = $request->integer('mun_id') ?: null;
+        $incluirIds = $this->incluirIds($request);
 
-        $items = Bairro::query()
-            ->search($term ?: null, $munId)
-            ->where('bai_fl_ativo', true)
-            ->limit(30)
-            ->get(['bai_id', 'bai_nome', 'bai_mun_id']);
+        $query = Bairro::query()->search($term ?: null, $munId);
+        $this->filtroAtivoOuIncluso($query, 'bai_fl_ativo', 'bai_id', $incluirIds);
 
-        return response()->json($items);
+        return response()->json(
+            $query->limit(30)->get(['bai_id', 'bai_nome', 'bai_mun_id'])
+        );
     }
 
     public function store(Request $request): JsonResponse

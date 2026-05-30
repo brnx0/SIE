@@ -22,10 +22,19 @@ class SegmentoController extends Controller
             return response()->json([]);
         }
 
-        $segmentos = EscolaSegmento::with('segmento:seg_id,seg_nome_reduzido,seg_nome_completo')
+        // IDs já vinculados (segmentos atualmente salvos no registro que está sendo editado)
+        // devem ser listados mesmo se inativos — mantém histórico
+        $incluirIds = array_filter(array_map('intval', explode(',', (string) $request->input('incluir_ids', ''))));
+
+        $segmentos = EscolaSegmento::with('segmento:seg_id,seg_nome_reduzido,seg_nome_completo,seg_fl_ativo')
             ->where('esc_id', $escId)
             ->vigente($anlId)
             ->get(['esg_id', 'seg_id', 'ser_id_inicio', 'ser_id_fim'])
+            ->filter(function ($esg) use ($incluirIds) {
+                // Lista se segmento ativo OU se já estava vinculado
+                return $esg->segmento?->seg_fl_ativo || in_array($esg->seg_id, $incluirIds, true);
+            })
+            ->values()
             ->map(fn ($esg) => [
                 'esg_id'        => $esg->esg_id,
                 'seg_id'        => $esg->seg_id,

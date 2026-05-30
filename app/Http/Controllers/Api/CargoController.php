@@ -11,11 +11,11 @@ class CargoController extends Controller
 {
     public function search(Request $request): JsonResponse
     {
-        $term = $request->string('q')->trim()->toString();
+        $term       = $request->string('q')->trim()->toString();
+        $incluirIds = $this->incluirIds($request);
 
-        $query = Cargo::query()
-            ->where('crg_fl_ativo', true)
-            ->orderBy('crg_nome');
+        $query = Cargo::query()->orderBy('crg_nome');
+        $this->filtroAtivoOuIncluso($query, 'crg_fl_ativo', 'crg_id', $incluirIds);
 
         if ($term) {
             $query->where('crg_nome', 'ilike', "%{$term}%");

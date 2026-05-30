@@ -11,11 +11,11 @@ class EscolaController extends Controller
 {
     public function search(Request $request): JsonResponse
     {
-        $term = $request->string('q')->trim()->toString();
+        $term       = $request->string('q')->trim()->toString();
+        $incluirIds = $this->incluirIds($request);
 
-        $query = Escola::query()
-            ->where('esc_fl_ativo', true)
-            ->orderBy('esc_nome');
+        $query = Escola::query()->orderBy('esc_nome');
+        $this->filtroAtivoOuIncluso($query, 'esc_fl_ativo', 'esc_id', $incluirIds);
 
         if ($term) {
             $query->where('esc_nome', 'ilike', "%{$term}%");

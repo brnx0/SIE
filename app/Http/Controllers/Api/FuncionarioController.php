@@ -11,10 +11,11 @@ class FuncionarioController extends Controller
 {
     public function search(Request $request): JsonResponse
     {
-        $term = $request->string('q')->trim()->toString();
+        $term       = $request->string('q')->trim()->toString();
+        $incluirIds = $this->incluirIds($request);
 
-        $query = Funcionario::query()
-            ->orderBy('fun_nome');
+        $query = Funcionario::query()->orderBy('fun_nome');
+        $this->filtroAtivoOuIncluso($query, 'fun_fl_ativo', 'fun_id', $incluirIds);
 
         if ($term) {
             // Remove máscara do CPF para comparação pura de dígitos

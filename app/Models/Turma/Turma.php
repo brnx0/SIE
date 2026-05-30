@@ -15,6 +15,8 @@ class Turma extends Model
 {
     use SoftDeletes;
 
+    public static $snakeAttributes = false;
+
     protected $table = 'edu_turma';
     protected $primaryKey = 'tur_id';
 
@@ -58,7 +60,6 @@ class Turma extends Model
         'tur_anl_id',
         'tur_seg_id',
         'tur_ser_id',
-        'tur_turno',
         'tur_semestre',
     ];
 

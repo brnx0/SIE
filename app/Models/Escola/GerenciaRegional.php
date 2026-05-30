@@ -39,6 +39,6 @@ class GerenciaRegional extends Model
                     ->orWhere('ger_sigla', 'ilike', "%{$term}%");
             });
         }
-        return $query->where('ger_fl_ativo', true)->orderBy('ger_nome');
+        return $query->orderBy('ger_nome');
     }
 }
