@@ -10,10 +10,11 @@ import {
     SidebarMenuSubButton,
     SidebarMenuSubItem,
 } from '@/components/ui/sidebar';
-import { type SharedData } from '@/types';
-import { Link, usePage } from '@inertiajs/vue3';
+import { router } from '@inertiajs/vue3';
 import { ChevronRight } from 'lucide-vue-next';
-import type { Component } from 'vue';
+import { computed, type Component } from 'vue';
+import { useTabStore } from '@/stores/tabs';
+import { pathOf } from '@/lib/tabRegistry';
 
 interface NavLeaf {
     title: string;
@@ -41,9 +42,20 @@ defineProps<{
     label?: string;
 }>();
 
-const page = usePage<SharedData>();
+const store = useTabStore();
 
-const isActive = (href?: string) => !!href && page.url.startsWith(href);
+const activePath = computed(() => store.activeTab?.path ?? '');
+
+const isActive = (href?: string) => !!href && activePath.value === pathOf(href);
+
+// Se a tela já está aberta numa aba, só ativa (preserva estado). Senão, navega
+// (TabRegistrar cria a nova aba a partir da resposta do Inertia).
+const open = (href?: string) => {
+    if (!href) return;
+    const existing = store.findByPath(pathOf(href));
+    if (existing) store.setActive(existing.id);
+    else router.visit(href);
+};
 
 const isChildActive = (child: NavChild): boolean =>
     isGroup(child)
@@ -62,10 +74,10 @@ const isGroupActive = (item: NavItem) =>
                 <!-- Item simples -->
                 <SidebarMenuItem v-if="!item.children">
                     <SidebarMenuButton as-child :is-active="isActive(item.href)">
-                        <Link :href="item.href!">
+                        <a :href="item.href!" @click.prevent="open(item.href)">
                             <component :is="item.icon" />
                             <span>{{ item.title }}</span>
-                        </Link>
+                        </a>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
 
@@ -90,9 +102,9 @@ const isGroupActive = (item: NavItem) =>
                                     <!-- Leaf -->
                                     <SidebarMenuSubItem v-if="!isGroup(child)">
                                         <SidebarMenuSubButton as-child :is-active="isActive(child.href)">
-                                            <Link :href="child.href">
+                                            <a :href="child.href" @click.prevent="open(child.href)">
                                                 <span>{{ child.title }}</span>
-                                            </Link>
+                                            </a>
                                         </SidebarMenuSubButton>
                                     </SidebarMenuSubItem>
 
@@ -114,9 +126,9 @@ const isGroupActive = (item: NavItem) =>
                                                 <SidebarMenuSub class="ml-2 border-l pl-2">
                                                     <SidebarMenuSubItem v-for="leaf in child.children" :key="leaf.title">
                                                         <SidebarMenuSubButton as-child :is-active="isActive(leaf.href)">
-                                                            <Link :href="leaf.href">
+                                                            <a :href="leaf.href" @click.prevent="open(leaf.href)">
                                                                 <span>{{ leaf.title }}</span>
-                                                            </Link>
+                                                            </a>
                                                         </SidebarMenuSubButton>
                                                     </SidebarMenuSubItem>
                                                 </SidebarMenuSub>

@@ -33,7 +33,7 @@ import {
     TURNOS,
 } from '@/types/turma';
 import { Link, useForm } from '@inertiajs/vue3';
-import { Lock, LoaderCircle, Save } from 'lucide-vue-next';
+import { ChevronLeft, Lock, LoaderCircle, Save } from 'lucide-vue-next';
 import { computed, watch } from 'vue';
 
 const props = defineProps<{
@@ -158,8 +158,13 @@ const selectClass = (hasError: boolean) =>
 
 <template>
     <div class="grid gap-6">
-        <!-- Botão salvar no topo -->
-        <div class="flex justify-end">
+        <!-- Botões no topo -->
+        <div class="flex items-center justify-between">
+            <Link href="/turmas">
+                <Button type="button" variant="outline">
+                    <ChevronLeft class="mr-1 size-4" /> Voltar à lista
+                </Button>
+            </Link>
             <Button type="button" :disabled="form.processing" class="bg-indigo-600 hover:bg-indigo-700" @click="submit">
                 <LoaderCircle v-if="form.processing" class="mr-2 size-4 animate-spin" />
                 <Save v-else class="mr-2 size-4" />
@@ -202,7 +207,7 @@ const selectClass = (hasError: boolean) =>
                                     />
                                 </template>
                                 <template v-else>
-                                    <Input :value="(initialEscola?.esc_nome ?? userEscola?.esc_nome) ?? ''" disabled class="bg-muted" />
+                                    <Input :model-value="(initialEscola?.esc_nome ?? userEscola?.esc_nome) ?? ''" disabled class="bg-muted" />
                                 </template>
                                 <InputError :message="form.errors.tur_esc_id" />
                             </div>
@@ -410,12 +415,5 @@ const selectClass = (hasError: boolean) =>
                 />
             </TabsContent>
         </Tabs>
-
-        <!-- Rodapé: só navegação -->
-        <div>
-            <Link href="/turmas">
-                <Button type="button" variant="outline">Voltar à lista</Button>
-            </Link>
-        </div>
     </div>
 </template>

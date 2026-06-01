@@ -5,9 +5,11 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { Link } from '@inertiajs/vue3';
+import { router } from '@inertiajs/vue3';
 import { Search, X } from 'lucide-vue-next';
 import { computed } from 'vue';
+import { useTabStore } from '@/stores/tabs';
+import { pathOf } from '@/lib/tabRegistry';
 
 export interface FlatNavLeaf {
     title: string;
@@ -42,6 +44,14 @@ const results = computed(() => {
 });
 
 const clear = () => emit('update:modelValue', '');
+
+const store = useTabStore();
+
+const open = (href: string) => {
+    const existing = store.findByPath(pathOf(href));
+    if (existing) store.setActive(existing.id);
+    else router.visit(href);
+};
 </script>
 
 <template>
@@ -78,7 +88,7 @@ const clear = () => emit('update:modelValue', '');
             </li>
             <SidebarMenuItem v-for="r in results" :key="r.href">
                 <SidebarMenuButton as-child>
-                    <Link :href="r.href" class="flex flex-col items-start gap-0.5 py-1.5">
+                    <a :href="r.href" class="flex flex-col items-start gap-0.5 py-1.5" @click.prevent="open(r.href)">
                         <span class="text-sm">{{ r.title }}</span>
                         <span
                             v-if="r.path.length"
@@ -86,7 +96,7 @@ const clear = () => emit('update:modelValue', '');
                         >
                             {{ r.path.join(' › ') }}
                         </span>
-                    </Link>
+                    </a>
                 </SidebarMenuButton>
             </SidebarMenuItem>
         </SidebarMenu>
