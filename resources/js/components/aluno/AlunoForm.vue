@@ -343,7 +343,7 @@ const initials = computed(() => {
     <form @submit.prevent="submit" novalidate class="grid gap-6">
         <div class="flex items-center justify-between">
             <Link href="/alunos">
-                <Button type="button" variant="outline">Cancelar</Button>
+                <Button type="button" variant="outline">Voltar para listagem</Button>
             </Link>
             <Button
                 type="submit"

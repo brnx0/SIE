@@ -352,10 +352,10 @@ const initials = computed(() => {
 
 <template>
     <form @submit.prevent="submit" novalidate class="grid gap-6">
-        <!-- Topo: Cancelar + Salvar -->
+        <!-- Topo: Voltar + Salvar -->
         <div class="flex items-center justify-between">
             <Link href="/funcionarios">
-                <Button type="button" variant="outline">Cancelar</Button>
+                <Button type="button" variant="outline">Voltar para listagem</Button>
             </Link>
             <Button
                 type="submit"

@@ -53,7 +53,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar disciplina' : 'Salvar a
         <div class="flex items-center justify-between">
             <Link href="/disciplinas">
                 <Button type="button" variant="outline">
-                    <ChevronLeft class="mr-1 size-4" /> Cancelar
+                    <ChevronLeft class="mr-1 size-4" /> Voltar para listagem
                 </Button>
             </Link>
             <div class="flex items-center gap-2">

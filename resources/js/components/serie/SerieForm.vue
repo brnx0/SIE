@@ -68,7 +68,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar série' : 'Salvar alter
         <div class="flex items-center justify-between">
             <Link href="/series">
                 <Button type="button" variant="outline">
-                    <ChevronLeft class="mr-1 size-4" /> Cancelar
+                    <ChevronLeft class="mr-1 size-4" /> Voltar para listagem
                 </Button>
             </Link>
             <Button

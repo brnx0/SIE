@@ -60,7 +60,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar segmento' : 'Salvar alt
         <div class="flex items-center justify-between">
             <Link href="/segmentos">
                 <Button type="button" variant="outline">
-                    <ChevronLeft class="mr-1 size-4" /> Cancelar
+                    <ChevronLeft class="mr-1 size-4" /> Voltar para listagem
                 </Button>
             </Link>
             <Button

@@ -149,7 +149,7 @@ const submit = () => {
 
         <div class="flex justify-end gap-2">
             <Link href="/users">
-                <Button type="button" variant="outline">Cancelar</Button>
+                <Button type="button" variant="outline">Voltar para listagem</Button>
             </Link>
             <Button
                 type="submit"

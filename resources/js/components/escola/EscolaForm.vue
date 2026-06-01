@@ -301,7 +301,7 @@ const isLast = computed(() => activeTab.value === TABS.value[TABS.value.length -
     <form @submit.prevent="submit" novalidate class="grid gap-6">
         <div class="flex items-center justify-between">
             <Link href="/escolas">
-                <Button type="button" variant="outline">Cancelar</Button>
+                <Button type="button" variant="outline">Voltar para listagem</Button>
             </Link>
             <Button
                 type="submit"
