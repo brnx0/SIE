@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, provide, watch, type Component } from 'vue';
+import { usePage } from '@inertiajs/vue3';
 import AppContent from '@/components/layout/AppContent.vue';
 import AppShell from '@/components/layout/AppShell.vue';
 import AppSidebar from '@/components/layout/AppSidebar.vue';
@@ -15,6 +16,9 @@ defineProps<{ inertiaApp: Component; inertiaProps: Record<string, unknown> }>();
 
 provide(TAB_CONTEXT, true);
 
+const page = usePage();
+const isAuthenticated = computed(() => !!(page.props as { auth?: { user?: unknown } })?.auth?.user);
+
 const store = useTabStore();
 const activeBreadcrumbs = computed(() => store.activeTab?.breadcrumbs ?? []);
 
@@ -28,6 +32,10 @@ watch(
         }
     },
 );
+
+// Reset de abas em transições de auth (login/logout) → evita aba "Login"
+// persistir após autenticar, e abas autenticadas após logout.
+watch(isAuthenticated, () => store.clear());
 </script>
 
 <template>
@@ -38,7 +46,7 @@ watch(
         <component :is="inertiaApp" v-bind="inertiaProps" />
     </div>
 
-    <AppShell variant="sidebar">
+    <AppShell v-if="isAuthenticated" variant="sidebar">
         <AppSidebar />
         <AppContent variant="sidebar">
             <AppSidebarHeader :breadcrumbs="activeBreadcrumbs" />
@@ -56,4 +64,17 @@ watch(
         </AppContent>
         <FlashToaster />
     </AppShell>
+
+    <!-- Deslogado: sem chrome de app. Página (Login/Register) usa AuthLayout próprio. -->
+    <template v-else>
+        <TabPanel
+            v-for="tab in store.tabs"
+            v-show="tab.id === store.activeId"
+            :key="tab.id"
+            :tab-id="tab.id"
+        >
+            <component :is="tab.component" v-bind="tab.props" />
+        </TabPanel>
+        <FlashToaster />
+    </template>
 </template>

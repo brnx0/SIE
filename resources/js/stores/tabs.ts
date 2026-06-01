@@ -89,5 +89,10 @@ export const useTabStore = defineStore('tabs', {
             }
             return this.activeTab?.url ?? null;
         },
+
+        clear(): void {
+            this.tabs = [];
+            this.activeId = '';
+        },
     },
 });

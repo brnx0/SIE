@@ -15,9 +15,6 @@ class StoreDisciplinaRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->merge([
-            'dis_fl_fundamental' => $this->boolean('dis_fl_fundamental'),
-            'dis_fl_medio'       => $this->boolean('dis_fl_medio'),
-            'dis_fl_pedagogica'  => $this->boolean('dis_fl_pedagogica'),
             'dis_fl_ativo'       => $this->boolean('dis_fl_ativo'),
             'dis_nome_mec'       => mb_strtoupper($this->input('dis_nome_mec', ''), 'UTF-8'),
             'dis_nome'           => mb_strtoupper($this->input('dis_nome', ''), 'UTF-8'),
@@ -37,9 +34,6 @@ class StoreDisciplinaRequest extends FormRequest
                     ->ignore($this->route('disciplina')?->dis_id, 'dis_id'),
             ],
             'dis_sigla'          => ['nullable', 'string', 'max:20'],
-            'dis_fl_fundamental' => ['boolean'],
-            'dis_fl_medio'       => ['boolean'],
-            'dis_fl_pedagogica'  => ['boolean'],
             'dis_fl_ativo'       => ['boolean'],
         ];
     }
@@ -52,9 +46,6 @@ class StoreDisciplinaRequest extends FormRequest
             'dis_nome_mec'       => 'nome (MEC)',
             'dis_nome'           => 'nome reduzido',
             'dis_sigla'          => 'sigla',
-            'dis_fl_fundamental' => 'Ensino Fundamental',
-            'dis_fl_medio'       => 'Ensino Médio',
-            'dis_fl_pedagogica'  => 'disciplina pedagógica',
             'dis_fl_ativo'       => 'situação',
         ];
     }

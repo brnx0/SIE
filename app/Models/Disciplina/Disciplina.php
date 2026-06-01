@@ -24,18 +24,12 @@ class Disciplina extends Model
         'dis_nome_mec',
         'dis_nome',
         'dis_sigla',
-        'dis_fl_fundamental',
-        'dis_fl_medio',
-        'dis_fl_pedagogica',
         'dis_fl_ativo',
     ];
 
     protected $casts = [
         'arc_id'             => 'integer',
         'dis_cod_ref'        => 'integer',
-        'dis_fl_fundamental' => 'boolean',
-        'dis_fl_medio'       => 'boolean',
-        'dis_fl_pedagogica'  => 'boolean',
         'dis_fl_ativo'       => 'boolean',
     ];
 

@@ -10,9 +10,6 @@ export interface Disciplina {
     dis_nome_mec: string;
     dis_nome: string;
     dis_sigla: string | null;
-    dis_fl_fundamental: boolean;
-    dis_fl_medio: boolean;
-    dis_fl_pedagogica: boolean;
     dis_fl_ativo: boolean;
     dis_created_at: string | null;
     dis_updated_at: string | null;
