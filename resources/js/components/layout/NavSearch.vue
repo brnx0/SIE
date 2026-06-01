@@ -5,11 +5,9 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { router } from '@inertiajs/vue3';
 import { Search, X } from 'lucide-vue-next';
 import { computed } from 'vue';
-import { useTabStore } from '@/stores/tabs';
-import { pathOf } from '@/lib/tabRegistry';
+import { useTabNav } from '@/composables/useTabNav';
 
 export interface FlatNavLeaf {
     title: string;
@@ -45,13 +43,7 @@ const results = computed(() => {
 
 const clear = () => emit('update:modelValue', '');
 
-const store = useTabStore();
-
-const open = (href: string) => {
-    const existing = store.findByPath(pathOf(href));
-    if (existing) store.setActive(existing.id);
-    else router.visit(href);
-};
+const { open } = useTabNav();
 </script>
 
 <template>

@@ -3,10 +3,13 @@ import ThemeToggle from '@/components/layout/ThemeToggle.vue';
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import type { BreadcrumbItemType } from '@/types';
+import { useTabNav } from '@/composables/useTabNav';
 
 defineProps<{
     breadcrumbs?: BreadcrumbItemType[];
 }>();
+
+const { open } = useTabNav();
 </script>
 
 <template>
@@ -24,7 +27,7 @@ defineProps<{
                                     <BreadcrumbPage>{{ item.title }}</BreadcrumbPage>
                                 </template>
                                 <template v-else>
-                                    <BreadcrumbLink :href="item.href">
+                                    <BreadcrumbLink :href="item.href" @click.prevent="open(item.href)">
                                         {{ item.title }}
                                     </BreadcrumbLink>
                                 </template>

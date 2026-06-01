@@ -19,9 +19,11 @@ if (inTab && tabId) {
     watch(
         () => props.breadcrumbs,
         (bc) => {
+            // Title = recurso (primeira breadcrumb), não a página corrente.
+            // Mantém nome da aba estável durante navegação interna (list↔edit).
             store.setMeta(tabId, {
                 breadcrumbs: bc,
-                title: bc?.[bc.length - 1]?.title,
+                title: bc?.[0]?.title,
             });
         },
         { immediate: true, deep: true },

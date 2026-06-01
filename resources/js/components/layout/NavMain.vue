@@ -10,11 +10,11 @@ import {
     SidebarMenuSubButton,
     SidebarMenuSubItem,
 } from '@/components/ui/sidebar';
-import { router } from '@inertiajs/vue3';
 import { ChevronRight } from 'lucide-vue-next';
 import { computed, type Component } from 'vue';
 import { useTabStore } from '@/stores/tabs';
 import { pathOf } from '@/lib/tabRegistry';
+import { useTabNav } from '@/composables/useTabNav';
 
 interface NavLeaf {
     title: string;
@@ -48,14 +48,7 @@ const activePath = computed(() => store.activeTab?.path ?? '');
 
 const isActive = (href?: string) => !!href && activePath.value === pathOf(href);
 
-// Se a tela já está aberta numa aba, só ativa (preserva estado). Senão, navega
-// (TabRegistrar cria a nova aba a partir da resposta do Inertia).
-const open = (href?: string) => {
-    if (!href) return;
-    const existing = store.findByPath(pathOf(href));
-    if (existing) store.setActive(existing.id);
-    else router.visit(href);
-};
+const { open } = useTabNav();
 
 const isChildActive = (child: NavChild): boolean =>
     isGroup(child)
