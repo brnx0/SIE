@@ -38,9 +38,6 @@
             <th>Nome (MEC)</th>
             <th>Área do Conhecimento</th>
             <th style="text-align:center">Cód.</th>
-            <th style="text-align:center">Fund.</th>
-            <th style="text-align:center">Médio</th>
-            <th style="text-align:center">Pedag.</th>
             <th style="text-align:center">Situação</th>
         </tr>
     </thead>
@@ -51,9 +48,6 @@
             <td>{{ $d->dis_nome_mec }}</td>
             <td>{{ $d->areaConhecimento?->arc_nome ?? '—' }}</td>
             <td style="text-align:center">{{ $d->dis_cod_ref ?? '—' }}</td>
-            <td style="text-align:center">@if($d->dis_fl_fundamental)<span class="badge badge-yes">Sim</span>@else —@endif</td>
-            <td style="text-align:center">@if($d->dis_fl_medio)<span class="badge badge-yes">Sim</span>@else —@endif</td>
-            <td style="text-align:center">@if($d->dis_fl_pedagogica)<span class="badge badge-yes">Sim</span>@else —@endif</td>
             <td style="text-align:center">
                 <span class="badge {{ $d->dis_fl_ativo ? 'badge-active' : 'badge-inactive' }}">
                     {{ $d->dis_fl_ativo ? 'Ativo' : 'Inativo' }}
@@ -61,7 +55,7 @@
             </td>
         </tr>
         @empty
-        <tr><td colspan="8" style="text-align:center;padding:20px;color:#94a3b8">Nenhum registro encontrado.</td></tr>
+        <tr><td colspan="5" style="text-align:center;padding:20px;color:#94a3b8">Nenhum registro encontrado.</td></tr>
         @endforelse
     </tbody>
 </table>

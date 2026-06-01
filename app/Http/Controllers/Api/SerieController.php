@@ -76,7 +76,7 @@ class SerieController extends Controller
         $this->filtroAtivoOuIncluso($query, 'ser_fl_ativo', 'ser_id', $incluirIds);
 
         $series = $query
-            ->when(strlen($qNorm) >= 2, fn ($q2) => $q2->whereRaw(
+            ->when(strlen($qNorm) >= 1, fn ($q2) => $q2->whereRaw(
                 "regexp_replace(replace(replace(ser_nome, 'ª', ''), 'º', ''), '\\s+', ' ', 'g') ilike ?",
                 ["%{$qNorm}%"]
             ))

@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import NavFooter from '@/components/layout/NavFooter.vue';
 import NavMain from '@/components/layout/NavMain.vue';
+import NavSearch, { type FlatNavLeaf } from '@/components/layout/NavSearch.vue';
 import NavUser from '@/components/layout/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { Link } from '@inertiajs/vue3';
 import { LayoutDashboard, LifeBuoy, UserPlus, Cog} from 'lucide-vue-next';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import type { SharedData } from '@/types';
 import AppLogo from './AppLogo.vue';
@@ -51,6 +52,30 @@ const administracao = computed<any[]>(() => [
 const footerNavItems = [
     { title: 'Suporte', href: '#', icon: LifeBuoy },
 ];
+
+// Busca no menu
+const search = ref('');
+
+// Flatten recursivo: extrai todos os leafs com seu path (breadcrumb de pais)
+const flattenItems = (items: any[], parents: string[] = []): FlatNavLeaf[] => {
+    const out: FlatNavLeaf[] = [];
+    for (const it of items ?? []) {
+        if (it.children?.length) {
+            out.push(...flattenItems(it.children, [...parents, it.title]));
+        } else if (it.href) {
+            out.push({ title: it.title, href: it.href, path: parents });
+        }
+    }
+    return out;
+};
+
+const flatLeaves = computed<FlatNavLeaf[]>(() => [
+    ...flattenItems(overview),
+    ...flattenItems(cadastros),
+    ...flattenItems(administracao.value),
+]);
+
+const searching = computed(() => search.value.trim().length > 0);
 </script>
 
 <template>
@@ -68,11 +93,15 @@ const footerNavItems = [
         </SidebarHeader>
 
         <SidebarContent>
-            <NavMain label="Visão geral" :items="overview" />
-            <NavMain label="Gestão" :items="cadastros" />
-            <NavMain label="Administração" :items="administracao" />
+            <NavSearch v-model="search" :items="flatLeaves" />
+
+            <template v-if="!searching">
+                <NavMain label="Visão geral" :items="overview" />
+                <NavMain label="Gestão" :items="cadastros" />
+                <NavMain label="Administração" :items="administracao" />
+            </template>
         </SidebarContent>
-        
+
 
         <SidebarFooter>
             <NavFooter :items="footerNavItems" />

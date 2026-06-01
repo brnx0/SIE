@@ -29,13 +29,14 @@ let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
 watch(query, (q) => {
     if (debounceTimer) clearTimeout(debounceTimer);
+    const trimmed = q.trim();
+    if (!trimmed) {
+        items.value = [];
+        return;
+    }
     debounceTimer = setTimeout(() => {
-        if (q.trim().length >= 2) {
-            search(q.trim(), props.exclude);
-        } else {
-            items.value = [];
-        }
-    }, 300);
+        search(trimmed, props.exclude);
+    }, 200);
 });
 
 watch(
@@ -72,6 +73,7 @@ const handleOutside = (e: MouseEvent) => {
 
 const openPanel = () => {
     open.value = true;
+    items.value = [];
     setTimeout(() => inputEl.value?.focus(), 0);
 };
 
@@ -116,17 +118,17 @@ onBeforeUnmount(() => document.removeEventListener('mousedown', handleOutside));
                     v-model="query"
                     type="text"
                     class="h-10 w-full bg-transparent px-2 text-sm placeholder:text-muted-foreground focus:outline-none"
-                    placeholder="Digite ao menos 2 letras..."
+                    placeholder="Filtrar..."
                 />
                 <Loader2 v-if="loading" class="size-4 animate-spin text-muted-foreground" />
             </div>
 
             <ul class="max-h-64 overflow-y-auto py-1 text-sm">
                 <li
-                    v-if="!loading && query.length < 2"
+                    v-if="!loading && !query.trim()"
                     class="px-3 py-2 text-muted-foreground"
                 >
-                    Comece a digitar o nome da série
+                    Digite para buscar séries...
                 </li>
                 <li
                     v-else-if="!loading && items.length === 0"

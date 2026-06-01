@@ -74,14 +74,13 @@ const remove = (dis: Disciplina) => {
                         <tr>
                             <th class="px-4 py-3">Disciplina</th>
                             <th class="px-4 py-3">Área do Conhecimento</th>
-                            <th class="px-4 py-3 text-center">Níveis</th>
                             <th class="px-4 py-3 text-center">Situação</th>
                             <th class="px-4 py-3 text-right">Ações</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y">
                         <tr v-if="disciplinas.data.length === 0">
-                            <td colspan="5" class="px-4 py-12 text-center text-muted-foreground">Nenhuma disciplina cadastrada.</td>
+                            <td colspan="4" class="px-4 py-12 text-center text-muted-foreground">Nenhuma disciplina cadastrada.</td>
                         </tr>
                         <tr v-for="dis in disciplinas.data" :key="dis.dis_id" class="transition-colors hover:bg-muted/30">
                             <td class="px-4 py-3">
@@ -100,14 +99,6 @@ const remove = (dis: Disciplina) => {
                                 </div>
                             </td>
                             <td class="px-4 py-3 text-muted-foreground">{{ dis.areaConhecimento?.arc_nome ?? '—' }}</td>
-                            <td class="px-4 py-3">
-                                <div class="flex flex-wrap justify-center gap-1">
-                                    <span v-if="dis.dis_fl_fundamental" class="inline-flex rounded-full bg-sky-50 px-2 py-0.5 text-xs font-medium text-sky-700 dark:bg-sky-900/30 dark:text-sky-300">Fund.</span>
-                                    <span v-if="dis.dis_fl_medio" class="inline-flex rounded-full bg-violet-50 px-2 py-0.5 text-xs font-medium text-violet-700 dark:bg-violet-900/30 dark:text-violet-300">Médio</span>
-                                    <span v-if="dis.dis_fl_pedagogica" class="inline-flex rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">Pedag.</span>
-                                    <span v-if="!dis.dis_fl_fundamental && !dis.dis_fl_medio && !dis.dis_fl_pedagogica" class="text-muted-foreground">—</span>
-                                </div>
-                            </td>
                             <td class="px-4 py-3 text-center">
                                 <span :class="['inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium', dis.dis_fl_ativo ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400']">
                                     {{ dis.dis_fl_ativo ? 'Ativo' : 'Inativo' }}

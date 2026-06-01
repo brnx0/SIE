@@ -66,6 +66,10 @@ class DisciplinaController extends Controller
     {
         $disciplina = Disciplina::create($request->validated());
 
+        if ($request->boolean('continue_new')) {
+            return to_route('disciplinas.create')->with('success', 'Disciplina cadastrada. Pronto para o próximo cadastro.');
+        }
+
         return to_route('disciplinas.edit', $disciplina)->with('success', 'Disciplina cadastrada com sucesso.');
     }
 
@@ -104,7 +108,7 @@ class DisciplinaController extends Controller
         return response()->streamDownload(function () use ($disciplinas) {
             $out = fopen('php://output', 'w');
             fprintf($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
-            fputcsv($out, ['Nome Reduzido', 'Nome (MEC)', 'Área do Conhecimento', 'Sigla', 'Cód. Ref.', 'Fund.', 'Médio', 'Pedagógica', 'Situação'], ';');
+            fputcsv($out, ['Nome Reduzido', 'Nome (MEC)', 'Área do Conhecimento', 'Sigla', 'Cód. Ref.', 'Situação'], ';');
             foreach ($disciplinas as $d) {
                 fputcsv($out, [
                     $d->dis_nome,
@@ -112,9 +116,6 @@ class DisciplinaController extends Controller
                     $d->areaConhecimento?->arc_nome ?? '',
                     $d->dis_sigla ?? '',
                     $d->dis_cod_ref ?? '',
-                    $d->dis_fl_fundamental ? 'Sim' : 'Não',
-                    $d->dis_fl_medio ? 'Sim' : 'Não',
-                    $d->dis_fl_pedagogica ? 'Sim' : 'Não',
                     $d->dis_fl_ativo ? 'Ativo' : 'Inativo',
                 ], ';');
             }

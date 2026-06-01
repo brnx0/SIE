@@ -25,9 +25,6 @@ export interface DisciplinaFormData {
     dis_nome_mec: string;
     dis_nome: string;
     dis_sigla: string;
-    dis_fl_fundamental: boolean;
-    dis_fl_medio: boolean;
-    dis_fl_pedagogica: boolean;
     dis_fl_ativo: boolean;
     _method?: 'put';
     [key: string]: unknown;

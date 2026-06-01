@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import type { AreaConhecimento, Disciplina, DisciplinaFormData } from '@/types/disciplina';
 import { Link, useForm } from '@inertiajs/vue3';
-import { ChevronLeft, LoaderCircle, Save } from 'lucide-vue-next';
+import { ChevronLeft, LoaderCircle, Save, PlusCircle } from 'lucide-vue-next';
 
 const props = defineProps<{
     mode: 'create' | 'edit';
@@ -14,21 +14,29 @@ const props = defineProps<{
     initial?: Disciplina;
 }>();
 
-const form = useForm<DisciplinaFormData>({
+const form = useForm<DisciplinaFormData & { continue_new?: boolean }>({
     arc_id:            props.initial?.arc_id ?? null,
     dis_cod_ref:       props.initial?.dis_cod_ref ?? null,
     dis_nome_mec:      props.initial?.dis_nome_mec ?? '',
     dis_nome:          props.initial?.dis_nome ?? '',
     dis_sigla:         props.initial?.dis_sigla ?? '',
-    dis_fl_fundamental: props.initial?.dis_fl_fundamental ?? false,
-    dis_fl_medio:      props.initial?.dis_fl_medio ?? false,
-    dis_fl_pedagogica: props.initial?.dis_fl_pedagogica ?? false,
     dis_fl_ativo:      props.initial?.dis_fl_ativo ?? true,
+    continue_new:      false,
     _method: props.mode === 'edit' ? 'put' : undefined,
 });
 
-const submit = () => {
-    const opts = { preserveScroll: true };
+const submit = (continueNew = false) => {
+    form.continue_new = continueNew;
+    const opts = {
+        preserveScroll: true,
+        onSuccess: () => {
+            if (continueNew && props.mode === 'create') {
+                form.reset();
+                form.dis_fl_ativo = true;
+                form.continue_new = false;
+            }
+        },
+    };
     if (props.mode === 'create') {
         form.post('/disciplinas', opts);
     } else if (props.initial) {
@@ -40,7 +48,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar disciplina' : 'Salvar a
 </script>
 
 <template>
-    <form @submit.prevent="submit" novalidate class="grid gap-6">
+    <form @submit.prevent="submit(false)" novalidate class="grid gap-6">
         <!-- Botões topo -->
         <div class="flex items-center justify-between">
             <Link href="/disciplinas">
@@ -48,15 +56,29 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar disciplina' : 'Salvar a
                     <ChevronLeft class="mr-1 size-4" /> Cancelar
                 </Button>
             </Link>
-            <Button
-                type="submit"
-                :disabled="form.processing"
-                class="bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
-            >
-                <LoaderCircle v-if="form.processing" class="mr-2 size-4 animate-spin" />
-                <Save v-else class="mr-2 size-4" />
-                {{ submitLabel }}
-            </Button>
+            <div class="flex items-center gap-2">
+                <Button
+                    v-if="mode === 'create'"
+                    type="button"
+                    variant="outline"
+                    :disabled="form.processing"
+                    class="border-indigo-600 text-indigo-700 hover:bg-indigo-50 dark:text-indigo-300 dark:hover:bg-indigo-900/30"
+                    @click="submit(true)"
+                >
+                    <LoaderCircle v-if="form.processing && form.continue_new" class="mr-2 size-4 animate-spin" />
+                    <PlusCircle v-else class="mr-2 size-4" />
+                    Salvar e novo
+                </Button>
+                <Button
+                    type="submit"
+                    :disabled="form.processing"
+                    class="bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
+                >
+                    <LoaderCircle v-if="form.processing && !form.continue_new" class="mr-2 size-4 animate-spin" />
+                    <Save v-else class="mr-2 size-4" />
+                    {{ submitLabel }}
+                </Button>
+            </div>
         </div>
 
         <!-- Card principal -->
@@ -133,39 +155,8 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar disciplina' : 'Salvar a
             <!-- Separador -->
             <div class="sm:col-span-4 border-t" />
 
-            <!-- Checkboxes nivéis / tipo -->
-            <div class="grid gap-3 sm:col-span-3">
-                <FormLabel>Aplicável a</FormLabel>
-                <div class="flex flex-wrap gap-x-8 gap-y-3">
-                    <label class="flex items-center gap-2 text-sm">
-                        <input
-                            type="checkbox"
-                            v-model="form.dis_fl_fundamental"
-                            class="size-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                        />
-                        Disciplinas do Ensino Fundamental
-                    </label>
-                    <label class="flex items-center gap-2 text-sm">
-                        <input
-                            type="checkbox"
-                            v-model="form.dis_fl_medio"
-                            class="size-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                        />
-                        Disciplinas do Ensino Médio
-                    </label>
-                    <label class="flex items-center gap-2 text-sm">
-                        <input
-                            type="checkbox"
-                            v-model="form.dis_fl_pedagogica"
-                            class="size-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                        />
-                        Disciplinas pedagógicas
-                    </label>
-                </div>
-            </div>
-
             <!-- Ativo -->
-            <div class="flex items-center gap-3 self-end pb-1">
+            <div class="flex items-center gap-3 sm:col-span-4">
                 <Switch id="dis_fl_ativo" v-model="form.dis_fl_ativo" />
                 <FormLabel for="dis_fl_ativo" class="font-normal">Ativo</FormLabel>
             </div>

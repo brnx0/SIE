@@ -15,9 +15,6 @@ return new class extends Migration
             $table->string('dis_nome_mec', 100);
             $table->string('dis_nome', 100);
             $table->string('dis_sigla', 20)->nullable();
-            $table->boolean('dis_fl_fundamental')->default(false);
-            $table->boolean('dis_fl_medio')->default(false);
-            $table->boolean('dis_fl_pedagogica')->default(false);
             $table->boolean('dis_fl_ativo')->default(true);
             $table->timestamp('dis_created_at')->nullable();
             $table->timestamp('dis_updated_at')->nullable();
