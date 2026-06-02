@@ -6,6 +6,7 @@ import Tabs from '@/components/common/Tabs.vue';
 import TabsContent from '@/components/common/TabsContent.vue';
 import TabsList from '@/components/common/TabsList.vue';
 import TabsTrigger from '@/components/common/TabsTrigger.vue';
+import TurmaAlunosTab from '@/components/turma/tabs/TurmaAlunosTab.vue';
 import TurmaHorariosTab from '@/components/turma/tabs/TurmaHorariosTab.vue';
 import TurmaProfessoresTab from '@/components/turma/tabs/TurmaProfessoresTab.vue';
 import { Button } from '@/components/ui/button';
@@ -178,6 +179,7 @@ const selectClass = (hasError: boolean) =>
                 <TabsTrigger value="dados" :has-error="Object.keys(form.errors).length > 0">Dados Gerais</TabsTrigger>
                 <TabsTrigger value="professores">Professores</TabsTrigger>
                 <TabsTrigger value="horarios">Horários</TabsTrigger>
+                <TabsTrigger value="alunos">Alunos</TabsTrigger>
             </TabsList>
 
             <TabsContent value="dados">
@@ -413,6 +415,10 @@ const selectClass = (hasError: boolean) =>
                     :professores-disponiveis="professoresDisponiveis ?? []"
                     :disciplinas="disciplinas ?? []"
                 />
+            </TabsContent>
+
+            <TabsContent v-if="mode === 'edit'" value="alunos">
+                <TurmaAlunosTab :tur-id="initial!.tur_id" />
             </TabsContent>
         </Tabs>
     </div>

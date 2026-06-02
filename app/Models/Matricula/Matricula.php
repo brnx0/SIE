@@ -25,6 +25,8 @@ class Matricula extends Model
     const SITUACAO_FALECIDO     = 'FALECIDO';
     const SITUACAO_EVADIDO      = 'EVADIDO';
 
+    const TAS_ENTRADA_NOVO = 1;
+
     const TIPO_MATRICULA_NOVA          = 'MATRICULA_NOVA';
     const TIPO_REMATRICULA             = 'REMATRICULA';
     const TIPO_TRANSFERENCIA_INTERNA   = 'TRANSFERENCIA_INTERNA';
@@ -37,6 +39,9 @@ class Matricula extends Model
         'tma_nr_ordem',
         'tma_tipo_admissao',
         'tma_situacao',
+        'tma_tas_cod_entrada',
+        'tma_tas_cod_saida',
+        'tma_fl_renovado',
         'tma_dt_matricula',
         'tma_dt_saida',
         'tma_obs',
@@ -53,12 +58,15 @@ class Matricula extends Model
     ];
 
     protected $casts = [
-        'tma_aln_id'      => 'integer',
-        'tma_tur_id'      => 'integer',
-        'tma_anl_id'      => 'integer',
-        'tma_nr_ordem'    => 'integer',
-        'tma_dt_matricula'           => 'date',
-        'tma_dt_saida'               => 'date',
+        'tma_aln_id'          => 'integer',
+        'tma_tur_id'          => 'integer',
+        'tma_anl_id'          => 'integer',
+        'tma_nr_ordem'        => 'integer',
+        'tma_tas_cod_entrada'  => 'integer',
+        'tma_tas_cod_saida'    => 'integer',
+        'tma_fl_renovado'      => 'boolean',
+        'tma_dt_matricula'    => 'date',
+        'tma_dt_saida'        => 'date',
         'tma_fl_trouxe_transferencia' => 'boolean',
         'tma_fl_trouxe_rg'           => 'boolean',
         'tma_fl_trouxe_reg_nascimento' => 'boolean',

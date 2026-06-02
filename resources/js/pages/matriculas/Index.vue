@@ -201,7 +201,9 @@ const validarIdadeParaTurma = (turma: TurmaMatricula): boolean => {
 const modalAberto  = ref(false);
 const turmaAlvo    = ref<TurmaMatricula | null>(null);
 
-const abrirMatricula = (turma: TurmaMatricula) => {
+const verificandoMatricula = ref(false);
+
+const abrirMatricula = async (turma: TurmaMatricula) => {
     erroIdade.value = null;
 
     if (!alunoDefinidoParaMatricula.value) {
@@ -210,6 +212,30 @@ const abrirMatricula = (turma: TurmaMatricula) => {
     }
 
     if (!validarIdadeParaTurma(turma)) return;
+
+    if (alunoSelecionado.value) {
+        verificandoMatricula.value = true;
+        try {
+            const params = new URLSearchParams({
+                aln_id: String(alunoSelecionado.value.aln_id),
+                anl_id: String(turma.ano_letivo?.anl_id ?? ''),
+                esc_id: String(turma.escola?.esc_id ?? ''),
+            });
+            const r = await fetch(`/api/matriculas/verificar?${params}`);
+            const { matriculado, mesma_escola } = await r.json();
+            if (matriculado) {
+                erroIdade.value = mesma_escola
+                    ? `O aluno já possui matrícula ativa nesta escola neste ano letivo.`
+                    : `O aluno já possui matrícula ativa em outra escola neste ano letivo.`;
+                return;
+            }
+        } catch {
+            // falha silenciosa — deixa o backend rejeitar se necessário
+        } finally {
+            verificandoMatricula.value = false;
+        }
+    }
+
     turmaAlvo.value = turma;
     modalAberto.value = true;
 };

@@ -41,6 +41,33 @@ class MatriculaController extends Controller
         ]);
     }
 
+    public function verificar(Request $request): JsonResponse
+    {
+        $alunoId  = $request->integer('aln_id');
+        $anlId    = $request->integer('anl_id');
+        $escIdAtual = $request->integer('esc_id');
+
+        if (!$alunoId || !$anlId) {
+            return response()->json(['matriculado' => false]);
+        }
+
+        $matricula = Matricula::where('tma_aln_id', $alunoId)
+            ->where('tma_anl_id', $anlId)
+            ->where('tma_situacao', Matricula::SITUACAO_ATIVA)
+            ->join('edu_turma', 'edu_turma.tur_id', '=', 'edu_turma_aluno.tma_tur_id')
+            ->select('edu_turma.tur_esc_id')
+            ->first();
+
+        if (!$matricula) {
+            return response()->json(['matriculado' => false]);
+        }
+
+        return response()->json([
+            'matriculado'  => true,
+            'mesma_escola' => (int) $matricula->tur_esc_id === $escIdAtual,
+        ]);
+    }
+
     public function store(StoreMatriculaRequest $request): JsonResponse
     {
         $turma = Turma::with(['anoLetivo:anl_id,anl_ano', 'segmento:seg_id,seg_nome_reduzido'])->findOrFail($request->integer('tma_tur_id'));
@@ -84,6 +111,7 @@ class MatriculaController extends Controller
                     'tma_anl_id'                   => $turma->tur_anl_id,
                     'tma_tipo_admissao'            => Matricula::TIPO_MATRICULA_NOVA,
                     'tma_situacao'                 => Matricula::SITUACAO_ATIVA,
+                    'tma_tas_cod_entrada'          => Matricula::TAS_ENTRADA_NOVO,
                     'tma_created_by_id'            => auth()->id(),
                     'tma_dt_matricula'             => $request->input('tma_dt_matricula'),
                     'tma_obs'                      => $request->input('tma_obs'),

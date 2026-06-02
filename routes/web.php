@@ -4,6 +4,7 @@ use App\Http\Controllers\Aluno\AlunoController;
 use App\Http\Controllers\Api\AlunoSearchController;
 use App\Http\Controllers\Api\BairroController;
 use App\Http\Controllers\Api\MatriculaTurmaController;
+use App\Http\Controllers\Api\TurmaAlunoController;
 use App\Http\Controllers\Matricula\MatriculaController;
 use App\Http\Controllers\Api\DisciplinaController as DisciplinaApiController;
 use App\Http\Controllers\Api\GerenciaRegionalController;
@@ -102,6 +103,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('matriculas', [MatriculaController::class, 'index'])->name('matriculas.index');
     Route::post('matriculas', [MatriculaController::class, 'store'])->name('matriculas.store');
     Route::get('api/matriculas/turmas', [MatriculaTurmaController::class, 'index'])->name('api.matriculas.turmas');
+    Route::get('api/turmas/{tur_id}/alunos', [TurmaAlunoController::class, 'index'])->name('api.turmas.alunos');
+    Route::patch('api/turmas/{tur_id}/alunos/{tma_id}/renovado', [TurmaAlunoController::class, 'toggleRenovado'])->name('api.turmas.alunos.renovado');
+    Route::get('api/matriculas/verificar', [MatriculaController::class, 'verificar'])->name('api.matriculas.verificar');
     Route::get('api/alunos/search', [AlunoSearchController::class, 'search'])->name('api.alunos.search');
 
     Route::get('api/series', [SerieApiController::class, 'bySegmento'])->name('api.series.bySegmento');

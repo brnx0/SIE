@@ -466,7 +466,17 @@ const selectClass = 'flex h-10 w-full rounded-md border border-input bg-backgrou
 
                             <div class="grid gap-1.5">
                                 <FormLabel for="aln_dt_nascimento" :required="true">Data de Nascimento</FormLabel>
-                                <Input id="aln_dt_nascimento" type="date" v-model="formAluno.aln_dt_nascimento" />
+                                <Input
+                                    id="aln_dt_nascimento"
+                                    type="date"
+                                    v-model="formAluno.aln_dt_nascimento"
+                                    :max="new Date().toISOString().slice(0, 10)"
+                                    @input="(e: Event) => {
+                                        const v = (e.target as HTMLInputElement).value;
+                                        const year = v?.split('-')[0] ?? '';
+                                        if (year.length > 4) (e.target as HTMLInputElement).value = formAluno.aln_dt_nascimento;
+                                    }"
+                                />
                                 <InputError :message="err('aluno.aln_dt_nascimento')" />
                             </div>
 
@@ -483,7 +493,7 @@ const selectClass = 'flex h-10 w-full rounded-md border border-input bg-backgrou
                                 <FormLabel for="aln_mun_id_nasc" :required="true">Município de Nascimento</FormLabel>
                                 <MunicipioCombobox
                                     :model-value="formAluno.aln_mun_id_nasc"
-                                    :initial="null"
+                                    :initial="municipioNascimentoInicial"
                                     :invalid="!!err('aluno.aln_mun_id_nasc')"
                                     @update:model-value="(v) => (formAluno.aln_mun_id_nasc = v)"
                                 />
@@ -548,9 +558,14 @@ const selectClass = 'flex h-10 w-full rounded-md border border-input bg-backgrou
 
                     <div class="grid gap-4 sm:grid-cols-2">
                         <div class="grid gap-1.5">
-                            <FormLabel for="tma_dt_matricula" :required="true">Data da Matrícula</FormLabel>
-                            <Input id="tma_dt_matricula" type="date" v-model="formMatricula.tma_dt_matricula" />
-                            <InputError :message="err('tma_dt_matricula')" />
+                            <FormLabel>Data da Matrícula</FormLabel>
+                            <Input
+                                id="tma_dt_matricula"
+                                type="date"
+                                :value="formMatricula.tma_dt_matricula"
+                                readonly
+                                class="bg-muted cursor-default"
+                            />
                         </div>
                     </div>
 
