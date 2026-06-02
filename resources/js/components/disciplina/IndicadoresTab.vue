@@ -6,12 +6,19 @@ import { Button } from '@/components/ui/button';
 import type { DisciplinaIndicador } from '@/types/disciplina';
 import { router } from '@inertiajs/vue3';
 import { CheckCircle2, LoaderCircle, Pencil, Plus, Save, Trash2, X, XCircle } from 'lucide-vue-next';
-import { reactive, ref } from 'vue';
+import { reactive, ref, watch } from 'vue';
 
 const props = defineProps<{
     disId: number;
     indicadores: DisciplinaIndicador[];
 }>();
+
+const list = ref<DisciplinaIndicador[]>(props.indicadores ?? []);
+
+watch(
+    () => props.indicadores,
+    (v) => { list.value = v ?? []; },
+);
 
 const showForm  = ref(false);
 const editing   = ref<DisciplinaIndicador | null>(null);
@@ -76,7 +83,7 @@ const remover = (ind: DisciplinaIndicador) => {
     <div class="grid gap-4 rounded-xl border bg-card p-6 shadow-sm">
         <div class="flex items-center justify-between">
             <p class="text-sm text-muted-foreground">
-                {{ indicadores.length }} indicador{{ indicadores.length !== 1 ? 'es' : '' }} cadastrado{{ indicadores.length !== 1 ? 's' : '' }}
+                {{ list.length }} indicador{{ list.length !== 1 ? 'es' : '' }} cadastrado{{ list.length !== 1 ? 's' : '' }}
             </p>
             <Button
                 v-if="!showForm"
@@ -145,13 +152,13 @@ const remover = (ind: DisciplinaIndicador) => {
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-if="indicadores.length === 0">
+                    <tr v-if="list.length === 0">
                         <td colspan="3" class="px-3 py-6 text-center text-muted-foreground">
                             Nenhum indicador cadastrado.
                         </td>
                     </tr>
                     <tr
-                        v-for="(ind, idx) in indicadores"
+                        v-for="(ind, idx) in list"
                         :key="ind.ind_id"
                         :class="idx % 2 === 0 ? 'bg-white dark:bg-transparent' : 'bg-slate-50 dark:bg-slate-900/40'"
                     >

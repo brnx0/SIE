@@ -3,6 +3,7 @@
 namespace App\Models\Turma;
 
 use App\Models\Escola\Escola;
+use App\Models\Matricula\Matricula;
 use App\Models\Parametro\AnoLetivo;
 use App\Models\Segmento\Segmento;
 use App\Models\Serie\Serie;
@@ -119,5 +120,10 @@ class Turma extends Model
     public function horarios(): HasMany
     {
         return $this->hasMany(TurmaHorario::class, 'trh_tur_id', 'tur_id');
+    }
+
+    public function matriculas(): HasMany
+    {
+        return $this->hasMany(Matricula::class, 'mat_tur_id', 'tur_id');
     }
 }

@@ -60,7 +60,9 @@ const TAB_FIELDS: Record<TabId, string[]> = {
     documentacao: ['aln_cpf', 'aln_cd_inep', 'aln_nr_matricula', 'aln_nr_certidao'],
     'filiacao-contato': [
         'aln_filiacao_1',
+        'aln_filiacao_1_tipo',
         'aln_filiacao_2',
+        'aln_filiacao_2_tipo',
         'aln_cep',
         'aln_logradouro',
         'aln_numero',
@@ -116,8 +118,10 @@ const form = useForm<AlunoFormData>({
     aln_nr_matricula: props.initial?.aln_nr_matricula ?? null,
     aln_nr_certidao: props.initial?.aln_nr_certidao ?? '',
 
-    aln_filiacao_1: props.initial?.aln_filiacao_1 ?? '',
-    aln_filiacao_2: props.initial?.aln_filiacao_2 ?? '',
+    aln_filiacao_1:      props.initial?.aln_filiacao_1 ?? '',
+    aln_filiacao_1_tipo: props.initial?.aln_filiacao_1_tipo ?? '',
+    aln_filiacao_2:      props.initial?.aln_filiacao_2 ?? '',
+    aln_filiacao_2_tipo: props.initial?.aln_filiacao_2_tipo ?? '',
 
     aln_cep: props.initial?.aln_cep ?? '',
     aln_logradouro: props.initial?.aln_logradouro ?? '',
@@ -603,18 +607,48 @@ const initials = computed(() => {
                             <h3 class="text-sm font-semibold">Filiação</h3>
                         </div>
                         <div class="grid gap-2">
-                            <FormLabel for="aln_filiacao_1" :required="true">Filiação 1</FormLabel>
+                            <div class="flex items-center justify-between gap-4">
+                                <FormLabel for="aln_filiacao_1" :required="true">Filiação 1</FormLabel>
+                                <div class="flex items-center gap-4 text-sm">
+                                    <label class="flex cursor-pointer items-center gap-1.5">
+                                        <input type="radio" v-model="form.aln_filiacao_1_tipo" value="MAE" class="accent-indigo-600" />
+                                        Mãe
+                                    </label>
+                                    <label class="flex cursor-pointer items-center gap-1.5">
+                                        <input type="radio" v-model="form.aln_filiacao_1_tipo" value="PAI" class="accent-indigo-600" />
+                                        Pai
+                                    </label>
+                                </div>
+                            </div>
                             <Input id="aln_filiacao_1" v-model="form.aln_filiacao_1" maxlength="100" />
                             <div class="flex justify-between gap-2">
-                                <InputError :message="form.errors.aln_filiacao_1" />
+                                <div>
+                                    <InputError :message="(form.errors as any).aln_filiacao_1" />
+                                    <InputError :message="(form.errors as any).aln_filiacao_1_tipo" />
+                                </div>
                                 <CharCounter :value="form.aln_filiacao_1" :max="100" />
                             </div>
                         </div>
                         <div class="grid gap-2">
-                            <Label for="aln_filiacao_2">Filiação 2</Label>
+                            <div class="flex items-center justify-between gap-4">
+                                <Label for="aln_filiacao_2">Filiação 2</Label>
+                                <div class="flex items-center gap-4 text-sm">
+                                    <label class="flex cursor-pointer items-center gap-1.5">
+                                        <input type="radio" v-model="form.aln_filiacao_2_tipo" value="MAE" class="accent-indigo-600" />
+                                        Mãe
+                                    </label>
+                                    <label class="flex cursor-pointer items-center gap-1.5">
+                                        <input type="radio" v-model="form.aln_filiacao_2_tipo" value="PAI" class="accent-indigo-600" />
+                                        Pai
+                                    </label>
+                                </div>
+                            </div>
                             <Input id="aln_filiacao_2" v-model="form.aln_filiacao_2" maxlength="100" />
                             <div class="flex justify-between gap-2">
-                                <InputError :message="form.errors.aln_filiacao_2" />
+                                <div>
+                                    <InputError :message="(form.errors as any).aln_filiacao_2" />
+                                    <InputError :message="(form.errors as any).aln_filiacao_2_tipo" />
+                                </div>
                                 <CharCounter :value="form.aln_filiacao_2" :max="100" />
                             </div>
                         </div>

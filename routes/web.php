@@ -1,7 +1,10 @@
 <?php
 
 use App\Http\Controllers\Aluno\AlunoController;
+use App\Http\Controllers\Api\AlunoSearchController;
 use App\Http\Controllers\Api\BairroController;
+use App\Http\Controllers\Api\MatriculaTurmaController;
+use App\Http\Controllers\Matricula\MatriculaController;
 use App\Http\Controllers\Api\DisciplinaController as DisciplinaApiController;
 use App\Http\Controllers\Api\GerenciaRegionalController;
 use App\Http\Controllers\Api\MunicipioController;
@@ -95,6 +98,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('/{indicador}', [DisciplinaIndicadorController::class, 'update'])->name('update');
         Route::delete('/{indicador}', [DisciplinaIndicadorController::class, 'destroy'])->name('destroy');
     });
+
+    Route::get('matriculas', [MatriculaController::class, 'index'])->name('matriculas.index');
+    Route::post('matriculas', [MatriculaController::class, 'store'])->name('matriculas.store');
+    Route::get('api/matriculas/turmas', [MatriculaTurmaController::class, 'index'])->name('api.matriculas.turmas');
+    Route::get('api/alunos/search', [AlunoSearchController::class, 'search'])->name('api.alunos.search');
 
     Route::get('api/series', [SerieApiController::class, 'bySegmento'])->name('api.series.bySegmento');
     Route::get('api/series/search', [SerieApiController::class, 'search'])->name('api.series.search');

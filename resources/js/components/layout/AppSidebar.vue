@@ -5,7 +5,7 @@ import NavSearch, { type FlatNavLeaf } from '@/components/layout/NavSearch.vue';
 import NavUser from '@/components/layout/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { Link } from '@inertiajs/vue3';
-import { LayoutDashboard, LifeBuoy, UserPlus, Cog} from 'lucide-vue-next';
+import { LayoutDashboard, LifeBuoy, UserPlus, Cog, ClipboardList} from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import type { SharedData } from '@/types';
@@ -35,6 +35,15 @@ const cadastros = [
                     { title: 'Turmas', href: '/turmas' },
                 ],
             },
+        ],
+    },
+];
+const matriculasMenu = [
+    {
+        title: 'Matrículas',
+        icon: ClipboardList,
+        children: [
+            { title: 'Matrículas', href: '/matriculas' },
         ],
     },
 ];
@@ -72,6 +81,7 @@ const flattenItems = (items: any[], parents: string[] = []): FlatNavLeaf[] => {
 const flatLeaves = computed<FlatNavLeaf[]>(() => [
     ...flattenItems(overview),
     ...flattenItems(cadastros),
+    ...flattenItems(matriculasMenu),
     ...flattenItems(administracao.value),
 ]);
 
@@ -98,6 +108,7 @@ const searching = computed(() => search.value.trim().length > 0);
             <template v-if="!searching">
                 <NavMain label="Visão geral" :items="overview" />
                 <NavMain label="Gestão" :items="cadastros" />
+                <NavMain label="Matrículas" :items="matriculasMenu" />
                 <NavMain label="Administração" :items="administracao" />
             </template>
         </SidebarContent>
