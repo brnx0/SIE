@@ -1,3 +1,5 @@
+import type { Municipio } from './aluno';
+
 export interface TurmaMatricula {
     tur_id: number;
     tur_nome: string;
@@ -17,8 +19,28 @@ export interface AlunoResumo {
     aln_id: number;
     aln_nome: string;
     aln_dt_nascimento: string | null;
+    aln_sexo: 'M' | 'F' | null;
+    aln_cor_raca: number | null;
+    aln_pais_origem: string | null;
+    aln_mun_id_nasc: number | null;
+    aln_nr_certidao: string | null;
+    aln_nis: string | null;
+    aln_filiacao_1: string | null;
+    aln_filiacao_1_tipo: 'PAI' | 'MAE' | null;
+    aln_filiacao_2: string | null;
+    aln_filiacao_2_tipo: 'PAI' | 'MAE' | null;
+    aln_cep: string | null;
+    aln_logradouro: string | null;
+    aln_numero: string | null;
+    aln_complemento: string | null;
+    aln_bairro: string | null;
+    aln_cidade: string | null;
+    aln_uf: string | null;
+    aln_telefone: string | null;
+    aln_email: string | null;
     aln_nr_matricula: number | null;
     aln_cpf: string | null;
+    municipio_nascimento: Municipio | null;
 }
 
 export type TipoAdmissao =

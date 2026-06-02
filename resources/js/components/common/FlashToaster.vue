@@ -1,35 +1,12 @@
 <script setup lang="ts">
+import { useToast } from '@/composables/useToast';
 import { router } from '@inertiajs/vue3';
 import { CheckCircle2, X, XCircle } from 'lucide-vue-next';
-import { onBeforeUnmount, ref } from 'vue';
-
-interface Toast {
-    id: number;
-    type: 'success' | 'error';
-    message: string;
-}
+import { onBeforeUnmount } from 'vue';
 
 type FlashShape = { success?: string | null; error?: string | null };
 
-const toasts = ref<Toast[]>([]);
-let counter = 0;
-const timers = new Map<number, ReturnType<typeof setTimeout>>();
-
-const dismiss = (id: number) => {
-    toasts.value = toasts.value.filter((t) => t.id !== id);
-    const tm = timers.get(id);
-    if (tm) {
-        clearTimeout(tm);
-        timers.delete(id);
-    }
-};
-
-const push = (type: Toast['type'], message: string) => {
-    const id = ++counter;
-    toasts.value.push({ id, type, message });
-    const tm = setTimeout(() => dismiss(id), 4500);
-    timers.set(id, tm);
-};
+const { toasts, push, dismiss } = useToast();
 
 const consume = (flash?: FlashShape | null) => {
     if (!flash) return;
@@ -46,8 +23,6 @@ const removeListener = router.on('success', (event) => {
 
 onBeforeUnmount(() => {
     removeListener();
-    timers.forEach((tm) => clearTimeout(tm));
-    timers.clear();
 });
 </script>
 

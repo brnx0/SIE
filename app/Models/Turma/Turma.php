@@ -124,6 +124,6 @@ class Turma extends Model
 
     public function matriculas(): HasMany
     {
-        return $this->hasMany(Matricula::class, 'mat_tur_id', 'tur_id');
+        return $this->hasMany(Matricula::class, 'tma_tur_id', 'tur_id');
     }
 }

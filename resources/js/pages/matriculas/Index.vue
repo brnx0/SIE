@@ -153,10 +153,28 @@ const ocultarAlunoDropDepoisDoBlur = () => {
 // ── Validação de idade ────────────────────────────────────────────────────────
 const erroIdade = ref<string | null>(null);
 
-const calcularIdade = (dtNascimento: string, dtCorte: string): number => {
-    const nasc  = new Date(dtNascimento);
-    const corte = new Date(dtCorte);
-    return Math.floor((corte.getTime() - nasc.getTime()) / (365.25 * 24 * 60 * 60 * 1000));
+const parseDateLocal = (date: string): Date => {
+    const [year, month, day] = date.split('-').map(Number);
+    return new Date(year, month - 1, day);
+};
+
+const formatarData = (date: string): string =>
+    parseDateLocal(date).toLocaleDateString('pt-BR');
+
+const calcularIdadeCompleta = (dtNascimento: string, dtCorte: string): number => {
+    const nascimento = parseDateLocal(dtNascimento);
+    const corte = parseDateLocal(dtCorte);
+    let idade = corte.getFullYear() - nascimento.getFullYear();
+
+    const aniversarioNoAnoCorte = new Date(
+        corte.getFullYear(),
+        nascimento.getMonth(),
+        nascimento.getDate(),
+    );
+
+    if (corte < aniversarioNoAnoCorte) idade--;
+
+    return idade;
 };
 
 const validarIdadeParaTurma = (turma: TurmaMatricula): boolean => {
@@ -165,15 +183,15 @@ const validarIdadeParaTurma = (turma: TurmaMatricula): boolean => {
     if (!props.parametros?.par_fl_validar_idade_serie) return true;
     if (alunoNaoCadastrado.value) return true; // valida no modal ao preencher dt_nascimento
     if (!alunoSelecionado.value?.aln_dt_nascimento) return true;
-    if (!turma.serie?.ser_idade || !turma.ano_letivo?.anl_dt_corte) return true;
+    if (turma.serie?.ser_idade == null || !turma.ano_letivo?.anl_dt_corte) return true;
 
-    const idade = calcularIdade(
+    const idade = calcularIdadeCompleta(
         alunoSelecionado.value.aln_dt_nascimento,
         turma.ano_letivo.anl_dt_corte,
     );
 
-    if (idade !== turma.serie.ser_idade) {
-        erroIdade.value = `A idade do aluno na data de corte (${turma.ano_letivo.anl_dt_corte}) é ${idade} ano${idade !== 1 ? 's' : ''}. A série "${turma.serie.ser_nome}" exige ${turma.serie.ser_idade} ano${turma.serie.ser_idade !== 1 ? 's' : ''}. Matrícula não permitida.`;
+    if (idade < turma.serie.ser_idade) {
+        erroIdade.value = `A idade do aluno na data de corte (${formatarData(turma.ano_letivo.anl_dt_corte)}) é ${idade} ano${idade !== 1 ? 's' : ''}. A série "${turma.serie.ser_nome}" exige ter completado ${turma.serie.ser_idade} ano${turma.serie.ser_idade !== 1 ? 's' : ''} até essa data. Matrícula não permitida.`;
         return false;
     }
     return true;

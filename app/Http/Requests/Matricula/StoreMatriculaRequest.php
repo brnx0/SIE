@@ -37,29 +37,30 @@ class StoreMatriculaRequest extends FormRequest
 
     public function rules(): array
     {
-        $novoAluno = !$this->filled('mat_aln_id');
+        $validarAluno = $this->has('aluno');
+        $alunoId = $this->integer('tma_aln_id') ?: null;
         $possuiDeficiencia = $this->boolean('possui_deficiencia');
         $params = ParametroEntidade::current();
         $cpfRule = $params->par_fl_cpf_obrigatorio ? 'required' : 'nullable';
 
         $rules = [
             // Matrícula
-            'mat_tur_id'                   => ['required', 'integer', 'exists:edu_turma,tur_id'],
-            'mat_aln_id'                   => ['nullable', 'integer', 'exists:edu_aluno,aln_id'],
-            'mat_tipo_admissao'            => ['nullable'],
-            'mat_dt_matricula'             => ['required', 'date'],
-            'mat_obs'                      => ['nullable', 'string'],
-            'mat_fl_trouxe_transferencia'  => ['boolean'],
-            'mat_fl_trouxe_rg'             => ['boolean'],
-            'mat_fl_trouxe_reg_nascimento' => ['boolean'],
-            'mat_fl_bolsa_familia'         => ['boolean'],
-            'mat_fl_recebe_merenda'        => ['boolean'],
-            'mat_fl_usa_transporte'        => ['boolean'],
-            'mat_fl_usa_biblioteca'        => ['boolean'],
+            'tma_tur_id'                   => ['required', 'integer', 'exists:edu_turma,tur_id'],
+            'tma_aln_id'                   => ['nullable', 'integer', 'exists:edu_aluno,aln_id'],
+            'tma_tipo_admissao'            => ['nullable'],
+            'tma_dt_matricula'             => ['required', 'date'],
+            'tma_obs'                      => ['nullable', 'string'],
+            'tma_fl_trouxe_transferencia'  => ['boolean'],
+            'tma_fl_trouxe_rg'             => ['boolean'],
+            'tma_fl_trouxe_reg_nascimento' => ['boolean'],
+            'tma_fl_bolsa_familia'         => ['boolean'],
+            'tma_fl_recebe_merenda'        => ['boolean'],
+            'tma_fl_usa_transporte'        => ['boolean'],
+            'tma_fl_usa_biblioteca'        => ['boolean'],
             'possui_deficiencia'           => ['boolean'],
         ];
 
-        if ($novoAluno) {
+        if ($validarAluno) {
             $rules += [
                 'aluno.aln_nome'          => ['required', 'string', 'max:100'],
                 'aluno.aln_dt_nascimento' => ['required', 'date', 'before:today'],
@@ -72,7 +73,7 @@ class StoreMatriculaRequest extends FormRequest
                 'aluno.aln_filiacao_2'      => ['nullable', 'string', 'max:100'],
                 'aluno.aln_filiacao_2_tipo' => ['nullable', Rule::in(['PAI', 'MAE'])],
                 'aluno.aln_cpf'           => [$cpfRule, 'nullable', 'digits:11', new Cpf,
-                    Rule::unique('edu_aluno', 'aln_cpf')->whereNull('aln_deleted_at')],
+                    Rule::unique('edu_aluno', 'aln_cpf')->ignore($alunoId, 'aln_id')->whereNull('aln_deleted_at')],
                 'aluno.aln_nr_certidao'   => ['nullable', 'string', 'max:32'],
                 'aluno.aln_nis'           => ['nullable', 'digits:11'],
                 'aluno.aln_cep'           => ['nullable', 'digits:8'],
@@ -116,7 +117,17 @@ class StoreMatriculaRequest extends FormRequest
         ];
 
         if ($possuiDeficiencia) {
-            $rules['saude.als_deficiencias'] = ['required', 'array', 'min:1'];
+            $rules['saude.als_deficiencias'] = [
+                'nullable', 'array',
+                function ($attribute, $value, $fail) {
+                    $temItem = !empty($value)
+                        || !empty($this->input('saude.als_transtornos_globais'))
+                        || !empty($this->input('saude.als_transtornos_aprendizagem'));
+                    if (!$temItem) {
+                        $fail('Informe ao menos uma deficiência ou transtorno.');
+                    }
+                },
+            ];
         }
 
         return $rules;
@@ -125,9 +136,9 @@ class StoreMatriculaRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'mat_tur_id'          => 'turma',
-            'mat_tipo_admissao'   => 'tipo de admissão',
-            'mat_dt_matricula'    => 'data de matrícula',
+            'tma_tur_id'          => 'turma',
+            'tma_tipo_admissao'   => 'tipo de admissão',
+            'tma_dt_matricula'    => 'data de matrícula',
             'aluno.aln_nome'      => 'nome',
             'aluno.aln_dt_nascimento' => 'data de nascimento',
             'aluno.aln_sexo'      => 'sexo',
@@ -143,9 +154,6 @@ class StoreMatriculaRequest extends FormRequest
 
     public function messages(): array
     {
-        return [
-            'saude.als_deficiencias.required' => 'Informe ao menos uma deficiência.',
-            'saude.als_deficiencias.min'       => 'Informe ao menos uma deficiência.',
-        ];
+        return [];
     }
 }

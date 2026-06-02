@@ -36,7 +36,7 @@ class MatriculaTurmaController extends Controller
             ->when($serId, fn ($q) => $q->where('tur_ser_id', $serId))
             ->when($semestre, fn ($q) => $q->where('tur_semestre', $semestre))
             ->withCount([
-                'matriculas as total_matriculados' => fn ($q) => $q->where('mat_situacao', Matricula::SITUACAO_ATIVA),
+                'matriculas as total_matriculados' => fn ($q) => $q->where('tma_situacao', Matricula::SITUACAO_ATIVA),
             ])
             ->orderBy('tur_semestre')
             ->orderBy('tur_ser_id')

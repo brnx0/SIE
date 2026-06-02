@@ -43,12 +43,12 @@ class MatriculaController extends Controller
 
     public function store(StoreMatriculaRequest $request): JsonResponse
     {
-        $turma = Turma::with(['anoLetivo:anl_id,anl_ano', 'segmento:seg_id,seg_nome_reduzido'])->findOrFail($request->integer('mat_tur_id'));
+        $turma = Turma::with(['anoLetivo:anl_id,anl_ano', 'segmento:seg_id,seg_nome_reduzido'])->findOrFail($request->integer('tma_tur_id'));
 
         // Verifica capacidade
         if ($turma->tur_capacidade !== null) {
-            $ativos = Matricula::where('mat_tur_id', $turma->tur_id)
-                ->where('mat_situacao', Matricula::SITUACAO_ATIVA)
+            $ativos = Matricula::where('tma_tur_id', $turma->tur_id)
+                ->where('tma_situacao', Matricula::SITUACAO_ATIVA)
                 ->count();
             if ($ativos >= $turma->tur_capacidade) {
                 return response()->json(['message' => 'Turma sem vagas disponíveis.'], 422);
@@ -61,12 +61,16 @@ class MatriculaController extends Controller
 
         try {
             $matricula = DB::transaction(function () use ($request, $turma, $flCreche) {
-                $alunoId = $request->integer('mat_aln_id') ?: null;
+                $alunoId = $request->integer('tma_aln_id') ?: null;
 
                 // Cria novo aluno se não informado
                 if (!$alunoId) {
                     $alunoId = $this->criarAluno($request, $turma->anoLetivo);
-                } elseif ($request->boolean('possui_deficiencia')) {
+                } else {
+                    $this->atualizarAluno($alunoId, $request);
+                }
+
+                if ($request->boolean('possui_deficiencia')) {
                     $this->salvarSaude($alunoId, $request);
                 }
 
@@ -75,29 +79,29 @@ class MatriculaController extends Controller
                 $flIndigena = (int) $corRaca === 5;
 
                 return Matricula::create([
-                    'mat_aln_id'                   => $alunoId,
-                    'mat_tur_id'                   => $turma->tur_id,
-                    'mat_anl_id'                   => $turma->tur_anl_id,
-                    'mat_tipo_admissao'            => Matricula::TIPO_MATRICULA_NOVA,
-                    'mat_situacao'                 => Matricula::SITUACAO_ATIVA,
-                    'mat_created_by_id'            => auth()->id(),
-                    'mat_dt_matricula'             => $request->input('mat_dt_matricula'),
-                    'mat_obs'                      => $request->input('mat_obs'),
-                    'mat_fl_trouxe_transferencia'  => $request->boolean('mat_fl_trouxe_transferencia'),
-                    'mat_fl_trouxe_rg'             => $request->boolean('mat_fl_trouxe_rg'),
-                    'mat_fl_trouxe_reg_nascimento' => $request->boolean('mat_fl_trouxe_reg_nascimento'),
-                    'mat_fl_bolsa_familia'         => $request->boolean('mat_fl_bolsa_familia'),
-                    'mat_fl_recebe_merenda'        => $request->boolean('mat_fl_recebe_merenda'),
-                    'mat_fl_usa_transporte'        => $request->boolean('mat_fl_usa_transporte'),
-                    'mat_fl_usa_biblioteca'        => $request->boolean('mat_fl_usa_biblioteca'),
-                    'mat_fl_indigena'              => $flIndigena,
-                    'mat_fl_creche'                => $flCreche,
+                    'tma_aln_id'                   => $alunoId,
+                    'tma_tur_id'                   => $turma->tur_id,
+                    'tma_anl_id'                   => $turma->tur_anl_id,
+                    'tma_tipo_admissao'            => Matricula::TIPO_MATRICULA_NOVA,
+                    'tma_situacao'                 => Matricula::SITUACAO_ATIVA,
+                    'tma_created_by_id'            => auth()->id(),
+                    'tma_dt_matricula'             => $request->input('tma_dt_matricula'),
+                    'tma_obs'                      => $request->input('tma_obs'),
+                    'tma_fl_trouxe_transferencia'  => $request->boolean('tma_fl_trouxe_transferencia'),
+                    'tma_fl_trouxe_rg'             => $request->boolean('tma_fl_trouxe_rg'),
+                    'tma_fl_trouxe_reg_nascimento' => $request->boolean('tma_fl_trouxe_reg_nascimento'),
+                    'tma_fl_bolsa_familia'         => $request->boolean('tma_fl_bolsa_familia'),
+                    'tma_fl_recebe_merenda'        => $request->boolean('tma_fl_recebe_merenda'),
+                    'tma_fl_usa_transporte'        => $request->boolean('tma_fl_usa_transporte'),
+                    'tma_fl_usa_biblioteca'        => $request->boolean('tma_fl_usa_biblioteca'),
+                    'tma_fl_indigena'              => $flIndigena,
+                    'tma_fl_creche'                => $flCreche,
                 ]);
             });
 
             return response()->json([
                 'message'   => 'Matrícula realizada com sucesso.',
-                'mat_id'    => $matricula->mat_id,
+                'tma_id'    => $matricula->tma_id,
             ]);
         } catch (\Illuminate\Database\UniqueConstraintViolationException $e) {
             return response()->json(['message' => 'Este aluno já possui matrícula ativa neste ano letivo.'], 422);
@@ -125,6 +129,15 @@ class MatriculaController extends Controller
         $aluno->saude()->create($saude);
 
         return $aluno->aln_id;
+    }
+
+    private function atualizarAluno(int $alunoId, StoreMatriculaRequest $request): void
+    {
+        if (! $request->has('aluno')) {
+            return;
+        }
+
+        Aluno::findOrFail($alunoId)->update($request->input('aluno', []));
     }
 
     private function salvarSaude(int $alunoId, StoreMatriculaRequest $request): void

@@ -9,16 +9,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('edu_turma_aluno', function (Blueprint $table) {
-            $table->unsignedBigInteger('mat_created_by_id')->nullable()->after('mat_deleted_at');
-            $table->foreign('mat_created_by_id')->references('id')->on('users')->nullOnDelete();
+            $table->unsignedBigInteger('tma_created_by_id')->nullable()->after('tma_deleted_at');
+            $table->foreign('tma_created_by_id')->references('id')->on('users')->nullOnDelete();
         });
     }
 
     public function down(): void
     {
         Schema::table('edu_turma_aluno', function (Blueprint $table) {
-            $table->dropForeign(['mat_created_by_id']);
-            $table->dropColumn('mat_created_by_id');
+            $table->dropForeign(['tma_created_by_id']);
+            $table->dropColumn('tma_created_by_id');
         });
     }
 };

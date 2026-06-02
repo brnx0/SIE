@@ -5,14 +5,18 @@ import MunicipioCombobox from '@/components/aluno/MunicipioCombobox.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import type { Municipio } from '@/types/aluno';
 import type { AlunoResumo, TurmaMatricula } from '@/types/matricula';
 import { COR_RACA } from '@/lib/corRaca';
 import { DEFICIENCIAS, TRANSTORNOS_GLOBAIS, TRANSTORNOS_APRENDIZAGEM, PATOLOGIAS, PATOLOGIAS_INFANCIA, CLINICAS, RECURSOS_INEP } from '@/lib/alunoSaudeEnums';
 import { TIPOS_SANGUINEOS } from '@/lib/tiposSanguineos';
 import Switch from '@/components/common/Switch.vue';
 import { Label } from '@/components/ui/label';
+import { useToast } from '@/composables/useToast';
 import { computed, reactive, ref, watch } from 'vue';
 import { LoaderCircle, Save, X } from 'lucide-vue-next';
+
+const { push: pushToast } = useToast();
 
 const props = defineProps<{
     open: boolean;
@@ -36,15 +40,15 @@ const processing = ref(false);
 const possuiDeficiencia = ref(false);
 
 const formMatricula = reactive({
-    mat_dt_matricula:             new Date().toISOString().slice(0, 10),
-    mat_obs:                      '',
-    mat_fl_trouxe_transferencia:  false,
-    mat_fl_trouxe_rg:             false,
-    mat_fl_trouxe_reg_nascimento: false,
-    mat_fl_bolsa_familia:         false,
-    mat_fl_recebe_merenda:        false,
-    mat_fl_usa_transporte:        false,
-    mat_fl_usa_biblioteca:        false,
+    tma_dt_matricula:             new Date().toISOString().slice(0, 10),
+    tma_obs:                      '',
+    tma_fl_trouxe_transferencia:  false,
+    tma_fl_trouxe_rg:             false,
+    tma_fl_trouxe_reg_nascimento: false,
+    tma_fl_bolsa_familia:         false,
+    tma_fl_recebe_merenda:        false,
+    tma_fl_usa_transporte:        false,
+    tma_fl_usa_biblioteca:        false,
 });
 
 const formAluno = reactive({
@@ -99,10 +103,63 @@ const formSaude = reactive({
 
 // ── Computed ──────────────────────────────────────────────────────────────────
 const tabSaudeDisponivel = computed(() => possuiDeficiencia.value);
+const municipioNascimentoSelecionado = ref<Municipio | null>(null);
 
 const municipioNascimentoInicial = computed(() =>
-    props.aluno ? null : null
+    formAluno.aln_mun_id_nasc ? municipioNascimentoSelecionado.value : null
 );
+
+const limparFormAluno = () => {
+    formAluno.aln_nome = '';
+    formAluno.aln_cpf = '';
+    formAluno.aln_nis = '';
+    formAluno.aln_filiacao_1      = '';
+    formAluno.aln_filiacao_1_tipo = '';
+    formAluno.aln_filiacao_2      = '';
+    formAluno.aln_filiacao_2_tipo = '';
+    formAluno.aln_sexo = '';
+    formAluno.aln_dt_nascimento = '';
+    formAluno.aln_cor_raca = null;
+    formAluno.aln_pais_origem = 'Brasil';
+    formAluno.aln_mun_id_nasc = null;
+    municipioNascimentoSelecionado.value = null;
+    formAluno.aln_nr_certidao = '';
+    formAluno.aln_cep = '';
+    formAluno.aln_logradouro = '';
+    formAluno.aln_numero = '';
+    formAluno.aln_complemento = '';
+    formAluno.aln_bairro = '';
+    formAluno.aln_cidade = '';
+    formAluno.aln_uf = '';
+    formAluno.aln_telefone = '';
+    formAluno.aln_email = '';
+};
+
+const preencherFormAluno = (aluno: AlunoResumo) => {
+    formAluno.aln_nome = aluno.aln_nome ?? '';
+    formAluno.aln_cpf = aluno.aln_cpf ?? '';
+    formAluno.aln_nis = aluno.aln_nis ?? '';
+    formAluno.aln_filiacao_1 = aluno.aln_filiacao_1 ?? '';
+    formAluno.aln_filiacao_1_tipo = aluno.aln_filiacao_1_tipo ?? '';
+    formAluno.aln_filiacao_2 = aluno.aln_filiacao_2 ?? '';
+    formAluno.aln_filiacao_2_tipo = aluno.aln_filiacao_2_tipo ?? '';
+    formAluno.aln_sexo = aluno.aln_sexo ?? '';
+    formAluno.aln_dt_nascimento = aluno.aln_dt_nascimento ?? '';
+    formAluno.aln_cor_raca = aluno.aln_cor_raca;
+    formAluno.aln_pais_origem = aluno.aln_pais_origem ?? 'Brasil';
+    formAluno.aln_mun_id_nasc = aluno.aln_mun_id_nasc;
+    municipioNascimentoSelecionado.value = aluno.municipio_nascimento ?? null;
+    formAluno.aln_nr_certidao = aluno.aln_nr_certidao ?? '';
+    formAluno.aln_cep = aluno.aln_cep ?? '';
+    formAluno.aln_logradouro = aluno.aln_logradouro ?? '';
+    formAluno.aln_numero = aluno.aln_numero ?? '';
+    formAluno.aln_complemento = aluno.aln_complemento ?? '';
+    formAluno.aln_bairro = aluno.aln_bairro ?? '';
+    formAluno.aln_cidade = aluno.aln_cidade ?? '';
+    formAluno.aln_uf = aluno.aln_uf ?? '';
+    formAluno.aln_telefone = aluno.aln_telefone ?? '';
+    formAluno.aln_email = aluno.aln_email ?? '';
+};
 
 // ── Reset ao abrir ────────────────────────────────────────────────────────────
 const reset = () => {
@@ -111,41 +168,18 @@ const reset = () => {
     possuiDeficiencia.value = false;
 
     // Matricula defaults
-    formMatricula.mat_dt_matricula = new Date().toISOString().slice(0, 10);
-    formMatricula.mat_obs                      = '';
-    formMatricula.mat_fl_trouxe_transferencia  = false;
-    formMatricula.mat_fl_trouxe_rg             = false;
-    formMatricula.mat_fl_trouxe_reg_nascimento = false;
-    formMatricula.mat_fl_bolsa_familia         = false;
-    formMatricula.mat_fl_recebe_merenda        = false;
-    formMatricula.mat_fl_usa_transporte        = false;
-    formMatricula.mat_fl_usa_biblioteca        = false;
+    formMatricula.tma_dt_matricula = new Date().toISOString().slice(0, 10);
+    formMatricula.tma_obs                      = '';
+    formMatricula.tma_fl_trouxe_transferencia  = false;
+    formMatricula.tma_fl_trouxe_rg             = false;
+    formMatricula.tma_fl_trouxe_reg_nascimento = false;
+    formMatricula.tma_fl_bolsa_familia         = false;
+    formMatricula.tma_fl_recebe_merenda        = false;
+    formMatricula.tma_fl_usa_transporte        = false;
+    formMatricula.tma_fl_usa_biblioteca        = false;
 
-    // Aluno (pré-preenche se novo cadastrado ou limpa)
-    if (props.alunoNaoCadastrado) {
-        formAluno.aln_nome = '';
-        formAluno.aln_cpf = '';
-        formAluno.aln_nis = '';
-        formAluno.aln_filiacao_1      = '';
-        formAluno.aln_filiacao_1_tipo = '';
-        formAluno.aln_filiacao_2      = '';
-        formAluno.aln_filiacao_2_tipo = '';
-        formAluno.aln_sexo = '';
-        formAluno.aln_dt_nascimento = '';
-        formAluno.aln_cor_raca = null;
-        formAluno.aln_pais_origem = 'Brasil';
-        formAluno.aln_mun_id_nasc = null;
-        formAluno.aln_nr_certidao = '';
-        formAluno.aln_cep = '';
-        formAluno.aln_logradouro = '';
-        formAluno.aln_numero = '';
-        formAluno.aln_complemento = '';
-        formAluno.aln_bairro = '';
-        formAluno.aln_cidade = '';
-        formAluno.aln_uf = '';
-        formAluno.aln_telefone = '';
-        formAluno.aln_email = '';
-    }
+    if (props.alunoNaoCadastrado || !props.aluno) limparFormAluno();
+    else preencherFormAluno(props.aluno);
 
     // Saúde
     formSaude.als_tipo_sanguineo           = '';
@@ -206,33 +240,37 @@ const submit = async () => {
     }
 
     // Valida aba de saúde se necessário
-    if (possuiDeficiencia.value && formSaude.als_deficiencias.length === 0) {
+    const temItemPcd = formSaude.als_deficiencias.length > 0
+        || formSaude.als_transtornos_globais.length > 0
+        || formSaude.als_transtornos_aprendizagem.length > 0;
+    if (possuiDeficiencia.value && !temItemPcd) {
         activeTab.value = 'saude';
-        errors.value['saude.als_deficiencias'] = 'Informe ao menos uma deficiência.';
+        errors.value['saude.als_deficiencias'] = 'Informe ao menos uma deficiência ou transtorno.';
         return;
     }
 
     processing.value = true;
     errors.value     = {};
+    const csrfToken = document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content ?? '';
 
     const payload: Record<string, any> = {
-        mat_tur_id:         props.turma.tur_id,
-        mat_dt_matricula:   formMatricula.mat_dt_matricula,
-        mat_obs:            formMatricula.mat_obs,
-        mat_fl_trouxe_transferencia:  formMatricula.mat_fl_trouxe_transferencia,
-        mat_fl_trouxe_rg:             formMatricula.mat_fl_trouxe_rg,
-        mat_fl_trouxe_reg_nascimento: formMatricula.mat_fl_trouxe_reg_nascimento,
-        mat_fl_bolsa_familia:         formMatricula.mat_fl_bolsa_familia,
-        mat_fl_recebe_merenda:        formMatricula.mat_fl_recebe_merenda,
-        mat_fl_usa_transporte:        formMatricula.mat_fl_usa_transporte,
-        mat_fl_usa_biblioteca:        formMatricula.mat_fl_usa_biblioteca,
+        _token:             csrfToken,
+        tma_tur_id:         props.turma.tur_id,
+        tma_dt_matricula:   formMatricula.tma_dt_matricula,
+        tma_obs:            formMatricula.tma_obs,
+        tma_fl_trouxe_transferencia:  formMatricula.tma_fl_trouxe_transferencia,
+        tma_fl_trouxe_rg:             formMatricula.tma_fl_trouxe_rg,
+        tma_fl_trouxe_reg_nascimento: formMatricula.tma_fl_trouxe_reg_nascimento,
+        tma_fl_bolsa_familia:         formMatricula.tma_fl_bolsa_familia,
+        tma_fl_recebe_merenda:        formMatricula.tma_fl_recebe_merenda,
+        tma_fl_usa_transporte:        formMatricula.tma_fl_usa_transporte,
+        tma_fl_usa_biblioteca:        formMatricula.tma_fl_usa_biblioteca,
         possui_deficiencia:           possuiDeficiencia.value,
     };
 
-    if (props.alunoNaoCadastrado) {
-        payload.aluno = { ...formAluno };
-    } else if (props.aluno) {
-        payload.mat_aln_id = props.aluno.aln_id;
+    payload.aluno = { ...formAluno };
+    if (props.aluno) {
+        payload.tma_aln_id = props.aluno.aln_id;
     }
 
     if (possuiDeficiencia.value) {
@@ -242,15 +280,24 @@ const submit = async () => {
     try {
         const res = await fetch('/matriculas', {
             method: 'POST',
+            credentials: 'same-origin',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content ?? '',
+                'X-CSRF-TOKEN': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest',
                 'Accept': 'application/json',
             },
             body: JSON.stringify(payload),
         });
 
-        const json = await res.json();
+        if (res.status === 419) {
+            errors.value['_geral'] = 'Sua sessÃ£o expirou. Recarregue a pÃ¡gina e tente novamente.';
+            return;
+        }
+
+        const json = await res.json().catch(() => ({
+            message: 'NÃ£o foi possÃ­vel concluir a matrÃ­cula. Recarregue a pÃ¡gina e tente novamente.',
+        }));
 
         if (!res.ok) {
             if (res.status === 422) {
@@ -264,6 +311,7 @@ const submit = async () => {
             return;
         }
 
+        pushToast('success', 'Matrícula realizada com sucesso.');
         emit('saved');
         emit('update:open', false);
     } finally {
@@ -322,7 +370,7 @@ const selectClass = 'flex h-10 w-full rounded-md border border-input bg-backgrou
                     @click="tabSaudeDisponivel && (activeTab = 'saude')"
                 >
                     Quadro de Saúde
-                    <span v-if="possuiDeficiencia && formSaude.als_deficiencias.length === 0" class="ml-1 text-rose-500">*</span>
+                    <span v-if="possuiDeficiencia && !formSaude.als_deficiencias.length && !formSaude.als_transtornos_globais.length && !formSaude.als_transtornos_aprendizagem.length" class="ml-1 text-rose-500">*</span>
                 </button>
             </div>
 
@@ -344,9 +392,8 @@ const selectClass = 'flex h-10 w-full rounded-md border border-input bg-backgrou
                         <span v-if="possuiDeficiencia" class="ml-auto text-xs text-indigo-600">Preencha a aba "Quadro de Saúde"</span>
                     </div>
 
-                    <!-- Dados do aluno (somente para novo cadastro) -->
-                    <template v-if="alunoNaoCadastrado">
-                        <p class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Dados do Aluno</p>
+                    <!-- Dados do aluno -->
+                    <p class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Dados do Aluno</p>
 
                         <div class="grid gap-4 sm:grid-cols-2">
                             <div class="grid gap-1.5 sm:col-span-2">
@@ -494,16 +541,14 @@ const selectClass = 'flex h-10 w-full rounded-md border border-input bg-backgrou
                                 <Input id="aln_email" type="email" v-model="formAluno.aln_email" maxlength="150" />
                             </div>
                         </div>
-                    </template>
-
                     <!-- Dados matrícula -->
                     <p class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Dados da Matrícula</p>
 
                     <div class="grid gap-4 sm:grid-cols-2">
                         <div class="grid gap-1.5">
-                            <FormLabel for="mat_dt_matricula" :required="true">Data da Matrícula</FormLabel>
-                            <Input id="mat_dt_matricula" type="date" v-model="formMatricula.mat_dt_matricula" />
-                            <InputError :message="err('mat_dt_matricula')" />
+                            <FormLabel for="tma_dt_matricula" :required="true">Data da Matrícula</FormLabel>
+                            <Input id="tma_dt_matricula" type="date" v-model="formMatricula.tma_dt_matricula" />
+                            <InputError :message="err('tma_dt_matricula')" />
                         </div>
                     </div>
 
@@ -512,41 +557,41 @@ const selectClass = 'flex h-10 w-full rounded-md border border-input bg-backgrou
 
                     <div class="grid grid-cols-2 gap-x-6 gap-y-2 sm:grid-cols-3">
                         <label class="flex cursor-pointer items-center gap-2 text-sm">
-                            <input type="checkbox" v-model="formMatricula.mat_fl_trouxe_transferencia" class="size-4 accent-indigo-600" />
+                            <input type="checkbox" v-model="formMatricula.tma_fl_trouxe_transferencia" class="size-4 accent-indigo-600" />
                             Trouxe Transferência
                         </label>
                         <label class="flex cursor-pointer items-center gap-2 text-sm">
-                            <input type="checkbox" v-model="formMatricula.mat_fl_bolsa_familia" class="size-4 accent-indigo-600" />
+                            <input type="checkbox" v-model="formMatricula.tma_fl_bolsa_familia" class="size-4 accent-indigo-600" />
                             Bolsa Família
                         </label>
                         <label class="flex cursor-pointer items-center gap-2 text-sm">
-                            <input type="checkbox" v-model="formMatricula.mat_fl_trouxe_rg" class="size-4 accent-indigo-600" />
+                            <input type="checkbox" v-model="formMatricula.tma_fl_trouxe_rg" class="size-4 accent-indigo-600" />
                             Trouxe R.G.
                         </label>
                         <label class="flex cursor-pointer items-center gap-2 text-sm">
-                            <input type="checkbox" v-model="formMatricula.mat_fl_recebe_merenda" class="size-4 accent-indigo-600" />
+                            <input type="checkbox" v-model="formMatricula.tma_fl_recebe_merenda" class="size-4 accent-indigo-600" />
                             Recebe Merenda
                         </label>
                         <label class="flex cursor-pointer items-center gap-2 text-sm">
-                            <input type="checkbox" v-model="formMatricula.mat_fl_trouxe_reg_nascimento" class="size-4 accent-indigo-600" />
+                            <input type="checkbox" v-model="formMatricula.tma_fl_trouxe_reg_nascimento" class="size-4 accent-indigo-600" />
                             Trouxe Reg. Nascimento
                         </label>
                         <label class="flex cursor-pointer items-center gap-2 text-sm">
-                            <input type="checkbox" v-model="formMatricula.mat_fl_usa_transporte" class="size-4 accent-indigo-600" />
+                            <input type="checkbox" v-model="formMatricula.tma_fl_usa_transporte" class="size-4 accent-indigo-600" />
                             Usa Transporte
                         </label>
                         <label class="flex cursor-pointer items-center gap-2 text-sm">
-                            <input type="checkbox" v-model="formMatricula.mat_fl_usa_biblioteca" class="size-4 accent-indigo-600" />
+                            <input type="checkbox" v-model="formMatricula.tma_fl_usa_biblioteca" class="size-4 accent-indigo-600" />
                             Usa Biblioteca
                         </label>
                     </div>
 
                     <!-- Observação -->
                     <div class="grid gap-1.5">
-                        <FormLabel for="mat_obs">Observação</FormLabel>
+                        <FormLabel for="tma_obs">Observação</FormLabel>
                         <textarea
-                            id="mat_obs"
-                            v-model="formMatricula.mat_obs"
+                            id="tma_obs"
+                            v-model="formMatricula.tma_obs"
                             rows="2"
                             class="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
                             placeholder="Observações sobre a matrícula..."
