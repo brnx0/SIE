@@ -107,6 +107,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('api/series', [SerieApiController::class, 'bySegmento'])->name('api.series.bySegmento');
     Route::get('api/series/search', [SerieApiController::class, 'search'])->name('api.series.search');
     Route::get('api/series/by-escola-segmento', [SerieApiController::class, 'byEscolaSegmento'])->name('api.series.byEscolaSegmento');
+    Route::get('api/series/by-turmas-abertas', [SerieApiController::class, 'byTurmasAbertas'])->name('api.series.byTurmasAbertas');
     Route::get('api/segmentos/by-escola', [SegmentoApiController::class, 'byEscola'])->name('api.segmentos.byEscola');
     Route::get('api/municipios', [MunicipioController::class, 'search'])->name('api.municipios.search');
     Route::get('api/municipios/by-ibge/{codigo}', [MunicipioController::class, 'byIbge'])->name('api.municipios.byIbge');

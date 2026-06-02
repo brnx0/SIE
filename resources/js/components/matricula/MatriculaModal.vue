@@ -251,10 +251,12 @@ const submit = async () => {
 
     processing.value = true;
     errors.value     = {};
-    const csrfToken = document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content ?? '';
+    // XSRF-TOKEN cookie é atualizado pelo Laravel em cada resposta (ao contrário da meta tag)
+    const xsrfToken = decodeURIComponent(
+        document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]+)/)?.[1] ?? ''
+    );
 
     const payload: Record<string, any> = {
-        _token:             csrfToken,
         tma_tur_id:         props.turma.tur_id,
         tma_dt_matricula:   formMatricula.tma_dt_matricula,
         tma_obs:            formMatricula.tma_obs,
@@ -283,7 +285,7 @@ const submit = async () => {
             credentials: 'same-origin',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': csrfToken,
+                'X-XSRF-TOKEN': xsrfToken,
                 'X-Requested-With': 'XMLHttpRequest',
                 'Accept': 'application/json',
             },
@@ -291,12 +293,12 @@ const submit = async () => {
         });
 
         if (res.status === 419) {
-            errors.value['_geral'] = 'Sua sessÃ£o expirou. Recarregue a pÃ¡gina e tente novamente.';
+            errors.value['_geral'] = 'Sua sessão expirou. Recarregue a página e tente novamente.';
             return;
         }
 
         const json = await res.json().catch(() => ({
-            message: 'NÃ£o foi possÃ­vel concluir a matrÃ­cula. Recarregue a pÃ¡gina e tente novamente.',
+            message: 'Não foi possível concluir a matrícula. Recarregue a página e tente novamente.',
         }));
 
         if (!res.ok) {

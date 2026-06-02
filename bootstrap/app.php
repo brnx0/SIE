@@ -23,6 +23,9 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions) {
         $exceptions->render(function (TokenMismatchException $e, $request) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Sessão expirada. Recarregue a página.'], 419);
+            }
             $request->session()->regenerateToken();
             return redirect($request->url())
                 ->with('error', 'Sua sessão expirou. Por favor, tente novamente.');

@@ -57,23 +57,23 @@ const carregarSeries = async () => {
     series.value = [];
     fSerId.value = '';
     turmas.value = [];
-    if (!fSegId.value) return;
+    if (!fSegId.value || !fEscId.value || !fAnlId.value) return;
     loadingSeries.value = true;
     try {
-        const r = await fetch(`/api/series?seg_id=${fSegId.value}`);
+        const r = await fetch(`/api/series/by-turmas-abertas?esc_id=${fEscId.value}&anl_id=${fAnlId.value}&seg_id=${fSegId.value}`);
         series.value = await r.json();
     } finally {
         loadingSeries.value = false;
     }
 };
 
-watch(fSegId, carregarSeries);
+watch([fSegId, fEscId, fAnlId], carregarSeries);
 
 // ── Turmas ────────────────────────────────────────────────────────────────────
 const turmas        = ref<TurmaMatricula[]>([]);
 const loadingTurmas = ref(false);
 
-const podeBuscarTurmas = computed(() => !!fAnlId.value && !!fEscId.value);
+const podeBuscarTurmas = computed(() => !!fAnlId.value && !!fEscId.value && !!fSegId.value);
 
 const carregarTurmas = async () => {
     turmas.value = [];
@@ -273,16 +273,16 @@ const formatarNomeAluno = (a: AlunoResumo) => {
                         </select>
                     </div>
 
-                    <!-- Segmento -->
+                    <!-- Segmento (obrigatório) -->
                     <div class="grid gap-1.5">
-                        <FormLabel>Segmento</FormLabel>
+                        <FormLabel :required="true">Segmento</FormLabel>
                         <select
                             v-model.number="fSegId"
                             :disabled="!fEscId || loadingSegmentos"
                             :class="selectClass"
                         >
-                            <option value="">
-                                {{ !fEscId ? 'Selecione a escola primeiro' : loadingSegmentos ? 'Carregando...' : 'Todos' }}
+                            <option value="" disabled>
+                                {{ !fEscId ? 'Selecione a escola primeiro' : loadingSegmentos ? 'Carregando...' : 'Selecione o segmento...' }}
                             </option>
                             <option v-for="s in segmentos" :key="s.seg_id" :value="s.seg_id">
                                 {{ s.seg_nome }}
@@ -405,12 +405,12 @@ const formatarNomeAluno = (a: AlunoResumo) => {
                 </button>
             </div>
 
-            <!-- Aviso: escola obrigatória -->
+            <!-- Aviso: filtros obrigatórios -->
             <div
-                v-if="!fEscId"
+                v-if="!fEscId || !fSegId"
                 class="rounded-xl border bg-card p-10 text-center text-sm text-muted-foreground shadow-sm"
             >
-                Selecione um <strong>Ano Letivo</strong> e uma <strong>Escola</strong> para visualizar as turmas disponíveis.
+                Selecione um <strong>Ano Letivo</strong>, uma <strong>Escola</strong> e um <strong>Segmento</strong> para visualizar as turmas disponíveis.
             </div>
 
             <!-- Tabela de turmas -->

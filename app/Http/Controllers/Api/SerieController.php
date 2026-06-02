@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Escola\EscolaSegmento;
 use App\Models\Serie\Serie;
+use App\Models\Turma\Turma;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -60,6 +61,39 @@ class SerieController extends Controller
 
         return response()->json(
             $query->orderBy('ser_ordem_no_segmento')->get(['ser_id', 'ser_nome'])
+        );
+    }
+
+    /**
+     * GET api/series/by-turmas-abertas?esc_id=X&anl_id=Y&seg_id=Z
+     * Séries que possuem ao menos uma turma ABERTA no ano/escola/segmento.
+     */
+    public function byTurmasAbertas(Request $request): JsonResponse
+    {
+        $escId = (int) $request->input('esc_id');
+        $anlId = (int) $request->input('anl_id');
+        $segId = (int) $request->input('seg_id');
+
+        if (! $escId || ! $anlId || ! $segId) {
+            return response()->json([]);
+        }
+
+        $serieIds = Turma::where('tur_esc_id', $escId)
+            ->where('tur_anl_id', $anlId)
+            ->where('tur_seg_id', $segId)
+            ->where('tur_situacao', 'ABERTA')
+            ->whereNull('tur_deleted_at')
+            ->distinct()
+            ->pluck('tur_ser_id');
+
+        if ($serieIds->isEmpty()) {
+            return response()->json([]);
+        }
+
+        return response()->json(
+            Serie::whereIn('ser_id', $serieIds)
+                ->orderBy('ser_ordem_no_segmento')
+                ->get(['ser_id', 'ser_nome', 'ser_idade'])
         );
     }
 
