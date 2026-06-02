@@ -59,13 +59,7 @@ class SegmentoSeeder extends Seeder
                 'seg_ordem'             => 7,
                 'seg_dt_abertura'       => '2000-01-01',
             ],
-            [
-                'seg_nome_reduzido'     => 'AEE',
-                'seg_nome_completo'     => 'AEE 1º ANO',
-                'seg_qt_anos_escolares' => 1,
-                'seg_ordem'             => 8,
-                'seg_dt_abertura'       => '2000-01-01',
-            ],
+
         ];
 
         foreach ($segmentos as $data) {

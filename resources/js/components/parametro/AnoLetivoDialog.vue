@@ -29,6 +29,7 @@ const form = useForm<AnoLetivoFormData>({
     anl_dt_inicio_1sem: '',
     anl_dt_inicio_2sem: '',
     anl_dt_fim: '',
+    anl_dt_corte: '',
     anl_dt_censo: '',
     anl_fl_em_exercicio: false,
     anl_fl_progressao_parcial: false,
@@ -42,6 +43,7 @@ const reset = () => {
         form.anl_dt_inicio_1sem = props.initial.anl_dt_inicio_1sem?.slice(0, 10) ?? '';
         form.anl_dt_inicio_2sem = props.initial.anl_dt_inicio_2sem?.slice(0, 10) ?? '';
         form.anl_dt_fim = props.initial.anl_dt_fim?.slice(0, 10) ?? '';
+        form.anl_dt_corte = props.initial.anl_dt_corte?.slice(0, 10) ?? '';
         form.anl_dt_censo = props.initial.anl_dt_censo?.slice(0, 10) ?? '';
         form.anl_fl_em_exercicio = props.initial.anl_fl_em_exercicio;
         form.anl_fl_progressao_parcial = props.initial.anl_fl_progressao_parcial;
@@ -128,10 +130,16 @@ const close = () => emit('update:open', false);
                     <InputError :message="form.errors.anl_dt_inicio_2sem" />
                 </div>
 
-                <div class="grid gap-2 sm:col-span-2">
+                <div class="grid gap-2 sm:col-span-1">
                     <FormLabel :for="'anl_dt_fim'" :required="true">Fim do Ano</FormLabel>
                     <Input id="anl_dt_fim" type="date" v-model="form.anl_dt_fim" :required="true" />
                     <InputError :message="form.errors.anl_dt_fim" />
+                </div>
+
+                <div class="grid gap-2 sm:col-span-1">
+                    <FormLabel :for="'anl_dt_corte'" :required="true">Data de Corte</FormLabel>
+                    <Input id="anl_dt_corte" type="date" v-model="form.anl_dt_corte" :required="true" />
+                    <InputError :message="form.errors.anl_dt_corte" />
                 </div>
 
                 <div class="flex items-center gap-3 sm:col-span-2">

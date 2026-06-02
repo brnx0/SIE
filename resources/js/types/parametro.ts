@@ -36,6 +36,7 @@ export interface AnoLetivo {
     anl_dt_inicio_1sem: string;
     anl_dt_inicio_2sem: string;
     anl_dt_fim: string;
+    anl_dt_corte: string;
     anl_dt_censo: string | null;
     anl_fl_em_exercicio: boolean;
     anl_fl_progressao_parcial: boolean;
@@ -52,6 +53,7 @@ export interface AnoLetivoFormData {
     anl_dt_inicio_1sem: string;
     anl_dt_inicio_2sem: string;
     anl_dt_fim: string;
+    anl_dt_corte: string;
     anl_dt_censo: string;
     anl_fl_em_exercicio: boolean;
     anl_fl_progressao_parcial: boolean;

@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\MunicipioController;
 use App\Http\Controllers\Api\SegmentoController as SegmentoApiController;
 use App\Http\Controllers\Api\SerieController as SerieApiController;
 use App\Http\Controllers\Disciplina\DisciplinaController;
+use App\Http\Controllers\Disciplina\DisciplinaIndicadorController;
 use App\Http\Controllers\Turma\TurmaController;
 use App\Http\Controllers\Turma\TurmaHorarioController;
 use App\Http\Controllers\Turma\TurmaProfessorController;
@@ -89,6 +90,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
     Route::get('disciplinas/export', [DisciplinaController::class, 'export'])->name('disciplinas.export');
     Route::resource('disciplinas', DisciplinaController::class)->except(['show']);
+    Route::prefix('disciplinas/{disciplina}/indicadores')->name('disciplinas.indicadores.')->group(function () {
+        Route::post('/', [DisciplinaIndicadorController::class, 'store'])->name('store');
+        Route::put('/{indicador}', [DisciplinaIndicadorController::class, 'update'])->name('update');
+        Route::delete('/{indicador}', [DisciplinaIndicadorController::class, 'destroy'])->name('destroy');
+    });
 
     Route::get('api/series', [SerieApiController::class, 'bySegmento'])->name('api.series.bySegmento');
     Route::get('api/series/search', [SerieApiController::class, 'search'])->name('api.series.search');

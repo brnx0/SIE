@@ -5,6 +5,7 @@ namespace App\Models\Disciplina;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Disciplina extends Model
@@ -36,6 +37,11 @@ class Disciplina extends Model
     public function areaConhecimento(): BelongsTo
     {
         return $this->belongsTo(AreaConhecimento::class, 'arc_id', 'arc_id');
+    }
+
+    public function indicadores(): HasMany
+    {
+        return $this->hasMany(DisciplinaIndicador::class, 'ind_dis_id', 'dis_id');
     }
 
     public function scopeSearch(Builder $query, string $q): Builder

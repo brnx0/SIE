@@ -2,6 +2,7 @@
 import FormLabel from '@/components/common/FormLabel.vue';
 import InputError from '@/components/common/InputError.vue';
 import Switch from '@/components/common/Switch.vue';
+import IndicadoresTab from '@/components/disciplina/IndicadoresTab.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import type { AreaConhecimento, Disciplina, DisciplinaFormData } from '@/types/disciplina';
@@ -81,8 +82,29 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar disciplina' : 'Salvar a
             </div>
         </div>
 
-        <!-- Card principal -->
+        <!-- Card dados gerais -->
         <div class="grid gap-5 rounded-xl border bg-card p-6 shadow-sm sm:grid-cols-4 sm:items-start">
+
+            <!-- Situação — destaque no topo -->
+            <div class="flex items-center gap-3 rounded-lg border bg-muted/40 px-4 py-3 sm:col-span-4">
+                <Switch id="dis_fl_ativo" v-model="form.dis_fl_ativo" />
+                <div>
+                    <p class="text-sm font-medium leading-none">Situação</p>
+                    <p class="mt-0.5 text-xs text-muted-foreground">
+                        {{ form.dis_fl_ativo ? 'Disciplina ativa — aparece como opção nos cadastros' : 'Disciplina inativa — não aparece como opção nos cadastros' }}
+                    </p>
+                </div>
+                <span
+                    :class="[
+                        'ml-auto inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold',
+                        form.dis_fl_ativo
+                            ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
+                            : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400',
+                    ]"
+                >
+                    {{ form.dis_fl_ativo ? 'Ativo' : 'Inativo' }}
+                </span>
+            </div>
 
             <!-- Área do Conhecimento -->
             <div class="grid gap-2 sm:col-span-4">
@@ -151,15 +173,15 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar disciplina' : 'Salvar a
                 />
                 <InputError :message="form.errors.dis_sigla" />
             </div>
+        </div>
 
-            <!-- Separador -->
-            <div class="sm:col-span-4 border-t" />
-
-            <!-- Ativo -->
-            <div class="flex items-center gap-3 sm:col-span-4">
-                <Switch id="dis_fl_ativo" v-model="form.dis_fl_ativo" />
-                <FormLabel for="dis_fl_ativo" class="font-normal">Ativo</FormLabel>
-            </div>
+        <!-- Indicadores (somente edit) -->
+        <div v-if="mode === 'edit'">
+            <h2 class="mb-3 text-base font-semibold text-slate-800 dark:text-slate-100">Indicadores</h2>
+            <IndicadoresTab
+                :dis-id="initial!.dis_id"
+                :indicadores="initial?.indicadores ?? []"
+            />
         </div>
     </form>
 </template>

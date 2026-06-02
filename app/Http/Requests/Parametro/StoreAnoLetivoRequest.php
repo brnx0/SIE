@@ -26,6 +26,7 @@ class StoreAnoLetivoRequest extends FormRequest
             'anl_dt_inicio_1sem' => ['required', 'date', 'after_or_equal:anl_dt_inicio_ano'],
             'anl_dt_inicio_2sem' => ['required', 'date', 'after:anl_dt_inicio_1sem'],
             'anl_dt_fim' => ['required', 'date', 'after:anl_dt_inicio_2sem'],
+            'anl_dt_corte' => ['required', 'date'],
             'anl_dt_censo' => ['nullable', 'date'],
             'anl_fl_em_exercicio' => ['boolean'],
             'anl_fl_progressao_parcial' => ['boolean'],
@@ -41,7 +42,7 @@ class StoreAnoLetivoRequest extends FormRequest
                 return;
             }
 
-            foreach (['anl_dt_inicio_ano', 'anl_dt_inicio_1sem', 'anl_dt_inicio_2sem', 'anl_dt_fim', 'anl_dt_censo'] as $field) {
+            foreach (['anl_dt_inicio_ano', 'anl_dt_inicio_1sem', 'anl_dt_inicio_2sem', 'anl_dt_fim', 'anl_dt_corte', 'anl_dt_censo'] as $field) {
                 $val = $this->input($field);
                 if (! $val) {
                     continue;
@@ -62,6 +63,7 @@ class StoreAnoLetivoRequest extends FormRequest
             'anl_dt_inicio_1sem' => 'data de início do 1º semestre',
             'anl_dt_inicio_2sem' => 'data de início do 2º semestre',
             'anl_dt_fim' => 'fim do ano',
+            'anl_dt_corte' => 'data de corte',
             'anl_dt_censo' => 'data do censo',
             'anl_fl_em_exercicio' => 'ano em exercício',
             'anl_fl_progressao_parcial' => 'possui progressão parcial',
