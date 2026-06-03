@@ -86,7 +86,7 @@ class AlunoController extends Controller
         $matriculas = $aluno->matriculas()
             ->with([
                 'turma.escola:esc_id,esc_nome',
-                'turma.segmento:seg_id,seg_nome',
+                'turma.segmento:seg_id,seg_nome_reduzido',
                 'turma.serie:ser_id,ser_nome',
                 'turma.anoLetivo:anl_id,anl_ano',
                 'situacaoSaida:tas_cod,tas_descricao',
@@ -107,7 +107,7 @@ class AlunoController extends Controller
                 'anl_ano'          => $m->turma?->anoLetivo?->anl_ano,
                 'esc_nome'         => $m->turma?->escola?->esc_nome,
                 'tur_turno'        => $m->turma?->tur_turno,
-                'seg_nome'         => $m->turma?->segmento?->seg_nome,
+                'seg_nome'         => $m->turma?->segmento?->seg_nome_reduzido,
                 'ser_nome'         => $m->turma?->serie?->ser_nome,
             ]),
         ]);
