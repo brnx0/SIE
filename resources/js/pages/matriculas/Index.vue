@@ -180,10 +180,11 @@ const calcularIdadeCompleta = (dtNascimento: string, dtCorte: string): number =>
 const validarIdadeParaTurma = (turma: TurmaMatricula): boolean => {
     erroIdade.value = null;
 
-    if (!props.parametros?.par_fl_validar_idade_serie) return true;
-    if (alunoNaoCadastrado.value) return true; // valida no modal ao preencher dt_nascimento
-    if (!alunoSelecionado.value?.aln_dt_nascimento) return true;
+    // série sem requisito de idade → sem restrição
     if (turma.serie?.ser_idade == null || !turma.ano_letivo?.anl_dt_corte) return true;
+    // aluno não cadastrado → valida no modal (data de nascimento ainda não preenchida)
+    if (alunoNaoCadastrado.value) return true;
+    if (!alunoSelecionado.value?.aln_dt_nascimento) return true;
 
     const idade = calcularIdadeCompleta(
         alunoSelecionado.value.aln_dt_nascimento,

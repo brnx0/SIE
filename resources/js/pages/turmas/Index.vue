@@ -118,8 +118,8 @@ const exportFilters = () => ({
                 <table class="w-full text-sm">
                     <thead class="bg-muted/50 text-left text-xs uppercase tracking-wide text-muted-foreground">
                         <tr>
-                            <th class="px-4 py-3">Turma</th>
                             <th class="px-4 py-3">Série</th>
+                            <th class="px-4 py-3">Turma</th>
                             <th class="px-4 py-3">Escola</th>
                             <th class="px-4 py-3">Ano</th>
                             <th class="px-4 py-3 text-center">Sem.</th>
@@ -135,6 +135,7 @@ const exportFilters = () => ({
                             <td colspan="10" class="px-4 py-12 text-center text-muted-foreground">Nenhuma turma encontrada.</td>
                         </tr>
                         <tr v-for="t in turmas.data" :key="t.tur_id" class="transition-colors hover:bg-muted/30">
+                            <td class="px-4 py-3">{{ t.serie?.ser_nome ?? '—' }}</td>
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-3">
                                     <div class="grid size-9 place-items-center rounded-lg bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300">
@@ -143,7 +144,6 @@ const exportFilters = () => ({
                                     <span class="font-semibold">{{ t.tur_nome }}</span>
                                 </div>
                             </td>
-                            <td class="px-4 py-3">{{ t.serie?.ser_nome ?? '—' }}</td>
                             <td class="max-w-[220px] truncate px-4 py-3 text-muted-foreground">{{ t.escola?.esc_nome ?? '—' }}</td>
                             <td class="px-4 py-3 tabular-nums">{{ t.anoLetivo?.anl_ano ?? '—' }}</td>
                             <td class="px-4 py-3 text-center tabular-nums">{{ t.tur_semestre ?? '—' }}º</td>

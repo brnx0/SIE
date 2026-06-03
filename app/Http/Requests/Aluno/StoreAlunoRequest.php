@@ -74,7 +74,7 @@ class StoreAlunoRequest extends FormRequest
             'aln_filiacao_2'      => ['nullable', 'string', 'max:100'],
             'aln_filiacao_2_tipo' => ['nullable', Rule::in(['PAI', 'MAE'])],
 
-            'aln_cep' => ['nullable', 'digits:8'],
+            'aln_cep' => ['required', 'digits:8'],
             'aln_logradouro' => ['nullable', 'string', 'max:150'],
             'aln_numero' => ['nullable', 'string', 'max:10'],
             'aln_complemento' => ['nullable', 'string', 'max:100'],

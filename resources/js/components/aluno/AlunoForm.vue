@@ -675,7 +675,7 @@ const initials = computed(() => {
                         </div>
 
                         <div class="grid gap-2 sm:col-span-2">
-                            <Label for="aln_cep">CEP</Label>
+                            <FormLabel for="aln_cep" :required="true">CEP</FormLabel>
                             <div class="relative">
                                 <Input
                                     id="aln_cep"

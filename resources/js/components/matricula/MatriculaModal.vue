@@ -300,10 +300,10 @@ const submit = async () => {
         return;
     }
 
-    // Valida idade — tanto aluno existente quanto não cadastrado
-    if (params.value.validar_idade_serie) {
-        const dtNasc  = formAluno.aln_dt_nascimento;
-        const dtCorte = props.turma.ano_letivo?.anl_dt_corte;
+    // Valida idade — sempre que série tiver requisito de idade
+    {
+        const dtNasc   = formAluno.aln_dt_nascimento;
+        const dtCorte  = props.turma.ano_letivo?.anl_dt_corte;
         const serIdade = props.turma.serie?.ser_idade;
 
         if (dtNasc && dtCorte && serIdade != null) {

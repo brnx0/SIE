@@ -89,6 +89,7 @@ const buscar = async () => {
             erro.value = json.message ?? 'Matrícula não encontrada.';
         } else {
             resultado.value = json;
+            window.open(`/matriculas/${json.tma_id}/comprovante`, '_blank');
         }
     } catch {
         erro.value = 'Erro ao buscar matrícula.';
@@ -207,15 +208,16 @@ const formatarNomeAluno = (a: AlunoResumo) => {
                 <div v-if="resultado" class="flex flex-col gap-3">
                     <div class="flex items-center gap-3 rounded-lg border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 dark:border-emerald-700 dark:bg-emerald-900/20">
                         <CheckCircle2 class="size-4 shrink-0" />
-                        Matrícula encontrada. Clique em emitir para abrir o comprovante.
+                        Comprovante aberto em nova aba.
                     </div>
                     <Button
                         type="button"
-                        class="bg-fuchsia-600 hover:bg-fuchsia-700 w-full"
+                        variant="outline"
+                        class="w-full"
                         @click="emitir"
                     >
                         <FileText class="mr-2 size-4" />
-                        Emitir 2ª Via
+                        Abrir novamente
                     </Button>
                 </div>
 
