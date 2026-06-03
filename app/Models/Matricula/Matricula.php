@@ -40,15 +40,6 @@ class Matricula extends Model
         'tma_dt_matricula',
         'tma_dt_saida',
         'tma_obs',
-        'tma_fl_trouxe_transferencia',
-        'tma_fl_trouxe_rg',
-        'tma_fl_trouxe_reg_nascimento',
-        'tma_fl_bolsa_familia',
-        'tma_fl_recebe_merenda',
-        'tma_fl_usa_transporte',
-        'tma_fl_usa_biblioteca',
-        'tma_fl_indigena',
-        'tma_fl_creche',
         'tma_created_by_id',
     ];
 
@@ -62,15 +53,6 @@ class Matricula extends Model
         'tma_fl_renovado'      => 'boolean',
         'tma_dt_matricula'    => 'date',
         'tma_dt_saida'        => 'date',
-        'tma_fl_trouxe_transferencia' => 'boolean',
-        'tma_fl_trouxe_rg'           => 'boolean',
-        'tma_fl_trouxe_reg_nascimento' => 'boolean',
-        'tma_fl_bolsa_familia'       => 'boolean',
-        'tma_fl_recebe_merenda'      => 'boolean',
-        'tma_fl_usa_transporte'      => 'boolean',
-        'tma_fl_usa_biblioteca'      => 'boolean',
-        'tma_fl_indigena'            => 'boolean',
-        'tma_fl_creche'              => 'boolean',
         'tma_created_by_id'          => 'integer',
     ];
 

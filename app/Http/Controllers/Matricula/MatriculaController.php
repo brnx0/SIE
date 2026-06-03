@@ -167,7 +167,7 @@ class MatriculaController extends Controller
             }
         }
 
-        // Deriva indigena e creche automaticamente
+        // Deriva creche pelo segmento; indigena/demais flags vêm com o aluno
         $segNome       = optional($turma->segmento)->seg_nome_reduzido ?? '';
         $flCreche      = stripos($segNome, 'CRECHE') !== false;
 
@@ -186,9 +186,20 @@ class MatriculaController extends Controller
                     $this->salvarSaude($alunoId, $request);
                 }
 
-                // Indígena derivado da raça do aluno (cor_raca = 5)
-                $corRaca   = \App\Models\Aluno\Aluno::where('aln_id', $alunoId)->value('aln_cor_raca');
-                $flIndigena = (int) $corRaca === 5;
+                // Atualiza flags do aluno enviados pela matrícula (incluindo derivadas)
+                $aluno   = \App\Models\Aluno\Aluno::find($alunoId);
+                $alunoIn = $request->input('aluno', []);
+                $aluno->update([
+                    'aln_fl_trouxe_transferencia'  => (bool) ($alunoIn['aln_fl_trouxe_transferencia']  ?? false),
+                    'aln_fl_trouxe_rg'             => (bool) ($alunoIn['aln_fl_trouxe_rg']             ?? false),
+                    'aln_fl_trouxe_reg_nascimento' => (bool) ($alunoIn['aln_fl_trouxe_reg_nascimento'] ?? false),
+                    'aln_fl_bolsa_familia'         => (bool) ($alunoIn['aln_fl_bolsa_familia']         ?? false),
+                    'aln_fl_recebe_merenda'        => (bool) ($alunoIn['aln_fl_recebe_merenda']        ?? false),
+                    'aln_fl_usa_transporte'        => (bool) ($alunoIn['aln_fl_usa_transporte']        ?? false),
+                    'aln_fl_usa_biblioteca'        => (bool) ($alunoIn['aln_fl_usa_biblioteca']        ?? false),
+                    'aln_fl_indigena'              => (int) $aluno->aln_cor_raca === 5,
+                    'aln_fl_creche'                => $flCreche,
+                ]);
 
                 return Matricula::create([
                     'tma_aln_id'                   => $alunoId,
@@ -200,15 +211,6 @@ class MatriculaController extends Controller
                     'tma_created_by_id'            => auth()->id(),
                     'tma_dt_matricula'             => $request->input('tma_dt_matricula'),
                     'tma_obs'                      => $request->input('tma_obs'),
-                    'tma_fl_trouxe_transferencia'  => $request->boolean('tma_fl_trouxe_transferencia'),
-                    'tma_fl_trouxe_rg'             => $request->boolean('tma_fl_trouxe_rg'),
-                    'tma_fl_trouxe_reg_nascimento' => $request->boolean('tma_fl_trouxe_reg_nascimento'),
-                    'tma_fl_bolsa_familia'         => $request->boolean('tma_fl_bolsa_familia'),
-                    'tma_fl_recebe_merenda'        => $request->boolean('tma_fl_recebe_merenda'),
-                    'tma_fl_usa_transporte'        => $request->boolean('tma_fl_usa_transporte'),
-                    'tma_fl_usa_biblioteca'        => $request->boolean('tma_fl_usa_biblioteca'),
-                    'tma_fl_indigena'              => $flIndigena,
-                    'tma_fl_creche'                => $flCreche,
                 ]);
             });
 

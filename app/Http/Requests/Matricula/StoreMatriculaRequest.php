@@ -53,13 +53,6 @@ class StoreMatriculaRequest extends FormRequest
 
             'tma_dt_matricula'             => ['required', 'date'],
             'tma_obs'                      => ['nullable', 'string'],
-            'tma_fl_trouxe_transferencia'  => ['boolean'],
-            'tma_fl_trouxe_rg'             => ['boolean'],
-            'tma_fl_trouxe_reg_nascimento' => ['boolean'],
-            'tma_fl_bolsa_familia'         => ['boolean'],
-            'tma_fl_recebe_merenda'        => ['boolean'],
-            'tma_fl_usa_transporte'        => ['boolean'],
-            'tma_fl_usa_biblioteca'        => ['boolean'],
             'possui_deficiencia'           => ['boolean'],
         ];
 
@@ -88,6 +81,15 @@ class StoreMatriculaRequest extends FormRequest
                 'aluno.aln_uf'            => ['nullable', 'string', 'size:2'],
                 'aluno.aln_telefone'      => ['nullable', 'digits_between:10,11'],
                 'aluno.aln_email'         => ['nullable', 'email', 'max:150'],
+                'aluno.aln_fl_trouxe_transferencia'  => ['boolean'],
+                'aluno.aln_fl_trouxe_rg'             => ['boolean'],
+                'aluno.aln_fl_trouxe_reg_nascimento' => ['boolean'],
+                'aluno.aln_fl_bolsa_familia'         => ['boolean'],
+                'aluno.aln_fl_recebe_merenda'        => ['boolean'],
+                'aluno.aln_fl_usa_transporte'        => ['boolean'],
+                'aluno.aln_fl_usa_biblioteca'        => ['boolean'],
+                'aluno.aln_fl_indigena'              => ['boolean'],
+                'aluno.aln_fl_creche'                => ['boolean'],
             ];
         }
 

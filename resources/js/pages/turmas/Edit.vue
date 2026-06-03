@@ -6,8 +6,12 @@ import type { AnoLetivo } from '@/types/parametro';
 import type { DisciplinaResumo, EscolaResumo, GradeHorarioResumo, ProfessorResumo, Turma } from '@/types/turma';
 import { Head } from '@inertiajs/vue3';
 
+import type { TurmaProfessorApoio } from '@/types/turma';
+
 const props = defineProps<{
     turma: Turma;
+    total_matriculados: number;
+    professoresApoio: TurmaProfessorApoio[];
     anosLetivos: AnoLetivo[];
     escolas: EscolaResumo[];
     isAdmin: boolean;
@@ -16,6 +20,8 @@ const props = defineProps<{
     professoresDisponiveis: ProfessorResumo[];
     gradeHorarios: GradeHorarioResumo[];
 }>();
+
+const turmaComTotal = { ...props.turma, total_matriculados: props.total_matriculados };
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Turmas', href: '/turmas' },
@@ -35,12 +41,13 @@ const breadcrumbs: BreadcrumbItem[] = [
             </div>
             <TurmaForm
                 mode="edit"
-                :initial="turma"
+                :initial="turmaComTotal"
                 :anos-letivos="anosLetivos"
                 :escolas="escolas"
                 :is-admin="isAdmin"
                 :user-escola="userEscola"
                 :professores="turma.professores ?? []"
+                :professores-apoio="professoresApoio ?? []"
                 :professores-disponiveis="professoresDisponiveis"
                 :disciplinas="disciplinas"
                 :horarios="turma.horarios ?? []"

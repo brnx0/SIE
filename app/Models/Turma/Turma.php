@@ -117,6 +117,11 @@ class Turma extends Model
         return $this->hasMany(TurmaProfessor::class, 'tup_tur_id', 'tur_id');
     }
 
+    public function professoresApoio(): HasMany
+    {
+        return $this->hasMany(TurmaProfessorApoio::class, 'tpa_tur_id', 'tur_id');
+    }
+
     public function horarios(): HasMany
     {
         return $this->hasMany(TurmaHorario::class, 'trh_tur_id', 'tur_id');

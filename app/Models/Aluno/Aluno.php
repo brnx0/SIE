@@ -51,6 +51,15 @@ class Aluno extends Model
         'aln_email',
         'aln_foto',
         'aln_fl_ativo',
+        'aln_fl_trouxe_transferencia',
+        'aln_fl_trouxe_rg',
+        'aln_fl_trouxe_reg_nascimento',
+        'aln_fl_bolsa_familia',
+        'aln_fl_recebe_merenda',
+        'aln_fl_usa_transporte',
+        'aln_fl_usa_biblioteca',
+        'aln_fl_indigena',
+        'aln_fl_creche',
     ];
 
     protected $casts = [
@@ -58,6 +67,15 @@ class Aluno extends Model
         'aln_cor_raca' => 'integer',
         'aln_nr_matricula' => 'integer',
         'aln_fl_ativo' => 'boolean',
+        'aln_fl_trouxe_transferencia' => 'boolean',
+        'aln_fl_trouxe_rg' => 'boolean',
+        'aln_fl_trouxe_reg_nascimento' => 'boolean',
+        'aln_fl_bolsa_familia' => 'boolean',
+        'aln_fl_recebe_merenda' => 'boolean',
+        'aln_fl_usa_transporte' => 'boolean',
+        'aln_fl_usa_biblioteca' => 'boolean',
+        'aln_fl_indigena' => 'boolean',
+        'aln_fl_creche' => 'boolean',
     ];
 
     protected $appends = ['aln_foto_url'];

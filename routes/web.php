@@ -15,6 +15,7 @@ use App\Http\Controllers\Disciplina\DisciplinaController;
 use App\Http\Controllers\Disciplina\DisciplinaIndicadorController;
 use App\Http\Controllers\Turma\TurmaController;
 use App\Http\Controllers\Turma\TurmaHorarioController;
+use App\Http\Controllers\Turma\TurmaProfessorApoioController;
 use App\Http\Controllers\Turma\TurmaProfessorController;
 use App\Http\Controllers\Escola\EscolaCensoController;
 use App\Http\Controllers\Escola\EscolaSegmentoController;
@@ -86,6 +87,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::prefix('turmas/{turma}/professores')->name('turmas.professores.')->group(function () {
         Route::post('/', [TurmaProfessorController::class, 'store'])->name('store');
         Route::delete('/{turmaProfessor}', [TurmaProfessorController::class, 'destroy'])->name('destroy');
+    });
+    Route::prefix('turmas/{turma}/professores-apoio')->name('turmas.professores-apoio.')->group(function () {
+        Route::post('/', [TurmaProfessorApoioController::class, 'store'])->name('store');
+        Route::put('/{apoio}', [TurmaProfessorApoioController::class, 'update'])->name('update');
+        Route::delete('/{apoio}', [TurmaProfessorApoioController::class, 'destroy'])->name('destroy');
     });
     Route::prefix('turmas/{turma}/horarios')->name('turmas.horarios.')->group(function () {
         Route::get('grade-pdf', [TurmaHorarioController::class, 'gradePdf'])->name('grade-pdf');

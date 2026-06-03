@@ -119,15 +119,24 @@ class TurmaController extends Controller
             'serie:ser_id,ser_nome',
             'professores.funcionario:fun_id,fun_nome',
             'professores.disciplina:dis_id,dis_nome',
+            'professoresApoio.funcionario:fun_id,fun_nome,fun_cd_censo',
             'horarios.funcionario:fun_id,fun_nome',
             'horarios.disciplina:dis_id,dis_nome',
         ]);
-        $turma->setAttribute('total_matriculados',
-            $turma->matriculas()->where('tma_situacao', Matricula::SITUACAO_ATIVA)->count()
-        );
-
         return Inertia::render('turmas/Edit', [
             'turma'                  => $turma,
+            'total_matriculados'     => $turma->matriculas()->whereNull('tma_tas_cod_saida')->count(),
+            'professoresApoio'       => $turma->professoresApoio->map(fn ($a) => [
+                'tpa_id'      => $a->tpa_id,
+                'tpa_tur_id'  => $a->tpa_tur_id,
+                'tpa_fun_id'  => $a->tpa_fun_id,
+                'tpa_obs'     => $a->tpa_obs,
+                'funcionario' => $a->funcionario ? [
+                    'fun_id'       => $a->funcionario->fun_id,
+                    'fun_nome'     => $a->funcionario->fun_nome,
+                    'fun_cd_censo' => $a->funcionario->fun_cd_censo,
+                ] : null,
+            ]),
             'anosLetivos'            => AnoLetivo::orderByDesc('anl_ano')->get(['anl_id', 'anl_ano']),
             'escolas'                => $user->isAdmin()
                 ? Escola::where('esc_fl_ativo', true)->orderBy('esc_nome')->get(['esc_id', 'esc_nome'])

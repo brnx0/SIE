@@ -44,6 +44,7 @@ const props = defineProps<{
     isAdmin: boolean;
     userEscola?: { esc_id: number; esc_nome: string } | null;
     professores?: TurmaProfessor[];
+    professoresApoio?: import('@/types/turma').TurmaProfessorApoio[];
     professoresDisponiveis?: ProfessorResumo[];
     disciplinas?: DisciplinaResumo[];
     horarios?: TurmaHorario[];
@@ -292,9 +293,9 @@ const selectClass = (hasError: boolean) =>
                             </div>
 
                             <!-- Matriculados -->
-                            <div v-if="initial?.total_matriculados !== undefined" class="grid gap-1.5 sm:col-span-2">
+                            <div v-if="mode === 'edit'" class="grid gap-1.5 sm:col-span-2">
                                 <FormLabel>Matriculados</FormLabel>
-                                <Input :value="initial.total_matriculados" readonly class="bg-muted cursor-default" />
+                                <Input :model-value="initial?.total_matriculados ?? 0" readonly class="bg-muted cursor-default" />
                             </div>
 
                             <!-- Expansão -->
@@ -406,6 +407,7 @@ const selectClass = (hasError: boolean) =>
                 <TurmaProfessoresTab
                     :turma="initial!"
                     :professores="professores ?? []"
+                    :professores-apoio="professoresApoio ?? []"
                     :professores-disponiveis="professoresDisponiveis ?? []"
                     :disciplinas="disciplinas ?? []"
                 />

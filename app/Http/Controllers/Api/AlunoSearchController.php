@@ -64,6 +64,15 @@ class AlunoSearchController extends Controller
                 'aln_email',
                 'aln_nr_matricula',
                 'aln_cpf',
+                'aln_fl_trouxe_transferencia',
+                'aln_fl_trouxe_rg',
+                'aln_fl_trouxe_reg_nascimento',
+                'aln_fl_bolsa_familia',
+                'aln_fl_recebe_merenda',
+                'aln_fl_usa_transporte',
+                'aln_fl_usa_biblioteca',
+                'aln_fl_indigena',
+                'aln_fl_creche',
             ]);
 
         return response()->json($alunos->map(fn ($a) => [
@@ -91,6 +100,15 @@ class AlunoSearchController extends Controller
             'aln_email'       => $a->aln_email,
             'aln_nr_matricula'  => $a->aln_nr_matricula,
             'aln_cpf'              => $a->aln_cpf,
+            'aln_fl_trouxe_transferencia'  => $a->aln_fl_trouxe_transferencia,
+            'aln_fl_trouxe_rg'             => $a->aln_fl_trouxe_rg,
+            'aln_fl_trouxe_reg_nascimento' => $a->aln_fl_trouxe_reg_nascimento,
+            'aln_fl_bolsa_familia'         => $a->aln_fl_bolsa_familia,
+            'aln_fl_recebe_merenda'        => $a->aln_fl_recebe_merenda,
+            'aln_fl_usa_transporte'        => $a->aln_fl_usa_transporte,
+            'aln_fl_usa_biblioteca'        => $a->aln_fl_usa_biblioteca,
+            'aln_fl_indigena'              => $a->aln_fl_indigena,
+            'aln_fl_creche'                => $a->aln_fl_creche,
             'municipio_nascimento' => $a->municipioNascimento,
             'saude'                => $a->saude,
         ]));

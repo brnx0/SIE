@@ -73,6 +73,7 @@ class FuncionarioLotacaoController extends Controller
             return false;
         }
 
+        // Cargos com prefixo docente
         $prefixos = ['Professor', 'Docente', 'Regente', 'Prof'];
         foreach ($prefixos as $p) {
             if (str_starts_with($cargo->crg_nome, $p)) {
@@ -80,7 +81,39 @@ class FuncionarioLotacaoController extends Controller
             }
         }
 
-        return false;
+        // Demais cargos que atuam em sala de aula
+        $exatos = [
+            // Inclusão
+            'Auxiliar de Desenvolvimento Infantil',
+            'Auxiliar de Desenvolvimento Infantil – PNE',
+            'Cuidador(a) de Educando com Necessidades Especiais',
+            'Tradutor(a) Intérprete de LIBRAS',
+            'Mediador(a)',
+            'Estimulador(a)',
+            'Educação Especial – Trabalho Diferenciado',
+
+            // Educação infantil
+            'Educadora de Desenvolvimento Infantil em Creche',
+            'Monitor(a) de Creche',
+            'Auxiliar de Creche',
+
+            // Apoio pedagógico em sala
+            'Assistente de Alfabetização',
+            'Auxiliar de Ensino',
+            'Auxiliar de Classe',
+            'Monitor(a) Docente de Atividades',
+            'Monitor(a) de Laboratório',
+            'Instrutor(a)',
+            'Instrutor(a) de Dança',
+            'Instrutor(a) de Fanfarra',
+            'Instrutor(a) de Música',
+            'Instrutor(a) Profissionalizante',
+            'Reforço Escolar',
+            'Estagiário(a)',
+            'Monitor(a)',
+        ];
+
+        return in_array($cargo->crg_nome, $exatos, true);
     }
 
     protected function attributes(): array

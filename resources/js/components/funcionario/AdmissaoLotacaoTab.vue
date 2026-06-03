@@ -171,10 +171,37 @@ watch(lotDtFimBR, (v) => {
     }
 });
 
+const CARGOS_SALA_AULA_EXATOS = [
+    'Auxiliar de Desenvolvimento Infantil',
+    'Auxiliar de Desenvolvimento Infantil – PNE',
+    'Cuidador(a) de Educando com Necessidades Especiais',
+    'Tradutor(a) Intérprete de LIBRAS',
+    'Mediador(a)',
+    'Estimulador(a)',
+    'Educação Especial – Trabalho Diferenciado',
+    'Educadora de Desenvolvimento Infantil em Creche',
+    'Monitor(a) de Creche',
+    'Auxiliar de Creche',
+    'Assistente de Alfabetização',
+    'Auxiliar de Ensino',
+    'Auxiliar de Classe',
+    'Monitor(a) Docente de Atividades',
+    'Monitor(a) de Laboratório',
+    'Instrutor(a)',
+    'Instrutor(a) de Dança',
+    'Instrutor(a) de Fanfarra',
+    'Instrutor(a) de Música',
+    'Instrutor(a) Profissionalizante',
+    'Reforço Escolar',
+    'Estagiário(a)',
+    'Monitor(a)',
+];
+
 const isCargoDocente = computed(() => {
     if (!lotCargoInitial.value) return false;
     const nome = lotCargoInitial.value.crg_nome;
-    return ['Professor', 'Docente', 'Regente', 'Prof'].some((p) => nome.startsWith(p));
+    if (['Professor', 'Docente', 'Regente', 'Prof'].some((p) => nome.startsWith(p))) return true;
+    return CARGOS_SALA_AULA_EXATOS.includes(nome);
 });
 
 const resetLotForm = () => {

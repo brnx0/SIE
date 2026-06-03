@@ -87,6 +87,14 @@ export interface TurmaProfessor {
     disciplina?: { dis_id: number; dis_nome: string } | null;
 }
 
+export interface TurmaProfessorApoio {
+    tpa_id: number;
+    tpa_tur_id: number;
+    tpa_fun_id: number;
+    tpa_obs: string | null;
+    funcionario?: { fun_id: number; fun_nome: string; fun_cd_censo: string | null } | null;
+}
+
 export interface ProfessorResumo {
     fun_id: number;
     fun_nome: string;
