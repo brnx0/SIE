@@ -7,7 +7,6 @@ import TabsContent from '@/components/common/TabsContent.vue';
 import TabsList from '@/components/common/TabsList.vue';
 import TabsTrigger from '@/components/common/TabsTrigger.vue';
 import AnoLetivoDialog from '@/components/parametro/AnoLetivoDialog.vue';
-import GradeDisciplinarTab from '@/components/parametro/GradeDisciplinarTab.vue';
 import GradeHorariosTab from '@/components/parametro/GradeHorariosTab.vue';
 import UnidadeTab from '@/components/parametro/UnidadeTab.vue';
 import Switch from '@/components/common/Switch.vue';
@@ -28,7 +27,7 @@ const props = defineProps<{
     gradeHorarios: GradeHorario[];
 }>();
 
-const TABS = ['entidade', 'ano_letivo', 'unidade', 'cadastros', 'grade', 'grade_disciplinar'] as const;
+const TABS = ['entidade', 'ano_letivo', 'unidade', 'cadastros', 'grade'] as const;
 type TabId = (typeof TABS)[number];
 
 const TAB_FIELDS: Record<TabId, string[]> = {
@@ -46,7 +45,6 @@ const TAB_FIELDS: Record<TabId, string[]> = {
         'par_fl_fardamento_obrigatorio', 'par_tipo_validacao_carga',
     ],
     grade: [],
-    grade_disciplinar: [],
 };
 
 const currentMunicipio = ref<Municipio | null>(props.initial.municipio ?? null);
@@ -187,7 +185,6 @@ const fmtDateTime = (s?: string | null) => {
                 <TabsTrigger value="unidade" :has-error="tabHasError('unidade')">3. Unidade</TabsTrigger>
                 <TabsTrigger value="cadastros" :has-error="tabHasError('cadastros')">4. Cadastros</TabsTrigger>
                 <TabsTrigger value="grade">5. Grade de Horários</TabsTrigger>
-                <TabsTrigger value="grade_disciplinar">6. Grade Disciplinar</TabsTrigger>
             </TabsList>
 
             <!-- Aba 1: Entidade -->
@@ -453,10 +450,6 @@ const fmtDateTime = (s?: string | null) => {
                 <GradeHorariosTab :grade-horarios="gradeHorarios" :segmentos="segmentos" />
             </TabsContent>
 
-            <!-- Aba 6: Grade Disciplinar -->
-            <TabsContent value="grade_disciplinar">
-                <GradeDisciplinarTab :anos-letivos="anosLetivos" :segmentos="segmentos" />
-            </TabsContent>
         </Tabs>
 
         <AnoLetivoDialog v-model:open="dialogOpen" :initial="editingAno" />

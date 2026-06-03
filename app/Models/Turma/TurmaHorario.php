@@ -23,6 +23,7 @@ class TurmaHorario extends Model
     protected $fillable = [
         'trh_tur_id',
         'trh_grh_id',
+        'trh_tempo',
         'trh_dia',
         'trh_fun_id',
         'trh_dis_id',
@@ -30,6 +31,7 @@ class TurmaHorario extends Model
     ];
 
     protected $casts = [
+        'trh_tempo' => 'integer',
         'trh_fl_tc' => 'boolean',
     ];
 

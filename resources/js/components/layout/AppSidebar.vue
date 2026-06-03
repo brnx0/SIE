@@ -31,6 +31,7 @@ const cadastros = [
                     { title: 'Segmentos', href: '/segmentos' },
                     { title: 'Séries', href: '/series' },
                     { title: 'Disciplinas', href: '/disciplinas' },
+                    { title: 'Grade Disciplinar', href: '/grade-disciplinar' },
                     { title: 'Escolas', href: '/escolas' },
                     { title: 'Turmas', href: '/turmas' },
                 ],

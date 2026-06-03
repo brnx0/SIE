@@ -342,10 +342,6 @@ const submit = async () => {
     processing.value = true;
     errors.value     = {};
 
-    // Abre janela em branco ANTES do fetch — ainda no contexto do gesto do usuário.
-    // Browsers bloqueiam window.open em callbacks assíncronos e podem navegar a aba atual.
-    const comprovanteWin = window.open('', '_blank');
-
     // XSRF-TOKEN cookie é atualizado pelo Laravel em cada resposta (ao contrário da meta tag)
     const xsrfToken = decodeURIComponent(
         document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]+)/)?.[1] ?? ''
@@ -425,11 +421,7 @@ const submit = async () => {
         pushToast('success', 'Matrícula realizada com sucesso. Gerando comprovante...');
         emit('saved');
         emit('update:open', false);
-        if (comprovanteWin) {
-            comprovanteWin.location.href = `/matriculas/${json.tma_id}/comprovante`;
-        } else {
-            window.open(`/matriculas/${json.tma_id}/comprovante`, '_blank');
-        }
+        window.open(`/matriculas/${json.tma_id}/comprovante`, '_blank');
     } finally {
         processing.value = false;
     }

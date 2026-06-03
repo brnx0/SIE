@@ -4,14 +4,26 @@ namespace App\Http\Controllers\Parametro;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Parametro\StoreGradeDisciplinarRequest;
+use App\Models\Parametro\AnoLetivo;
 use App\Models\Parametro\GradeDisciplinar;
+use App\Models\Parametro\Segmento;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class GradeDisciplinarController extends Controller
 {
+    public function page(): Response
+    {
+        return Inertia::render('grade-disciplinar/Index', [
+            'anosLetivos' => AnoLetivo::orderByDesc('anl_ano')->get(['anl_id', 'anl_ano']),
+            'segmentos'   => Segmento::where('seg_fl_ativo', true)->orderBy('seg_ordem')->get(['seg_id', 'seg_nome_reduzido', 'seg_nome_completo']),
+        ]);
+    }
+
     /**
      * Lista lazy via API: GET /api/grade-disciplinar?anl_id&seg_id&ser_id
      */

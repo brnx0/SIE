@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Aluno\Aluno;
+use App\Models\Matricula\Matricula;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -17,6 +18,8 @@ class AlunoSearchController extends Controller
             return response()->json([]);
         }
 
+        $anlId = $request->integer('anl_id') ?: null;
+
         $alunos = Aluno::query()
             ->with([
                 'municipioNascimento:mun_id,mun_nome,mun_uf,mun_codigo_ibge',
@@ -28,6 +31,12 @@ class AlunoSearchController extends Controller
                     ->orWhere('aln_nr_matricula', 'like', "%{$q}%")
                     ->orWhere('aln_cpf', 'like', "%{$q}%");
             })
+            ->when($anlId, fn ($query) =>
+                $query->whereHas('matriculas', fn ($m) =>
+                    $m->where('tma_situacao', Matricula::SITUACAO_ATIVA)
+                      ->whereHas('turma', fn ($t) => $t->where('tur_anl_id', $anlId))
+                )
+            )
             ->orderBy('aln_nome')
             ->limit(20)
             ->get([

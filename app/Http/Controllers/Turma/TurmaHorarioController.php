@@ -69,13 +69,13 @@ class TurmaHorarioController extends Controller
     public function store(Request $request, Turma $turma): RedirectResponse
     {
         $data = $request->validate([
-            'trh_grh_id' => ['required', 'integer', 'exists:edu_grade_horario,grh_id'],
+            'trh_tempo'  => ['required', 'integer', 'min:1', 'max:10'],
             'trh_dia'    => ['required', 'string', 'in:dom,seg,ter,qua,qui,sex,sab'],
             'trh_fun_id' => ['required', 'integer', 'exists:edu_funcionario,fun_id'],
             'trh_dis_id' => ['required', 'integer', 'exists:edu_disciplina,dis_id'],
             'trh_fl_tc'  => ['boolean'],
         ], [], [
-            'trh_grh_id' => 'horário',
+            'trh_tempo'  => 'tempo',
             'trh_dia'    => 'dia',
             'trh_fun_id' => 'professor',
             'trh_dis_id' => 'disciplina',
@@ -83,9 +83,21 @@ class TurmaHorarioController extends Controller
 
         $data['trh_fl_tc'] = $request->boolean('trh_fl_tc');
 
+        // Slot já ocupado nesta turma
+        $slotOcupado = TurmaHorario::where('trh_tur_id', $turma->tur_id)
+            ->where('trh_tempo', $data['trh_tempo'])
+            ->where('trh_dia', $data['trh_dia'])
+            ->exists();
+
+        if ($slotOcupado) {
+            return back()->withErrors([
+                'trh_tempo' => "Já existe alocação no {$data['trh_tempo']}º tempo neste dia para esta turma.",
+            ]);
+        }
+
         if (!$data['trh_fl_tc']) {
             $conflito = TurmaHorario::with('turma.escola')
-                ->where('trh_grh_id', $data['trh_grh_id'])
+                ->where('trh_tempo', $data['trh_tempo'])
                 ->where('trh_dia', $data['trh_dia'])
                 ->where('trh_fun_id', $data['trh_fun_id'])
                 ->where('trh_fl_tc', false)
@@ -99,14 +111,15 @@ class TurmaHorarioController extends Controller
                 $nome   = $conflito->turma->tur_nome;
                 $escola = $conflito->turma->escola?->esc_nome ?? '';
                 return back()->withErrors([
-                    'trh_fun_id' => "Professor já alocado na turma {$nome} ({$escola}) neste horário.",
+                    'trh_fun_id' => "Professor já alocado neste {$data['trh_tempo']}º tempo na {$data['trh_dia']} na turma {$nome} ({$escola}).",
                 ]);
             }
         }
 
         $turma->horarios()->create([
             'trh_tur_id' => $turma->tur_id,
-            'trh_grh_id' => $data['trh_grh_id'],
+            'trh_grh_id' => null,
+            'trh_tempo'  => $data['trh_tempo'],
             'trh_dia'    => $data['trh_dia'],
             'trh_fun_id' => $data['trh_fun_id'],
             'trh_dis_id' => $data['trh_dis_id'],

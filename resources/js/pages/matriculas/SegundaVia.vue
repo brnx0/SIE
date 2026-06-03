@@ -40,7 +40,8 @@ watch(alunoQuery, (v) => {
     alunoTimer = setTimeout(async () => {
         loadingAlunos.value = true;
         try {
-            const r = await fetch(`/api/alunos/search?q=${encodeURIComponent(v)}`);
+            const params = fAnlId.value ? `&anl_id=${fAnlId.value}` : '';
+            const r = await fetch(`/api/alunos/search?q=${encodeURIComponent(v)}${params}`);
             alunoResultados.value = await r.json();
             showAlunoDrop.value = true;
         } finally {
@@ -79,9 +80,6 @@ const buscar = async () => {
     resultado.value = null;
     erro.value = null;
 
-    // Abre janela em branco antes do fetch — ainda no contexto do gesto do usuário
-    const win = window.open('', '_blank');
-
     try {
         const params = new URLSearchParams({
             aln_id: String(alunoSelecionado.value.aln_id),
@@ -91,15 +89,12 @@ const buscar = async () => {
         const json = await r.json();
         if (!r.ok) {
             erro.value = json.message ?? 'Matrícula não encontrada.';
-            win?.close();
         } else {
             resultado.value = json;
-            if (win) win.location.href = `/matriculas/${json.tma_id}/comprovante`;
-            else window.open(`/matriculas/${json.tma_id}/comprovante`, '_blank');
+            window.open(`/matriculas/${json.tma_id}/comprovante`, '_blank');
         }
     } catch {
         erro.value = 'Erro ao buscar matrícula.';
-        win?.close();
     } finally {
         buscando.value = false;
     }

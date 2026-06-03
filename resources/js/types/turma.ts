@@ -60,12 +60,12 @@ export type DiaSemana = 'dom' | 'seg' | 'ter' | 'qua' | 'qui' | 'sex' | 'sab';
 export interface TurmaHorario {
     trh_id: number;
     trh_tur_id: number;
-    trh_grh_id: number;
+    trh_grh_id: number | null;
+    trh_tempo: number;
     trh_dia: string;
     trh_fun_id: number;
     trh_dis_id: number;
     trh_fl_tc: boolean;
-    gradeHorario?: { grh_id: number; grh_hora: string; grh_ordem: number } | null;
     funcionario?: { fun_id: number; fun_nome: string } | null;
     disciplina?: { dis_id: number; dis_nome: string } | null;
 }

@@ -119,7 +119,6 @@ class TurmaController extends Controller
             'serie:ser_id,ser_nome',
             'professores.funcionario:fun_id,fun_nome',
             'professores.disciplina:dis_id,dis_nome',
-            'horarios.gradeHorario:grh_id,grh_hora,grh_ordem',
             'horarios.funcionario:fun_id,fun_nome',
             'horarios.disciplina:dis_id,dis_nome',
         ]);
@@ -144,10 +143,6 @@ class TurmaController extends Controller
             'professoresDisponiveis' => Funcionario::whereHas('admissoes.lotacoes', fn ($q) =>
                 $q->where('lot_esc_id', $turma->tur_esc_id)
             )->orderBy('fun_nome')->get(['fun_id', 'fun_nome']),
-            'gradeHorarios'          => GradeHorario::where('grh_seg_id', $turma->tur_seg_id)
-                ->when($turma->tur_turno !== 'INTEGRAL', fn ($q) => $q->where('grh_turno', self::TURNO_MAP[$turma->tur_turno] ?? $turma->tur_turno))
-                ->orderBy('grh_ordem')
-                ->get(['grh_id', 'grh_turno', 'grh_hora', 'grh_ordem']),
         ]);
     }
 

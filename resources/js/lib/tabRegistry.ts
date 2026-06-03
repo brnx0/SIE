@@ -10,9 +10,15 @@ export const TAB_CONTEXT: InjectionKey<boolean> = Symbol('tab-context');
 // ID da aba dona do painel atual (provido por TabPanel).
 export const TAB_ID: InjectionKey<string> = Symbol('tab-id');
 
-// Identidade da aba = primeiro segmento do path. Cobre CRUD inteiro do recurso
-// numa única aba: /alunos, /alunos/create, /alunos/123/edit → mesma aba "alunos".
-// Pagination/filtros (?page=2) também reusam (mesma raiz).
+// Identidade da aba.
+// Regra: usa 1º segmento para CRUD (2º segmento numérico ou "create"/"edit").
+// Usa 2 segmentos quando 2º segmento é uma rota nomeada (ex.: "segunda-via").
+// Ex.:
+//   /alunos                  → /alunos
+//   /alunos/create           → /alunos
+//   /alunos/123/edit         → /alunos
+//   /matriculas              → /matriculas
+//   /matriculas/segunda-via  → /matriculas/segunda-via  ← aba separada
 export function pathOf(url: string): string {
     let pathname: string;
     try {
@@ -20,8 +26,17 @@ export function pathOf(url: string): string {
     } catch {
         pathname = url.split('?')[0];
     }
-    const first = pathname.split('/').filter(Boolean)[0];
-    return first ? `/${first}` : '/';
+    const segs = pathname.split('/').filter(Boolean);
+    if (!segs.length) return '/';
+    const first  = segs[0];
+    const second = segs[1];
+
+    // Segundo segmento existe, não é numérico e não é "create"/"edit" → rota nomeada → aba própria
+    if (second && !/^\d+$/.test(second) && second !== 'create' && second !== 'edit') {
+        return `/${first}/${second}`;
+    }
+
+    return `/${first}`;
 }
 
 export function prettifyPath(path: string): string {
