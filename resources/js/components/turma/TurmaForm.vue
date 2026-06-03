@@ -287,10 +287,16 @@ const selectClass = (hasError: boolean) =>
                             </div>
 
                             <!-- Capacidade -->
-                            <div class="grid gap-1.5 sm:col-span-2">
+                            <div class="grid gap-1.5">
                                 <FormLabel :required="true">Capacidade</FormLabel>
                                 <Input v-model.number="form.tur_capacidade" type="number" min="1" max="999" placeholder="35" :required="true" />
                                 <InputError :message="form.errors.tur_capacidade" />
+                            </div>
+
+                            <!-- Matriculados -->
+                            <div v-if="initial?.total_matriculados !== undefined" class="grid gap-1.5">
+                                <FormLabel>Matriculados</FormLabel>
+                                <Input :value="initial.total_matriculados" readonly class="bg-muted cursor-default" />
                             </div>
 
                             <!-- Expansão -->

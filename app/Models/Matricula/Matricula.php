@@ -27,17 +27,12 @@ class Matricula extends Model
 
     const TAS_ENTRADA_NOVO = 1;
 
-    const TIPO_MATRICULA_NOVA          = 'MATRICULA_NOVA';
-    const TIPO_REMATRICULA             = 'REMATRICULA';
-    const TIPO_TRANSFERENCIA_INTERNA   = 'TRANSFERENCIA_INTERNA';
-    const TIPO_TRANSFERENCIA_EXTERNA   = 'TRANSFERENCIA_EXTERNA';
 
     protected $fillable = [
         'tma_aln_id',
         'tma_tur_id',
         'tma_anl_id',
         'tma_nr_ordem',
-        'tma_tipo_admissao',
         'tma_situacao',
         'tma_tas_cod_entrada',
         'tma_tas_cod_saida',
@@ -87,5 +82,10 @@ class Matricula extends Model
     public function turma(): BelongsTo
     {
         return $this->belongsTo(Turma::class, 'tma_tur_id', 'tur_id');
+    }
+
+    public function situacaoEntrada(): BelongsTo
+    {
+        return $this->belongsTo(TurmaAlunoSituacao::class, 'tma_tas_cod_entrada', 'tas_cod');
     }
 }

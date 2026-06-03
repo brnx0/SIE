@@ -195,6 +195,21 @@ watch(
     },
 );
 
+const ALUNO_TEXT_FIELDS_ACCENT = [
+    'aln_nome_social', 'aln_filiacao_1', 'aln_filiacao_2',
+    'aln_logradouro', 'aln_bairro', 'aln_cidade', 'aln_complemento',
+] as const;
+ALUNO_TEXT_FIELDS_ACCENT.forEach((field) => {
+    watch(
+        () => form[field] as string,
+        (v) => {
+            if (!alertarAcentos.value || typeof v !== 'string') return;
+            const next = stripAccents(v);
+            if (next !== v) (form as any)[field] = next;
+        },
+    );
+});
+
 const activeTab = ref<TabId>('dados-pessoais');
 
 const tabHasError = (tab: TabId): boolean => {

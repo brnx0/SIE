@@ -124,6 +124,7 @@ export interface Turma {
     serie?: { ser_id: number; ser_nome: string } | null;
     professores?: TurmaProfessor[];
     horarios?: TurmaHorario[];
+    total_matriculados?: number;
 }
 
 export interface TurmaFormData {

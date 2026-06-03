@@ -128,11 +128,7 @@ class StoreAlunoRequest extends FormRequest
             ])],
 
             'saude.als_transtornos_globais' => ['nullable', 'array'],
-            'saude.als_transtornos_globais.*' => ['string', Rule::in([
-                'Autismo Infantil - TEA', 'Síndrome de Asperger', 'Síndrome de Rett',
-                'Transt. Des. da Infância', 'Trans. Global de Desenvolvimento',
-                'Síndrome de Down', 'Microcefalia',
-            ])],
+            'saude.als_transtornos_globais.*' => ['string', Rule::in(['Autismo Infantil - TEA'])],
 
             'saude.als_transtornos_aprendizagem' => ['nullable', 'array'],
             'saude.als_transtornos_aprendizagem.*' => ['string', Rule::in([

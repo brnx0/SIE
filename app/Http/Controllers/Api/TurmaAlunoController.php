@@ -18,7 +18,10 @@ class TurmaAlunoController extends Controller
 
         $matriculas = Matricula::where('tma_tur_id', $turId)
             ->whereNull('tma_deleted_at')
-            ->with('aluno:aln_id,aln_nome,aln_nr_matricula,aln_dt_nascimento')
+            ->with([
+                'aluno:aln_id,aln_nome,aln_nr_matricula,aln_dt_nascimento',
+                'situacaoEntrada:tas_cod,tas_descricao_enturmacao',
+            ])
             ->orderBy('tma_dt_matricula')
             ->get();
 
@@ -27,14 +30,15 @@ class TurmaAlunoController extends Controller
             if ($dtCorte && $m->aluno?->aln_dt_nascimento) {
                 $nasc  = \Carbon\Carbon::parse($m->aluno->aln_dt_nascimento);
                 $corte = \Carbon\Carbon::parse($dtCorte);
-                $idade = $nasc->diffInYears($corte);
+                $idade = (int) $nasc->diffInYears($corte);
             }
 
             return [
                 'tma_id'          => $m->tma_id,
                 'tma_dt_matricula'=> $m->tma_dt_matricula?->format('Y-m-d'),
                 'tma_fl_renovado' => (bool) $m->tma_fl_renovado,
-                'tma_situacao'    => $m->tma_situacao,
+                'tma_situacao'         => $m->tma_situacao,
+                'tas_descricao_entrada'=> $m->situacaoEntrada?->tas_descricao_enturmacao,
                 'aln_id'          => $m->aluno?->aln_id,
                 'aln_nome'        => $m->aluno?->aln_nome,
                 'aln_nr_matricula'=> $m->aluno?->aln_nr_matricula,

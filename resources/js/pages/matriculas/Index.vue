@@ -73,7 +73,7 @@ watch([fSegId, fEscId, fAnlId], carregarSeries);
 const turmas        = ref<TurmaMatricula[]>([]);
 const loadingTurmas = ref(false);
 
-const podeBuscarTurmas = computed(() => !!fAnlId.value && !!fEscId.value && !!fSegId.value);
+const podeBuscarTurmas = computed(() => !!fAnlId.value && !!fEscId.value && !!fSegId.value && !!fSerId.value);
 
 const carregarTurmas = async () => {
     turmas.value = [];
@@ -318,14 +318,14 @@ const formatarNomeAluno = (a: AlunoResumo) => {
 
                     <!-- Série -->
                     <div class="grid gap-1.5">
-                        <FormLabel>Série / Ano Escolar</FormLabel>
+                        <FormLabel :required="true">Série / Ano Escolar</FormLabel>
                         <select
                             v-model.number="fSerId"
                             :disabled="!fSegId || loadingSeries"
                             :class="selectClass"
                         >
-                            <option value="">
-                                {{ !fSegId ? 'Selecione o segmento primeiro' : loadingSeries ? 'Carregando...' : 'Todas' }}
+                            <option value="" disabled>
+                                {{ !fSegId ? 'Selecione o segmento primeiro' : loadingSeries ? 'Carregando...' : 'Selecione a série...' }}
                             </option>
                             <option v-for="s in series" :key="s.ser_id" :value="s.ser_id">
                                 {{ s.ser_nome }}
@@ -433,10 +433,10 @@ const formatarNomeAluno = (a: AlunoResumo) => {
 
             <!-- Aviso: filtros obrigatórios -->
             <div
-                v-if="!fEscId || !fSegId"
+                v-if="!fEscId || !fSegId || !fSerId"
                 class="rounded-xl border bg-card p-10 text-center text-sm text-muted-foreground shadow-sm"
             >
-                Selecione um <strong>Ano Letivo</strong>, uma <strong>Escola</strong> e um <strong>Segmento</strong> para visualizar as turmas disponíveis.
+                Selecione um <strong>Ano Letivo</strong>, uma <strong>Escola</strong>, um <strong>Segmento</strong> e uma <strong>Série</strong> para visualizar as turmas disponíveis.
             </div>
 
             <!-- Tabela de turmas -->
@@ -464,8 +464,8 @@ const formatarNomeAluno = (a: AlunoResumo) => {
                                 <col style="width:8%" />
                                 <col style="width:9%" />
                                 <col style="width:24%" />
-                                <col style="width:12%" />
                                 <col style="width:7%" />
+                                <col style="width:12%" />
                                 <col style="width:10%" />
                                 <col style="width:12%" />
                                 <col style="width:18%" />
@@ -475,8 +475,8 @@ const formatarNomeAluno = (a: AlunoResumo) => {
                                     <th class="px-3 py-2.5 text-center font-semibold">Semestre</th>
                                     <th class="px-3 py-2.5 text-center font-semibold">Situação</th>
                                     <th class="px-3 py-2.5 font-semibold">Série / Ano Escolar</th>
-                                    <th class="px-3 py-2.5 font-semibold">Turno</th>
                                     <th class="px-3 py-2.5 text-center font-semibold">Turma</th>
+                                    <th class="px-3 py-2.5 font-semibold">Turno</th>
                                     <th class="px-3 py-2.5 text-center font-semibold">Vagas disp.</th>
                                     <th class="px-3 py-2.5 text-center font-semibold">Matriculados</th>
                                     <th class="px-3 py-2.5 text-right font-semibold">Ação</th>
@@ -497,8 +497,8 @@ const formatarNomeAluno = (a: AlunoResumo) => {
                                         </span>
                                     </td>
                                     <td class="px-3 py-2.5 font-medium truncate">{{ turma.serie?.ser_nome ?? '—' }}</td>
-                                    <td class="px-3 py-2.5 capitalize text-muted-foreground truncate">{{ turma.tur_turno.toLowerCase() }}</td>
                                     <td class="px-3 py-2.5 text-center font-semibold">{{ turma.tur_nome }}</td>
+                                    <td class="px-3 py-2.5 capitalize text-muted-foreground truncate">{{ turma.tur_turno.toLowerCase() }}</td>
                                     <td class="px-3 py-2.5 text-center">
                                         <span
                                             v-if="turma.vagas_disponiveis !== null"

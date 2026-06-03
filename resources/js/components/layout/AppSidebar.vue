@@ -44,6 +44,7 @@ const matriculasMenu = [
         icon: ClipboardList,
         children: [
             { title: 'Matrículas', href: '/matriculas' },
+            { title: '2ª Via Comprovante', href: '/matriculas/segunda-via' },
         ],
     },
 ];

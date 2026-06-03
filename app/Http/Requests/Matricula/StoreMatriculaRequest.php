@@ -47,7 +47,7 @@ class StoreMatriculaRequest extends FormRequest
             // Matrícula
             'tma_tur_id'                   => ['required', 'integer', 'exists:edu_turma,tur_id'],
             'tma_aln_id'                   => ['nullable', 'integer', 'exists:edu_aluno,aln_id'],
-            'tma_tipo_admissao'            => ['nullable'],
+
             'tma_dt_matricula'             => ['required', 'date'],
             'tma_obs'                      => ['nullable', 'string'],
             'tma_fl_trouxe_transferencia'  => ['boolean'],
@@ -76,7 +76,7 @@ class StoreMatriculaRequest extends FormRequest
                     Rule::unique('edu_aluno', 'aln_cpf')->ignore($alunoId, 'aln_id')->whereNull('aln_deleted_at')],
                 'aluno.aln_nr_certidao'   => ['nullable', 'string', 'max:32'],
                 'aluno.aln_nis'           => ['nullable', 'digits:11'],
-                'aluno.aln_cep'           => ['nullable', 'digits:8'],
+                'aluno.aln_cep'           => ['required', 'digits:8'],
                 'aluno.aln_logradouro'    => ['nullable', 'string', 'max:150'],
                 'aluno.aln_numero'        => ['nullable', 'string', 'max:10'],
                 'aluno.aln_complemento'   => ['nullable', 'string', 'max:100'],
@@ -137,7 +137,7 @@ class StoreMatriculaRequest extends FormRequest
     {
         return [
             'tma_tur_id'          => 'turma',
-            'tma_tipo_admissao'   => 'tipo de admissão',
+
             'tma_dt_matricula'    => 'data de matrícula',
             'aluno.aln_nome'      => 'nome',
             'aluno.aln_dt_nascimento' => 'data de nascimento',

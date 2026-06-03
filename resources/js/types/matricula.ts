@@ -43,15 +43,3 @@ export interface AlunoResumo {
     municipio_nascimento: Municipio | null;
 }
 
-export type TipoAdmissao =
-    | 'MATRICULA_NOVA'
-    | 'REMATRICULA'
-    | 'TRANSFERENCIA_INTERNA'
-    | 'TRANSFERENCIA_EXTERNA';
-
-export const TIPOS_ADMISSAO: { value: TipoAdmissao; label: string }[] = [
-    { value: 'MATRICULA_NOVA',        label: 'Matrícula Nova' },
-    { value: 'REMATRICULA',           label: 'Rematrícula' },
-    { value: 'TRANSFERENCIA_INTERNA', label: 'Transferência Interna' },
-    { value: 'TRANSFERENCIA_EXTERNA', label: 'Transferência Externa' },
-];

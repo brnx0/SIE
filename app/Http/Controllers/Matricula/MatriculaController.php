@@ -12,7 +12,10 @@ use App\Models\Parametro\ParametroEntidade;
 use App\Models\Turma\Turma;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Facades\DB;
+use Mpdf\Mpdf;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -38,6 +41,86 @@ class MatriculaController extends Controller
             'anosLetivos' => $anosLetivos,
             'escolas'     => $escolas,
             'parametros'  => $parametros,
+        ]);
+    }
+
+    public function segundaVia(): Response
+    {
+        $anosLetivos = AnoLetivo::where('anl_fl_em_exercicio', true)
+            ->orderByDesc('anl_ano')
+            ->get(['anl_id', 'anl_ano']);
+
+        return Inertia::render('matriculas/SegundaVia', [
+            'anosLetivos' => $anosLetivos,
+        ]);
+    }
+
+    public function buscarComprovante(Request $request): JsonResponse
+    {
+        $alnId = $request->integer('aln_id');
+        $anlId = $request->integer('anl_id');
+
+        if (!$alnId || !$anlId) {
+            return response()->json(['message' => 'Informe o aluno e o ano letivo.'], 422);
+        }
+
+        $matricula = Matricula::where('tma_aln_id', $alnId)
+            ->where('tma_anl_id', $anlId)
+            ->where('tma_situacao', Matricula::SITUACAO_ATIVA)
+            ->whereNull('tma_deleted_at')
+            ->first(['tma_id']);
+
+        if (!$matricula) {
+            return response()->json(['message' => 'Aluno não possui matrícula ativa neste ano letivo.'], 404);
+        }
+
+        return response()->json(['tma_id' => $matricula->tma_id]);
+    }
+
+    public function comprovante(int $tmaId): HttpResponse
+    {
+        $matricula = Matricula::with([
+            'aluno',
+            'turma.escola',
+            'turma.serie',
+            'turma.anoLetivo',
+        ])->findOrFail($tmaId);
+
+        $matriculadoPor = \App\Models\User::find($matricula->tma_created_by_id)?->name ?? '—';
+        $params = ParametroEntidade::current();
+
+        // Logo: caminho absoluto para mPDF renderizar
+        $logoPath = null;
+        if ($params->par_logomarca) {
+            $path = \Illuminate\Support\Facades\Storage::disk('public')->path($params->par_logomarca);
+            if (file_exists($path)) {
+                $logoPath = 'data:' . mime_content_type($path) . ';base64,' . base64_encode(file_get_contents($path));
+            }
+        }
+
+        $html = view('exports.comprovante_matricula_pdf', [
+            'matricula'      => $matricula,
+            'matriculadoPor' => $matriculadoPor,
+            'params'         => $params,
+            'logoPath'       => $logoPath,
+        ])->render();
+
+        $mpdf = new Mpdf([
+            'format'        => 'A4',
+            'orientation'   => 'P',
+            'margin_top'    => 0,
+            'margin_bottom' => 0,
+            'margin_left'   => 0,
+            'margin_right'  => 0,
+            'tempDir'       => sys_get_temp_dir(),
+        ]);
+        $mpdf->WriteHTML($html);
+
+        $filename = 'comprovante_matricula_' . $tmaId . '.pdf';
+
+        return response($mpdf->Output($filename, 'S'), 200, [
+            'Content-Type'        => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="' . $filename . '"',
         ]);
     }
 
@@ -109,7 +192,7 @@ class MatriculaController extends Controller
                     'tma_aln_id'                   => $alunoId,
                     'tma_tur_id'                   => $turma->tur_id,
                     'tma_anl_id'                   => $turma->tur_anl_id,
-                    'tma_tipo_admissao'            => Matricula::TIPO_MATRICULA_NOVA,
+
                     'tma_situacao'                 => Matricula::SITUACAO_ATIVA,
                     'tma_tas_cod_entrada'          => Matricula::TAS_ENTRADA_NOVO,
                     'tma_created_by_id'            => auth()->id(),
@@ -140,8 +223,8 @@ class MatriculaController extends Controller
     {
         $alunoData = $request->input('aluno', []);
 
-        $params = ParametroEntidade::current();
-        if ($params->par_fl_gerar_matricula_auto && empty($alunoData['aln_nr_matricula'])) {
+        // Sempre gera número sequencial para aluno novo sem matrícula
+        if (empty($alunoData['aln_nr_matricula'])) {
             DB::statement('SELECT pg_advisory_xact_lock(?)', [727301]);
             $max = (int) DB::table('edu_aluno')->max('aln_nr_matricula');
             $alunoData['aln_nr_matricula'] = $max + 1;

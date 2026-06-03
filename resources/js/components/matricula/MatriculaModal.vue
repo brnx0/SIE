@@ -14,7 +14,10 @@ import Switch from '@/components/common/Switch.vue';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/composables/useToast';
 import { computed, reactive, ref, watch } from 'vue';
+import { usePage } from '@inertiajs/vue3';
 import { LoaderCircle, Save, X } from 'lucide-vue-next';
+
+const page = usePage();
 
 const { push: pushToast } = useToast();
 
@@ -102,7 +105,11 @@ const formSaude = reactive({
 });
 
 // ── Computed ──────────────────────────────────────────────────────────────────
+const cpfObrigatorio     = computed(() => !!(page.props as any).cpf_obrigatorio);
+const alertarAcentos     = computed(() => !!(page.props as any).alertar_acentos_nomes);
 const tabSaudeDisponivel = computed(() => possuiDeficiencia.value);
+
+const stripAccents = (str: string) => str.normalize('NFD').replace(/[̀-ͯ]/g, '');
 const municipioNascimentoSelecionado = ref<Municipio | null>(null);
 
 const municipioNascimentoInicial = computed(() =>
@@ -208,6 +215,33 @@ const reset = () => {
 
 watch(() => props.open, (v) => { if (v) reset(); });
 
+// strip accents when param active
+const ALUNO_TEXT_FIELDS = [
+    'aln_nome', 'aln_filiacao_1', 'aln_filiacao_2',
+    'aln_logradouro', 'aln_bairro', 'aln_cidade', 'aln_complemento',
+] as const;
+ALUNO_TEXT_FIELDS.forEach((field) => {
+    watch(() => formAluno[field], (v) => {
+        if (!alertarAcentos.value || typeof v !== 'string') return;
+        const next = stripAccents(v);
+        if (next !== v) (formAluno as any)[field] = next;
+    });
+});
+
+const SAUDE_TEXT_FIELDS = [
+    'als_ds_alergias', 'als_contato_emergencia', 'als_plano_saude',
+    'als_alergia_a', 'als_remedio_febre', 'als_remedio_cefaleia',
+    'als_outra_doenca', 'als_outra_doenca_infancia',
+    'als_deficiencia_outro', 'als_observacao',
+] as const;
+SAUDE_TEXT_FIELDS.forEach((field) => {
+    watch(() => formSaude[field], (v) => {
+        if (!alertarAcentos.value || typeof v !== 'string') return;
+        const next = stripAccents(v);
+        if (next !== v) (formSaude as any)[field] = next;
+    });
+});
+
 watch(possuiDeficiencia, (v) => {
     if (!v) {
         formSaude.als_deficiencias = [];
@@ -237,6 +271,28 @@ const submit = async () => {
             _geral: 'Selecione um aluno ou marque "Aluno não cadastrado na base" antes de finalizar a matrícula.',
         };
         return;
+    }
+
+    // Valida idade para aluno não cadastrado (aluno existente já foi validado antes de abrir o modal)
+    if (props.alunoNaoCadastrado && (page.props as any).validar_idade_serie) {
+        const dtNasc  = formAluno.aln_dt_nascimento;
+        const dtCorte = props.turma.ano_letivo?.anl_dt_corte;
+        const serIdade = props.turma.serie?.ser_idade;
+
+        if (dtNasc && dtCorte && serIdade != null) {
+            const nasc  = new Date(dtNasc  + 'T00:00:00');
+            const corte = new Date(dtCorte + 'T00:00:00');
+            let idade = corte.getFullYear() - nasc.getFullYear();
+            const aniv = new Date(corte.getFullYear(), nasc.getMonth(), nasc.getDate());
+            if (corte < aniv) idade--;
+
+            if (idade < serIdade) {
+                activeTab.value = 'dados';
+                errors.value['aluno.aln_dt_nascimento'] =
+                    `Idade insuficiente: ${idade} ano${idade !== 1 ? 's' : ''} na data de corte. Série exige ${serIdade} ano${serIdade !== 1 ? 's' : ''}.`;
+                return;
+            }
+        }
     }
 
     // Valida aba de saúde se necessário
@@ -313,9 +369,10 @@ const submit = async () => {
             return;
         }
 
-        pushToast('success', 'Matrícula realizada com sucesso.');
+        pushToast('success', 'Matrícula realizada com sucesso. Gerando comprovante...');
         emit('saved');
         emit('update:open', false);
+        window.open(`/matriculas/${json.tma_id}/comprovante`, '_blank');
     } finally {
         processing.value = false;
     }
@@ -394,6 +451,11 @@ const selectClass = 'flex h-10 w-full rounded-md border border-input bg-backgrou
                         <span v-if="possuiDeficiencia" class="ml-auto text-xs text-indigo-600">Preencha a aba "Quadro de Saúde"</span>
                     </div>
 
+                    <!-- Aviso acentuação -->
+                    <p v-if="alertarAcentos" class="flex items-center gap-1.5 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-700 dark:border-amber-700/50 dark:bg-amber-900/20 dark:text-amber-400">
+                        <span class="font-semibold">Atenção:</span> sistema configurado para nomes sem acentuação — acentos são removidos automaticamente.
+                    </p>
+
                     <!-- Dados do aluno -->
                     <p class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Dados do Aluno</p>
 
@@ -405,7 +467,7 @@ const selectClass = 'flex h-10 w-full rounded-md border border-input bg-backgrou
                             </div>
 
                             <div class="grid gap-1.5">
-                                <FormLabel for="aln_cpf">CPF</FormLabel>
+                                <FormLabel for="aln_cpf" :required="cpfObrigatorio">CPF</FormLabel>
                                 <Input id="aln_cpf" v-model="formAluno.aln_cpf" maxlength="14" placeholder="000.000.000-00" />
                                 <InputError :message="err('aluno.aln_cpf')" />
                             </div>
@@ -511,7 +573,7 @@ const selectClass = 'flex h-10 w-full rounded-md border border-input bg-backgrou
                         <p class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Endereço</p>
                         <div class="grid gap-4 sm:grid-cols-4">
                             <div class="grid gap-1.5 sm:col-span-1">
-                                <FormLabel for="aln_cep">CEP</FormLabel>
+                                <FormLabel for="aln_cep" :required="true">CEP</FormLabel>
                                 <Input id="aln_cep" v-model="formAluno.aln_cep" maxlength="9" placeholder="00000-000" />
                                 <InputError :message="err('aluno.aln_cep')" />
                             </div>
@@ -553,22 +615,6 @@ const selectClass = 'flex h-10 w-full rounded-md border border-input bg-backgrou
                                 <Input id="aln_email" type="email" v-model="formAluno.aln_email" maxlength="150" />
                             </div>
                         </div>
-                    <!-- Dados matrícula -->
-                    <p class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Dados da Matrícula</p>
-
-                    <div class="grid gap-4 sm:grid-cols-2">
-                        <div class="grid gap-1.5">
-                            <FormLabel>Data da Matrícula</FormLabel>
-                            <Input
-                                id="tma_dt_matricula"
-                                type="date"
-                                :value="formMatricula.tma_dt_matricula"
-                                readonly
-                                class="bg-muted cursor-default"
-                            />
-                        </div>
-                    </div>
-
                     <!-- Checkboxes de matrícula -->
                     <p class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Documentos / Programas</p>
 

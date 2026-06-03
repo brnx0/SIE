@@ -50,12 +50,6 @@ export const DEFICIENCIAS = [
 
 export const TRANSTORNOS_GLOBAIS = [
     'Autismo Infantil - TEA',
-    'Síndrome de Asperger',
-    'Síndrome de Rett',
-    'Transt. Des. da Infância',
-    'Trans. Global de Desenvolvimento',
-    'Síndrome de Down',
-    'Microcefalia',
 ] as const;
 
 export const TRANSTORNOS_APRENDIZAGEM = [

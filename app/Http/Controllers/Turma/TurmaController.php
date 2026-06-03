@@ -10,6 +10,7 @@ use App\Models\Funcionario\Funcionario;
 use App\Models\Parametro\AnoLetivo;
 use App\Models\Parametro\GradeDisciplinar;
 use App\Models\Parametro\GradeHorario;
+use App\Models\Matricula\Matricula;
 use App\Models\Turma\Turma;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -122,6 +123,9 @@ class TurmaController extends Controller
             'horarios.funcionario:fun_id,fun_nome',
             'horarios.disciplina:dis_id,dis_nome',
         ]);
+        $turma->total_matriculados = $turma->matriculas()
+            ->where('tma_situacao', Matricula::SITUACAO_ATIVA)
+            ->count();
 
         return Inertia::render('turmas/Edit', [
             'turma'                  => $turma,

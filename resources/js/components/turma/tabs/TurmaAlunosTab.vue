@@ -10,6 +10,7 @@ interface AlunoMatricula {
     tma_dt_matricula: string | null;
     tma_fl_renovado: boolean;
     tma_situacao: string;
+    tas_descricao_entrada: string | null;
     aln_id: number;
     aln_nome: string;
     aln_nr_matricula: number | null;
@@ -119,7 +120,7 @@ onMounted(load);
                                     ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
                                     : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'"
                             >
-                                {{ a.tma_situacao }}
+                                {{ a.tas_descricao_entrada ?? a.tma_situacao }}
                             </span>
                         </td>
                         <td class="px-4 py-2.5 text-center">

@@ -11,7 +11,7 @@ return new class extends Migration
         'mat_tur_id'                  => 'tma_tur_id',
         'mat_anl_id'                  => 'tma_anl_id',
         'mat_nr_ordem'                => 'tma_nr_ordem',
-        'mat_tipo_admissao'           => 'tma_tipo_admissao',
+
         'mat_situacao'                => 'tma_situacao',
         'mat_dt_matricula'            => 'tma_dt_matricula',
         'mat_dt_saida'                => 'tma_dt_saida',
