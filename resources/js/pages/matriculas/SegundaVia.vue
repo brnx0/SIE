@@ -14,7 +14,6 @@ const props = defineProps<{
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Matrículas', href: '/matriculas' },
     { title: '2ª Via Comprovante', href: '/matriculas/segunda-via' },
 ];
 
