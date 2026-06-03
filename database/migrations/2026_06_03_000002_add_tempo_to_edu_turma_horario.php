@@ -2,17 +2,41 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('edu_turma_horario', function (Blueprint $table) {
-            // Remover FK e unique antigas
-            $table->dropForeign(['trh_grh_id']);
-            $table->dropUnique(['trh_tur_id', 'trh_grh_id', 'trh_dia']);
+        // Dropar FK e unique existentes via SQL direto — nomes podem variar por ambiente
+        DB::statement("
+            DO $$
+            DECLARE r RECORD;
+            BEGIN
+                -- Drop todas FKs de trh_grh_id
+                FOR r IN
+                    SELECT conname FROM pg_constraint
+                    WHERE conrelid = 'edu_turma_horario'::regclass
+                      AND contype = 'f'
+                      AND conname ILIKE '%grh%'
+                LOOP
+                    EXECUTE 'ALTER TABLE edu_turma_horario DROP CONSTRAINT ' || quote_ident(r.conname);
+                END LOOP;
 
+                -- Drop todas unique que envolvam trh_grh_id
+                FOR r IN
+                    SELECT conname FROM pg_constraint
+                    WHERE conrelid = 'edu_turma_horario'::regclass
+                      AND contype = 'u'
+                      AND conname ILIKE '%grh%'
+                LOOP
+                    EXECUTE 'ALTER TABLE edu_turma_horario DROP CONSTRAINT ' || quote_ident(r.conname);
+                END LOOP;
+            END$$;
+        ");
+
+        Schema::table('edu_turma_horario', function (Blueprint $table) {
             // grh_id vira nullable (retrocompatibilidade)
             $table->unsignedBigInteger('trh_grh_id')->nullable()->change();
 
