@@ -56,6 +56,7 @@ const errors = ref<Record<string, string>>({});
 
 const form = reactive({
     trh_tempo:  null as number | null,
+    trh_hora:   '' as string,
     trh_dia:    '',
     trh_fun_id: null as number | null,
     trh_dis_id: null as number | null,
@@ -65,6 +66,7 @@ const form = reactive({
 const openForm = (dia: string, tempo: number) => {
     const key = `${dia}:${tempo}`;
     form.trh_tempo  = tempo;
+    form.trh_hora   = '';
     form.trh_dia    = dia;
     form.trh_fun_id = null;
     form.trh_dis_id = null;
@@ -128,6 +130,9 @@ const remove = (trh: TurmaHorario) => {
                                 <td class="px-3 py-2">
                                     <div class="text-xs font-medium">{{ horarioMap.get(`${dia.value}:${tempo}`)?.funcionario?.fun_nome ?? '—' }}</div>
                                     <div class="text-xs text-muted-foreground">{{ horarioMap.get(`${dia.value}:${tempo}`)?.disciplina?.dis_nome ?? '—' }}</div>
+                                    <div v-if="horarioMap.get(`${dia.value}:${tempo}`)?.trh_hora" class="text-xs text-indigo-600 tabular-nums">
+                                        {{ horarioMap.get(`${dia.value}:${tempo}`)?.trh_hora?.substring(0, 5) }}
+                                    </div>
                                     <span
                                         v-if="horarioMap.get(`${dia.value}:${tempo}`)?.trh_fl_tc"
                                         class="rounded bg-sky-100 px-1 py-0.5 text-xs font-medium text-sky-700 dark:bg-sky-900/40 dark:text-sky-300"
@@ -193,6 +198,16 @@ const remove = (trh: TurmaHorario) => {
                                     </div>
 
                                     <InputError :message="errors.trh_tempo" />
+
+                                    <div class="grid gap-1">
+                                        <FormLabel>Horário (opcional)</FormLabel>
+                                        <input
+                                            v-model="form.trh_hora"
+                                            type="time"
+                                            class="flex h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 w-36"
+                                        />
+                                        <InputError :message="errors.trh_hora" />
+                                    </div>
 
                                     <div class="flex items-center gap-2">
                                         <Switch id="trh_fl_tc" v-model="form.trh_fl_tc" />

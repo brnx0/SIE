@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Parametro\StoreGradeDisciplinarRequest;
 use App\Models\Parametro\AnoLetivo;
 use App\Models\Parametro\GradeDisciplinar;
-use App\Models\Parametro\Segmento;
+use App\Models\Segmento\Segmento;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;

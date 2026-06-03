@@ -43,6 +43,9 @@ return new class extends Migration
             // Novo campo tempo (1–10)
             $table->unsignedTinyInteger('trh_tempo')->nullable()->after('trh_grh_id');
 
+            // Hora do tempo (opcional, ex.: 07:30)
+            $table->time('trh_hora')->nullable()->after('trh_tempo');
+
             // Nova unique por tempo + dia
             $table->unique(['trh_tur_id', 'trh_tempo', 'trh_dia'], 'edu_turma_horario_tur_tempo_dia_unique');
         });
@@ -52,7 +55,7 @@ return new class extends Migration
     {
         Schema::table('edu_turma_horario', function (Blueprint $table) {
             $table->dropUnique('edu_turma_horario_tur_tempo_dia_unique');
-            $table->dropColumn('trh_tempo');
+            $table->dropColumn(['trh_tempo', 'trh_hora']);
             $table->unsignedBigInteger('trh_grh_id')->nullable(false)->change();
             $table->foreign('trh_grh_id')->references('grh_id')->on('edu_grade_horario')->restrictOnDelete();
             $table->unique(['trh_tur_id', 'trh_grh_id', 'trh_dia']);

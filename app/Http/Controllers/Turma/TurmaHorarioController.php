@@ -70,12 +70,14 @@ class TurmaHorarioController extends Controller
     {
         $data = $request->validate([
             'trh_tempo'  => ['required', 'integer', 'min:1', 'max:10'],
+            'trh_hora'   => ['nullable', 'date_format:H:i'],
             'trh_dia'    => ['required', 'string', 'in:dom,seg,ter,qua,qui,sex,sab'],
             'trh_fun_id' => ['required', 'integer', 'exists:edu_funcionario,fun_id'],
             'trh_dis_id' => ['required', 'integer', 'exists:edu_disciplina,dis_id'],
             'trh_fl_tc'  => ['boolean'],
         ], [], [
             'trh_tempo'  => 'tempo',
+            'trh_hora'   => 'horário',
             'trh_dia'    => 'dia',
             'trh_fun_id' => 'professor',
             'trh_dis_id' => 'disciplina',
@@ -120,6 +122,7 @@ class TurmaHorarioController extends Controller
             'trh_tur_id' => $turma->tur_id,
             'trh_grh_id' => null,
             'trh_tempo'  => $data['trh_tempo'],
+            'trh_hora'   => $data['trh_hora'] ?? null,
             'trh_dia'    => $data['trh_dia'],
             'trh_fun_id' => $data['trh_fun_id'],
             'trh_dis_id' => $data['trh_dis_id'],

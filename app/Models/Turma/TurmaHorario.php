@@ -24,6 +24,7 @@ class TurmaHorario extends Model
         'trh_tur_id',
         'trh_grh_id',
         'trh_tempo',
+        'trh_hora',
         'trh_dia',
         'trh_fun_id',
         'trh_dis_id',

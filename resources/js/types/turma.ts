@@ -62,6 +62,7 @@ export interface TurmaHorario {
     trh_tur_id: number;
     trh_grh_id: number | null;
     trh_tempo: number;
+    trh_hora: string | null;
     trh_dia: string;
     trh_fun_id: number;
     trh_dis_id: number;
