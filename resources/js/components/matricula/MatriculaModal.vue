@@ -218,10 +218,7 @@ const reset = () => {
     formMatricula.tma_fl_usa_transporte        = false;
     formMatricula.tma_fl_usa_biblioteca        = false;
 
-    if (props.alunoNaoCadastrado || !props.aluno) limparFormAluno();
-    else preencherFormAluno(props.aluno);
-
-    // Saúde
+    // Saúde — limpa antes de popular para não sobrescrever dados do aluno
     formSaude.als_tipo_sanguineo           = '';
     formSaude.als_ds_alergias              = '';
     formSaude.als_contato_emergencia       = '';
@@ -244,6 +241,10 @@ const reset = () => {
     formSaude.als_observacao               = '';
     formSaude.als_clinicas                 = [];
     formSaude.als_recursos_inep            = [];
+
+    // Aluno/saúde — preenche depois do reset de saúde
+    if (props.alunoNaoCadastrado || !props.aluno) limparFormAluno();
+    else preencherFormAluno(props.aluno);
 };
 
 watch(() => props.open, (v) => { if (v) reset(); });
