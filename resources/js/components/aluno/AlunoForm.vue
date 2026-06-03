@@ -27,9 +27,22 @@ import { Link, useForm, usePage } from '@inertiajs/vue3';
 import { Camera, ChevronLeft, ChevronRight, Loader2, LoaderCircle, Save, Trash2, Upload } from 'lucide-vue-next';
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 
+interface MatriculaResumo {
+    tma_id: number;
+    tma_situacao: string;
+    tma_dt_matricula: string | null;
+    situacao_saida: string | null;
+    anl_ano: number | null;
+    esc_nome: string | null;
+    tur_turno: string | null;
+    seg_nome: string | null;
+    ser_nome: string | null;
+}
+
 const props = defineProps<{
     mode: 'create' | 'edit';
     initial?: Aluno;
+    matriculas?: MatriculaResumo[];
 }>();
 
 const page = usePage<SharedData>();
@@ -52,8 +65,11 @@ const alertarAcentos = computed(() => params.value.alertar_acentos_nomes);
 
 const stripAccents = (str: string) => str.normalize('NFD').replace(/[̀-ͯ]/g, '');
 
-const TABS = ['dados-pessoais', 'documentacao', 'filiacao-contato', 'complementares'] as const;
+const TABS = ['dados-pessoais', 'documentacao', 'filiacao-contato', 'complementares', 'turmas'] as const;
 type TabId = (typeof TABS)[number];
+
+// "turmas" só existe no modo edit e não participa da navegação Anterior/Próximo
+const NAV_TABS = TABS.filter(t => t !== 'turmas') as unknown as typeof TABS;
 
 const TAB_FIELDS: Record<TabId, string[]> = {
     'dados-pessoais': ['aln_nome', 'aln_nome_social', 'aln_dt_nascimento', 'aln_sexo', 'aln_cor_raca', 'aln_pais_origem', 'aln_mun_id_nasc'],
@@ -301,16 +317,16 @@ const cancelHomonimo = () => {
 };
 
 const next = () => {
-    const idx = TABS.indexOf(activeTab.value);
-    if (idx < TABS.length - 1) activeTab.value = TABS[idx + 1];
+    const idx = NAV_TABS.indexOf(activeTab.value as any);
+    if (idx >= 0 && idx < NAV_TABS.length - 1) activeTab.value = NAV_TABS[idx + 1];
 };
 const prev = () => {
-    const idx = TABS.indexOf(activeTab.value);
-    if (idx > 0) activeTab.value = TABS[idx - 1];
+    const idx = NAV_TABS.indexOf(activeTab.value as any);
+    if (idx > 0) activeTab.value = NAV_TABS[idx - 1];
 };
 
-const isFirst = computed(() => activeTab.value === TABS[0]);
-const isLast = computed(() => activeTab.value === TABS[TABS.length - 1]);
+const isFirst = computed(() => activeTab.value === NAV_TABS[0]);
+const isLast  = computed(() => activeTab.value === NAV_TABS[NAV_TABS.length - 1] || activeTab.value === 'turmas');
 
 const fileInput = ref<HTMLInputElement | null>(null);
 const previewUrl = ref<string | null>(props.initial?.aln_foto_url ?? null);
@@ -388,6 +404,9 @@ const initials = computed(() => {
                 </TabsTrigger>
                 <TabsTrigger value="complementares" :has-error="tabHasError('complementares')">
                     4. Saúde e Acessibilidade
+                </TabsTrigger>
+                <TabsTrigger v-if="mode === 'edit'" value="turmas">
+                    5. Turmas
                 </TabsTrigger>
             </TabsList>
 
@@ -1048,6 +1067,67 @@ const initials = computed(() => {
                         </div>
                     </fieldset>
 
+                </div>
+            </TabsContent>
+
+            <!-- Aba 5 — Turmas -->
+            <TabsContent v-if="mode === 'edit'" value="turmas">
+                <div class="overflow-hidden rounded-xl border bg-card shadow-sm">
+                    <div class="border-b bg-muted/30 px-4 py-2.5 text-sm font-medium">Histórico de Matrículas</div>
+                    <div v-if="!matriculas?.length" class="py-10 text-center text-sm text-muted-foreground">
+                        Nenhuma matrícula registrada.
+                    </div>
+                    <div v-else class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead class="bg-indigo-600 text-white">
+                                <tr>
+                                    <th class="px-3 py-2.5 text-left font-semibold">Ano</th>
+                                    <th class="px-3 py-2.5 text-left font-semibold">Dt. Matrícula</th>
+                                    <th class="px-3 py-2.5 text-left font-semibold">Escola</th>
+                                    <th class="px-3 py-2.5 text-left font-semibold">Turno</th>
+                                    <th class="px-3 py-2.5 text-left font-semibold">Segmento</th>
+                                    <th class="px-3 py-2.5 text-left font-semibold">Série</th>
+                                    <th class="px-3 py-2.5 text-center font-semibold">Resultado Final</th>
+                                    <th class="px-3 py-2.5 text-center font-semibold">Situação de Saída</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y">
+                                <tr
+                                    v-for="(m, idx) in matriculas"
+                                    :key="m.tma_id"
+                                    :class="idx % 2 === 0 ? 'bg-white dark:bg-transparent' : 'bg-slate-50 dark:bg-slate-900/40'"
+                                >
+                                    <td class="px-3 py-2.5 tabular-nums font-medium">{{ m.anl_ano ?? '—' }}</td>
+                                    <td class="px-3 py-2.5 tabular-nums text-muted-foreground">
+                                        {{ m.tma_dt_matricula ? new Date(m.tma_dt_matricula + 'T00:00:00').toLocaleDateString('pt-BR') : '—' }}
+                                    </td>
+                                    <td class="px-3 py-2.5 max-w-[200px] truncate">{{ m.esc_nome ?? '—' }}</td>
+                                    <td class="px-3 py-2.5 capitalize text-muted-foreground">{{ m.tur_turno?.toLowerCase() ?? '—' }}</td>
+                                    <td class="px-3 py-2.5 text-muted-foreground">{{ m.seg_nome ?? '—' }}</td>
+                                    <td class="px-3 py-2.5">{{ m.ser_nome ?? '—' }}</td>
+                                    <td class="px-3 py-2.5 text-center">
+                                        <span :class="[
+                                            'inline-flex rounded-full px-2 py-0.5 text-xs font-medium',
+                                            m.tma_situacao === 'ATIVA'        ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' :
+                                            m.tma_situacao === 'CANCELADA'    ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300' :
+                                            m.tma_situacao === 'TRANSFERIDA'  ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300' :
+                                            m.tma_situacao === 'EVADIDO'      ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300' :
+                                            m.tma_situacao === 'FALECIDO'     ? 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400' :
+                                            'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
+                                        ]">
+                                            {{ m.tma_situacao }}
+                                        </span>
+                                    </td>
+                                    <td class="px-3 py-2.5 text-center">
+                                        <span v-if="m.situacao_saida" class="inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                                            {{ m.situacao_saida }}
+                                        </span>
+                                        <span v-else class="text-muted-foreground">—</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </TabsContent>
         </Tabs>

@@ -2,6 +2,7 @@
 import FormLabel from '@/components/common/FormLabel.vue';
 import InputError from '@/components/common/InputError.vue';
 import MunicipioCombobox from '@/components/aluno/MunicipioCombobox.vue';
+import HomonimoDialog, { type HomonimoMatch } from '@/components/aluno/HomonimoDialog.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -39,6 +40,11 @@ const activeTab = ref<'dados' | 'saude'>('dados');
 // ── Form ──────────────────────────────────────────────────────────────────────
 const errors     = ref<Record<string, string>>({});
 const processing = ref(false);
+
+// ── Duplicata aluno ───────────────────────────────────────────────────────────
+const duplicataOpen    = ref(false);
+const duplicataMatches = ref<HomonimoMatch[]>([]);
+let   confirmDuplicata = false;
 
 const possuiDeficiencia = ref(false);
 
@@ -334,6 +340,11 @@ const submit = async () => {
 
     processing.value = true;
     errors.value     = {};
+
+    // Abre janela em branco ANTES do fetch — ainda no contexto do gesto do usuário.
+    // Browsers bloqueiam window.open em callbacks assíncronos e podem navegar a aba atual.
+    const comprovanteWin = window.open('', '_blank');
+
     // XSRF-TOKEN cookie é atualizado pelo Laravel em cada resposta (ao contrário da meta tag)
     const xsrfToken = decodeURIComponent(
         document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]+)/)?.[1] ?? ''
@@ -351,6 +362,7 @@ const submit = async () => {
         tma_fl_usa_transporte:        formMatricula.tma_fl_usa_transporte,
         tma_fl_usa_biblioteca:        formMatricula.tma_fl_usa_biblioteca,
         possui_deficiencia:           possuiDeficiencia.value,
+        confirm_duplicata:            confirmDuplicata,
     };
 
     payload.aluno = { ...formAluno };
@@ -386,8 +398,21 @@ const submit = async () => {
 
         if (!res.ok) {
             if (res.status === 422) {
-                errors.value = json.errors ?? {};
-                if (json.message && Object.keys(json.errors ?? {}).length === 0) {
+                const errs = json.errors ?? {};
+
+                // Duplicata de aluno sem CPF → mostrar dialog de confirmação
+                if (errs.duplicata_aluno) {
+                    try {
+                        duplicataMatches.value = JSON.parse(errs.duplicata_aluno);
+                        duplicataOpen.value = true;
+                    } catch {
+                        errors.value['_geral'] = 'Aluno duplicado detectado.';
+                    }
+                    return;
+                }
+
+                errors.value = errs;
+                if (json.message && Object.keys(errs).length === 0) {
                     errors.value['_geral'] = json.message;
                 }
             } else {
@@ -399,13 +424,28 @@ const submit = async () => {
         pushToast('success', 'Matrícula realizada com sucesso. Gerando comprovante...');
         emit('saved');
         emit('update:open', false);
-        window.open(`/matriculas/${json.tma_id}/comprovante`, '_blank');
+        if (comprovanteWin) {
+            comprovanteWin.location.href = `/matriculas/${json.tma_id}/comprovante`;
+        } else {
+            window.open(`/matriculas/${json.tma_id}/comprovante`, '_blank');
+        }
     } finally {
         processing.value = false;
     }
 };
 
 const close = () => emit('update:open', false);
+
+const confirmarDuplicata = () => {
+    duplicataOpen.value = false;
+    confirmDuplicata = true;
+    submit();
+};
+
+const cancelarDuplicata = () => {
+    duplicataOpen.value = false;
+    confirmDuplicata = false;
+};
 
 const selectClass = 'flex h-10 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus:outline-none focus:ring-1 focus:ring-indigo-500';
 </script>
@@ -888,4 +928,12 @@ const selectClass = 'flex h-10 w-full rounded-md border border-input bg-backgrou
             </div>
         </DialogContent>
     </Dialog>
+
+    <HomonimoDialog
+        v-model:open="duplicataOpen"
+        :matches="duplicataMatches"
+        :processing="processing"
+        @confirm="confirmarDuplicata"
+        @cancel="cancelarDuplicata"
+    />
 </template>

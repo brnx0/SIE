@@ -2,11 +2,13 @@
 
 namespace App\Http\Requests\Matricula;
 
+use App\Models\Aluno\Aluno;
 use App\Models\Parametro\ParametroEntidade;
 use App\Rules\Cpf;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class StoreMatriculaRequest extends FormRequest
 {
@@ -134,36 +136,46 @@ class StoreMatriculaRequest extends FormRequest
         return $rules;
     }
 
-    public function withValidator($validator): void
+    public function passesAuthorization(): bool
     {
-        // Só aplica para aluno não cadastrado (sem tma_aln_id)
+        return true;
+    }
+
+    protected function checkDuplicataAluno(): void
+    {
+        // Só para aluno não cadastrado, sem CPF e sem confirmação prévia
         if ($this->integer('tma_aln_id')) return;
+        if ($this->boolean('confirm_duplicata')) return;
 
-        $validator->after(function ($validator) {
-            $aluno  = $this->input('aluno', []);
-            $cpf    = $aluno['aln_cpf'] ?? null;
+        $aluno  = $this->input('aluno', []);
+        $cpf    = $aluno['aln_cpf'] ?? null;
+        if ($cpf) return; // CPF → Rule::unique já cobre
 
-            // CPF presente → Rule::unique já cobre; checar só nome+nascimento
-            if ($cpf) return;
+        $nome   = $aluno['aln_nome'] ?? null;
+        $dtNasc = $aluno['aln_dt_nascimento'] ?? null;
+        if (!$nome || !$dtNasc) return;
 
-            $nome   = $aluno['aln_nome'] ?? null;
-            $dtNasc = $aluno['aln_dt_nascimento'] ?? null;
+        $matches = Aluno::query()
+            ->whereNull('aln_deleted_at')
+            ->whereRaw('UPPER(aln_nome) = ?', [mb_strtoupper($nome, 'UTF-8')])
+            ->whereDate('aln_dt_nascimento', $dtNasc)
+            ->orderBy('aln_id')
+            ->limit(10)
+            ->get(['aln_id', 'aln_nome', 'aln_dt_nascimento', 'aln_cpf', 'aln_nr_matricula']);
 
-            if (!$nome || !$dtNasc) return;
+        if ($matches->isEmpty()) return;
 
-            $existe = DB::table('edu_aluno')
-                ->whereNull('aln_deleted_at')
-                ->whereRaw('UPPER(aln_nome) = ?', [mb_strtoupper($nome, 'UTF-8')])
-                ->where('aln_dt_nascimento', $dtNasc)
-                ->exists();
+        $payload = $matches->map(fn ($a) => [
+            'aln_id'            => $a->aln_id,
+            'aln_nome'          => $a->aln_nome,
+            'aln_dt_nascimento' => $a->aln_dt_nascimento?->format('Y-m-d'),
+            'aln_cpf'           => $a->aln_cpf,
+            'aln_nr_matricula'  => $a->aln_nr_matricula,
+        ])->all();
 
-            if ($existe) {
-                $validator->errors()->add(
-                    'aluno.aln_nome',
-                    'Já existe um aluno cadastrado com este nome e data de nascimento.'
-                );
-            }
-        });
+        throw ValidationException::withMessages([
+            'duplicata_aluno' => json_encode($payload, JSON_UNESCAPED_UNICODE),
+        ]);
     }
 
     public function attributes(): array

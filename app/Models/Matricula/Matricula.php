@@ -88,4 +88,9 @@ class Matricula extends Model
     {
         return $this->belongsTo(TurmaAlunoSituacao::class, 'tma_tas_cod_entrada', 'tas_cod');
     }
+
+    public function situacaoSaida(): BelongsTo
+    {
+        return $this->belongsTo(TurmaAlunoSituacao::class, 'tma_tas_cod_saida', 'tas_cod');
+    }
 }

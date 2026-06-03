@@ -153,6 +153,8 @@ class MatriculaController extends Controller
 
     public function store(StoreMatriculaRequest $request): JsonResponse
     {
+        $request->checkDuplicataAluno();
+
         $turma = Turma::with(['anoLetivo:anl_id,anl_ano', 'segmento:seg_id,seg_nome_reduzido'])->findOrFail($request->integer('tma_tur_id'));
 
         // Verifica capacidade

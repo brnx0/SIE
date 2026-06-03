@@ -5,7 +5,7 @@ import { type BreadcrumbItem } from '@/types';
 import type { Aluno } from '@/types/aluno';
 import { Head } from '@inertiajs/vue3';
 
-const props = defineProps<{ aluno: Aluno }>();
+const props = defineProps<{ aluno: Aluno; matriculas?: any[] }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Alunos', href: '/alunos' },
@@ -23,7 +23,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                 </h1>
                 <p class="text-sm text-slate-500 dark:text-slate-400">{{ aluno.aln_nome }}</p>
             </div>
-            <AlunoForm mode="edit" :initial="aluno" />
+            <AlunoForm mode="edit" :initial="aluno" :matriculas="matriculas" />
         </div>
     </AppLayout>
 </template>

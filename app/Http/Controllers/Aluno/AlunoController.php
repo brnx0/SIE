@@ -83,8 +83,33 @@ class AlunoController extends Controller
     {
         $aluno->load(['municipioNascimento:mun_id,mun_nome,mun_uf', 'saude']);
 
+        $matriculas = $aluno->matriculas()
+            ->with([
+                'turma.escola:esc_id,esc_nome',
+                'turma.segmento:seg_id,seg_nome',
+                'turma.serie:ser_id,ser_nome',
+                'turma.anoLetivo:anl_id,anl_ano',
+                'situacaoSaida:tas_cod,tas_descricao',
+            ])
+            ->orderByDesc('tma_dt_matricula')
+            ->get([
+                'tma_id', 'tma_tur_id', 'tma_situacao',
+                'tma_dt_matricula', 'tma_tas_cod_saida',
+            ]);
+
         return Inertia::render('alunos/Edit', [
-            'aluno' => $aluno,
+            'aluno'      => $aluno,
+            'matriculas' => $matriculas->map(fn ($m) => [
+                'tma_id'           => $m->tma_id,
+                'tma_situacao'     => $m->tma_situacao,
+                'tma_dt_matricula' => $m->tma_dt_matricula?->format('Y-m-d'),
+                'situacao_saida'   => $m->situacaoSaida?->tas_descricao,
+                'anl_ano'          => $m->turma?->anoLetivo?->anl_ano,
+                'esc_nome'         => $m->turma?->escola?->esc_nome,
+                'tur_turno'        => $m->turma?->tur_turno,
+                'seg_nome'         => $m->turma?->segmento?->seg_nome,
+                'ser_nome'         => $m->turma?->serie?->ser_nome,
+            ]),
         ]);
     }
 

@@ -2,10 +2,12 @@
 
 namespace App\Models\Aluno;
 
+use App\Models\Matricula\Matricula;
 use App\Models\Municipio;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Storage;
@@ -73,5 +75,10 @@ class Aluno extends Model
     public function municipioNascimento(): BelongsTo
     {
         return $this->belongsTo(Municipio::class, 'aln_mun_id_nasc', 'mun_id');
+    }
+
+    public function matriculas(): HasMany
+    {
+        return $this->hasMany(Matricula::class, 'tma_aln_id', 'aln_id');
     }
 }
