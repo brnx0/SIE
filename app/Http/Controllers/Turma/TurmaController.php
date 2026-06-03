@@ -122,12 +122,12 @@ class TurmaController extends Controller
             'horarios.funcionario:fun_id,fun_nome',
             'horarios.disciplina:dis_id,dis_nome',
         ]);
-        $turma->total_matriculados = $turma->matriculas()
+        $totalMatriculados = $turma->matriculas()
             ->where('tma_situacao', Matricula::SITUACAO_ATIVA)
             ->count();
 
         return Inertia::render('turmas/Edit', [
-            'turma'                  => $turma,
+            'turma'                  => array_merge($turma->toArray(), ['total_matriculados' => $totalMatriculados]),
             'anosLetivos'            => AnoLetivo::orderByDesc('anl_ano')->get(['anl_id', 'anl_ano']),
             'escolas'                => $user->isAdmin()
                 ? Escola::where('esc_fl_ativo', true)->orderBy('esc_nome')->get(['esc_id', 'esc_nome'])

@@ -106,9 +106,10 @@ class AlunoController extends Controller
                 'situacao_saida'   => $m->situacaoSaida?->tas_descricao,
                 'anl_ano'          => $m->turma?->anoLetivo?->anl_ano,
                 'esc_nome'         => $m->turma?->escola?->esc_nome,
+                'ser_nome'         => $m->turma?->serie?->ser_nome,
+                'tur_nome'         => $m->turma?->tur_nome,
                 'tur_turno'        => $m->turma?->tur_turno,
                 'seg_nome'         => $m->turma?->segmento?->seg_nome_reduzido,
-                'ser_nome'         => $m->turma?->serie?->ser_nome,
             ]),
         ]);
     }

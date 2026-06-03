@@ -34,9 +34,10 @@ interface MatriculaResumo {
     situacao_saida: string | null;
     anl_ano: number | null;
     esc_nome: string | null;
+    ser_nome: string | null;
+    tur_nome: string | null;
     tur_turno: string | null;
     seg_nome: string | null;
-    ser_nome: string | null;
 }
 
 const props = defineProps<{
@@ -1084,9 +1085,10 @@ const initials = computed(() => {
                                     <th class="px-3 py-2.5 text-left font-semibold">Ano</th>
                                     <th class="px-3 py-2.5 text-left font-semibold">Dt. Matrícula</th>
                                     <th class="px-3 py-2.5 text-left font-semibold">Escola</th>
+                                    <th class="px-3 py-2.5 text-left font-semibold">Série</th>
+                                    <th class="px-3 py-2.5 text-center font-semibold">Turma</th>
                                     <th class="px-3 py-2.5 text-left font-semibold">Turno</th>
                                     <th class="px-3 py-2.5 text-left font-semibold">Segmento</th>
-                                    <th class="px-3 py-2.5 text-left font-semibold">Série</th>
                                     <th class="px-3 py-2.5 text-center font-semibold">Resultado Final</th>
                                     <th class="px-3 py-2.5 text-center font-semibold">Situação de Saída</th>
                                 </tr>
@@ -1102,9 +1104,10 @@ const initials = computed(() => {
                                         {{ m.tma_dt_matricula ? new Date(m.tma_dt_matricula + 'T00:00:00').toLocaleDateString('pt-BR') : '—' }}
                                     </td>
                                     <td class="px-3 py-2.5 max-w-[200px] truncate">{{ m.esc_nome ?? '—' }}</td>
+                                    <td class="px-3 py-2.5">{{ m.ser_nome ?? '—' }}</td>
+                                    <td class="px-3 py-2.5 text-center font-semibold">{{ m.tur_nome ?? '—' }}</td>
                                     <td class="px-3 py-2.5 capitalize text-muted-foreground">{{ m.tur_turno?.toLowerCase() ?? '—' }}</td>
                                     <td class="px-3 py-2.5 text-muted-foreground">{{ m.seg_nome ?? '—' }}</td>
-                                    <td class="px-3 py-2.5">{{ m.ser_nome ?? '—' }}</td>
                                     <td class="px-3 py-2.5 text-center">
                                         <span :class="[
                                             'inline-flex rounded-full px-2 py-0.5 text-xs font-medium',

@@ -39,9 +39,15 @@ export function pathOf(url: string): string {
     return `/${first}`;
 }
 
+const PATH_LABELS: Record<string, string> = {
+    '/matriculas/segunda-via': '2ª Via Comprovante',
+    '/grade-disciplinar':      'Grade Disciplinar',
+};
+
 export function prettifyPath(path: string): string {
+    if (PATH_LABELS[path]) return PATH_LABELS[path];
     const seg = path.split('/').filter(Boolean);
     if (!seg.length) return 'Início';
-    const first = seg[0];
-    return first.charAt(0).toUpperCase() + first.slice(1);
+    const last = seg[seg.length - 1];
+    return last.charAt(0).toUpperCase() + last.slice(1).replace(/-/g, ' ');
 }

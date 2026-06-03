@@ -141,7 +141,7 @@ class StoreMatriculaRequest extends FormRequest
         return true;
     }
 
-    protected function checkDuplicataAluno(): void
+    public function checkDuplicataAluno(): void
     {
         // Só para aluno não cadastrado, sem CPF e sem confirmação prévia
         if ($this->integer('tma_aln_id')) return;
