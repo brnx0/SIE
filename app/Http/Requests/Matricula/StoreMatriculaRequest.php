@@ -5,6 +5,7 @@ namespace App\Http\Requests\Matricula;
 use App\Models\Parametro\ParametroEntidade;
 use App\Rules\Cpf;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class StoreMatriculaRequest extends FormRequest
@@ -131,6 +132,38 @@ class StoreMatriculaRequest extends FormRequest
         }
 
         return $rules;
+    }
+
+    public function withValidator($validator): void
+    {
+        // Só aplica para aluno não cadastrado (sem tma_aln_id)
+        if ($this->integer('tma_aln_id')) return;
+
+        $validator->after(function ($validator) {
+            $aluno  = $this->input('aluno', []);
+            $cpf    = $aluno['aln_cpf'] ?? null;
+
+            // CPF presente → Rule::unique já cobre; checar só nome+nascimento
+            if ($cpf) return;
+
+            $nome   = $aluno['aln_nome'] ?? null;
+            $dtNasc = $aluno['aln_dt_nascimento'] ?? null;
+
+            if (!$nome || !$dtNasc) return;
+
+            $existe = DB::table('edu_aluno')
+                ->whereNull('aln_deleted_at')
+                ->whereRaw('UPPER(aln_nome) = ?', [mb_strtoupper($nome, 'UTF-8')])
+                ->where('aln_dt_nascimento', $dtNasc)
+                ->exists();
+
+            if ($existe) {
+                $validator->errors()->add(
+                    'aluno.aln_nome',
+                    'Já existe um aluno cadastrado com este nome e data de nascimento.'
+                );
+            }
+        });
     }
 
     public function attributes(): array

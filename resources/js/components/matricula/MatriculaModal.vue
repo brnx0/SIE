@@ -105,8 +105,9 @@ const formSaude = reactive({
 });
 
 // ── Computed ──────────────────────────────────────────────────────────────────
-const cpfObrigatorio     = computed(() => !!(page.props as any).cpf_obrigatorio);
-const alertarAcentos     = computed(() => !!(page.props as any).alertar_acentos_nomes);
+const params             = computed(() => (page.props as any).params ?? {});
+const cpfObrigatorio     = computed(() => !!params.value.cpf_obrigatorio);
+const alertarAcentos     = computed(() => !!params.value.alertar_acentos_nomes);
 const tabSaudeDisponivel = computed(() => possuiDeficiencia.value);
 
 const stripAccents = (str: string) => str.normalize('NFD').replace(/[̀-ͯ]/g, '');
@@ -166,6 +167,32 @@ const preencherFormAluno = (aluno: AlunoResumo) => {
     formAluno.aln_uf = aluno.aln_uf ?? '';
     formAluno.aln_telefone = aluno.aln_telefone ?? '';
     formAluno.aln_email = aluno.aln_email ?? '';
+
+    // Quadro de saúde
+    const s = aluno.saude ?? null;
+    possuiDeficiencia.value = s?.als_fl_pcd ?? false;
+    formSaude.als_tipo_sanguineo           = s?.als_tipo_sanguineo ?? '';
+    formSaude.als_ds_alergias              = s?.als_ds_alergias ?? '';
+    formSaude.als_contato_emergencia       = s?.als_contato_emergencia ?? '';
+    formSaude.als_telefone_emergencia      = s?.als_telefone_emergencia ?? '';
+    formSaude.als_plano_saude              = s?.als_plano_saude ?? '';
+    formSaude.als_cartao_sus               = s?.als_cartao_sus ?? '';
+    formSaude.als_alergia_a                = s?.als_alergia_a ?? '';
+    formSaude.als_remedio_febre            = s?.als_remedio_febre ?? '';
+    formSaude.als_remedio_cefaleia         = s?.als_remedio_cefaleia ?? '';
+    formSaude.als_patologias               = s?.als_patologias ?? [];
+    formSaude.als_outra_doenca             = s?.als_outra_doenca ?? '';
+    formSaude.als_patologias_infancia      = s?.als_patologias_infancia ?? [];
+    formSaude.als_outra_doenca_infancia    = s?.als_outra_doenca_infancia ?? '';
+    formSaude.als_deficiencias             = s?.als_deficiencias ?? [];
+    formSaude.als_transtornos_globais      = s?.als_transtornos_globais ?? [];
+    formSaude.als_transtornos_aprendizagem = s?.als_transtornos_aprendizagem ?? [];
+    formSaude.als_deficiencia_outro        = s?.als_deficiencia_outro ?? '';
+    formSaude.als_fl_altas_habilidades     = s?.als_fl_altas_habilidades ?? false;
+    formSaude.als_cid                      = s?.als_cid ?? '';
+    formSaude.als_observacao               = s?.als_observacao ?? '';
+    formSaude.als_clinicas                 = s?.als_clinicas ?? [];
+    formSaude.als_recursos_inep            = s?.als_recursos_inep ?? [];
 };
 
 // ── Reset ao abrir ────────────────────────────────────────────────────────────
@@ -215,14 +242,14 @@ const reset = () => {
 
 watch(() => props.open, (v) => { if (v) reset(); });
 
-// strip accents when param active
+// strip accents always — alertarAcentos only controls the banner
 const ALUNO_TEXT_FIELDS = [
     'aln_nome', 'aln_filiacao_1', 'aln_filiacao_2',
     'aln_logradouro', 'aln_bairro', 'aln_cidade', 'aln_complemento',
 ] as const;
 ALUNO_TEXT_FIELDS.forEach((field) => {
     watch(() => formAluno[field], (v) => {
-        if (!alertarAcentos.value || typeof v !== 'string') return;
+        if (typeof v !== 'string') return;
         const next = stripAccents(v);
         if (next !== v) (formAluno as any)[field] = next;
     });
@@ -236,7 +263,7 @@ const SAUDE_TEXT_FIELDS = [
 ] as const;
 SAUDE_TEXT_FIELDS.forEach((field) => {
     watch(() => formSaude[field], (v) => {
-        if (!alertarAcentos.value || typeof v !== 'string') return;
+        if (typeof v !== 'string') return;
         const next = stripAccents(v);
         if (next !== v) (formSaude as any)[field] = next;
     });
@@ -273,8 +300,8 @@ const submit = async () => {
         return;
     }
 
-    // Valida idade para aluno não cadastrado (aluno existente já foi validado antes de abrir o modal)
-    if (props.alunoNaoCadastrado && (page.props as any).validar_idade_serie) {
+    // Valida idade — tanto aluno existente quanto não cadastrado
+    if (params.value.validar_idade_serie) {
         const dtNasc  = formAluno.aln_dt_nascimento;
         const dtCorte = props.turma.ano_letivo?.anl_dt_corte;
         const serIdade = props.turma.serie?.ser_idade;

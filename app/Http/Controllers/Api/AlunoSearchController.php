@@ -18,7 +18,10 @@ class AlunoSearchController extends Controller
         }
 
         $alunos = Aluno::query()
-            ->with('municipioNascimento:mun_id,mun_nome,mun_uf,mun_codigo_ibge')
+            ->with([
+                'municipioNascimento:mun_id,mun_nome,mun_uf,mun_codigo_ibge',
+                'saude',
+            ])
             ->where('aln_fl_ativo', true)
             ->where(function ($query) use ($q) {
                 $query->whereRaw('aln_nome ilike ?', ["%{$q}%"])
@@ -78,8 +81,9 @@ class AlunoSearchController extends Controller
             'aln_telefone'    => $a->aln_telefone,
             'aln_email'       => $a->aln_email,
             'aln_nr_matricula'  => $a->aln_nr_matricula,
-            'aln_cpf'         => $a->aln_cpf,
+            'aln_cpf'              => $a->aln_cpf,
             'municipio_nascimento' => $a->municipioNascimento,
+            'saude'                => $a->saude,
         ]));
     }
 }

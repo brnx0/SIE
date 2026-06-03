@@ -41,5 +41,30 @@ export interface AlunoResumo {
     aln_nr_matricula: number | null;
     aln_cpf: string | null;
     municipio_nascimento: Municipio | null;
+    saude?: {
+        als_tipo_sanguineo: string | null;
+        als_ds_alergias: string | null;
+        als_fl_pcd: boolean;
+        als_contato_emergencia: string | null;
+        als_telefone_emergencia: string | null;
+        als_plano_saude: string | null;
+        als_cartao_sus: string | null;
+        als_alergia_a: string | null;
+        als_remedio_febre: string | null;
+        als_remedio_cefaleia: string | null;
+        als_patologias: string[] | null;
+        als_outra_doenca: string | null;
+        als_patologias_infancia: string[] | null;
+        als_outra_doenca_infancia: string | null;
+        als_deficiencias: string[] | null;
+        als_transtornos_globais: string[] | null;
+        als_transtornos_aprendizagem: string[] | null;
+        als_deficiencia_outro: string | null;
+        als_fl_altas_habilidades: boolean;
+        als_cid: string | null;
+        als_observacao: string | null;
+        als_clinicas: string[] | null;
+        als_recursos_inep: string[] | null;
+    } | null;
 }
 

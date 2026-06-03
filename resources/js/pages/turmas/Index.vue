@@ -119,11 +119,11 @@ const exportFilters = () => ({
                     <thead class="bg-muted/50 text-left text-xs uppercase tracking-wide text-muted-foreground">
                         <tr>
                             <th class="px-4 py-3">Turma</th>
+                            <th class="px-4 py-3">Série</th>
                             <th class="px-4 py-3">Escola</th>
                             <th class="px-4 py-3">Ano</th>
                             <th class="px-4 py-3 text-center">Sem.</th>
                             <th class="px-4 py-3">Segmento</th>
-                            <th class="px-4 py-3">Série</th>
                             <th class="px-4 py-3">Turno</th>
                             <th class="px-4 py-3 text-center">Cap.</th>
                             <th class="px-4 py-3 text-center">Situação</th>
@@ -143,11 +143,11 @@ const exportFilters = () => ({
                                     <span class="font-semibold">{{ t.tur_nome }}</span>
                                 </div>
                             </td>
+                            <td class="px-4 py-3">{{ t.serie?.ser_nome ?? '—' }}</td>
                             <td class="max-w-[220px] truncate px-4 py-3 text-muted-foreground">{{ t.escola?.esc_nome ?? '—' }}</td>
                             <td class="px-4 py-3 tabular-nums">{{ t.anoLetivo?.anl_ano ?? '—' }}</td>
                             <td class="px-4 py-3 text-center tabular-nums">{{ t.tur_semestre ?? '—' }}º</td>
                             <td class="px-4 py-3 text-muted-foreground">{{ t.segmento?.seg_nome_reduzido ?? '—' }}</td>
-                            <td class="px-4 py-3">{{ t.serie?.ser_nome ?? '—' }}</td>
                             <td class="px-4 py-3">{{ turnoLabel(t.tur_turno) }}</td>
                             <td class="px-4 py-3 text-center tabular-nums">{{ t.tur_capacidade ?? '—' }}</td>
                             <td class="px-4 py-3 text-center">
