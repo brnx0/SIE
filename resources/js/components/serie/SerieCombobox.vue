@@ -20,6 +20,7 @@ const emit = defineEmits<{
 const { loading, items, search } = useSeries();
 
 const open = ref(false);
+const dropUp = ref(false);
 const query = ref('');
 const selected = ref<SerieResumo | null>(props.initial ?? null);
 const wrapper = ref<HTMLElement | null>(null);
@@ -72,6 +73,12 @@ const handleOutside = (e: MouseEvent) => {
 };
 
 const openPanel = () => {
+    if (wrapper.value) {
+        const rect = wrapper.value.getBoundingClientRect();
+        const spaceBelow = window.innerHeight - rect.bottom;
+        // panel ~ search(40) + list(max 256) + borders; flip up if not enough room below
+        dropUp.value = spaceBelow < 320 && rect.top > spaceBelow;
+    }
     open.value = true;
     items.value = [];
     setTimeout(() => inputEl.value?.focus(), 0);
@@ -109,7 +116,10 @@ onBeforeUnmount(() => document.removeEventListener('mousedown', handleOutside));
 
         <div
             v-if="open"
-            class="absolute z-50 mt-1 w-full overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-lg"
+            :class="[
+                'absolute z-50 w-full overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-lg',
+                dropUp ? 'bottom-full mb-1' : 'mt-1',
+            ]"
         >
             <div class="flex items-center border-b px-3">
                 <Search class="size-4 shrink-0 text-muted-foreground" />

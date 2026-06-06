@@ -3,6 +3,7 @@ import CargoCombobox from '@/components/funcionario/CargoCombobox.vue';
 import EscolaCombobox from '@/components/funcionario/EscolaCombobox.vue';
 import FormLabel from '@/components/common/FormLabel.vue';
 import InputError from '@/components/common/InputError.vue';
+import RefreshButton from '@/components/common/RefreshButton.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -30,12 +31,7 @@ const props = defineProps<{
     funcionario: Funcionario;
 }>();
 
-const admissoes = ref<FuncionarioAdmissao[]>(props.funcionario.admissoes ?? []);
-
-watch(
-    () => props.funcionario.admissoes,
-    (v) => { admissoes.value = v ?? []; },
-);
+const admissoes = computed<FuncionarioAdmissao[]>(() => props.funcionario.admissoes ?? []);
 
 const formatDateBR = (iso: string | null | undefined): string => {
     if (!iso) return '';
@@ -113,6 +109,7 @@ const submitAdm = () => {
 
     router[method](url, data, {
         preserveScroll: true,
+        preserveState: true,
         onSuccess: () => {
             resetAdmForm();
         },
@@ -130,6 +127,7 @@ const deleteAdm = (adm: FuncionarioAdmissao) => {
 
     router.delete(`/funcionarios/${props.funcionario.fun_id}/admissoes/${adm.adm_id}`, {
         preserveScroll: true,
+        preserveState: true,
     });
 };
 
@@ -274,6 +272,7 @@ const submitLot = () => {
 
     router[method](url, data, {
         preserveScroll: true,
+        preserveState: true,
         onSuccess: () => {
             resetLotForm();
         },
@@ -291,7 +290,7 @@ const deleteLot = (admId: number, lot: FuncionarioLotacao) => {
 
     router.delete(
         `/funcionarios/${props.funcionario.fun_id}/admissoes/${admId}/lotacoes/${lot.lot_id}`,
-        { preserveScroll: true },
+        { preserveScroll: true, preserveState: true },
     );
 };
 
@@ -310,9 +309,12 @@ const toggleFuncaoSala = (funcao: string) => {
         <!-- Header + Nova Admissão -->
         <div class="flex items-center justify-between">
             <h3 class="text-sm font-semibold">Admissões na Rede</h3>
-            <Button type="button" size="sm" variant="outline" @click="openNewAdm">
-                <Plus class="mr-1 size-4" /> Nova Admissão
-            </Button>
+            <div class="flex items-center gap-2">
+                <RefreshButton />
+                <Button type="button" size="sm" variant="outline" @click="openNewAdm">
+                    <Plus class="mr-1 size-4" /> Nova Admissão
+                </Button>
+            </div>
         </div>
 
         <!-- Form Admissão -->

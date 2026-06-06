@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import ExportMenu from '@/components/common/ExportMenu.vue';
 import PerPageSelect from '@/components/common/PerPageSelect.vue';
+import RefreshButton from '@/components/common/RefreshButton.vue';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem, type Paginated } from '@/types';
@@ -108,6 +109,7 @@ const exportFilters = () => ({
                     <option value="ENCERRADA">Encerrada</option>
                 </select>
                 <div class="ml-auto flex items-center gap-3">
+                    <RefreshButton />
                     <PerPageSelect v-model="perPage" />
                     <ExportMenu base-url="/turmas/export" :filters="exportFilters()" />
                 </div>

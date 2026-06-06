@@ -21,7 +21,10 @@ const sync = () => {
     });
 };
 
-watch(() => [page.component, page.url], sync, { immediate: true });
+// Inclui page.props: reload/redirect para a MESMA url (ex.: edit após
+// store/destroy/reload) não muda component/url, mas traz props novas — sem isto
+// o painel em cache da aba ficaria com dados velhos.
+watch(() => [page.component, page.url, page.props], sync, { immediate: true });
 </script>
 
 <template></template>

@@ -64,6 +64,7 @@ watch(
 const submit = () => {
     const opts = {
         preserveScroll: true,
+        preserveState: true,
         onSuccess: () => {
             emit('saved');
             emit('update:open', false);

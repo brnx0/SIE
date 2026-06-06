@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import FormLabel from '@/components/common/FormLabel.vue';
 import InputError from '@/components/common/InputError.vue';
+import RefreshButton from '@/components/common/RefreshButton.vue';
 import Switch from '@/components/common/Switch.vue';
 import { Button } from '@/components/ui/button';
 import type { AnoLetivoOption, EscolaSegmento, EscolaSegmentoFormData, SerieOption } from '@/types/escola_segmento';
@@ -82,7 +83,7 @@ const cancel = () => {
 };
 
 const submit = () => {
-    const opts = { preserveScroll: true, onSuccess: () => cancel() };
+    const opts = { preserveScroll: true, preserveState: true, onSuccess: () => cancel() };
     if (editingId.value) {
         form.transform((d) => ({ ...d, _method: 'put' }))
             .post(`/escolas/${props.escId}/segmentos/${editingId.value}`, opts);
@@ -93,7 +94,7 @@ const submit = () => {
 
 const remove = (esg: EscolaSegmento) => {
     if (!confirm(`Remover "${esg.segmento?.seg_nome_reduzido}" da escola?`)) return;
-    router.delete(`/escolas/${props.escId}/segmentos/${esg.esg_id}`, { preserveScroll: true });
+    router.delete(`/escolas/${props.escId}/segmentos/${esg.esg_id}`, { preserveScroll: true, preserveState: true });
 };
 </script>
 
@@ -105,13 +106,16 @@ const remove = (esg: EscolaSegmento) => {
                 Segmentos ofertados por esta escola. O registro é válido do ano letivo inicial
                 até o ano letivo final (vazio = sem encerramento previsto).
             </p>
-            <Button
-                type="button"
-                @click="openCreate"
-                class="bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
-            >
-                <Plus class="mr-2 size-4" /> Adicionar segmento
-            </Button>
+            <div class="flex items-center gap-2">
+                <RefreshButton />
+                <Button
+                    type="button"
+                    @click="openCreate"
+                    class="bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
+                >
+                    <Plus class="mr-2 size-4" /> Adicionar segmento
+                </Button>
+            </div>
         </div>
 
         <!-- Tabela de registros -->

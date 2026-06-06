@@ -5,8 +5,8 @@ import LocalCombobox from '@/components/common/LocalCombobox.vue';
 import { Button } from '@/components/ui/button';
 import type { DisciplinaResumo, ProfessorResumo, Turma, TurmaProfessor, TurmaProfessorApoio } from '@/types/turma';
 import { router } from '@inertiajs/vue3';
-import { Check, Loader2, Pencil, Plus, Trash2, X } from 'lucide-vue-next';
-import { computed, reactive, ref, watch } from 'vue';
+import { Check, Loader2, Pencil, Plus, RefreshCw, Trash2, X } from 'lucide-vue-next';
+import { computed, reactive, ref } from 'vue';
 
 const props = defineProps<{
     turma: Turma;
@@ -16,18 +16,24 @@ const props = defineProps<{
     disciplinas: DisciplinaResumo[];
 }>();
 
-const list = ref<TurmaProfessor[]>(props.professores ?? []);
-
-watch(
-    () => props.professores,
-    (v) => {
-        list.value = v ?? [];
-    },
-);
+const list = computed<TurmaProfessor[]>(() => props.professores ?? []);
 
 const showForm = ref(false);
 const processing = ref(false);
 const errors = ref<Record<string, string>>({});
+
+// Atualiza as listas (outros usuários podem inserir registros)
+const refreshing = ref(false);
+const refresh = () => {
+    refreshing.value = true;
+    router.reload({
+        // 'flash' incluso p/ servidor devolver flash atual (vazio) e não repetir o toast anterior.
+        only: ['turma', 'professoresApoio', 'flash'],
+        preserveScroll: true,
+        preserveState: true,
+        onFinish: () => { refreshing.value = false; },
+    });
+};
 
 const form = reactive<{ tup_fun_id: number | null; tup_dis_id: number | null }>({
     tup_fun_id: null,
@@ -60,6 +66,7 @@ const submit = () => {
 
     router.post(`/turmas/${props.turma.tur_id}/professores`, form as Record<string, any>, {
         preserveScroll: true,
+        preserveState: true,
         onSuccess: () => resetForm(),
         onError: (e) => {
             errors.value = e;
@@ -76,12 +83,12 @@ const remove = (tup: TurmaProfessor) => {
 
     router.delete(`/turmas/${props.turma.tur_id}/professores/${tup.tup_id}`, {
         preserveScroll: true,
+        preserveState: true,
     });
 };
 
 // ── Professores de Apoio ──────────────────────────────────────────────────────
-const listApoio = ref<TurmaProfessorApoio[]>(props.professoresApoio ?? []);
-watch(() => props.professoresApoio, (v) => { listApoio.value = v ?? []; });
+const listApoio = computed<TurmaProfessorApoio[]>(() => props.professoresApoio ?? []);
 
 const showFormApoio    = ref(false);
 const processingApoio  = ref(false);
@@ -118,6 +125,7 @@ const submitApoio = () => {
 
     router.post(`/turmas/${props.turma.tur_id}/professores-apoio`, formApoio as Record<string, any>, {
         preserveScroll: true,
+        preserveState: true,
         onSuccess: () => resetFormApoio(),
         onError:   (e) => { errorsApoio.value = e; },
         onFinish:  () => { processingApoio.value = false; },
@@ -146,6 +154,7 @@ const saveEditApoio = (apoio: TurmaProfessorApoio) => {
         { tpa_obs: editApoioObs.value },
         {
             preserveScroll: true,
+            preserveState: true,
             onSuccess: () => cancelEditApoio(),
             onFinish: () => { savingEdit.value = null; },
         },
@@ -158,6 +167,7 @@ const removeApoio = (apoio: TurmaProfessorApoio) => {
 
     router.delete(`/turmas/${props.turma.tur_id}/professores-apoio/${apoio.tpa_id}`, {
         preserveScroll: true,
+        preserveState: true,
     });
 };
 </script>
@@ -167,9 +177,14 @@ const removeApoio = (apoio: TurmaProfessorApoio) => {
         <!-- Header -->
         <div class="flex items-center justify-between">
             <h3 class="text-sm font-semibold">Professores Alocados</h3>
-            <Button v-if="!showForm" type="button" size="sm" variant="outline" @click="openForm">
-                <Plus class="mr-1 size-4" /> Adicionar Professor
-            </Button>
+            <div class="flex items-center gap-2">
+                <Button type="button" size="sm" variant="outline" :disabled="refreshing" title="Atualizar listas" @click="refresh">
+                    <RefreshCw :class="['mr-1 size-4', refreshing && 'animate-spin']" /> Atualizar
+                </Button>
+                <Button v-if="!showForm" type="button" size="sm" variant="outline" @click="openForm">
+                    <Plus class="mr-1 size-4" /> Adicionar Professor
+                </Button>
+            </div>
         </div>
 
         <!-- Formulário de adição -->
@@ -270,9 +285,14 @@ const removeApoio = (apoio: TurmaProfessorApoio) => {
         <div class="mt-4 border-t pt-6">
             <div class="flex items-center justify-between">
                 <h3 class="text-sm font-semibold">Professores de Apoio</h3>
-                <Button v-if="!showFormApoio" type="button" size="sm" variant="outline" @click="openFormApoio">
-                    <Plus class="mr-1 size-4" /> Adicionar Professor de Apoio
-                </Button>
+                <div class="flex items-center gap-2">
+                    <Button type="button" size="sm" variant="outline" :disabled="refreshing" title="Atualizar listas" @click="refresh">
+                        <RefreshCw :class="['mr-1 size-4', refreshing && 'animate-spin']" /> Atualizar
+                    </Button>
+                    <Button v-if="!showFormApoio" type="button" size="sm" variant="outline" @click="openFormApoio">
+                        <Plus class="mr-1 size-4" /> Adicionar Professor de Apoio
+                    </Button>
+                </div>
             </div>
 
             <!-- Formulário -->

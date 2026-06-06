@@ -2,11 +2,13 @@
 import FormLabel from '@/components/common/FormLabel.vue';
 import InputError from '@/components/common/InputError.vue';
 import LocalCombobox from '@/components/common/LocalCombobox.vue';
+import RefreshButton from '@/components/common/RefreshButton.vue';
 import Switch from '@/components/common/Switch.vue';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import type {
     DisciplinaResumo,
+    GradeHorarioResumo,
     ProfessorResumo,
     Turma,
     TurmaHorario,
@@ -14,19 +16,23 @@ import type {
 import { DIAS_SEMANA } from '@/types/turma';
 import { router } from '@inertiajs/vue3';
 import { Loader2, Plus, Trash2, X } from 'lucide-vue-next';
-import { computed, reactive, ref, watch } from 'vue';
+import { computed, reactive, ref } from 'vue';
 
 const props = defineProps<{
     turma: Turma;
     horarios: TurmaHorario[];
+    gradeHorarios: GradeHorarioResumo[];
     professoresDisponiveis: ProfessorResumo[];
     disciplinas: DisciplinaResumo[];
 }>();
 
+const horasOpts = computed(() =>
+    (props.gradeHorarios ?? []).map(g => g.grh_hora.substring(0, 5)),
+);
+
 const TEMPOS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const;
 
-const list = ref<TurmaHorario[]>(props.horarios ?? []);
-watch(() => props.horarios, (v) => { list.value = v ?? []; });
+const list = computed<TurmaHorario[]>(() => props.horarios ?? []);
 
 const diasAtivos = computed(() =>
     DIAS_SEMANA.filter((d) => props.turma.tur_dias_funcionamento?.includes(d.value as any)),
@@ -86,6 +92,7 @@ const submit = () => {
 
     router.post(`/turmas/${props.turma.tur_id}/horarios`, form as Record<string, any>, {
         preserveScroll: true,
+        preserveState: true,
         onSuccess: () => cancelForm(),
         onError: (e) => { errors.value = e; },
         onFinish: () => { processing.value = false; },
@@ -95,11 +102,15 @@ const submit = () => {
 const remove = (trh: TurmaHorario) => {
     const label = `${trh.funcionario?.fun_nome} / ${trh.disciplina?.dis_nome}`;
     if (!confirm(`Remover "${label}" do ${trh.trh_tempo}º tempo?`)) return;
-    router.delete(`/turmas/${props.turma.tur_id}/horarios/${trh.trh_id}`, { preserveScroll: true });
+    router.delete(`/turmas/${props.turma.tur_id}/horarios/${trh.trh_id}`, { preserveScroll: true, preserveState: true });
 };
 </script>
 
 <template>
+  <div class="grid gap-4">
+    <div class="flex justify-end">
+        <RefreshButton />
+    </div>
     <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <div
             v-for="dia in diasAtivos"
@@ -201,12 +212,18 @@ const remove = (trh: TurmaHorario) => {
 
                                     <div class="grid gap-1">
                                         <FormLabel>Horário (opcional)</FormLabel>
-                                        <input
+                                        <select
                                             v-model="form.trh_hora"
-                                            type="time"
+                                            :disabled="horasOpts.length === 0"
                                             class="flex h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 w-36"
-                                        />
+                                        >
+                                            <option value="">{{ horasOpts.length === 0 ? 'Sem grade cadastrada' : '—' }}</option>
+                                            <option v-for="h in horasOpts" :key="h" :value="h">{{ h }}</option>
+                                        </select>
                                         <InputError :message="errors.trh_hora" />
+                                        <p v-if="horasOpts.length === 0" class="text-xs text-amber-600">
+                                            Cadastre a grade de horários do segmento em Parâmetros.
+                                        </p>
                                     </div>
 
                                     <div class="flex items-center gap-2">
@@ -237,4 +254,5 @@ const remove = (trh: TurmaHorario) => {
             </table>
         </div>
     </div>
+  </div>
 </template>

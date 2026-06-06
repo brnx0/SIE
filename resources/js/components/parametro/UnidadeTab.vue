@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import FormLabel from '@/components/common/FormLabel.vue';
 import InputError from '@/components/common/InputError.vue';
+import RefreshButton from '@/components/common/RefreshButton.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import type { AnoLetivo, Unidade, UnidadeFormData, UnidadeTipo } from '@/types/parametro';
@@ -85,6 +86,7 @@ const save = () => {
         data._method = 'put';
         router.post(`/parametros/unidades/${editingUnidade.value.uni_id}`, data, {
             preserveScroll: true,
+            preserveState: true,
             onSuccess: () => { showForm.value = false; editingUnidade.value = null; },
             onError:   (errs) => { errors.value = errs; },
             onFinish:  () => { processing.value = false; },
@@ -92,6 +94,7 @@ const save = () => {
     } else {
         router.post('/parametros/unidades', data, {
             preserveScroll: true,
+            preserveState: true,
             onSuccess: () => { showForm.value = false; },
             onError:   (errs) => { errors.value = errs; },
             onFinish:  () => { processing.value = false; },
@@ -103,7 +106,7 @@ const remove = (u: Unidade) => {
     const ord = UNIDADE_ORDINAL[u.uni_numero] ?? `${u.uni_numero}º`;
     const tipo = UNIDADE_TIPO_LABELS[u.uni_tipo];
     if (!confirm(`Remover o ${ord} período (${tipo})?`)) return;
-    router.delete(`/parametros/unidades/${u.uni_id}`, { preserveScroll: true });
+    router.delete(`/parametros/unidades/${u.uni_id}`, { preserveScroll: true, preserveState: true });
 };
 
 const fmtDate = (s?: string | null) => {
@@ -129,6 +132,7 @@ const TIPO_OPTIONS = Object.entries(UNIDADE_TIPO_LABELS) as [UnidadeTipo, string
                 <h3 class="text-sm font-semibold">Períodos por Ano Letivo</h3>
             </div>
             <div class="flex items-center gap-3">
+                <RefreshButton />
                 <select
                     v-model="selectedAnlId"
                     class="flex h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus:outline-none focus:ring-1 focus:ring-ring"

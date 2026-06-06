@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import ExportMenu from '@/components/common/ExportMenu.vue';
 import PerPageSelect from '@/components/common/PerPageSelect.vue';
+import RefreshButton from '@/components/common/RefreshButton.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -63,6 +64,7 @@ const remove = (dis: Disciplina) => {
                     <option v-for="area in areas" :key="area.arc_id" :value="String(area.arc_id)">{{ area.arc_nome }}</option>
                 </select>
                 <div class="ml-auto flex items-center gap-3">
+                    <RefreshButton />
                     <PerPageSelect v-model="perPage" />
                     <ExportMenu base-url="/disciplinas/export" :filters="{ search, arc_id: arcId }" />
                 </div>

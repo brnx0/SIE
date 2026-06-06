@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import type { AnoLetivo, DisciplinaResumo, GradeDisciplinar, SegmentoResumo } from '@/types/parametro';
 import { router } from '@inertiajs/vue3';
-import { ArrowDown, ArrowUp, CheckCircle2, Copy, LoaderCircle, Pencil, Plus, Save, Trash2, X, XCircle } from 'lucide-vue-next';
+import { ArrowDown, ArrowUp, CheckCircle2, Copy, LoaderCircle, Pencil, Plus, RefreshCw, Save, Trash2, X, XCircle } from 'lucide-vue-next';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 
 const props = defineProps<{
@@ -252,6 +252,19 @@ const selectClass = (hasError: boolean) =>
             </div>
 
             <div class="ml-auto flex gap-2">
+                <Button
+                    v-if="fAnlId && fSegId && fSerId"
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    class="gap-1.5"
+                    :disabled="loadingGrade"
+                    title="Atualizar grade"
+                    @click="carregarGrade"
+                >
+                    <RefreshCw :class="['size-4', loadingGrade && 'animate-spin']" />
+                    Atualizar
+                </Button>
                 <Button
                     v-if="podeClonar"
                     type="button"

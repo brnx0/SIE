@@ -2,6 +2,7 @@
 import CharCounter from '@/components/common/CharCounter.vue';
 import FormLabel from '@/components/common/FormLabel.vue';
 import InputError from '@/components/common/InputError.vue';
+import RefreshButton from '@/components/common/RefreshButton.vue';
 import HomonimoDialog, { type HomonimoMatch } from '@/components/aluno/HomonimoDialog.vue';
 import MunicipioCombobox from '@/components/aluno/MunicipioCombobox.vue';
 import Switch from '@/components/common/Switch.vue';
@@ -1074,7 +1075,10 @@ const initials = computed(() => {
             <!-- Aba 5 — Turmas -->
             <TabsContent v-if="mode === 'edit'" value="turmas">
                 <div class="overflow-hidden rounded-xl border bg-card shadow-sm">
-                    <div class="border-b bg-muted/30 px-4 py-2.5 text-sm font-medium">Histórico de Matrículas</div>
+                    <div class="flex items-center justify-between border-b bg-muted/30 px-4 py-2.5">
+                        <span class="text-sm font-medium">Histórico de Matrículas</span>
+                        <RefreshButton />
+                    </div>
                     <div v-if="!matriculas?.length" class="py-10 text-center text-sm text-muted-foreground">
                         Nenhuma matrícula registrada.
                     </div>

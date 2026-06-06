@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import FormLabel from '@/components/common/FormLabel.vue';
 import InputError from '@/components/common/InputError.vue';
+import RefreshButton from '@/components/common/RefreshButton.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import type { GradeHorario, SegmentoResumo } from '@/types/parametro';
@@ -79,6 +80,7 @@ const submit = () => {
 
     router.post('/parametros/grade-horarios', form as Record<string, any>, {
         preserveScroll: true,
+        preserveState: true,
         onSuccess: () => {
             form.grh_hora = '';
             recalcOrdem();
@@ -94,7 +96,7 @@ const submit = () => {
 
 const remove = (grh: GradeHorario) => {
     if (!confirm(`Remover horário ${grh.grh_hora} do segmento?`)) return;
-    router.delete(`/parametros/grade-horarios/${grh.grh_id}`, { preserveScroll: true });
+    router.delete(`/parametros/grade-horarios/${grh.grh_id}`, { preserveScroll: true, preserveState: true });
 };
 
 // --- edição inline ---
@@ -123,6 +125,7 @@ const saveEdit = (grh: GradeHorario) => {
 
     router.put(`/parametros/grade-horarios/${grh.grh_id}`, editForm as Record<string, any>, {
         preserveScroll: true,
+        preserveState: true,
         onSuccess: () => {
             editingId.value = null;
         },
@@ -143,9 +146,12 @@ const fmtHora = (h: string) => h.substring(0, 5);
         <!-- Header -->
         <div class="flex items-center justify-between">
             <h3 class="text-sm font-semibold">Grade de Horários por Segmento</h3>
-            <Button v-if="!showForm" type="button" size="sm" class="bg-indigo-600 hover:bg-indigo-700" @click="openForm()">
-                <Plus class="mr-2 size-4" /> Novo Horário
-            </Button>
+            <div class="flex items-center gap-2">
+                <RefreshButton />
+                <Button v-if="!showForm" type="button" size="sm" class="bg-indigo-600 hover:bg-indigo-700" @click="openForm()">
+                    <Plus class="mr-2 size-4" /> Novo Horário
+                </Button>
+            </div>
         </div>
 
         <!-- Formulário inline novo -->

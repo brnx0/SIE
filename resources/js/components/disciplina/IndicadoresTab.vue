@@ -1,24 +1,20 @@
 <script setup lang="ts">
 import FormLabel from '@/components/common/FormLabel.vue';
 import InputError from '@/components/common/InputError.vue';
+import RefreshButton from '@/components/common/RefreshButton.vue';
 import Switch from '@/components/common/Switch.vue';
 import { Button } from '@/components/ui/button';
 import type { DisciplinaIndicador } from '@/types/disciplina';
 import { router } from '@inertiajs/vue3';
 import { CheckCircle2, LoaderCircle, Pencil, Plus, Save, Trash2, X, XCircle } from 'lucide-vue-next';
-import { reactive, ref, watch } from 'vue';
+import { computed, reactive, ref } from 'vue';
 
 const props = defineProps<{
     disId: number;
     indicadores: DisciplinaIndicador[];
 }>();
 
-const list = ref<DisciplinaIndicador[]>(props.indicadores ?? []);
-
-watch(
-    () => props.indicadores,
-    (v) => { list.value = v ?? []; },
-);
+const list = computed<DisciplinaIndicador[]>(() => props.indicadores ?? []);
 
 const showForm  = ref(false);
 const editing   = ref<DisciplinaIndicador | null>(null);
@@ -60,13 +56,13 @@ const salvar = () => {
         router.put(
             `/disciplinas/${props.disId}/indicadores/${editing.value.ind_id}`,
             { ...formData },
-            { preserveScroll: true, onSuccess: onOk, onError: onErr, onFinish: onEnd },
+            { preserveScroll: true, preserveState: true, onSuccess: onOk, onError: onErr, onFinish: onEnd },
         );
     } else {
         router.post(
             `/disciplinas/${props.disId}/indicadores`,
             { ...formData },
-            { preserveScroll: true, onSuccess: onOk, onError: onErr, onFinish: onEnd },
+            { preserveScroll: true, preserveState: true, onSuccess: onOk, onError: onErr, onFinish: onEnd },
         );
     }
 };
@@ -75,6 +71,7 @@ const remover = (ind: DisciplinaIndicador) => {
     if (!confirm(`Remover indicador "${ind.ind_descricao.substring(0, 60)}${ind.ind_descricao.length > 60 ? '…' : ''}"?`)) return;
     router.delete(`/disciplinas/${props.disId}/indicadores/${ind.ind_id}`, {
         preserveScroll: true,
+        preserveState: true,
     });
 };
 </script>
@@ -85,15 +82,18 @@ const remover = (ind: DisciplinaIndicador) => {
             <p class="text-sm text-muted-foreground">
                 {{ list.length }} indicador{{ list.length !== 1 ? 'es' : '' }} cadastrado{{ list.length !== 1 ? 's' : '' }}
             </p>
-            <Button
-                v-if="!showForm"
-                type="button"
-                size="sm"
-                class="bg-indigo-600 hover:bg-indigo-700"
-                @click="abrirCriar"
-            >
-                <Plus class="mr-2 size-4" /> Adicionar Indicador
-            </Button>
+            <div class="flex items-center gap-2">
+                <RefreshButton />
+                <Button
+                    v-if="!showForm"
+                    type="button"
+                    size="sm"
+                    class="bg-indigo-600 hover:bg-indigo-700"
+                    @click="abrirCriar"
+                >
+                    <Plus class="mr-2 size-4" /> Adicionar Indicador
+                </Button>
+            </div>
         </div>
 
         <!-- Formulário inline -->

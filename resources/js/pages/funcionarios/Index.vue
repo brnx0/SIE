@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import ExportMenu from '@/components/common/ExportMenu.vue';
 import PerPageSelect from '@/components/common/PerPageSelect.vue';
+import RefreshButton from '@/components/common/RefreshButton.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -62,6 +63,7 @@ const formatCpf = (cpf: string | null) => {
                     <Input v-model="search" placeholder="Buscar por nome ou CPF..." class="pl-9" />
                 </div>
                 <div class="ml-auto flex items-center gap-3">
+                    <RefreshButton />
                     <PerPageSelect v-model="perPage" />
                     <ExportMenu base-url="/funcionarios/export" :filters="{ search }" />
                 </div>

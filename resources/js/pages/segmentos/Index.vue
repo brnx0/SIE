@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import ExportMenu from '@/components/common/ExportMenu.vue';
 import PerPageSelect from '@/components/common/PerPageSelect.vue';
+import RefreshButton from '@/components/common/RefreshButton.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -64,6 +65,7 @@ const remove = (seg: Segmento) => {
                     <Input v-model="search" placeholder="Buscar por nome ou INEP..." class="pl-9" />
                 </div>
                 <div class="ml-auto flex items-center gap-3">
+                    <RefreshButton />
                     <PerPageSelect v-model="perPage" />
                     <ExportMenu
                         base-url="/segmentos/export"

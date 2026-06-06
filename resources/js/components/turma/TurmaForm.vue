@@ -17,6 +17,7 @@ import type { AnoLetivo } from '@/types/parametro';
 import type {
     DisciplinaResumo,
     EscolaResumo,
+    GradeHorarioResumo,
     ProfessorResumo,
     Turma,
     TurmaFormData,
@@ -48,6 +49,7 @@ const props = defineProps<{
     professoresDisponiveis?: ProfessorResumo[];
     disciplinas?: DisciplinaResumo[];
     horarios?: TurmaHorario[];
+    gradeHorarios?: GradeHorarioResumo[];
 }>();
 
 const { items: segmentos, search: searchSegmentos, clear: clearSegmentos } = useSegmentosByEscola();
@@ -417,6 +419,7 @@ const selectClass = (hasError: boolean) =>
                 <TurmaHorariosTab
                     :turma="initial!"
                     :horarios="horarios ?? []"
+                    :grade-horarios="gradeHorarios ?? []"
                     :professores-disponiveis="professoresDisponiveis ?? []"
                     :disciplinas="disciplinas ?? []"
                 />

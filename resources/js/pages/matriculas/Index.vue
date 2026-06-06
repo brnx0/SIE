@@ -5,7 +5,7 @@ import { type BreadcrumbItem } from '@/types';
 import type { AnoLetivo } from '@/types/parametro';
 import type { AlunoResumo, TurmaMatricula } from '@/types/matricula';
 import { Head } from '@inertiajs/vue3';
-import { AlertCircle, CheckCircle2, Loader2, Search, UserPlus, X } from 'lucide-vue-next';
+import { AlertCircle, CheckCircle2, Loader2, RefreshCw, Search, UserPlus, X } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 import { Button } from '@/components/ui/button';
 import FormLabel from '@/components/common/FormLabel.vue';
@@ -73,7 +73,7 @@ watch([fSegId, fEscId, fAnlId], carregarSeries);
 const turmas        = ref<TurmaMatricula[]>([]);
 const loadingTurmas = ref(false);
 
-const podeBuscarTurmas = computed(() => !!fAnlId.value && !!fEscId.value && !!fSegId.value && !!fSerId.value);
+const podeBuscarTurmas = computed(() => !!fAnlId.value && !!fEscId.value && !!fSegId.value && !!fSerId.value && !!fSemestre.value);
 
 const carregarTurmas = async () => {
     turmas.value = [];
@@ -336,9 +336,9 @@ const formatarNomeAluno = (a: AlunoResumo) => {
 
                     <!-- Semestre -->
                     <div class="grid gap-1.5">
-                        <FormLabel>Semestre</FormLabel>
+                        <FormLabel :required="true">Semestre</FormLabel>
                         <select v-model.number="fSemestre" :class="selectClass">
-                            <option value="">Todos</option>
+                            <option value="" disabled>Selecione...</option>
                             <option :value="1">1º Semestre</option>
                             <option :value="2">2º Semestre</option>
                         </select>
@@ -434,10 +434,10 @@ const formatarNomeAluno = (a: AlunoResumo) => {
 
             <!-- Aviso: filtros obrigatórios -->
             <div
-                v-if="!fEscId || !fSegId || !fSerId"
+                v-if="!fEscId || !fSegId || !fSerId || !fSemestre"
                 class="rounded-xl border bg-card p-10 text-center text-sm text-muted-foreground shadow-sm"
             >
-                Selecione um <strong>Ano Letivo</strong>, uma <strong>Escola</strong>, um <strong>Segmento</strong> e uma <strong>Série</strong> para visualizar as turmas disponíveis.
+                Selecione um <strong>Ano Letivo</strong>, uma <strong>Escola</strong>, um <strong>Segmento</strong>, uma <strong>Série</strong> e o <strong>Semestre</strong> para visualizar as turmas disponíveis.
             </div>
 
             <!-- Tabela de turmas -->
@@ -445,10 +445,16 @@ const formatarNomeAluno = (a: AlunoResumo) => {
                 <div class="overflow-hidden rounded-xl border bg-card shadow-sm">
                     <div class="flex items-center justify-between border-b bg-muted/30 px-4 py-2.5">
                         <span class="text-sm font-medium">Turmas disponíveis</span>
-                        <span class="text-xs text-muted-foreground">
-                            <template v-if="loadingTurmas">Carregando...</template>
-                            <template v-else>{{ turmas.length }} turma{{ turmas.length !== 1 ? 's' : '' }}</template>
-                        </span>
+                        <div class="flex items-center gap-3">
+                            <span class="text-xs text-muted-foreground">
+                                <template v-if="loadingTurmas">Carregando...</template>
+                                <template v-else>{{ turmas.length }} turma{{ turmas.length !== 1 ? 's' : '' }}</template>
+                            </span>
+                            <Button type="button" size="sm" variant="outline" class="gap-1.5" :disabled="loadingTurmas" title="Atualizar turmas" @click="carregarTurmas">
+                                <RefreshCw :class="['size-4', loadingTurmas && 'animate-spin']" />
+                                Atualizar
+                            </Button>
+                        </div>
                     </div>
 
                     <div v-if="loadingTurmas" class="flex items-center justify-center py-12 text-muted-foreground">

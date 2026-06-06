@@ -1,6 +1,7 @@
 <script setup lang="ts">
+import { Button } from '@/components/ui/button';
 import { useToast } from '@/composables/useToast';
-import { Loader2 } from 'lucide-vue-next';
+import { Loader2, RefreshCw } from 'lucide-vue-next';
 import { onMounted, ref } from 'vue';
 
 const props = defineProps<{ turId: number }>();
@@ -73,9 +74,15 @@ onMounted(load);
     <div class="rounded-xl border bg-card shadow-sm">
         <div class="flex items-center justify-between border-b bg-muted/30 px-4 py-2.5">
             <span class="text-sm font-medium">Alunos matriculados</span>
-            <span v-if="!loading" class="text-xs text-muted-foreground">
-                {{ alunos.length }} aluno{{ alunos.length !== 1 ? 's' : '' }}
-            </span>
+            <div class="flex items-center gap-3">
+                <span v-if="!loading" class="text-xs text-muted-foreground">
+                    {{ alunos.length }} aluno{{ alunos.length !== 1 ? 's' : '' }}
+                </span>
+                <Button type="button" size="sm" variant="outline" class="gap-1.5" :disabled="loading" title="Atualizar registros" @click="load">
+                    <RefreshCw :class="['size-4', loading && 'animate-spin']" />
+                    Atualizar
+                </Button>
+            </div>
         </div>
 
         <div v-if="loading" class="flex items-center justify-center py-12 text-muted-foreground">

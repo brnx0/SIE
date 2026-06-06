@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import RefreshButton from '@/components/common/RefreshButton.vue';
 import { Button } from '@/components/ui/button';
 import type { CensoEscolarResumo } from '@/types/censo';
 import type { AnoLetivo } from '@/types/parametro';
@@ -121,8 +122,10 @@ function abrirVisualizacao(cenId: number) {
                     </p>
                 </div>
 
-                <!-- Botão de ação -->
-                <div v-if="anoLetivoAtual">
+                <!-- Ações -->
+                <div class="flex items-center gap-2">
+                  <RefreshButton />
+                  <div v-if="anoLetivoAtual">
                     <!-- Censo ainda não iniciado -->
                     <Button
                         v-if="!censoAtual"
@@ -156,6 +159,7 @@ function abrirVisualizacao(cenId: number) {
                         <Eye class="mr-2 size-4" />
                         Visualizar censo
                     </Button>
+                  </div>
                 </div>
             </div>
 

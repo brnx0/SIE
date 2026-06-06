@@ -14,7 +14,6 @@ return new class extends Migration
             $table->unsignedBigInteger('tma_aln_id');
             $table->unsignedBigInteger('tma_tur_id');
             $table->unsignedBigInteger('tma_anl_id');
-            $table->smallInteger('tma_nr_ordem')->nullable();
 
             $table->string('tma_situacao', 20)->default('ATIVA');
             $table->date('tma_dt_matricula');

@@ -2,6 +2,7 @@
 import MunicipioCombobox from '@/components/aluno/MunicipioCombobox.vue';
 import FormLabel from '@/components/common/FormLabel.vue';
 import InputError from '@/components/common/InputError.vue';
+import RefreshButton from '@/components/common/RefreshButton.vue';
 import Tabs from '@/components/common/Tabs.vue';
 import TabsContent from '@/components/common/TabsContent.vue';
 import TabsList from '@/components/common/TabsList.vue';
@@ -158,7 +159,7 @@ const openEdit = (anl: AnoLetivo) => {
 
 const remove = (anl: AnoLetivo) => {
     if (!confirm(`Remover o ano letivo ${anl.anl_ano}?`)) return;
-    router.delete(`/parametros/anos-letivos/${anl.anl_id}`, { preserveScroll: true });
+    router.delete(`/parametros/anos-letivos/${anl.anl_id}`, { preserveScroll: true, preserveState: true });
 };
 
 const fmtDate = (s?: string | null) => {
@@ -298,9 +299,12 @@ const fmtDateTime = (s?: string | null) => {
                 <div class="grid gap-4 rounded-xl border bg-card p-6 shadow-sm">
                     <div class="flex items-center justify-between gap-2">
                         <h3 class="text-sm font-semibold">Anos Letivos cadastrados</h3>
-                        <Button type="button" size="sm" class="bg-indigo-600 hover:bg-indigo-700" @click="openCreate">
-                            <Plus class="mr-2 size-4" /> Novo Ano Letivo
-                        </Button>
+                        <div class="flex items-center gap-2">
+                            <RefreshButton />
+                            <Button type="button" size="sm" class="bg-indigo-600 hover:bg-indigo-700" @click="openCreate">
+                                <Plus class="mr-2 size-4" /> Novo Ano Letivo
+                            </Button>
+                        </div>
                     </div>
 
                     <div class="overflow-x-auto">
