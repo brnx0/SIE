@@ -32,6 +32,7 @@ class Matricula extends Model
         'tma_aln_id',
         'tma_tur_id',
         'tma_anl_id',
+        'tma_modalidade',
         'tma_situacao',
         'tma_tas_cod_entrada',
         'tma_tas_cod_saida',

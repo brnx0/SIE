@@ -51,6 +51,10 @@ class Turma extends Model
 
     const SITUACOES = ['ABERTA', 'ENCERRADA'];
 
+    const MODALIDADE_REGULAR = 'REGULAR';
+    const MODALIDADE_AEE     = 'AEE';
+    const MODALIDADES = [self::MODALIDADE_REGULAR, self::MODALIDADE_AEE];
+
     const SEMESTRES = [1, 2];
 
     const DIAS_SEMANA = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sab'];
@@ -67,6 +71,7 @@ class Turma extends Model
     protected $fillable = [
         'tur_esc_id',
         'tur_anl_id',
+        'tur_modalidade',
         'tur_seg_id',
         'tur_ser_id',
         'tur_cd_inep',
@@ -81,6 +86,7 @@ class Turma extends Model
         'tur_hora_fim',
         'tur_mediacao',
         'tur_local_diferenciado',
+        'tur_aee_sala',
         'tur_dias_funcionamento',
         'tur_obs',
     ];
@@ -130,5 +136,20 @@ class Turma extends Model
     public function matriculas(): HasMany
     {
         return $this->hasMany(Matricula::class, 'tma_tur_id', 'tur_id');
+    }
+
+    public function atendimentosAee(): HasMany
+    {
+        return $this->hasMany(TurmaAtendimentoAee::class, 'tat_tur_id', 'tur_id');
+    }
+
+    public function scopeRegular($query)
+    {
+        return $query->where('tur_modalidade', self::MODALIDADE_REGULAR);
+    }
+
+    public function scopeAee($query)
+    {
+        return $query->where('tur_modalidade', self::MODALIDADE_AEE);
     }
 }

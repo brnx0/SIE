@@ -109,8 +109,10 @@ export interface Turma {
     tur_id: number;
     tur_esc_id: number;
     tur_anl_id: number;
-    tur_seg_id: number;
-    tur_ser_id: number;
+    tur_modalidade?: string;
+    tur_aee_sala?: string | null;
+    tur_seg_id: number | null;
+    tur_ser_id: number | null;
     tur_cd_inep: string | null;
     tur_nome: string;
     tur_turno: TurnoTipo;

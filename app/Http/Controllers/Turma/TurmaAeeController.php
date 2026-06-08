@@ -3,14 +3,10 @@
 namespace App\Http\Controllers\Turma;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Turma\StoreTurmaRequest;
-use App\Models\Disciplina\Disciplina;
+use App\Http\Requests\Turma\StoreTurmaAeeRequest;
 use App\Models\Escola\Escola;
 use App\Models\Funcionario\Funcionario;
 use App\Models\Parametro\AnoLetivo;
-use App\Models\Parametro\GradeDisciplinar;
-use App\Models\Parametro\GradeHorario;
-use App\Models\Matricula\Matricula;
 use App\Models\Turma\Turma;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -20,19 +16,13 @@ use Inertia\Response;
 use Mpdf\Mpdf;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-class TurmaController extends Controller
+class TurmaAeeController extends Controller
 {
     private const TURNOS = [
-        'm' => 'Manhã',
-        't' => 'Tarde',
-        'n' => 'Noite',
-        'i' => 'Integral',
-    ];
-
-    private const TURNO_MAP = [
-        'MATUTINO'   => 'm',
-        'VESPERTINO' => 't',
-        'NOTURNO'    => 'n',
+        'INTEGRAL'   => 'Integral',
+        'MATUTINO'   => 'Matutino',
+        'VESPERTINO' => 'Vespertino',
+        'NOTURNO'    => 'Noturno',
     ];
 
     public function index(Request $request): Response
@@ -44,7 +34,6 @@ class TurmaController extends Controller
 
         $anosLetivos = AnoLetivo::orderByDesc('anl_ano')->get(['anl_id', 'anl_ano']);
 
-        // Sem filtro de ano letivo explícito → usa o maior ano cadastrado
         if (! $request->filled('anl_id') && $anosLetivos->isNotEmpty()) {
             $request->merge(['anl_id' => $anosLetivos->first()->anl_id]);
         }
@@ -53,10 +42,10 @@ class TurmaController extends Controller
             ->paginate($perPage)
             ->withQueryString();
 
-        return Inertia::render('turmas/Index', [
+        return Inertia::render('turmas-aee/Index', [
             'turmas'      => $turmas,
             'filters'     => array_merge(
-                $request->only(['esc_id', 'anl_id', 'seg_id', 'turno', 'situacao']),
+                $request->only(['esc_id', 'anl_id', 'turno', 'situacao']),
                 ['per_page' => $perPage],
             ),
             'anosLetivos' => $anosLetivos,
@@ -92,7 +81,7 @@ class TurmaController extends Controller
     {
         $user = auth()->user();
 
-        return Inertia::render('turmas/Create', [
+        return Inertia::render('turmas-aee/Create', [
             'anosLetivos' => AnoLetivo::orderByDesc('anl_ano')->get(['anl_id', 'anl_ano']),
             'escolas'     => $user->isAdmin()
                 ? Escola::where('esc_fl_ativo', true)->orderBy('esc_nome')->get(['esc_id', 'esc_nome'])
@@ -102,39 +91,34 @@ class TurmaController extends Controller
         ]);
     }
 
-    public function store(StoreTurmaRequest $request): RedirectResponse
+    public function store(StoreTurmaAeeRequest $request): RedirectResponse
     {
         $turma = Turma::create($request->validated());
 
-        return to_route('turmas.edit', $turma)->with('success', 'Turma cadastrada com sucesso.');
+        return to_route('turmas-aee.edit', $turma)->with('success', 'Turma AEE cadastrada com sucesso.');
     }
 
-    public function edit(Turma $turma): Response
+    public function edit(Turma $turmaAee): Response
     {
-        $user = auth()->user();
+        $turma = $this->guardAee($turmaAee);
+        $user  = auth()->user();
+
         $turma->load([
             'escola:esc_id,esc_nome',
             'anoLetivo:anl_id,anl_ano',
-            'segmento:seg_id,seg_nome_reduzido',
-            'serie:ser_id,ser_nome',
             'professores.funcionario:fun_id,fun_nome',
-            'professores.disciplina:dis_id,dis_nome',
-            'professoresApoio.funcionario:fun_id,fun_nome,fun_cd_censo',
-            'horarios.funcionario:fun_id,fun_nome',
-            'horarios.disciplina:dis_id,dis_nome',
         ]);
-        return Inertia::render('turmas/Edit', [
+
+        return Inertia::render('turmas-aee/Edit', [
             'turma'                  => $turma,
             'total_matriculados'     => $turma->matriculas()->whereNull('tma_tas_cod_saida')->count(),
-            'professoresApoio'       => $turma->professoresApoio->map(fn ($a) => [
-                'tpa_id'      => $a->tpa_id,
-                'tpa_tur_id'  => $a->tpa_tur_id,
-                'tpa_fun_id'  => $a->tpa_fun_id,
-                'tpa_obs'     => $a->tpa_obs,
-                'funcionario' => $a->funcionario ? [
-                    'fun_id'       => $a->funcionario->fun_id,
-                    'fun_nome'     => $a->funcionario->fun_nome,
-                    'fun_cd_censo' => $a->funcionario->fun_cd_censo,
+            'professores'            => $turma->professores->map(fn ($p) => [
+                'tup_id'      => $p->tup_id,
+                'tup_tur_id'  => $p->tup_tur_id,
+                'tup_fun_id'  => $p->tup_fun_id,
+                'funcionario' => $p->funcionario ? [
+                    'fun_id'   => $p->funcionario->fun_id,
+                    'fun_nome' => $p->funcionario->fun_nome,
                 ] : null,
             ]),
             'anosLetivos'            => AnoLetivo::orderByDesc('anl_ano')->get(['anl_id', 'anl_ano']),
@@ -143,42 +127,41 @@ class TurmaController extends Controller
                 : [],
             'isAdmin'                => $user->isAdmin(),
             'userEscola'             => $user->isAdmin() ? null : ['esc_id' => $user->esc_id, 'esc_nome' => $user->escola?->esc_nome],
-            'disciplinas'            => Disciplina::whereIn('dis_id',
-                    GradeDisciplinar::where('grd_anl_id', $turma->tur_anl_id)
-                        ->where('grd_ser_id', $turma->tur_ser_id)
-                        ->where('grd_fl_ativo', true)
-                        ->pluck('grd_dis_id')
-                )->orderBy('dis_nome')->get(['dis_id', 'dis_nome']),
             'professoresDisponiveis' => Funcionario::whereHas('admissoes.lotacoes', fn ($q) =>
                 $q->where('lot_esc_id', $turma->tur_esc_id)
             )->orderBy('fun_nome')->get(['fun_id', 'fun_nome']),
-            'gradeHorarios'          => GradeHorario::where('grh_seg_id', $turma->tur_seg_id)
-                ->when($turma->tur_turno !== 'INTEGRAL', fn ($q) => $q->where('grh_turno', self::TURNO_MAP[$turma->tur_turno] ?? $turma->tur_turno))
-                ->orderBy('grh_ordem')
-                ->get(['grh_id', 'grh_turno', 'grh_hora', 'grh_ordem']),
         ]);
     }
 
-    public function update(StoreTurmaRequest $request, Turma $turma): RedirectResponse
+    public function update(StoreTurmaAeeRequest $request, Turma $turmaAee): RedirectResponse
     {
+        $turma = $this->guardAee($turmaAee);
         $turma->update($request->validated());
 
-        return to_route('turmas.edit', $turma)->with('success', 'Turma atualizada com sucesso.');
+        return to_route('turmas-aee.edit', $turma)->with('success', 'Turma AEE atualizada com sucesso.');
     }
 
-    public function destroy(Turma $turma): RedirectResponse
+    public function destroy(Turma $turmaAee): RedirectResponse
     {
+        $turma = $this->guardAee($turmaAee);
+
         return $this->safeDelete($turma)
-            ?? to_route('turmas.index')->with('success', 'Turma removida com sucesso.');
+            ?? to_route('turmas-aee.index')->with('success', 'Turma AEE removida com sucesso.');
+    }
+
+    /** Garante que o registro acessado é mesmo modalidade AEE. */
+    private function guardAee(Turma $turma): Turma
+    {
+        abort_unless($turma->tur_modalidade === Turma::MODALIDADE_AEE, 404);
+
+        return $turma;
     }
 
     private function baseQuery(Request $request, $user)
     {
-        $query = Turma::regular()->with([
+        $query = Turma::aee()->with([
             'escola:esc_id,esc_nome',
             'anoLetivo:anl_id,anl_ano',
-            'segmento:seg_id,seg_nome_reduzido',
-            'serie:ser_id,ser_nome',
         ]);
 
         if (! $user->isAdmin()) {
@@ -187,10 +170,9 @@ class TurmaController extends Controller
             $query->where('tur_esc_id', $escId);
         }
 
-        if ($anlId = $request->integer('anl_id'))       $query->where('tur_anl_id', $anlId);
-        if ($segId = $request->integer('seg_id'))       $query->where('tur_seg_id', $segId);
-        if ($turno = $request->string('turno')->toString())       $query->where('tur_turno', $turno);
-        if ($sit   = $request->string('situacao')->toString())    $query->where('tur_situacao', $sit);
+        if ($anlId = $request->integer('anl_id'))               $query->where('tur_anl_id', $anlId);
+        if ($turno = $request->string('turno')->toString())     $query->where('tur_turno', $turno);
+        if ($sit   = $request->string('situacao')->toString())  $query->where('tur_situacao', $sit);
 
         return $query
             ->orderBy('tur_anl_id', 'desc')
@@ -201,19 +183,17 @@ class TurmaController extends Controller
 
     private function exportCsv($turmas): StreamedResponse
     {
-        $filename = 'turmas_' . now()->format('Ymd_His') . '.csv';
+        $filename = 'turmas_aee_' . now()->format('Ymd_His') . '.csv';
 
         return response()->streamDownload(function () use ($turmas) {
             $out = fopen('php://output', 'w');
             fprintf($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
-            fputcsv($out, ['Turma', 'Escola', 'Ano Letivo', 'Segmento', 'Série', 'Turno', 'Capacidade', 'Situação'], ';');
+            fputcsv($out, ['Turma', 'Escola', 'Ano Letivo', 'Turno', 'Capacidade', 'Situação'], ';');
             foreach ($turmas as $t) {
                 fputcsv($out, [
                     $t->tur_nome,
                     $t->escola?->esc_nome ?? '',
                     $t->anoLetivo?->anl_ano ?? '',
-                    $t->segmento?->seg_nome_reduzido ?? '',
-                    $t->serie?->ser_nome ?? '',
                     self::TURNOS[$t->tur_turno] ?? $t->tur_turno,
                     $t->tur_capacidade ?? '',
                     $t->tur_situacao,
@@ -226,15 +206,14 @@ class TurmaController extends Controller
     private function exportPdf($turmas, Request $request): HttpResponse
     {
         $collection = collect($turmas);
-        $filename   = 'turmas_' . now()->format('Ymd_His') . '.pdf';
+        $filename   = 'turmas_aee_' . now()->format('Ymd_His') . '.pdf';
 
-        $html = view('exports.turmas_pdf', [
-            'turmas'        => $collection,
-            'turnos'        => self::TURNOS,
-            'total'         => $collection->count(),
-            'totalAbertas'  => $collection->where('tur_situacao', 'ABERTA')->count(),
+        $html = view('exports.turmas_aee_pdf', [
+            'turmas'          => $collection,
+            'turnos'          => self::TURNOS,
+            'total'           => $collection->count(),
+            'totalAbertas'    => $collection->where('tur_situacao', 'ABERTA')->count(),
             'totalEncerradas' => $collection->where('tur_situacao', 'ENCERRADA')->count(),
-            'search'        => $request->input('search', ''),
         ])->render();
 
         $mpdf = new Mpdf(['orientation' => 'L', 'format' => 'A4', 'margin_top' => 0, 'margin_bottom' => 0, 'margin_left' => 0, 'margin_right' => 0, 'tempDir' => sys_get_temp_dir()]);

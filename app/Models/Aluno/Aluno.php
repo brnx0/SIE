@@ -99,4 +99,17 @@ class Aluno extends Model
     {
         return $this->hasMany(Matricula::class, 'tma_aln_id', 'aln_id');
     }
+
+    /**
+     * Público-alvo do AEE: deficiência (PCD), transtorno global do
+     * desenvolvimento (TGD) ou altas habilidades/superdotação.
+     */
+    public function scopePublicoAee($query)
+    {
+        return $query->whereHas('saude', function ($q) {
+            $q->where('als_fl_pcd', true)
+              ->orWhere('als_fl_altas_habilidades', true)
+              ->orWhereRaw("jsonb_array_length(coalesce(als_transtornos_globais, '[]')::jsonb) > 0");
+        });
+    }
 }

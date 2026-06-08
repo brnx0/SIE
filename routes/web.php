@@ -5,6 +5,8 @@ use App\Http\Controllers\Api\AlunoSearchController;
 use App\Http\Controllers\Api\BairroController;
 use App\Http\Controllers\Api\MatriculaTurmaController;
 use App\Http\Controllers\Api\TurmaAlunoController;
+use App\Http\Controllers\Api\TurmaAeeAlunoController;
+use App\Http\Controllers\Api\TurmaAeeAtendimentoController;
 use App\Http\Controllers\Matricula\MatriculaController;
 use App\Http\Controllers\Api\DisciplinaController as DisciplinaApiController;
 use App\Http\Controllers\Api\GerenciaRegionalController;
@@ -14,6 +16,8 @@ use App\Http\Controllers\Api\SerieController as SerieApiController;
 use App\Http\Controllers\Disciplina\DisciplinaController;
 use App\Http\Controllers\Disciplina\DisciplinaIndicadorController;
 use App\Http\Controllers\Turma\TurmaController;
+use App\Http\Controllers\Turma\TurmaAeeController;
+use App\Http\Controllers\Turma\TurmaAeeProfessorController;
 use App\Http\Controllers\Turma\TurmaHorarioController;
 use App\Http\Controllers\Turma\TurmaProfessorApoioController;
 use App\Http\Controllers\Turma\TurmaProfessorController;
@@ -98,6 +102,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/', [TurmaHorarioController::class, 'store'])->name('store');
         Route::delete('/{turmaHorario}', [TurmaHorarioController::class, 'destroy'])->name('destroy');
     });
+
+    // Turmas AEE (modalidade Atendimento Educacional Especializado)
+    Route::get('turmas-aee/export', [TurmaAeeController::class, 'export'])->name('turmas-aee.export');
+    Route::resource('turmas-aee', TurmaAeeController::class)
+        ->parameters(['turmas-aee' => 'turmaAee'])
+        ->except(['show']);
+    Route::prefix('turmas-aee/{turmaAee}/professores')->name('turmas-aee.professores.')->group(function () {
+        Route::post('/', [TurmaAeeProfessorController::class, 'store'])->name('store');
+        Route::delete('/{turmaProfessor}', [TurmaAeeProfessorController::class, 'destroy'])->name('destroy');
+    });
     Route::get('disciplinas/export', [DisciplinaController::class, 'export'])->name('disciplinas.export');
     Route::resource('disciplinas', DisciplinaController::class)->except(['show']);
     Route::prefix('disciplinas/{disciplina}/indicadores')->name('disciplinas.indicadores.')->group(function () {
@@ -114,6 +128,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('api/matriculas/turmas', [MatriculaTurmaController::class, 'index'])->name('api.matriculas.turmas');
     Route::get('api/turmas/{tur_id}/alunos', [TurmaAlunoController::class, 'index'])->name('api.turmas.alunos');
     Route::patch('api/turmas/{tur_id}/alunos/{tma_id}/renovado', [TurmaAlunoController::class, 'toggleRenovado'])->name('api.turmas.alunos.renovado');
+
+    // API turma AEE — alunos alocados / elegíveis
+    Route::get('api/turmas-aee/{tur_id}/alunos', [TurmaAeeAlunoController::class, 'index'])->name('api.turmas-aee.alunos');
+    Route::get('api/turmas-aee/{tur_id}/alunos/elegiveis', [TurmaAeeAlunoController::class, 'elegiveis'])->name('api.turmas-aee.alunos.elegiveis');
+    Route::post('api/turmas-aee/{tur_id}/alunos', [TurmaAeeAlunoController::class, 'store'])->name('api.turmas-aee.alunos.store');
+    Route::delete('api/turmas-aee/{tur_id}/alunos/{tma_id}', [TurmaAeeAlunoController::class, 'destroy'])->name('api.turmas-aee.alunos.destroy');
+
+    // API turma AEE — atendimentos oferecidos
+    Route::get('api/atendimentos-aee', [TurmaAeeAtendimentoController::class, 'catalogo'])->name('api.atendimentos-aee.catalogo');
+    Route::get('api/turmas-aee/{tur_id}/atendimentos', [TurmaAeeAtendimentoController::class, 'index'])->name('api.turmas-aee.atendimentos');
+    Route::post('api/turmas-aee/{tur_id}/atendimentos', [TurmaAeeAtendimentoController::class, 'store'])->name('api.turmas-aee.atendimentos.store');
+    Route::delete('api/turmas-aee/{tur_id}/atendimentos/{tat_id}', [TurmaAeeAtendimentoController::class, 'destroy'])->name('api.turmas-aee.atendimentos.destroy');
     Route::get('api/matriculas/verificar', [MatriculaController::class, 'verificar'])->name('api.matriculas.verificar');
     Route::get('api/alunos/search', [AlunoSearchController::class, 'search'])->name('api.alunos.search');
 

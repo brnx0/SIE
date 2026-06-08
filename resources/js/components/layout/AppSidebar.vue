@@ -34,6 +34,7 @@ const cadastros = [
                     { title: 'Grade Disciplinar', href: '/grade-disciplinar' },
                     { title: 'Escolas', href: '/escolas' },
                     { title: 'Turmas', href: '/turmas' },
+                    { title: 'Turmas AEE', href: '/turmas-aee' },
                 ],
             },
         ],
