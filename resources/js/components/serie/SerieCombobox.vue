@@ -8,6 +8,7 @@ const props = defineProps<{
     modelValue: number | null;
     initial?: SerieResumo | null;
     exclude?: number | null;
+    segId?: number | null;
     placeholder?: string;
     invalid?: boolean;
 }>();
@@ -36,7 +37,7 @@ watch(query, (q) => {
         return;
     }
     debounceTimer = setTimeout(() => {
-        search(trimmed, props.exclude);
+        search(trimmed, props.exclude, props.segId);
     }, 200);
 });
 

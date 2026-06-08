@@ -67,7 +67,7 @@ class AlunoController extends Controller
             if ($params->par_fl_gerar_matricula_auto && empty($data['aln_nr_matricula'])) {
                 DB::statement('SELECT pg_advisory_xact_lock(?)', [727301]);
                 $maxMatricula = (int) DB::table('edu_aluno')->max('aln_nr_matricula');
-                $data['aln_nr_matricula'] = $maxMatricula + 1;
+                $data['aln_nr_matricula'] = max($maxMatricula + 1, 1000);
             }
 
             $aluno = Aluno::create($data);
@@ -110,6 +110,7 @@ class AlunoController extends Controller
                 'tur_nome'         => $m->turma?->tur_nome,
                 'tur_turno'        => $m->turma?->tur_turno,
                 'seg_nome'         => $m->turma?->segmento?->seg_nome_reduzido,
+                'tur_modalidade'   => $m->turma?->tur_modalidade,
             ]),
         ]);
     }
@@ -196,7 +197,7 @@ class AlunoController extends Controller
                 $q->where(function ($q) use ($search) {
                     $q->where('aln_nome', 'ilike', "%{$search}%")
                         ->orWhere('aln_cpf', 'like', "%{$search}%")
-                        ->orWhere('aln_nr_matricula', 'like', "%{$search}%");
+                        ->orWhereRaw('CAST(aln_nr_matricula AS TEXT) LIKE ?', ["%{$search}%"]);
                 });
             })
             ->orderBy('aln_nome');

@@ -101,6 +101,7 @@ class SerieController extends Controller
     {
         $q          = trim($request->input('q', ''));
         $exclude    = $request->input('exclude');
+        $segId      = (int) $request->input('seg_id');
         $incluirIds = $this->incluirIds($request);
 
         // Normaliza ordinais (ª, º) e espaços extras tanto da query quanto do nome no banco
@@ -110,6 +111,7 @@ class SerieController extends Controller
         $this->filtroAtivoOuIncluso($query, 'ser_fl_ativo', 'ser_id', $incluirIds);
 
         $series = $query
+            ->when($segId > 0, fn ($q2) => $q2->where('seg_id', $segId))
             ->when(strlen($qNorm) >= 1, fn ($q2) => $q2->whereRaw(
                 "regexp_replace(replace(replace(ser_nome, 'ª', ''), 'º', ''), '\\s+', ' ', 'g') ilike ?",
                 ["%{$qNorm}%"]

@@ -33,6 +33,19 @@ export interface SerieResumo {
     ser_nome: string;
 }
 
+export interface SerieIndicador {
+    ind_id: number;
+    ind_ser_id: number | null;
+    ind_descricao: string;
+    ind_fl_ativo: boolean;
+}
+
+export interface SerieParaReplicar {
+    ser_id: number;
+    ser_nome: string;
+    seg_nome: string | null;
+}
+
 export interface SerieFormData {
     seg_id: number | null;
     ser_cd_referencia: string;

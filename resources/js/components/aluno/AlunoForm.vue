@@ -39,6 +39,7 @@ interface MatriculaResumo {
     tur_nome: string | null;
     tur_turno: string | null;
     seg_nome: string | null;
+    tur_modalidade: string | null;
 }
 
 const props = defineProps<{
@@ -66,6 +67,13 @@ const nomeUppercase = computed(() => params.value.nome_pessoa_caixa_alta);
 const alertarAcentos = computed(() => params.value.alertar_acentos_nomes);
 
 const stripAccents = (str: string) => str.normalize('NFD').replace(/[̀-ͯ]/g, '');
+
+const matriculasRegulares = computed(() =>
+    (props.matriculas ?? []).filter((m) => (m.tur_modalidade ?? 'REGULAR') !== 'AEE'),
+);
+const matriculasAee = computed(() =>
+    (props.matriculas ?? []).filter((m) => m.tur_modalidade === 'AEE'),
+);
 
 const TABS = ['dados-pessoais', 'documentacao', 'filiacao-contato', 'complementares', 'turmas'] as const;
 type TabId = (typeof TABS)[number];
@@ -1074,66 +1082,152 @@ const initials = computed(() => {
 
             <!-- Aba 5 — Turmas -->
             <TabsContent v-if="mode === 'edit'" value="turmas">
-                <div class="overflow-hidden rounded-xl border bg-card shadow-sm">
-                    <div class="flex items-center justify-between border-b bg-muted/30 px-4 py-2.5">
-                        <span class="text-sm font-medium">Histórico de Matrículas</span>
-                        <RefreshButton />
+                <div class="flex items-center justify-between pb-2">
+                    <span class="text-sm font-medium">Histórico de Matrículas</span>
+                    <RefreshButton />
+                </div>
+
+                <div v-if="!matriculas?.length" class="rounded-xl border bg-card py-10 text-center text-sm text-muted-foreground shadow-sm">
+                    Nenhuma matrícula registrada.
+                </div>
+
+                <div v-else class="grid gap-6">
+                    <!-- Matrículas Regulares -->
+                    <div class="overflow-hidden rounded-xl border bg-card shadow-sm">
+                        <div class="flex items-center justify-between gap-2 border-b border-l-4 border-l-indigo-600 bg-indigo-50/60 px-4 py-2.5 dark:bg-indigo-900/20">
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm font-semibold text-indigo-900 dark:text-indigo-200">Matrículas Regulares</span>
+                                <span class="rounded-full bg-indigo-600 px-2 py-0.5 text-xs font-medium text-white">
+                                    {{ matriculasRegulares.length }}
+                                </span>
+                            </div>
+                            <span class="text-xs text-muted-foreground">Ensino regular / segmento curricular</span>
+                        </div>
+
+                        <div v-if="matriculasRegulares.length === 0" class="py-8 text-center text-sm text-muted-foreground">
+                            Nenhuma matrícula regular.
+                        </div>
+
+                        <div v-else class="overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead class="bg-indigo-600 text-white">
+                                    <tr>
+                                        <th class="px-3 py-2.5 text-left font-semibold">Ano</th>
+                                        <th class="px-3 py-2.5 text-left font-semibold">Dt. Matrícula</th>
+                                        <th class="px-3 py-2.5 text-left font-semibold">Escola</th>
+                                        <th class="px-3 py-2.5 text-left font-semibold">Série</th>
+                                        <th class="px-3 py-2.5 text-center font-semibold">Turma</th>
+                                        <th class="px-3 py-2.5 text-left font-semibold">Turno</th>
+                                        <th class="px-3 py-2.5 text-left font-semibold">Segmento</th>
+                                        <th class="px-3 py-2.5 text-center font-semibold">Resultado Final</th>
+                                        <th class="px-3 py-2.5 text-center font-semibold">Situação de Saída</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y">
+                                    <tr
+                                        v-for="(m, idx) in matriculasRegulares"
+                                        :key="m.tma_id"
+                                        :class="idx % 2 === 0 ? 'bg-white dark:bg-transparent' : 'bg-slate-50 dark:bg-slate-900/40'"
+                                    >
+                                        <td class="px-3 py-2.5 tabular-nums font-medium">{{ m.anl_ano ?? '—' }}</td>
+                                        <td class="px-3 py-2.5 tabular-nums text-muted-foreground">
+                                            {{ m.tma_dt_matricula ? new Date(m.tma_dt_matricula + 'T00:00:00').toLocaleDateString('pt-BR') : '—' }}
+                                        </td>
+                                        <td class="px-3 py-2.5 max-w-[200px] truncate">{{ m.esc_nome ?? '—' }}</td>
+                                        <td class="px-3 py-2.5">{{ m.ser_nome ?? '—' }}</td>
+                                        <td class="px-3 py-2.5 text-center font-semibold">{{ m.tur_nome ?? '—' }}</td>
+                                        <td class="px-3 py-2.5 capitalize text-muted-foreground">{{ m.tur_turno?.toLowerCase() ?? '—' }}</td>
+                                        <td class="px-3 py-2.5 text-muted-foreground">{{ m.seg_nome ?? '—' }}</td>
+                                        <td class="px-3 py-2.5 text-center">
+                                            <span :class="[
+                                                'inline-flex rounded-full px-2 py-0.5 text-xs font-medium',
+                                                m.tma_situacao === 'ATIVA'        ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' :
+                                                m.tma_situacao === 'CANCELADA'    ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300' :
+                                                m.tma_situacao === 'TRANSFERIDA'  ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300' :
+                                                m.tma_situacao === 'EVADIDO'      ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300' :
+                                                m.tma_situacao === 'FALECIDO'     ? 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400' :
+                                                'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
+                                            ]">
+                                                {{ m.tma_situacao }}
+                                            </span>
+                                        </td>
+                                        <td class="px-3 py-2.5 text-center">
+                                            <span v-if="m.situacao_saida" class="inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                                                {{ m.situacao_saida }}
+                                            </span>
+                                            <span v-else class="text-muted-foreground">—</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                    <div v-if="!matriculas?.length" class="py-10 text-center text-sm text-muted-foreground">
-                        Nenhuma matrícula registrada.
-                    </div>
-                    <div v-else class="overflow-x-auto">
-                        <table class="w-full text-sm">
-                            <thead class="bg-indigo-600 text-white">
-                                <tr>
-                                    <th class="px-3 py-2.5 text-left font-semibold">Ano</th>
-                                    <th class="px-3 py-2.5 text-left font-semibold">Dt. Matrícula</th>
-                                    <th class="px-3 py-2.5 text-left font-semibold">Escola</th>
-                                    <th class="px-3 py-2.5 text-left font-semibold">Série</th>
-                                    <th class="px-3 py-2.5 text-center font-semibold">Turma</th>
-                                    <th class="px-3 py-2.5 text-left font-semibold">Turno</th>
-                                    <th class="px-3 py-2.5 text-left font-semibold">Segmento</th>
-                                    <th class="px-3 py-2.5 text-center font-semibold">Resultado Final</th>
-                                    <th class="px-3 py-2.5 text-center font-semibold">Situação de Saída</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y">
-                                <tr
-                                    v-for="(m, idx) in matriculas"
-                                    :key="m.tma_id"
-                                    :class="idx % 2 === 0 ? 'bg-white dark:bg-transparent' : 'bg-slate-50 dark:bg-slate-900/40'"
-                                >
-                                    <td class="px-3 py-2.5 tabular-nums font-medium">{{ m.anl_ano ?? '—' }}</td>
-                                    <td class="px-3 py-2.5 tabular-nums text-muted-foreground">
-                                        {{ m.tma_dt_matricula ? new Date(m.tma_dt_matricula + 'T00:00:00').toLocaleDateString('pt-BR') : '—' }}
-                                    </td>
-                                    <td class="px-3 py-2.5 max-w-[200px] truncate">{{ m.esc_nome ?? '—' }}</td>
-                                    <td class="px-3 py-2.5">{{ m.ser_nome ?? '—' }}</td>
-                                    <td class="px-3 py-2.5 text-center font-semibold">{{ m.tur_nome ?? '—' }}</td>
-                                    <td class="px-3 py-2.5 capitalize text-muted-foreground">{{ m.tur_turno?.toLowerCase() ?? '—' }}</td>
-                                    <td class="px-3 py-2.5 text-muted-foreground">{{ m.seg_nome ?? '—' }}</td>
-                                    <td class="px-3 py-2.5 text-center">
-                                        <span :class="[
-                                            'inline-flex rounded-full px-2 py-0.5 text-xs font-medium',
-                                            m.tma_situacao === 'ATIVA'        ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' :
-                                            m.tma_situacao === 'CANCELADA'    ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300' :
-                                            m.tma_situacao === 'TRANSFERIDA'  ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300' :
-                                            m.tma_situacao === 'EVADIDO'      ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300' :
-                                            m.tma_situacao === 'FALECIDO'     ? 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400' :
-                                            'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
-                                        ]">
-                                            {{ m.tma_situacao }}
-                                        </span>
-                                    </td>
-                                    <td class="px-3 py-2.5 text-center">
-                                        <span v-if="m.situacao_saida" class="inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-                                            {{ m.situacao_saida }}
-                                        </span>
-                                        <span v-else class="text-muted-foreground">—</span>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+
+                    <!-- Matrículas AEE -->
+                    <div class="overflow-hidden rounded-xl border bg-card shadow-sm">
+                        <div class="flex items-center justify-between gap-2 border-b border-l-4 border-l-fuchsia-600 bg-fuchsia-50/60 px-4 py-2.5 dark:bg-fuchsia-900/20">
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm font-semibold text-fuchsia-900 dark:text-fuchsia-200">Matrículas AEE</span>
+                                <span class="rounded-full bg-fuchsia-600 px-2 py-0.5 text-xs font-medium text-white">
+                                    {{ matriculasAee.length }}
+                                </span>
+                            </div>
+                            <span class="text-xs text-muted-foreground">Atendimento Educacional Especializado</span>
+                        </div>
+
+                        <div v-if="matriculasAee.length === 0" class="py-8 text-center text-sm text-muted-foreground">
+                            Nenhuma matrícula AEE.
+                        </div>
+
+                        <div v-else class="overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead class="bg-fuchsia-600 text-white">
+                                    <tr>
+                                        <th class="px-3 py-2.5 text-left font-semibold">Ano</th>
+                                        <th class="px-3 py-2.5 text-left font-semibold">Dt. Matrícula</th>
+                                        <th class="px-3 py-2.5 text-left font-semibold">Escola</th>
+                                        <th class="px-3 py-2.5 text-center font-semibold">Turma</th>
+                                        <th class="px-3 py-2.5 text-left font-semibold">Turno</th>
+                                        <th class="px-3 py-2.5 text-center font-semibold">Resultado Final</th>
+                                        <th class="px-3 py-2.5 text-center font-semibold">Situação de Saída</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y">
+                                    <tr
+                                        v-for="(m, idx) in matriculasAee"
+                                        :key="m.tma_id"
+                                        :class="idx % 2 === 0 ? 'bg-white dark:bg-transparent' : 'bg-slate-50 dark:bg-slate-900/40'"
+                                    >
+                                        <td class="px-3 py-2.5 tabular-nums font-medium">{{ m.anl_ano ?? '—' }}</td>
+                                        <td class="px-3 py-2.5 tabular-nums text-muted-foreground">
+                                            {{ m.tma_dt_matricula ? new Date(m.tma_dt_matricula + 'T00:00:00').toLocaleDateString('pt-BR') : '—' }}
+                                        </td>
+                                        <td class="px-3 py-2.5 max-w-[200px] truncate">{{ m.esc_nome ?? '—' }}</td>
+                                        <td class="px-3 py-2.5 text-center font-semibold">{{ m.tur_nome ?? '—' }}</td>
+                                        <td class="px-3 py-2.5 capitalize text-muted-foreground">{{ m.tur_turno?.toLowerCase() ?? '—' }}</td>
+                                        <td class="px-3 py-2.5 text-center">
+                                            <span :class="[
+                                                'inline-flex rounded-full px-2 py-0.5 text-xs font-medium',
+                                                m.tma_situacao === 'ATIVA'        ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' :
+                                                m.tma_situacao === 'CANCELADA'    ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300' :
+                                                m.tma_situacao === 'TRANSFERIDA'  ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300' :
+                                                m.tma_situacao === 'EVADIDO'      ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300' :
+                                                m.tma_situacao === 'FALECIDO'     ? 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400' :
+                                                'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
+                                            ]">
+                                                {{ m.tma_situacao }}
+                                            </span>
+                                        </td>
+                                        <td class="px-3 py-2.5 text-center">
+                                            <span v-if="m.situacao_saida" class="inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                                                {{ m.situacao_saida }}
+                                            </span>
+                                            <span v-else class="text-muted-foreground">—</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </TabsContent>

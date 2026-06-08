@@ -5,6 +5,7 @@ namespace App\Models\Serie;
 use App\Models\Segmento\Segmento;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -77,6 +78,11 @@ class Serie extends Model
     public function consSerie2(): BelongsTo
     {
         return $this->belongsTo(Serie::class, 'ser_cons_ser_id_2', 'ser_id');
+    }
+
+    public function indicadores(): HasMany
+    {
+        return $this->hasMany(SerieIndicador::class, 'ind_ser_id', 'ser_id');
     }
 
     public function scopeSearch(Builder $query, string $q): Builder

@@ -7,7 +7,7 @@ export function useSeries() {
     const items = ref<SerieResumo[]>([]);
     let controller: AbortController | null = null;
 
-    async function search(q: string, exclude?: number | null): Promise<void> {
+    async function search(q: string, exclude?: number | null, segId?: number | null): Promise<void> {
         if (controller) controller.abort();
         controller = new AbortController();
 
@@ -16,6 +16,7 @@ export function useSeries() {
             const params = new URLSearchParams();
             if (q) params.set('q', q);
             if (exclude != null) params.set('exclude', String(exclude));
+            if (segId != null) params.set('seg_id', String(segId));
 
             const res = await apiFetch(`/api/series/search?${params.toString()}`, {
                 signal: controller.signal,

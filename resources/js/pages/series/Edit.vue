@@ -3,12 +3,14 @@ import SerieForm from '@/components/serie/SerieForm.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import type { Segmento } from '@/types/segmento';
-import type { Serie } from '@/types/serie';
+import type { Serie, SerieIndicador, SerieParaReplicar } from '@/types/serie';
 import { Head } from '@inertiajs/vue3';
 
 const props = defineProps<{
     serie: Serie;
     segmentos: Pick<Segmento, 'seg_id' | 'seg_nome_reduzido'>[];
+    indicadores: SerieIndicador[];
+    seriesParaReplicar: SerieParaReplicar[];
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -25,7 +27,13 @@ const breadcrumbs: BreadcrumbItem[] = [
                 <h1 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">Editar série</h1>
                 <p class="text-sm text-slate-500 dark:text-slate-400">{{ serie.ser_nome }}</p>
             </div>
-            <SerieForm mode="edit" :initial="serie" :segmentos="segmentos" />
+            <SerieForm
+                mode="edit"
+                :initial="serie"
+                :segmentos="segmentos"
+                :indicadores="indicadores"
+                :series-para-replicar="seriesParaReplicar"
+            />
         </div>
     </AppLayout>
 </template>

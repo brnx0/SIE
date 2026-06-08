@@ -23,9 +23,7 @@ class StoreAnoLetivoRequest extends FormRequest
                 Rule::unique('cfg_ano_letivo', 'anl_ano')->ignore($id, 'anl_id')->whereNull('anl_deleted_at'),
             ],
             'anl_dt_inicio_ano' => ['required', 'date'],
-            'anl_dt_inicio_1sem' => ['required', 'date', 'after_or_equal:anl_dt_inicio_ano'],
-            'anl_dt_inicio_2sem' => ['required', 'date', 'after:anl_dt_inicio_1sem'],
-            'anl_dt_fim' => ['required', 'date', 'after:anl_dt_inicio_2sem'],
+            'anl_dt_fim' => ['required', 'date', 'after:anl_dt_inicio_ano'],
             'anl_dt_corte' => ['required', 'date'],
             'anl_dt_censo' => ['nullable', 'date'],
             'anl_fl_em_exercicio' => ['boolean'],
@@ -42,7 +40,7 @@ class StoreAnoLetivoRequest extends FormRequest
                 return;
             }
 
-            foreach (['anl_dt_inicio_ano', 'anl_dt_inicio_1sem', 'anl_dt_inicio_2sem', 'anl_dt_fim', 'anl_dt_corte', 'anl_dt_censo'] as $field) {
+            foreach (['anl_dt_inicio_ano', 'anl_dt_fim', 'anl_dt_corte', 'anl_dt_censo'] as $field) {
                 $val = $this->input($field);
                 if (! $val) {
                     continue;
@@ -60,8 +58,6 @@ class StoreAnoLetivoRequest extends FormRequest
         return [
             'anl_ano' => 'ano',
             'anl_dt_inicio_ano' => 'data de início do ano',
-            'anl_dt_inicio_1sem' => 'data de início do 1º semestre',
-            'anl_dt_inicio_2sem' => 'data de início do 2º semestre',
             'anl_dt_fim' => 'fim do ano',
             'anl_dt_corte' => 'data de corte',
             'anl_dt_censo' => 'data do censo',
@@ -74,9 +70,7 @@ class StoreAnoLetivoRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'anl_dt_inicio_1sem.after_or_equal' => 'A :attribute deve ser igual ou posterior à data de início do ano.',
-            'anl_dt_inicio_2sem.after' => 'A :attribute deve ser posterior à data de início do 1º semestre.',
-            'anl_dt_fim.after' => 'O :attribute deve ser posterior à data de início do 2º semestre.',
+            'anl_dt_fim.after' => 'O :attribute deve ser posterior à data de início do ano.',
             'anl_ano.unique' => 'Já existe um ano letivo cadastrado com este ano.',
         ];
     }

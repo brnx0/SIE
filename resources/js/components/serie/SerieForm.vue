@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import FormLabel from '@/components/common/FormLabel.vue';
+import IndicadoresTab from '@/components/serie/IndicadoresTab.vue';
 import InputError from '@/components/common/InputError.vue';
 import Switch from '@/components/common/Switch.vue';
 import SerieCombobox from '@/components/serie/SerieCombobox.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import type { Segmento } from '@/types/segmento';
-import type { Serie, SerieFormData } from '@/types/serie';
+import type { Serie, SerieFormData, SerieIndicador, SerieParaReplicar } from '@/types/serie';
 import { Link, useForm } from '@inertiajs/vue3';
 import { ChevronLeft, LoaderCircle, Save } from 'lucide-vue-next';
 import { watch } from 'vue';
@@ -15,6 +16,8 @@ const props = defineProps<{
     mode: 'create' | 'edit';
     segmentos: Pick<Segmento, 'seg_id' | 'seg_nome_reduzido'>[];
     initial?: Serie;
+    indicadores?: SerieIndicador[];
+    seriesParaReplicar?: SerieParaReplicar[];
 }>();
 
 const form = useForm<SerieFormData>({
@@ -294,6 +297,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar série' : 'Salvar alter
                     v-model="form.ser_promo_ser_id_1"
                     :initial="initial?.promoSerie1 ?? null"
                     :exclude="initial?.ser_id ?? null"
+                    :seg-id="form.seg_id"
                     placeholder="Selecionar série..."
                     :invalid="!!form.errors.ser_promo_ser_id_1"
                 />
@@ -307,6 +311,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar série' : 'Salvar alter
                     v-model="form.ser_promo_ser_id_2"
                     :initial="initial?.promoSerie2 ?? null"
                     :exclude="initial?.ser_id ?? null"
+                    :seg-id="form.seg_id"
                     placeholder="Selecionar série..."
                     :invalid="!!form.errors.ser_promo_ser_id_2"
                 />
@@ -319,6 +324,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar série' : 'Salvar alter
                 <SerieCombobox
                     v-model="form.ser_cons_ser_id_1"
                     :initial="initial?.consSerie1 ?? null"
+                    :seg-id="form.seg_id"
                     placeholder="Selecionar série..."
                     :invalid="!!form.errors.ser_cons_ser_id_1"
                 />
@@ -331,11 +337,22 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar série' : 'Salvar alter
                 <SerieCombobox
                     v-model="form.ser_cons_ser_id_2"
                     :initial="initial?.consSerie2 ?? null"
+                    :seg-id="form.seg_id"
                     placeholder="Selecionar série..."
                     :invalid="!!form.errors.ser_cons_ser_id_2"
                 />
                 <InputError :message="form.errors.ser_cons_ser_id_2" />
             </div>
+        </div>
+
+        <!-- Indicadores (somente edit) -->
+        <div v-if="mode === 'edit' && initial">
+            <h2 class="mb-3 text-base font-semibold text-slate-800 dark:text-slate-100">Indicadores</h2>
+            <IndicadoresTab
+                :ser-id="initial.ser_id"
+                :indicadores="indicadores ?? []"
+                :series-para-replicar="seriesParaReplicar ?? []"
+            />
         </div>
     </form>
 </template>

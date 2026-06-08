@@ -13,8 +13,6 @@ return new class extends Migration
             $t->bigIncrements('anl_id');
             $t->smallInteger('anl_ano');
             $t->date('anl_dt_inicio_ano');
-            $t->date('anl_dt_inicio_1sem');
-            $t->date('anl_dt_inicio_2sem');
             $t->date('anl_dt_fim');
             $t->date('anl_dt_censo')->nullable();
             $t->boolean('anl_fl_em_exercicio')->default(false);

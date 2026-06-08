@@ -35,6 +35,7 @@ const cadastros = [
                     { title: 'Escolas', href: '/escolas' },
                     { title: 'Turmas', href: '/turmas' },
                     { title: 'Turmas AEE', href: '/turmas-aee' },
+                    { title: 'Atendimentos AEE', href: '/atendimentos-aee' },
                 ],
             },
         ],

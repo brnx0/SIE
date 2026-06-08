@@ -76,7 +76,7 @@ class DisciplinaController extends Controller
     public function edit(Disciplina $disciplina): Response
     {
         return Inertia::render('disciplinas/Edit', [
-            'disciplina'  => $disciplina->load('indicadores'),
+            'disciplina'  => $disciplina,
             'areas'       => AreaConhecimento::orderBy('arc_nome')->get(['arc_id', 'arc_nome']),
         ]);
     }

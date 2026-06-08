@@ -28,7 +28,7 @@ class AlunoSearchController extends Controller
             ->where('aln_fl_ativo', true)
             ->where(function ($query) use ($q) {
                 $query->whereRaw('aln_nome ilike ?', ["%{$q}%"])
-                    ->orWhere('aln_nr_matricula', 'like', "%{$q}%")
+                    ->orWhereRaw('CAST(aln_nr_matricula AS TEXT) LIKE ?', ["%{$q}%"])
                     ->orWhere('aln_cpf', 'like', "%{$q}%");
             })
             ->when($anlId, fn ($query) =>

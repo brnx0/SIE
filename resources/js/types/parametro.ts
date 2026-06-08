@@ -33,8 +33,6 @@ export interface AnoLetivo {
     anl_id: number;
     anl_ano: number;
     anl_dt_inicio_ano: string;
-    anl_dt_inicio_1sem: string;
-    anl_dt_inicio_2sem: string;
     anl_dt_fim: string;
     anl_dt_corte: string;
     anl_dt_censo: string | null;
@@ -50,8 +48,6 @@ export interface AnoLetivo {
 export interface AnoLetivoFormData {
     anl_ano: number | '';
     anl_dt_inicio_ano: string;
-    anl_dt_inicio_1sem: string;
-    anl_dt_inicio_2sem: string;
     anl_dt_fim: string;
     anl_dt_corte: string;
     anl_dt_censo: string;
@@ -96,6 +92,12 @@ export interface Unidade {
     uni_created_at?: string | null;
     uni_updated_at?: string | null;
     ano_letivo?: { anl_id: number; anl_ano: number } | null;
+}
+
+export interface AtendimentoAee {
+    ate_id: number;
+    ate_descricao: string;
+    ate_fl_ativo: boolean;
 }
 
 export interface GradeHorario {

@@ -26,8 +26,6 @@ const isEdit = computed(() => !!props.initial);
 const form = useForm<AnoLetivoFormData>({
     anl_ano: '',
     anl_dt_inicio_ano: '',
-    anl_dt_inicio_1sem: '',
-    anl_dt_inicio_2sem: '',
     anl_dt_fim: '',
     anl_dt_corte: '',
     anl_dt_censo: '',
@@ -40,8 +38,6 @@ const reset = () => {
     if (props.initial) {
         form.anl_ano = props.initial.anl_ano;
         form.anl_dt_inicio_ano = props.initial.anl_dt_inicio_ano?.slice(0, 10) ?? '';
-        form.anl_dt_inicio_1sem = props.initial.anl_dt_inicio_1sem?.slice(0, 10) ?? '';
-        form.anl_dt_inicio_2sem = props.initial.anl_dt_inicio_2sem?.slice(0, 10) ?? '';
         form.anl_dt_fim = props.initial.anl_dt_fim?.slice(0, 10) ?? '';
         form.anl_dt_corte = props.initial.anl_dt_corte?.slice(0, 10) ?? '';
         form.anl_dt_censo = props.initial.anl_dt_censo?.slice(0, 10) ?? '';
@@ -79,6 +75,19 @@ const submit = () => {
 };
 
 const close = () => emit('update:open', false);
+
+const clampAno4Digitos = (field: keyof AnoLetivoFormData) => (e: Event) => {
+    const input = e.target as HTMLInputElement;
+    const v = input.value;
+    if (!v) return;
+    const m = v.match(/^(\d+)-(\d{2})-(\d{2})$/);
+    if (!m) return;
+    if (m[1].length > 4) {
+        const fixed = `${m[1].slice(0, 4)}-${m[2]}-${m[3]}`;
+        input.value = fixed;
+        (form as any)[field] = fixed;
+    }
+};
 </script>
 
 <template>
@@ -109,37 +118,25 @@ const close = () => emit('update:open', false);
 
                 <div class="grid gap-2 sm:col-span-1">
                     <FormLabel :for="'anl_dt_censo'">Data do Censo</FormLabel>
-                    <Input id="anl_dt_censo" type="date" v-model="form.anl_dt_censo" />
+                    <Input id="anl_dt_censo" type="date" min="1900-01-01" max="2999-12-31" v-model="form.anl_dt_censo" @input="clampAno4Digitos('anl_dt_censo')" />
                     <InputError :message="form.errors.anl_dt_censo" />
                 </div>
 
                 <div class="grid gap-2 sm:col-span-1">
                     <FormLabel :for="'anl_dt_inicio_ano'" :required="true">Início do Ano</FormLabel>
-                    <Input id="anl_dt_inicio_ano" type="date" v-model="form.anl_dt_inicio_ano" :required="true" />
+                    <Input id="anl_dt_inicio_ano" type="date" min="1900-01-01" max="2999-12-31" v-model="form.anl_dt_inicio_ano" :required="true" @input="clampAno4Digitos('anl_dt_inicio_ano')" />
                     <InputError :message="form.errors.anl_dt_inicio_ano" />
                 </div>
 
                 <div class="grid gap-2 sm:col-span-1">
-                    <FormLabel :for="'anl_dt_inicio_1sem'" :required="true">Data Início 1º Semestre</FormLabel>
-                    <Input id="anl_dt_inicio_1sem" type="date" v-model="form.anl_dt_inicio_1sem" :required="true" />
-                    <InputError :message="form.errors.anl_dt_inicio_1sem" />
-                </div>
-
-                <div class="grid gap-2 sm:col-span-1">
-                    <FormLabel :for="'anl_dt_inicio_2sem'" :required="true">Data Início 2º Semestre</FormLabel>
-                    <Input id="anl_dt_inicio_2sem" type="date" v-model="form.anl_dt_inicio_2sem" :required="true" />
-                    <InputError :message="form.errors.anl_dt_inicio_2sem" />
-                </div>
-
-                <div class="grid gap-2 sm:col-span-1">
                     <FormLabel :for="'anl_dt_fim'" :required="true">Fim do Ano</FormLabel>
-                    <Input id="anl_dt_fim" type="date" v-model="form.anl_dt_fim" :required="true" />
+                    <Input id="anl_dt_fim" type="date" min="1900-01-01" max="2999-12-31" v-model="form.anl_dt_fim" :required="true" @input="clampAno4Digitos('anl_dt_fim')" />
                     <InputError :message="form.errors.anl_dt_fim" />
                 </div>
 
                 <div class="grid gap-2 sm:col-span-1">
                     <FormLabel :for="'anl_dt_corte'" :required="true">Data de Corte</FormLabel>
-                    <Input id="anl_dt_corte" type="date" v-model="form.anl_dt_corte" :required="true" />
+                    <Input id="anl_dt_corte" type="date" min="1900-01-01" max="2999-12-31" v-model="form.anl_dt_corte" :required="true" @input="clampAno4Digitos('anl_dt_corte')" />
                     <InputError :message="form.errors.anl_dt_corte" />
                 </div>
 

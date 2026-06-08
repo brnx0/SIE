@@ -2,7 +2,6 @@
 import FormLabel from '@/components/common/FormLabel.vue';
 import InputError from '@/components/common/InputError.vue';
 import Switch from '@/components/common/Switch.vue';
-import IndicadoresTab from '@/components/disciplina/IndicadoresTab.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import type { AreaConhecimento, Disciplina, DisciplinaFormData } from '@/types/disciplina';
@@ -175,13 +174,5 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar disciplina' : 'Salvar a
             </div>
         </div>
 
-        <!-- Indicadores (somente edit) -->
-        <div v-if="mode === 'edit'">
-            <h2 class="mb-3 text-base font-semibold text-slate-800 dark:text-slate-100">Indicadores</h2>
-            <IndicadoresTab
-                :dis-id="initial!.dis_id"
-                :indicadores="initial?.indicadores ?? []"
-            />
-        </div>
     </form>
 </template>

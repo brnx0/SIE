@@ -14,7 +14,7 @@ use App\Http\Controllers\Api\MunicipioController;
 use App\Http\Controllers\Api\SegmentoController as SegmentoApiController;
 use App\Http\Controllers\Api\SerieController as SerieApiController;
 use App\Http\Controllers\Disciplina\DisciplinaController;
-use App\Http\Controllers\Disciplina\DisciplinaIndicadorController;
+use App\Http\Controllers\Serie\SerieIndicadorController;
 use App\Http\Controllers\Turma\TurmaController;
 use App\Http\Controllers\Turma\TurmaAeeController;
 use App\Http\Controllers\Turma\TurmaAeeProfessorController;
@@ -33,6 +33,7 @@ use App\Http\Controllers\Funcionario\FuncionarioAdmissaoController;
 use App\Http\Controllers\Funcionario\FuncionarioController;
 use App\Http\Controllers\Funcionario\FuncionarioLotacaoController;
 use App\Http\Controllers\Parametro\AnoLetivoController;
+use App\Http\Controllers\Parametro\AtendimentoAeeController;
 use App\Http\Controllers\Parametro\GradeDisciplinarController;
 use App\Http\Controllers\Parametro\GradeHorarioController;
 use App\Http\Controllers\Parametro\ParametroController;
@@ -114,11 +115,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
     Route::get('disciplinas/export', [DisciplinaController::class, 'export'])->name('disciplinas.export');
     Route::resource('disciplinas', DisciplinaController::class)->except(['show']);
-    Route::prefix('disciplinas/{disciplina}/indicadores')->name('disciplinas.indicadores.')->group(function () {
-        Route::post('/', [DisciplinaIndicadorController::class, 'store'])->name('store');
-        Route::put('/{indicador}', [DisciplinaIndicadorController::class, 'update'])->name('update');
-        Route::delete('/{indicador}', [DisciplinaIndicadorController::class, 'destroy'])->name('destroy');
+
+    Route::prefix('series/{serie}/indicadores')->name('series.indicadores.')->group(function () {
+        Route::post('replicar', [SerieIndicadorController::class, 'replicar'])->name('replicar');
+        Route::post('/', [SerieIndicadorController::class, 'store'])->name('store');
+        Route::put('/{indicador}', [SerieIndicadorController::class, 'update'])->name('update');
+        Route::delete('/{indicador}', [SerieIndicadorController::class, 'destroy'])->name('destroy');
     });
+    Route::get('api/series/{serie}/indicadores', [SerieIndicadorController::class, 'index'])->name('api.series.indicadores');
 
     Route::get('matriculas', [MatriculaController::class, 'index'])->name('matriculas.index');
     Route::post('matriculas', [MatriculaController::class, 'store'])->name('matriculas.store');
@@ -168,6 +172,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->scopeBindings()->name('parametros.anos-letivos.update');
         Route::delete('parametros/anos-letivos/{anoLetivo}', [AnoLetivoController::class, 'destroy'])
             ->scopeBindings()->name('parametros.anos-letivos.destroy');
+
+        Route::get('atendimentos-aee', [AtendimentoAeeController::class, 'index'])->name('atendimentos-aee.index');
+        Route::post('atendimentos-aee', [AtendimentoAeeController::class, 'store'])->name('atendimentos-aee.store');
+        Route::put('atendimentos-aee/{atendimentoAee}', [AtendimentoAeeController::class, 'update'])->name('atendimentos-aee.update');
+        Route::delete('atendimentos-aee/{atendimentoAee}', [AtendimentoAeeController::class, 'destroy'])->name('atendimentos-aee.destroy');
 
         Route::post('parametros/unidades', [UnidadeController::class, 'store'])->name('parametros.unidades.store');
         Route::put('parametros/unidades/{unidade}', [UnidadeController::class, 'update'])->name('parametros.unidades.update');

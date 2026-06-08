@@ -231,7 +231,7 @@ class MatriculaController extends Controller
         if (empty($alunoData['aln_nr_matricula'])) {
             DB::statement('SELECT pg_advisory_xact_lock(?)', [727301]);
             $max = (int) DB::table('edu_aluno')->max('aln_nr_matricula');
-            $alunoData['aln_nr_matricula'] = $max + 1;
+            $alunoData['aln_nr_matricula'] = max($max + 1, 1000);
         }
 
         $alunoData['aln_fl_ativo'] = true;

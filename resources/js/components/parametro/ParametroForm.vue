@@ -315,8 +315,6 @@ const fmtDateTime = (s?: string | null) => {
                                     <th class="px-3 py-2 font-semibold">Atualizado</th>
                                     <th class="px-3 py-2 font-semibold">Login</th>
                                     <th class="px-3 py-2 font-semibold">Início Ano</th>
-                                    <th class="px-3 py-2 font-semibold">1º Sem.</th>
-                                    <th class="px-3 py-2 font-semibold">2º Sem.</th>
                                     <th class="px-3 py-2 font-semibold">Fim do Ano</th>
                                     <th class="px-3 py-2 font-semibold">Censo</th>
                                     <th class="px-3 py-2 text-center font-semibold">Em Exercício</th>
@@ -327,7 +325,7 @@ const fmtDateTime = (s?: string | null) => {
                             </thead>
                             <tbody>
                                 <tr v-if="anosLetivos.length === 0">
-                                    <td colspan="12" class="px-3 py-6 text-center text-muted-foreground">
+                                    <td colspan="10" class="px-3 py-6 text-center text-muted-foreground">
                                         Nenhum ano letivo cadastrado.
                                     </td>
                                 </tr>
@@ -340,8 +338,6 @@ const fmtDateTime = (s?: string | null) => {
                                     <td class="px-3 py-2 text-muted-foreground">{{ fmtDateTime(anl.anl_updated_at) }}</td>
                                     <td class="px-3 py-2 text-muted-foreground">{{ anl.updated_by?.name ?? anl.created_by?.name ?? '—' }}</td>
                                     <td class="px-3 py-2">{{ fmtDate(anl.anl_dt_inicio_ano) }}</td>
-                                    <td class="px-3 py-2">{{ fmtDate(anl.anl_dt_inicio_1sem) }}</td>
-                                    <td class="px-3 py-2">{{ fmtDate(anl.anl_dt_inicio_2sem) }}</td>
                                     <td class="px-3 py-2">{{ fmtDate(anl.anl_dt_fim) }}</td>
                                     <td class="px-3 py-2">{{ fmtDate(anl.anl_dt_censo) }}</td>
                                     <td class="px-3 py-2 text-center">

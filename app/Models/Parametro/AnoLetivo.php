@@ -21,8 +21,6 @@ class AnoLetivo extends Model
     protected $fillable = [
         'anl_ano',
         'anl_dt_inicio_ano',
-        'anl_dt_inicio_1sem',
-        'anl_dt_inicio_2sem',
         'anl_dt_fim',
         'anl_dt_censo',
         'anl_dt_corte',
@@ -36,8 +34,6 @@ class AnoLetivo extends Model
     protected $casts = [
         'anl_ano' => 'integer',
         'anl_dt_inicio_ano' => 'date',
-        'anl_dt_inicio_1sem' => 'date',
-        'anl_dt_inicio_2sem' => 'date',
         'anl_dt_fim' => 'date',
         'anl_dt_censo' => 'date',
         'anl_dt_corte' => 'date',

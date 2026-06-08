@@ -8,6 +8,7 @@ use App\Models\Segmento\Segmento;
 use App\Models\Serie\Serie;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Response as HttpResponse;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -78,6 +79,28 @@ class SerieController extends Controller
 
         $resumo = fn ($s) => $s ? ['ser_id' => $s->ser_id, 'ser_nome' => $s->ser_nome] : null;
 
+        $indicadores = $serie->indicadores()
+            ->orderBy('ind_id')
+            ->get(['ind_id', 'ind_ser_id', 'ind_descricao', 'ind_fl_ativo']);
+
+        $seriesParaReplicar = Serie::query()
+            ->where('ser_id', '!=', $serie->ser_id)
+            ->whereExists(function ($q) {
+                $q->select(DB::raw(1))
+                    ->from('edu_serie_indicador')
+                    ->whereColumn('edu_serie_indicador.ind_ser_id', 'edu_serie.ser_id')
+                    ->whereNull('edu_serie_indicador.ind_deleted_at');
+            })
+            ->orderBy('seg_id')
+            ->orderBy('ser_ordem_no_segmento')
+            ->with('segmento:seg_id,seg_nome_reduzido')
+            ->get(['ser_id', 'ser_nome', 'seg_id'])
+            ->map(fn ($s) => [
+                'ser_id'   => $s->ser_id,
+                'ser_nome' => $s->ser_nome,
+                'seg_nome' => $s->segmento?->seg_nome_reduzido,
+            ]);
+
         return Inertia::render('series/Edit', [
             'serie'     => array_merge($serie->toArray(), [
                 'promoSerie1' => $resumo($serie->promoSerie1),
@@ -85,7 +108,9 @@ class SerieController extends Controller
                 'consSerie1'  => $resumo($serie->consSerie1),
                 'consSerie2'  => $resumo($serie->consSerie2),
             ]),
-            'segmentos' => Segmento::orderBy('seg_ordem')->get(['seg_id', 'seg_nome_reduzido']),
+            'segmentos'          => Segmento::orderBy('seg_ordem')->get(['seg_id', 'seg_nome_reduzido']),
+            'indicadores'        => $indicadores,
+            'seriesParaReplicar' => $seriesParaReplicar,
         ]);
     }
 
