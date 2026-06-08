@@ -9,6 +9,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasTable('edu_turma_horario')) {
+            return;
+        }
+
         Schema::create('edu_turma_horario', function (Blueprint $table) {
             $table->bigIncrements('trh_id');
             $table->unsignedBigInteger('trh_tur_id');
@@ -28,7 +32,7 @@ return new class extends Migration
         });
 
         DB::statement('
-            CREATE UNIQUE INDEX turma_horario_unica ON edu_turma_horario
+            CREATE UNIQUE INDEX IF NOT EXISTS turma_horario_unica ON edu_turma_horario
             (trh_tur_id, trh_grh_id, trh_dia)
             WHERE trh_deleted_at IS NULL
         ');

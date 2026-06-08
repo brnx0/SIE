@@ -76,8 +76,15 @@ class SerieController extends Controller
             'consSerie2:ser_id,ser_nome',
         ]);
 
+        $resumo = fn ($s) => $s ? ['ser_id' => $s->ser_id, 'ser_nome' => $s->ser_nome] : null;
+
         return Inertia::render('series/Edit', [
-            'serie'     => $serie,
+            'serie'     => array_merge($serie->toArray(), [
+                'promoSerie1' => $resumo($serie->promoSerie1),
+                'promoSerie2' => $resumo($serie->promoSerie2),
+                'consSerie1'  => $resumo($serie->consSerie1),
+                'consSerie2'  => $resumo($serie->consSerie2),
+            ]),
             'segmentos' => Segmento::orderBy('seg_ordem')->get(['seg_id', 'seg_nome_reduzido']),
         ]);
     }
