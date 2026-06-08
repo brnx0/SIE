@@ -14,6 +14,8 @@ class Disciplina extends Model
     protected $table = 'edu_disciplina';
     protected $primaryKey = 'dis_id';
 
+    public static $snakeAttributes = false;
+
     const CREATED_AT = 'dis_created_at';
     const UPDATED_AT = 'dis_updated_at';
     const DELETED_AT = 'dis_deleted_at';
