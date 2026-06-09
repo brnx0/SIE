@@ -1,12 +1,15 @@
 <?php
 
 use App\Http\Controllers\Aluno\AlunoController;
+use App\Http\Controllers\Aluno\MovimentacaoController;
 use App\Http\Controllers\Api\AlunoSearchController;
 use App\Http\Controllers\Api\BairroController;
 use App\Http\Controllers\Api\MatriculaTurmaController;
 use App\Http\Controllers\Api\TurmaAlunoController;
 use App\Http\Controllers\Api\TurmaAeeAlunoController;
 use App\Http\Controllers\Api\TurmaAeeAtendimentoController;
+use App\Http\Controllers\Api\TurmaAtividadeAlunoController;
+use App\Http\Controllers\Api\TurmaAtividadeItemController;
 use App\Http\Controllers\Matricula\MatriculaController;
 use App\Http\Controllers\Api\DisciplinaController as DisciplinaApiController;
 use App\Http\Controllers\Api\GerenciaRegionalController;
@@ -18,6 +21,8 @@ use App\Http\Controllers\Serie\SerieIndicadorController;
 use App\Http\Controllers\Turma\TurmaController;
 use App\Http\Controllers\Turma\TurmaAeeController;
 use App\Http\Controllers\Turma\TurmaAeeProfessorController;
+use App\Http\Controllers\Turma\TurmaAtividadeController;
+use App\Http\Controllers\Turma\TurmaAtividadeProfessorController;
 use App\Http\Controllers\Turma\TurmaHorarioController;
 use App\Http\Controllers\Turma\TurmaProfessorApoioController;
 use App\Http\Controllers\Turma\TurmaProfessorController;
@@ -34,6 +39,7 @@ use App\Http\Controllers\Funcionario\FuncionarioController;
 use App\Http\Controllers\Funcionario\FuncionarioLotacaoController;
 use App\Http\Controllers\Parametro\AnoLetivoController;
 use App\Http\Controllers\Parametro\AtendimentoAeeController;
+use App\Http\Controllers\Parametro\AtividadeController;
 use App\Http\Controllers\Parametro\GradeDisciplinarController;
 use App\Http\Controllers\Parametro\GradeHorarioController;
 use App\Http\Controllers\Parametro\ParametroController;
@@ -124,6 +130,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
     Route::get('api/series/{serie}/indicadores', [SerieIndicadorController::class, 'index'])->name('api.series.indicadores');
 
+    Route::get('movimentacoes', [MovimentacaoController::class, 'index'])->name('movimentacoes.index');
+    Route::get('movimentacoes/create', [MovimentacaoController::class, 'create'])->name('movimentacoes.create');
+    Route::post('movimentacoes', [MovimentacaoController::class, 'store'])->name('movimentacoes.store');
+    Route::get('movimentacoes/{movimentacao}', [MovimentacaoController::class, 'show'])->name('movimentacoes.show');
+
     Route::get('matriculas', [MatriculaController::class, 'index'])->name('matriculas.index');
     Route::post('matriculas', [MatriculaController::class, 'store'])->name('matriculas.store');
     Route::get('matriculas/segunda-via', [MatriculaController::class, 'segundaVia'])->name('matriculas.segunda-via');
@@ -144,6 +155,28 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('api/turmas-aee/{tur_id}/atendimentos', [TurmaAeeAtendimentoController::class, 'index'])->name('api.turmas-aee.atendimentos');
     Route::post('api/turmas-aee/{tur_id}/atendimentos', [TurmaAeeAtendimentoController::class, 'store'])->name('api.turmas-aee.atendimentos.store');
     Route::delete('api/turmas-aee/{tur_id}/atendimentos/{tat_id}', [TurmaAeeAtendimentoController::class, 'destroy'])->name('api.turmas-aee.atendimentos.destroy');
+
+    // Turmas de Atividade
+    Route::get('turmas-atividade/export', [TurmaAtividadeController::class, 'export'])->name('turmas-atividade.export');
+    Route::resource('turmas-atividade', TurmaAtividadeController::class)
+        ->parameters(['turmas-atividade' => 'turmaAtividade'])
+        ->except(['show']);
+    Route::prefix('turmas-atividade/{turmaAtividade}/professores')->name('turmas-atividade.professores.')->group(function () {
+        Route::post('/', [TurmaAtividadeProfessorController::class, 'store'])->name('store');
+        Route::delete('/{turmaProfessor}', [TurmaAtividadeProfessorController::class, 'destroy'])->name('destroy');
+    });
+
+    // API turma Atividade — alunos
+    Route::get('api/turmas-atividade/{tur_id}/alunos', [TurmaAtividadeAlunoController::class, 'index'])->name('api.turmas-atividade.alunos');
+    Route::get('api/turmas-atividade/{tur_id}/alunos/elegiveis', [TurmaAtividadeAlunoController::class, 'elegiveis'])->name('api.turmas-atividade.alunos.elegiveis');
+    Route::post('api/turmas-atividade/{tur_id}/alunos', [TurmaAtividadeAlunoController::class, 'store'])->name('api.turmas-atividade.alunos.store');
+    Route::delete('api/turmas-atividade/{tur_id}/alunos/{tma_id}', [TurmaAtividadeAlunoController::class, 'destroy'])->name('api.turmas-atividade.alunos.destroy');
+
+    // API turma Atividade — atividades ofertadas
+    Route::get('api/atividades', [TurmaAtividadeItemController::class, 'catalogo'])->name('api.atividades.catalogo');
+    Route::get('api/turmas-atividade/{tur_id}/itens', [TurmaAtividadeItemController::class, 'index'])->name('api.turmas-atividade.itens');
+    Route::post('api/turmas-atividade/{tur_id}/itens', [TurmaAtividadeItemController::class, 'store'])->name('api.turmas-atividade.itens.store');
+    Route::delete('api/turmas-atividade/{tur_id}/itens/{tta_id}', [TurmaAtividadeItemController::class, 'destroy'])->name('api.turmas-atividade.itens.destroy');
     Route::get('api/matriculas/verificar', [MatriculaController::class, 'verificar'])->name('api.matriculas.verificar');
     Route::get('api/alunos/search', [AlunoSearchController::class, 'search'])->name('api.alunos.search');
 
@@ -177,6 +210,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('atendimentos-aee', [AtendimentoAeeController::class, 'store'])->name('atendimentos-aee.store');
         Route::put('atendimentos-aee/{atendimentoAee}', [AtendimentoAeeController::class, 'update'])->name('atendimentos-aee.update');
         Route::delete('atendimentos-aee/{atendimentoAee}', [AtendimentoAeeController::class, 'destroy'])->name('atendimentos-aee.destroy');
+
+        Route::get('atividades', [AtividadeController::class, 'index'])->name('atividades.index');
+        Route::post('atividades', [AtividadeController::class, 'store'])->name('atividades.store');
+        Route::put('atividades/{atividade}', [AtividadeController::class, 'update'])->name('atividades.update');
+        Route::delete('atividades/{atividade}', [AtividadeController::class, 'destroy'])->name('atividades.destroy');
 
         Route::post('parametros/unidades', [UnidadeController::class, 'store'])->name('parametros.unidades.store');
         Route::put('parametros/unidades/{unidade}', [UnidadeController::class, 'update'])->name('parametros.unidades.update');

@@ -69,10 +69,16 @@ const alertarAcentos = computed(() => params.value.alertar_acentos_nomes);
 const stripAccents = (str: string) => str.normalize('NFD').replace(/[̀-ͯ]/g, '');
 
 const matriculasRegulares = computed(() =>
-    (props.matriculas ?? []).filter((m) => (m.tur_modalidade ?? 'REGULAR') !== 'AEE'),
+    (props.matriculas ?? []).filter((m) => {
+        const mod = m.tur_modalidade ?? 'REGULAR';
+        return mod !== 'AEE' && mod !== 'ATIVIDADE';
+    }),
 );
 const matriculasAee = computed(() =>
     (props.matriculas ?? []).filter((m) => m.tur_modalidade === 'AEE'),
+);
+const matriculasAtividade = computed(() =>
+    (props.matriculas ?? []).filter((m) => m.tur_modalidade === 'ATIVIDADE'),
 );
 
 const TABS = ['dados-pessoais', 'documentacao', 'filiacao-contato', 'complementares', 'turmas'] as const;
@@ -1138,6 +1144,73 @@ const initials = computed(() => {
                                         <td class="px-3 py-2.5 text-center font-semibold">{{ m.tur_nome ?? '—' }}</td>
                                         <td class="px-3 py-2.5 capitalize text-muted-foreground">{{ m.tur_turno?.toLowerCase() ?? '—' }}</td>
                                         <td class="px-3 py-2.5 text-muted-foreground">{{ m.seg_nome ?? '—' }}</td>
+                                        <td class="px-3 py-2.5 text-center">
+                                            <span :class="[
+                                                'inline-flex rounded-full px-2 py-0.5 text-xs font-medium',
+                                                m.tma_situacao === 'ATIVA'        ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' :
+                                                m.tma_situacao === 'CANCELADA'    ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300' :
+                                                m.tma_situacao === 'TRANSFERIDA'  ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300' :
+                                                m.tma_situacao === 'EVADIDO'      ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300' :
+                                                m.tma_situacao === 'FALECIDO'     ? 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400' :
+                                                'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
+                                            ]">
+                                                {{ m.tma_situacao }}
+                                            </span>
+                                        </td>
+                                        <td class="px-3 py-2.5 text-center">
+                                            <span v-if="m.situacao_saida" class="inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                                                {{ m.situacao_saida }}
+                                            </span>
+                                            <span v-else class="text-muted-foreground">—</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Matrículas em Atividades -->
+                    <div class="overflow-hidden rounded-xl border bg-card shadow-sm">
+                        <div class="flex items-center justify-between gap-2 border-b border-l-4 border-l-teal-600 bg-teal-50/60 px-4 py-2.5 dark:bg-teal-900/20">
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm font-semibold text-teal-900 dark:text-teal-200">Matrículas em Atividades</span>
+                                <span class="rounded-full bg-teal-600 px-2 py-0.5 text-xs font-medium text-white">
+                                    {{ matriculasAtividade.length }}
+                                </span>
+                            </div>
+                            <span class="text-xs text-muted-foreground">Atividade Complementar</span>
+                        </div>
+
+                        <div v-if="matriculasAtividade.length === 0" class="py-8 text-center text-sm text-muted-foreground">
+                            Nenhuma matrícula em atividade.
+                        </div>
+
+                        <div v-else class="overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead class="bg-teal-600 text-white">
+                                    <tr>
+                                        <th class="px-3 py-2.5 text-left font-semibold">Ano</th>
+                                        <th class="px-3 py-2.5 text-left font-semibold">Dt. Matrícula</th>
+                                        <th class="px-3 py-2.5 text-left font-semibold">Escola</th>
+                                        <th class="px-3 py-2.5 text-center font-semibold">Turma</th>
+                                        <th class="px-3 py-2.5 text-left font-semibold">Turno</th>
+                                        <th class="px-3 py-2.5 text-center font-semibold">Resultado Final</th>
+                                        <th class="px-3 py-2.5 text-center font-semibold">Situação de Saída</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y">
+                                    <tr
+                                        v-for="(m, idx) in matriculasAtividade"
+                                        :key="m.tma_id"
+                                        :class="idx % 2 === 0 ? 'bg-white dark:bg-transparent' : 'bg-slate-50 dark:bg-slate-900/40'"
+                                    >
+                                        <td class="px-3 py-2.5 tabular-nums font-medium">{{ m.anl_ano ?? '—' }}</td>
+                                        <td class="px-3 py-2.5 tabular-nums text-muted-foreground">
+                                            {{ m.tma_dt_matricula ? new Date(m.tma_dt_matricula + 'T00:00:00').toLocaleDateString('pt-BR') : '—' }}
+                                        </td>
+                                        <td class="px-3 py-2.5 max-w-[200px] truncate">{{ m.esc_nome ?? '—' }}</td>
+                                        <td class="px-3 py-2.5 text-center font-semibold">{{ m.tur_nome ?? '—' }}</td>
+                                        <td class="px-3 py-2.5 capitalize text-muted-foreground">{{ m.tur_turno?.toLowerCase() ?? '—' }}</td>
                                         <td class="px-3 py-2.5 text-center">
                                             <span :class="[
                                                 'inline-flex rounded-full px-2 py-0.5 text-xs font-medium',

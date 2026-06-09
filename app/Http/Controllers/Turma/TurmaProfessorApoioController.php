@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Turma;
 
 use App\Http\Controllers\Controller;
 use App\Models\Turma\Turma;
+use App\Models\Turma\TurmaProfessor;
 use App\Models\Turma\TurmaProfessorApoio;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -27,6 +28,16 @@ class TurmaProfessorApoioController extends Controller
         if ($duplicado) {
             return back()->withErrors([
                 'tpa_fun_id' => 'Este professor já está alocado como apoio nesta turma.',
+            ]);
+        }
+
+        $regente = TurmaProfessor::where('tup_tur_id', $turma->tur_id)
+            ->where('tup_fun_id', $data['tpa_fun_id'])
+            ->exists();
+
+        if ($regente) {
+            return back()->withErrors([
+                'tpa_fun_id' => 'Este professor já está alocado como regente nesta turma. Remova da lista de regentes para alocá-lo como apoio.',
             ]);
         }
 

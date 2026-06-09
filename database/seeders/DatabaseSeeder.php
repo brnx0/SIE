@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
         $this->call(SegmentoSeeder::class);
         $this->call(CargoSeeder::class);
         $this->call(AreaConhecimentoSeeder::class);
+        $this->call(TipoMovimentacaoSeeder::class);
 
         User::updateOrCreate(
             ['email' => 'admin@sie.local'],

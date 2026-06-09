@@ -2,7 +2,7 @@
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/composables/useToast';
 import { Loader2, RefreshCw } from 'lucide-vue-next';
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 
 const props = defineProps<{ turId: number }>();
 
@@ -12,6 +12,7 @@ interface AlunoMatricula {
     tma_fl_renovado: boolean;
     tma_situacao: string;
     tas_descricao_entrada: string | null;
+    tas_descricao_saida: string | null;
     aln_id: number;
     aln_nome: string;
     aln_nr_matricula: number | null;
@@ -67,6 +68,13 @@ const toggleRenovado = async (aluno: AlunoMatricula) => {
 const formatarData = (d: string | null) =>
     d ? new Date(d + 'T00:00:00').toLocaleDateString('pt-BR') : '—';
 
+const totalAtivos = computed(() => alunos.value.filter(a => a.tma_situacao === 'ATIVA').length);
+
+const statusLabel = (a: AlunoMatricula): string =>
+    a.tma_situacao === 'ATIVA'
+        ? (a.tas_descricao_entrada ?? 'Matriculado(a)')
+        : (a.tas_descricao_saida ?? a.tma_situacao);
+
 onMounted(load);
 </script>
 
@@ -76,7 +84,8 @@ onMounted(load);
             <span class="text-sm font-medium">Alunos matriculados</span>
             <div class="flex items-center gap-3">
                 <span v-if="!loading" class="text-xs text-muted-foreground">
-                    {{ alunos.length }} aluno{{ alunos.length !== 1 ? 's' : '' }}
+                    {{ totalAtivos }} matriculado{{ totalAtivos !== 1 ? 's' : '' }}
+                    <span v-if="alunos.length !== totalAtivos">(+ {{ alunos.length - totalAtivos }} c/ saída)</span>
                 </span>
                 <Button type="button" size="sm" variant="outline" class="gap-1.5" :disabled="loading" title="Atualizar registros" @click="load">
                     <RefreshCw :class="['size-4', loading && 'animate-spin']" />
@@ -127,7 +136,7 @@ onMounted(load);
                                     ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
                                     : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'"
                             >
-                                {{ a.tas_descricao_entrada ?? a.tma_situacao }}
+                                {{ statusLabel(a) }}
                             </span>
                         </td>
                         <td class="px-4 py-2.5 text-center">

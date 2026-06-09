@@ -6,13 +6,17 @@ use App\Http\Controllers\Controller;
 use App\Models\Funcionario\Funcionario;
 use App\Models\Funcionario\FuncionarioAdmissao;
 use App\Models\Funcionario\FuncionarioLotacao;
+use App\Models\Turma\Turma;
+use App\Models\Turma\TurmaHorario;
+use App\Models\Turma\TurmaProfessor;
+use App\Models\Turma\TurmaProfessorApoio;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class FuncionarioLotacaoController extends Controller
 {
-    protected function rules(Request $request): array
+    protected function rules(Request $request, ?FuncionarioAdmissao $admissao = null): array
     {
         $vinculos = [
             'Comissionado', 'Concursado', 'Contratado CLT',
@@ -54,7 +58,7 @@ class FuncionarioLotacaoController extends Controller
             'lot_vinculo' => ['required', 'string', Rule::in($vinculos)],
             'lot_situacao_funcional' => ['nullable', 'string', Rule::in($situacoes)],
             'lot_criterio_acesso' => ['nullable', 'string', Rule::in($criterios)],
-            'lot_dt_inicio' => ['required', 'date'],
+            'lot_dt_inicio' => ['required', 'date', ...($admissao ? ['after_or_equal:' . $admissao->adm_dt_admissao->format('Y-m-d')] : [])],
             'lot_dt_fim' => ['nullable', 'date', 'after_or_equal:lot_dt_inicio'],
             'lot_fl_ativo' => ['boolean'],
             'lot_funcoes_sala_aula' => [$isDocente ? 'required' : 'nullable', 'array'],
@@ -133,7 +137,9 @@ class FuncionarioLotacaoController extends Controller
 
     public function store(Request $request, Funcionario $funcionario, FuncionarioAdmissao $admissao): RedirectResponse
     {
-        $data = $request->validate($this->rules($request), [], $this->attributes());
+        $data = $request->validate($this->rules($request, $admissao), [
+            'lot_dt_inicio.after_or_equal' => 'A data inicial do vínculo não pode ser anterior à data de admissão (' . $admissao->adm_dt_admissao->format('d/m/Y') . ').',
+        ], $this->attributes());
 
         $admissao->lotacoes()->create($data);
 
@@ -142,7 +148,9 @@ class FuncionarioLotacaoController extends Controller
 
     public function update(Request $request, Funcionario $funcionario, FuncionarioAdmissao $admissao, FuncionarioLotacao $lotacao): RedirectResponse
     {
-        $data = $request->validate($this->rules($request), [], $this->attributes());
+        $data = $request->validate($this->rules($request, $admissao), [
+            'lot_dt_inicio.after_or_equal' => 'A data inicial do vínculo não pode ser anterior à data de admissão (' . $admissao->adm_dt_admissao->format('d/m/Y') . ').',
+        ], $this->attributes());
 
         $lotacao->update($data);
 
@@ -151,6 +159,19 @@ class FuncionarioLotacaoController extends Controller
 
     public function destroy(Funcionario $funcionario, FuncionarioAdmissao $admissao, FuncionarioLotacao $lotacao): RedirectResponse
     {
+        $turmasEscola = Turma::where('tur_esc_id', $lotacao->lot_esc_id)->pluck('tur_id');
+
+        $temAlocacao = TurmaProfessor::where('tup_fun_id', $funcionario->fun_id)
+                ->whereIn('tup_tur_id', $turmasEscola)->exists()
+            || TurmaProfessorApoio::where('tpa_fun_id', $funcionario->fun_id)
+                ->whereIn('tpa_tur_id', $turmasEscola)->exists()
+            || TurmaHorario::where('trh_fun_id', $funcionario->fun_id)
+                ->whereIn('trh_tur_id', $turmasEscola)->exists();
+
+        if ($temAlocacao) {
+            return back()->with('error', 'Não é possível excluir: professor possui alocação em turma desta escola. Informe a data fim no registro para inativar.');
+        }
+
         $lotacao->delete();
 
         return back()->with('success', 'Lotação removida com sucesso.');

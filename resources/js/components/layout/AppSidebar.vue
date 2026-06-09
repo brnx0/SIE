@@ -35,7 +35,9 @@ const cadastros = [
                     { title: 'Escolas', href: '/escolas' },
                     { title: 'Turmas', href: '/turmas' },
                     { title: 'Turmas AEE', href: '/turmas-aee' },
+                    { title: 'Turmas Atividades', href: '/turmas-atividade' },
                     { title: 'Atendimentos AEE', href: '/atendimentos-aee' },
+                    { title: 'Atividades', href: '/atividades' },
                 ],
             },
         ],
@@ -47,6 +49,7 @@ const matriculasMenu = [
         icon: ClipboardList,
         children: [
             { title: 'Matrículas', href: '/matriculas' },
+            { title: 'Movimentações', href: '/movimentacoes' },
             { title: '2ª Via Comprovante', href: '/matriculas/segunda-via' },
         ],
     },

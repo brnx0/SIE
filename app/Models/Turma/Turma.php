@@ -51,9 +51,10 @@ class Turma extends Model
 
     const SITUACOES = ['ABERTA', 'ENCERRADA'];
 
-    const MODALIDADE_REGULAR = 'REGULAR';
-    const MODALIDADE_AEE     = 'AEE';
-    const MODALIDADES = [self::MODALIDADE_REGULAR, self::MODALIDADE_AEE];
+    const MODALIDADE_REGULAR   = 'REGULAR';
+    const MODALIDADE_AEE       = 'AEE';
+    const MODALIDADE_ATIVIDADE = 'ATIVIDADE';
+    const MODALIDADES = [self::MODALIDADE_REGULAR, self::MODALIDADE_AEE, self::MODALIDADE_ATIVIDADE];
 
     const SEMESTRES = [1, 2];
 
@@ -151,5 +152,15 @@ class Turma extends Model
     public function scopeAee($query)
     {
         return $query->where('tur_modalidade', self::MODALIDADE_AEE);
+    }
+
+    public function scopeAtividade($query)
+    {
+        return $query->where('tur_modalidade', self::MODALIDADE_ATIVIDADE);
+    }
+
+    public function atividades(): HasMany
+    {
+        return $this->hasMany(TurmaAtividade::class, 'tta_tur_id', 'tur_id');
     }
 }

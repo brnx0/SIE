@@ -97,21 +97,23 @@ class TurmaHorarioController extends Controller
             ]);
         }
 
-        if (!$data['trh_fl_tc']) {
-            $conflito = TurmaHorario::with('turma.escola')
-                ->where('trh_tempo', $data['trh_tempo'])
-                ->where('trh_dia', $data['trh_dia'])
-                ->where('trh_fun_id', $data['trh_fun_id'])
-                ->where('trh_fl_tc', false)
-                ->whereHas('turma', fn ($q) =>
-                    $q->where('tur_anl_id', $turma->tur_anl_id)
-                      ->where('tur_id', '!=', $turma->tur_id)
-                )
-                ->first();
+        $conflito = TurmaHorario::with('turma')
+            ->where('trh_tempo', $data['trh_tempo'])
+            ->where('trh_dia', $data['trh_dia'])
+            ->where('trh_fun_id', $data['trh_fun_id'])
+            ->whereHas('turma', fn ($q) =>
+                $q->where('tur_anl_id', $turma->tur_anl_id)
+                  ->where('tur_id', '!=', $turma->tur_id)
+            )
+            ->first();
 
-            if ($conflito) {
+        if ($conflito) {
+            $mesmaEscola = $conflito->turma->tur_esc_id === $turma->tur_esc_id;
+            $bloquear = $data['trh_fl_tc'] ? !$mesmaEscola : true;
+
+            if ($bloquear) {
                 $nome   = $conflito->turma->tur_nome;
-                $escola = $conflito->turma->escola?->esc_nome ?? '';
+                $escola = $mesmaEscola ? 'nesta escola' : 'em outra escola';
                 return back()->withErrors([
                     'trh_fun_id' => "Professor já alocado neste {$data['trh_tempo']}º tempo na {$data['trh_dia']} na turma {$nome} ({$escola}).",
                 ]);

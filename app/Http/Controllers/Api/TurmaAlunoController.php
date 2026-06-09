@@ -21,6 +21,7 @@ class TurmaAlunoController extends Controller
             ->with([
                 'aluno:aln_id,aln_nome,aln_nr_matricula,aln_dt_nascimento',
                 'situacaoEntrada:tas_cod,tas_descricao_enturmacao',
+                'situacaoSaida:tas_cod,tas_descricao_enturmacao',
             ])
             ->orderBy('tma_dt_matricula')
             ->get();
@@ -39,6 +40,7 @@ class TurmaAlunoController extends Controller
                 'tma_fl_renovado' => (bool) $m->tma_fl_renovado,
                 'tma_situacao'         => $m->tma_situacao,
                 'tas_descricao_entrada'=> $m->situacaoEntrada?->tas_descricao_enturmacao,
+                'tas_descricao_saida'  => $m->situacaoSaida?->tas_descricao_enturmacao,
                 'aln_id'          => $m->aluno?->aln_id,
                 'aln_nome'        => $m->aluno?->aln_nome,
                 'aln_nr_matricula'=> $m->aluno?->aln_nr_matricula,

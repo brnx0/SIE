@@ -100,6 +100,12 @@ export interface AtendimentoAee {
     ate_fl_ativo: boolean;
 }
 
+export interface Atividade {
+    atv_id: number;
+    atv_descricao: string;
+    atv_fl_ativo: boolean;
+}
+
 export interface GradeHorario {
     grh_id: number;
     grh_seg_id: number;

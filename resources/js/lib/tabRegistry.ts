@@ -43,6 +43,7 @@ const PATH_LABELS: Record<string, string> = {
     '/matriculas/segunda-via': '2ª Via Comprovante',
     '/grade-disciplinar':      'Grade Disciplinar',
     '/turmas-aee':             'Turmas AEE',
+    '/movimentacoes':          'Movimentações',
 };
 
 export function prettifyPath(path: string): string {

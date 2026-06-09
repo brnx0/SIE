@@ -54,6 +54,9 @@ const DEFAULT_PARAMS: SystemParams = {
 };
 const params = computed<SystemParams>(() => page.props.params ?? DEFAULT_PARAMS);
 const nomeUppercase = computed(() => params.value.nome_pessoa_caixa_alta);
+const alertarAcentos = computed(() => params.value.alertar_acentos_nomes);
+
+const stripAccents = (str: string) => str.normalize('NFD').replace(/[̀-ͯ]/g, '');
 
 const TABS = ['dados-pessoais', 'documentacao', 'endereco-contato', 'admissao-lotacao'] as const;
 type TabId = (typeof TABS)[number];
@@ -177,15 +180,32 @@ watch(dataCertidaoBR, (v) => {
     form.fun_certidao_dt_emissao = v && v.length === 10 ? parseDateBR(v) : '';
 });
 
-// Uppercase conforme parâmetro
+// Uppercase / strip de acentos conforme parâmetros
 watch(
     () => form.fun_nome,
     (v) => {
-        if (!nomeUppercase.value || typeof v !== 'string') return;
-        const up = v.toLocaleUpperCase('pt-BR');
-        if (up !== v) form.fun_nome = up;
+        if (typeof v !== 'string') return;
+        let next = v;
+        if (alertarAcentos.value) next = stripAccents(next);
+        if (nomeUppercase.value) next = next.toLocaleUpperCase('pt-BR');
+        if (next !== v) form.fun_nome = next;
     },
 );
+
+const FUNCIONARIO_TEXT_FIELDS_ACCENT = [
+    'fun_nome_social', 'fun_logradouro', 'fun_bairro', 'fun_cidade', 'fun_complemento',
+    'fun_religiao', 'fun_povo_indigena', 'fun_certidao_cartorio', 'fun_rg_orgao_emissor',
+] as const;
+FUNCIONARIO_TEXT_FIELDS_ACCENT.forEach((field) => {
+    watch(
+        () => form[field] as string,
+        (v) => {
+            if (!alertarAcentos.value || typeof v !== 'string') return;
+            const next = stripAccents(v);
+            if (next !== v) (form as any)[field] = next;
+        },
+    );
+});
 
 const activeTab = ref<TabId>('dados-pessoais');
 
@@ -464,6 +484,9 @@ const initials = computed(() => {
                             <InputError :message="form.errors.fun_nome" />
                             <CharCounter :value="form.fun_nome" :max="100" />
                         </div>
+                        <p v-if="alertarAcentos" class="flex items-center gap-1.5 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-700 dark:border-amber-700/50 dark:bg-amber-900/20 dark:text-amber-400">
+                            <span class="font-semibold">Atenção:</span> sistema configurado para nomes sem acentuação — acentos são removidos automaticamente.
+                        </p>
                     </div>
 
                     <div class="grid gap-2 sm:col-span-2">
