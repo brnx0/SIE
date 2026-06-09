@@ -82,7 +82,7 @@ class TurmaAeeController extends Controller
         $user = auth()->user();
 
         return Inertia::render('turmas-aee/Create', [
-            'anosLetivos' => AnoLetivo::orderByDesc('anl_ano')->get(['anl_id', 'anl_ano']),
+            'anosLetivos' => AnoLetivo::paraCadastro()->orderByDesc('anl_ano')->get(['anl_id', 'anl_ano']),
             'escolas'     => $user->isAdmin()
                 ? Escola::where('esc_fl_ativo', true)->orderBy('esc_nome')->get(['esc_id', 'esc_nome'])
                 : [],
@@ -121,7 +121,7 @@ class TurmaAeeController extends Controller
                     'fun_nome' => $p->funcionario->fun_nome,
                 ] : null,
             ]),
-            'anosLetivos'            => AnoLetivo::orderByDesc('anl_ano')->get(['anl_id', 'anl_ano']),
+            'anosLetivos'            => AnoLetivo::paraCadastro([$turma->tur_anl_id])->orderByDesc('anl_ano')->get(['anl_id', 'anl_ano']),
             'escolas'                => $user->isAdmin()
                 ? Escola::where('esc_fl_ativo', true)->orderBy('esc_nome')->get(['esc_id', 'esc_nome'])
                 : [],
@@ -129,6 +129,7 @@ class TurmaAeeController extends Controller
             'userEscola'             => $user->isAdmin() ? null : ['esc_id' => $user->esc_id, 'esc_nome' => $user->escola?->esc_nome],
             'professoresDisponiveis' => Funcionario::whereHas('admissoes.lotacoes', fn ($q) =>
                 $q->where('lot_esc_id', $turma->tur_esc_id)
+                  ->whereJsonContains('lot_funcoes_sala_aula', 'Docente AEE')
             )->orderBy('fun_nome')->get(['fun_id', 'fun_nome']),
         ]);
     }

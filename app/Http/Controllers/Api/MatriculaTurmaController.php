@@ -50,6 +50,7 @@ class MatriculaTurmaController extends Controller
             'tur_turno'           => $t->tur_turno,
             'tur_semestre'        => $t->tur_semestre,
             'tur_situacao'        => $t->tur_situacao,
+            'tur_modalidade'      => $t->tur_modalidade,
             'tur_capacidade'      => $t->tur_capacidade,
             'total_matriculados'  => $t->total_matriculados,
             'vagas_disponiveis'   => $t->tur_capacidade !== null

@@ -87,6 +87,42 @@ const remove = (tup: TurmaProfessor) => {
     });
 };
 
+// ── Edição inline (professor + disciplina) ─────────────────────────────────────
+const editingId       = ref<number | null>(null);
+const editFunId       = ref<number | null>(null);
+const editDisId       = ref<number | null>(null);
+const editProcessing  = ref<number | null>(null);
+const editErrors      = ref<Record<string, string>>({});
+
+const startEdit = (tup: TurmaProfessor) => {
+    editingId.value = tup.tup_id;
+    editFunId.value = tup.tup_fun_id;
+    editDisId.value = tup.tup_dis_id;
+    editErrors.value = {};
+};
+
+const cancelEdit = () => {
+    editingId.value = null;
+    editFunId.value = null;
+    editDisId.value = null;
+    editErrors.value = {};
+};
+
+const saveEdit = (tup: TurmaProfessor) => {
+    editProcessing.value = tup.tup_id;
+    editErrors.value = {};
+    router.put(`/turmas/${props.turma.tur_id}/professores/${tup.tup_id}`, {
+        tup_fun_id: editFunId.value,
+        tup_dis_id: editDisId.value,
+    }, {
+        preserveScroll: true,
+        preserveState: true,
+        onSuccess: () => cancelEdit(),
+        onError: (e) => { editErrors.value = e; },
+        onFinish: () => { editProcessing.value = null; },
+    });
+};
+
 // ── Professores de Apoio ──────────────────────────────────────────────────────
 const listApoio = computed<TurmaProfessorApoio[]>(() => props.professoresApoio ?? []);
 
@@ -264,17 +300,73 @@ const removeApoio = (apoio: TurmaProfessorApoio) => {
                         :key="tup.tup_id"
                         class="border-b last:border-0 hover:bg-muted/20"
                     >
-                        <td class="px-4 py-3 font-medium">{{ tup.funcionario?.fun_nome ?? '—' }}</td>
-                        <td class="px-4 py-3 text-muted-foreground">{{ tup.disciplina?.dis_nome ?? '—' }}</td>
+                        <td class="px-4 py-3 font-medium">
+                            <template v-if="editingId === tup.tup_id">
+                                <LocalCombobox
+                                    :model-value="editFunId"
+                                    :items="professoresItems"
+                                    :invalid="!!editErrors.tup_fun_id"
+                                    placeholder="Professor..."
+                                    @update:model-value="(v) => (editFunId = v)"
+                                />
+                                <InputError :message="editErrors.tup_fun_id" />
+                            </template>
+                            <template v-else>{{ tup.funcionario?.fun_nome ?? '—' }}</template>
+                        </td>
+                        <td class="px-4 py-3 text-muted-foreground">
+                            <template v-if="editingId === tup.tup_id">
+                                <LocalCombobox
+                                    :model-value="editDisId"
+                                    :items="disciplinasItems"
+                                    :invalid="!!editErrors.tup_dis_id"
+                                    placeholder="Disciplina..."
+                                    @update:model-value="(v) => (editDisId = v)"
+                                />
+                                <InputError :message="editErrors.tup_dis_id" />
+                            </template>
+                            <template v-else>{{ tup.disciplina?.dis_nome ?? '—' }}</template>
+                        </td>
                         <td class="px-4 py-3">
-                            <button
-                                type="button"
-                                class="rounded p-1.5 hover:bg-muted"
-                                title="Remover alocação"
-                                @click="remove(tup)"
-                            >
-                                <Trash2 class="size-4 text-rose-500" />
-                            </button>
+                            <div class="flex items-center gap-1">
+                                <template v-if="editingId === tup.tup_id">
+                                    <button
+                                        type="button"
+                                        class="rounded p-1.5 hover:bg-muted"
+                                        title="Salvar"
+                                        :disabled="editProcessing === tup.tup_id"
+                                        @click="saveEdit(tup)"
+                                    >
+                                        <Loader2 v-if="editProcessing === tup.tup_id" class="size-4 animate-spin text-indigo-600" />
+                                        <Check v-else class="size-4 text-emerald-600" />
+                                    </button>
+                                    <button
+                                        type="button"
+                                        class="rounded p-1.5 hover:bg-muted"
+                                        title="Cancelar"
+                                        @click="cancelEdit"
+                                    >
+                                        <X class="size-4 text-muted-foreground" />
+                                    </button>
+                                </template>
+                                <template v-else>
+                                    <button
+                                        type="button"
+                                        class="rounded p-1.5 hover:bg-muted"
+                                        title="Editar alocação"
+                                        @click="startEdit(tup)"
+                                    >
+                                        <Pencil class="size-4 text-indigo-600" />
+                                    </button>
+                                    <button
+                                        type="button"
+                                        class="rounded p-1.5 hover:bg-muted"
+                                        title="Remover alocação"
+                                        @click="remove(tup)"
+                                    >
+                                        <Trash2 class="size-4 text-rose-500" />
+                                    </button>
+                                </template>
+                            </div>
                         </td>
                     </tr>
                 </tbody>

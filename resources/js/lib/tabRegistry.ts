@@ -44,6 +44,8 @@ const PATH_LABELS: Record<string, string> = {
     '/grade-disciplinar':      'Grade Disciplinar',
     '/turmas-aee':             'Turmas AEE',
     '/movimentacoes':          'Movimentações',
+    '/relatorios':             'Relatórios',
+    '/relatorios/alunos-por-turma': 'Alunos por Turma',
 };
 
 export function prettifyPath(path: string): string {

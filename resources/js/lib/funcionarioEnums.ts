@@ -90,6 +90,7 @@ export const CRITERIOS_ACESSO = [
 
 export const FUNCOES_SALA_AULA = [
     'Docente',
+    'Docente AEE',
     'Auxiliar/assistente educacional',
     'Guia-Intérprete de Libras',
     'Tradutor-intérprete de Libras',

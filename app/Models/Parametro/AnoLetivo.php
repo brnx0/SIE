@@ -51,4 +51,26 @@ class AnoLetivo extends Model
     {
         return $this->belongsTo(User::class, 'anl_updated_by_id');
     }
+
+    /**
+     * Filtra anos letivos disponíveis para cadastro/edição.
+     * Mostra apenas os "em exercício", mas inclui IDs salvos (edit) mesmo que fora de exercício.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  int[]|int|null  $incluirIds  ID(s) de ano letivo já vinculado(s) a manter visível(eis).
+     */
+    public function scopeParaCadastro($query, $incluirIds = [])
+    {
+        $ids = collect(is_array($incluirIds) ? $incluirIds : [$incluirIds])
+            ->filter()
+            ->map(fn ($v) => (int) $v)
+            ->all();
+
+        return $query->where(function ($q) use ($ids) {
+            $q->where('anl_fl_em_exercicio', true);
+            if (! empty($ids)) {
+                $q->orWhereIn('anl_id', $ids);
+            }
+        });
+    }
 }

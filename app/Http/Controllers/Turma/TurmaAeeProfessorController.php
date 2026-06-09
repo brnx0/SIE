@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Turma;
 
 use App\Http\Controllers\Controller;
+use App\Models\Funcionario\Funcionario;
 use App\Models\Turma\Turma;
 use App\Models\Turma\TurmaProfessor;
 use Illuminate\Http\RedirectResponse;
@@ -27,6 +28,18 @@ class TurmaAeeProfessorController extends Controller
 
         if ($exists) {
             return back()->withErrors(['tup_fun_id' => 'Professor já alocado nesta turma.']);
+        }
+
+        $temFuncao = Funcionario::where('fun_id', $data['tup_fun_id'])
+            ->whereHas('admissoes.lotacoes', fn ($q) =>
+                $q->where('lot_esc_id', $turmaAee->tur_esc_id)
+                  ->whereJsonContains('lot_funcoes_sala_aula', 'Docente AEE')
+            )->exists();
+
+        if (! $temFuncao) {
+            return back()->withErrors([
+                'tup_fun_id' => 'Professor precisa ter a função "Docente AEE" marcada em alguma lotação desta escola.',
+            ]);
         }
 
         $turmaAee->professores()->create([

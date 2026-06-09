@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Aluno\AlunoController;
 use App\Http\Controllers\Aluno\MovimentacaoController;
+use App\Http\Controllers\Relatorio\AlunosPorTurmaRelatorioController;
+use App\Http\Controllers\Relatorio\RelatorioCentralController;
 use App\Http\Controllers\Api\AlunoSearchController;
 use App\Http\Controllers\Api\BairroController;
 use App\Http\Controllers\Api\MatriculaTurmaController;
@@ -97,6 +99,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('turmas', TurmaController::class)->except(['show']);
     Route::prefix('turmas/{turma}/professores')->name('turmas.professores.')->group(function () {
         Route::post('/', [TurmaProfessorController::class, 'store'])->name('store');
+        Route::put('/{turmaProfessor}', [TurmaProfessorController::class, 'update'])->name('update');
         Route::delete('/{turmaProfessor}', [TurmaProfessorController::class, 'destroy'])->name('destroy');
     });
     Route::prefix('turmas/{turma}/professores-apoio')->name('turmas.professores-apoio.')->group(function () {
@@ -129,6 +132,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/{indicador}', [SerieIndicadorController::class, 'destroy'])->name('destroy');
     });
     Route::get('api/series/{serie}/indicadores', [SerieIndicadorController::class, 'index'])->name('api.series.indicadores');
+
+    Route::get('relatorios', [RelatorioCentralController::class, 'index'])->name('relatorios.index');
+    Route::get('relatorios/alunos-por-turma', [AlunosPorTurmaRelatorioController::class, 'form'])->name('relatorios.alunos-por-turma.form');
+    Route::get('relatorios/alunos-por-turma/gerar', [AlunosPorTurmaRelatorioController::class, 'gerar'])->name('relatorios.alunos-por-turma.gerar');
 
     Route::get('movimentacoes', [MovimentacaoController::class, 'index'])->name('movimentacoes.index');
     Route::get('movimentacoes/create', [MovimentacaoController::class, 'create'])->name('movimentacoes.create');

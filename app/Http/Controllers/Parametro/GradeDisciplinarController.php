@@ -18,8 +18,10 @@ class GradeDisciplinarController extends Controller
 {
     public function page(): Response
     {
+        $idsComGrade = GradeDisciplinar::distinct()->pluck('grd_anl_id')->all();
+
         return Inertia::render('grade-disciplinar/Index', [
-            'anosLetivos' => AnoLetivo::orderByDesc('anl_ano')->get(['anl_id', 'anl_ano']),
+            'anosLetivos' => AnoLetivo::paraCadastro($idsComGrade)->orderByDesc('anl_ano')->get(['anl_id', 'anl_ano']),
             'segmentos'   => Segmento::where('seg_fl_ativo', true)->orderBy('seg_ordem')->get(['seg_id', 'seg_nome_reduzido', 'seg_nome_completo']),
         ]);
     }

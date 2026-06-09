@@ -93,7 +93,7 @@ class TurmaController extends Controller
         $user = auth()->user();
 
         return Inertia::render('turmas/Create', [
-            'anosLetivos' => AnoLetivo::orderByDesc('anl_ano')->get(['anl_id', 'anl_ano']),
+            'anosLetivos' => AnoLetivo::paraCadastro()->orderByDesc('anl_ano')->get(['anl_id', 'anl_ano']),
             'escolas'     => $user->isAdmin()
                 ? Escola::where('esc_fl_ativo', true)->orderBy('esc_nome')->get(['esc_id', 'esc_nome'])
                 : [],
@@ -137,7 +137,7 @@ class TurmaController extends Controller
                     'fun_cd_censo' => $a->funcionario->fun_cd_censo,
                 ] : null,
             ]),
-            'anosLetivos'            => AnoLetivo::orderByDesc('anl_ano')->get(['anl_id', 'anl_ano']),
+            'anosLetivos'            => AnoLetivo::paraCadastro([$turma->tur_anl_id])->orderByDesc('anl_ano')->get(['anl_id', 'anl_ano']),
             'escolas'                => $user->isAdmin()
                 ? Escola::where('esc_fl_ativo', true)->orderBy('esc_nome')->get(['esc_id', 'esc_nome'])
                 : [],
@@ -151,6 +151,8 @@ class TurmaController extends Controller
                 )->orderBy('dis_nome')->get(['dis_id', 'dis_nome']),
             'professoresDisponiveis' => Funcionario::whereHas('admissoes.lotacoes', fn ($q) =>
                 $q->where('lot_esc_id', $turma->tur_esc_id)
+                  ->whereJsonContains('lot_funcoes_sala_aula', 'Docente')
+                  ->whereHas('cargo', fn ($c) => $c->where('crg_nome', 'ilike', 'Professor%'))
             )->orderBy('fun_nome')->get(['fun_id', 'fun_nome']),
             'gradeHorarios'          => GradeHorario::where('grh_seg_id', $turma->tur_seg_id)
                 ->when($turma->tur_turno !== 'INTEGRAL', fn ($q) => $q->where('grh_turno', self::TURNO_MAP[$turma->tur_turno] ?? $turma->tur_turno))

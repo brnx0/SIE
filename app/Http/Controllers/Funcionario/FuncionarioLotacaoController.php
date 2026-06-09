@@ -41,6 +41,7 @@ class FuncionarioLotacaoController extends Controller
 
         $funcoesSala = [
             'Docente',
+            'Docente AEE',
             'Auxiliar/assistente educacional',
             'Guia-Intérprete de Libras',
             'Tradutor-intérprete de Libras',

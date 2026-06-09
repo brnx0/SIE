@@ -297,7 +297,6 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar série' : 'Salvar alter
                     v-model="form.ser_promo_ser_id_1"
                     :initial="initial?.promoSerie1 ?? null"
                     :exclude="initial?.ser_id ?? null"
-                    :seg-id="form.seg_id"
                     placeholder="Selecionar série..."
                     :invalid="!!form.errors.ser_promo_ser_id_1"
                 />
@@ -311,7 +310,6 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar série' : 'Salvar alter
                     v-model="form.ser_promo_ser_id_2"
                     :initial="initial?.promoSerie2 ?? null"
                     :exclude="initial?.ser_id ?? null"
-                    :seg-id="form.seg_id"
                     placeholder="Selecionar série..."
                     :invalid="!!form.errors.ser_promo_ser_id_2"
                 />
@@ -324,7 +322,6 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar série' : 'Salvar alter
                 <SerieCombobox
                     v-model="form.ser_cons_ser_id_1"
                     :initial="initial?.consSerie1 ?? null"
-                    :seg-id="form.seg_id"
                     placeholder="Selecionar série..."
                     :invalid="!!form.errors.ser_cons_ser_id_1"
                 />
@@ -337,7 +334,6 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar série' : 'Salvar alter
                 <SerieCombobox
                     v-model="form.ser_cons_ser_id_2"
                     :initial="initial?.consSerie2 ?? null"
-                    :seg-id="form.seg_id"
                     placeholder="Selecionar série..."
                     :invalid="!!form.errors.ser_cons_ser_id_2"
                 />
