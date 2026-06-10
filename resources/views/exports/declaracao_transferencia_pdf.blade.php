@@ -41,7 +41,6 @@
 <body>
     @php
         $formatDate = fn ($d) => $d ? \Carbon\Carbon::parse($d)->format('d/m/Y') : '—';
-        $formatDateTime = fn ($d) => $d ? \Carbon\Carbon::parse($d)->format('d/m/Y H:i') : '—';
         $mesPt = ['', 'Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
         $hoje = now();
         $dataExtenso = $hoje->day . ' de ' . $mesPt[(int) $hoje->format('n')] . ' de ' . $hoje->year;
@@ -79,9 +78,12 @@
         <b>{{ $formatDate($aluno?->aln_dt_nascimento) }}</b>, filho(a) da Sra.
         <b>{{ $nomeMae }}</b> e do Sr.
         <b>{{ $nomePai }}</b>, estava regularmente matriculado(a) no ano letivo de
+        @php
+            $dtMov = $movimentacao->mva_dt_movimentacao ? $formatDate($movimentacao->mva_dt_movimentacao) : '—';
+            $hrMov = $movimentacao->mva_created_at ? $movimentacao->mva_created_at->format('H:i') : null;
+        @endphp
         <b>{{ $anoLetivo?->anl_ano ?? '—' }}</b> no curso abaixo relacionado, e sua
-        transferência foi requerida em
-        <b>{{ $formatDateTime($movimentacao->mva_dt_movimentacao . ' ' . ($movimentacao->mva_created_at?->format('H:i') ?? '')) }}</b>.
+        transferência foi requerida em <b>{{ $dtMov }}@if ($hrMov) {{ $hrMov }}@endif</b>.
     </p>
 
     <table class="grid">
