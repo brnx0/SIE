@@ -94,7 +94,7 @@ const isGroupActive = (item: NavItem) =>
                                 <template v-for="child in item.children" :key="child.title">
                                     <!-- Leaf -->
                                     <SidebarMenuSubItem v-if="!isGroup(child)">
-                                        <SidebarMenuSubButton as-child :is-active="isActive(child.href)">
+                                        <SidebarMenuSubButton as-child :is-active="isActive(child.href)" class="h-auto min-h-7 [&>span:last-child]:!overflow-visible [&>span:last-child]:!whitespace-normal">
                                             <a :href="child.href" @click.prevent="open(child.href)">
                                                 <span>{{ child.title }}</span>
                                             </a>
@@ -118,7 +118,7 @@ const isGroupActive = (item: NavItem) =>
                                             <CollapsibleContent>
                                                 <SidebarMenuSub class="ml-2 border-l pl-2">
                                                     <SidebarMenuSubItem v-for="leaf in child.children" :key="leaf.title">
-                                                        <SidebarMenuSubButton as-child :is-active="isActive(leaf.href)">
+                                                        <SidebarMenuSubButton as-child :is-active="isActive(leaf.href)" class="h-auto min-h-7 [&>span:last-child]:!overflow-visible [&>span:last-child]:!whitespace-normal">
                                                             <a :href="leaf.href" @click.prevent="open(leaf.href)">
                                                                 <span>{{ leaf.title }}</span>
                                                             </a>
