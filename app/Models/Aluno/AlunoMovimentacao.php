@@ -31,12 +31,15 @@ class AlunoMovimentacao extends Model
         'mva_user_id',
         'mva_fl_cancelada',
         'mva_cancelada_motivo',
+        'mva_cancelada_at',
+        'mva_cancelada_user_id',
     ];
 
     protected $casts = [
         'mva_dt_movimentacao' => 'date',
         'mva_tmas_extras'     => 'array',
         'mva_fl_cancelada'    => 'boolean',
+        'mva_cancelada_at'    => 'datetime',
     ];
 
     public function aluno(): BelongsTo
@@ -62,5 +65,10 @@ class AlunoMovimentacao extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'mva_user_id');
+    }
+
+    public function canceladaPor(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'mva_cancelada_user_id');
     }
 }

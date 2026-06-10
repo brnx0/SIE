@@ -44,6 +44,22 @@ class MatriculaController extends Controller
         ]);
     }
 
+    public function aee(): Response
+    {
+        $anosLetivos = AnoLetivo::where('anl_fl_em_exercicio', true)
+            ->orderByDesc('anl_ano')
+            ->get(['anl_id', 'anl_ano']);
+
+        $escolas = Escola::where('esc_fl_ativo', true)
+            ->orderBy('esc_nome')
+            ->get(['esc_id', 'esc_nome']);
+
+        return Inertia::render('matriculas-aee/Index', [
+            'anosLetivos' => $anosLetivos,
+            'escolas'     => $escolas,
+        ]);
+    }
+
     public function segundaVia(): Response
     {
         $anosLetivos = AnoLetivo::where('anl_fl_em_exercicio', true)

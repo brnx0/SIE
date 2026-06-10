@@ -89,7 +89,11 @@ const NAV_TABS = TABS.filter(t => t !== 'turmas') as unknown as typeof TABS;
 
 const TAB_FIELDS: Record<TabId, string[]> = {
     'dados-pessoais': ['aln_nome', 'aln_nome_social', 'aln_dt_nascimento', 'aln_sexo', 'aln_cor_raca', 'aln_pais_origem', 'aln_mun_id_nasc'],
-    documentacao: ['aln_cpf', 'aln_cd_inep', 'aln_nr_matricula', 'aln_nr_certidao'],
+    documentacao: [
+        'aln_cpf', 'aln_cd_inep', 'aln_nr_matricula', 'aln_nr_certidao', 'aln_nis',
+        'aln_fl_trouxe_transferencia', 'aln_fl_trouxe_rg', 'aln_fl_trouxe_reg_nascimento',
+        'aln_fl_bolsa_familia', 'aln_fl_recebe_merenda', 'aln_fl_usa_transporte', 'aln_fl_usa_biblioteca',
+    ],
     'filiacao-contato': [
         'aln_filiacao_1',
         'aln_filiacao_1_tipo',
@@ -149,6 +153,14 @@ const form = useForm<AlunoFormData>({
     aln_cd_inep: props.initial?.aln_cd_inep ?? '',
     aln_nr_matricula: props.initial?.aln_nr_matricula ?? null,
     aln_nr_certidao: props.initial?.aln_nr_certidao ?? '',
+    aln_nis: props.initial?.aln_nis ?? '',
+    aln_fl_trouxe_transferencia:  props.initial?.aln_fl_trouxe_transferencia  ?? false,
+    aln_fl_trouxe_rg:             props.initial?.aln_fl_trouxe_rg             ?? false,
+    aln_fl_trouxe_reg_nascimento: props.initial?.aln_fl_trouxe_reg_nascimento ?? false,
+    aln_fl_bolsa_familia:         props.initial?.aln_fl_bolsa_familia         ?? false,
+    aln_fl_recebe_merenda:        props.initial?.aln_fl_recebe_merenda        ?? false,
+    aln_fl_usa_transporte:        props.initial?.aln_fl_usa_transporte        ?? false,
+    aln_fl_usa_biblioteca:        props.initial?.aln_fl_usa_biblioteca        ?? false,
 
     aln_filiacao_1:      props.initial?.aln_filiacao_1 ?? '',
     aln_filiacao_1_tipo: props.initial?.aln_filiacao_1_tipo ?? '',
@@ -645,6 +657,57 @@ const initials = computed(() => {
                             <InputError :message="form.errors.aln_nr_certidao" />
                             <CharCounter :value="form.aln_nr_certidao" :max="32" />
                         </div>
+                    </div>
+
+                    <div class="grid gap-2 sm:col-span-2">
+                        <Label for="aln_nis">NIS (PIS/PASEP)</Label>
+                        <Input
+                            id="aln_nis"
+                            v-model="form.aln_nis"
+                            v-maska="'###########'"
+                            inputmode="numeric"
+                            placeholder="11 dígitos"
+                            maxlength="11"
+                        />
+                        <InputError :message="(form.errors as any).aln_nis" />
+                    </div>
+                </div>
+
+                <div class="mt-6 grid gap-4 rounded-xl border bg-card p-6 shadow-sm">
+                    <h3 class="text-sm font-semibold">Documentos Apresentados</h3>
+                    <div class="grid gap-3 sm:grid-cols-3">
+                        <label class="flex items-center gap-2 text-sm">
+                            <input type="checkbox" v-model="form.aln_fl_trouxe_transferencia" class="size-4 accent-indigo-600" />
+                            Trouxe declaração de transferência
+                        </label>
+                        <label class="flex items-center gap-2 text-sm">
+                            <input type="checkbox" v-model="form.aln_fl_trouxe_rg" class="size-4 accent-indigo-600" />
+                            Trouxe RG
+                        </label>
+                        <label class="flex items-center gap-2 text-sm">
+                            <input type="checkbox" v-model="form.aln_fl_trouxe_reg_nascimento" class="size-4 accent-indigo-600" />
+                            Trouxe registro de nascimento
+                        </label>
+                    </div>
+
+                    <h3 class="mt-4 text-sm font-semibold">Programas e Serviços</h3>
+                    <div class="grid gap-3 sm:grid-cols-2">
+                        <label class="flex items-center gap-2 text-sm">
+                            <input type="checkbox" v-model="form.aln_fl_bolsa_familia" class="size-4 accent-indigo-600" />
+                            Bolsa Família
+                        </label>
+                        <label class="flex items-center gap-2 text-sm">
+                            <input type="checkbox" v-model="form.aln_fl_recebe_merenda" class="size-4 accent-indigo-600" />
+                            Recebe merenda escolar
+                        </label>
+                        <label class="flex items-center gap-2 text-sm">
+                            <input type="checkbox" v-model="form.aln_fl_usa_transporte" class="size-4 accent-indigo-600" />
+                            Utiliza transporte escolar
+                        </label>
+                        <label class="flex items-center gap-2 text-sm">
+                            <input type="checkbox" v-model="form.aln_fl_usa_biblioteca" class="size-4 accent-indigo-600" />
+                            Utiliza biblioteca
+                        </label>
                     </div>
                 </div>
             </TabsContent>

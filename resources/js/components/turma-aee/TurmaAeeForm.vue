@@ -273,7 +273,12 @@ const matriculados = computed(() => props.initial?.total_matriculados ?? 0);
             </TabsContent>
 
             <TabsContent v-if="mode === 'edit'" value="alunos">
-                <TurmaAeeAlunosTab :tur-id="initial!.tur_id" />
+                <TurmaAeeAlunosTab
+                    :tur-id="initial!.tur_id"
+                    :tur-esc-id="initial!.tur_esc_id"
+                    :tur-esc-nome="initial!.escola?.esc_nome ?? ''"
+                    :anl-ano="initial!.anoLetivo?.anl_ano ?? 0"
+                />
             </TabsContent>
 
             <TabsContent v-if="mode === 'edit'" value="professores">

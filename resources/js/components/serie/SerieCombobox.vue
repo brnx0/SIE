@@ -9,6 +9,8 @@ const props = defineProps<{
     initial?: SerieResumo | null;
     exclude?: number | null;
     segId?: number | null;
+    promoSegId?: number | null;
+    promoSerOrdem?: number | null;
     placeholder?: string;
     invalid?: boolean;
 }>();
@@ -37,7 +39,7 @@ watch(query, (q) => {
         return;
     }
     debounceTimer = setTimeout(() => {
-        search(trimmed, props.exclude, props.segId);
+        search(trimmed, props.exclude, props.segId, props.promoSegId, props.promoSerOrdem);
     }, 200);
 });
 

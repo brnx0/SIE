@@ -5,10 +5,12 @@ namespace App\Http\Controllers\Turma;
 use App\Http\Controllers\Controller;
 use App\Models\Funcionario\Funcionario;
 use App\Models\Turma\Turma;
+use App\Models\Turma\TurmaHorario;
 use App\Models\Turma\TurmaProfessor;
 use App\Models\Turma\TurmaProfessorApoio;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class TurmaProfessorController extends Controller
 {
@@ -112,7 +114,17 @@ class TurmaProfessorController extends Controller
 
     public function destroy(Turma $turma, TurmaProfessor $turmaProfessor): RedirectResponse
     {
-        $turmaProfessor->delete();
+        DB::transaction(function () use ($turma, $turmaProfessor) {
+            // Libera slots de horário desta combinação professor+disciplina nesta turma.
+            // forceDelete: unique constraint (trh_tur_id, trh_tempo, trh_dia) ignora soft delete.
+            TurmaHorario::withTrashed()
+                ->where('trh_tur_id', $turma->tur_id)
+                ->where('trh_fun_id', $turmaProfessor->tup_fun_id)
+                ->where('trh_dis_id', $turmaProfessor->tup_dis_id)
+                ->forceDelete();
+
+            $turmaProfessor->forceDelete();
+        });
 
         return back()->with('success', 'Alocação removida com sucesso.');
     }

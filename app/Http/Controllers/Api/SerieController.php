@@ -8,6 +8,7 @@ use App\Models\Serie\Serie;
 use App\Models\Turma\Turma;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class SerieController extends Controller
 {
@@ -99,13 +100,22 @@ class SerieController extends Controller
 
     public function search(Request $request): JsonResponse
     {
-        $q          = trim($request->input('q', ''));
-        $exclude    = $request->input('exclude');
-        $segId      = (int) $request->input('seg_id');
-        $incluirIds = $this->incluirIds($request);
+        $q            = trim($request->input('q', ''));
+        $exclude      = $request->input('exclude');
+        $segId        = (int) $request->input('seg_id');
+        $promoSegId   = (int) $request->input('promo_seg_id');
+        $promoOrdem   = $request->has('promo_ser_ordem') && $request->input('promo_ser_ordem') !== ''
+            ? (int) $request->input('promo_ser_ordem')
+            : null;
+        $incluirIds   = $this->incluirIds($request);
 
         // Normaliza ordinais (ª, º) e espaços extras tanto da query quanto do nome no banco
         $qNorm = trim(preg_replace('/\s+/', ' ', str_replace(['ª', 'º'], '', $q)));
+
+        $promoSegOrdem = null;
+        if ($promoSegId > 0) {
+            $promoSegOrdem = DB::table('edu_segmento')->where('seg_id', $promoSegId)->value('seg_ordem');
+        }
 
         $query = Serie::query();
         $this->filtroAtivoOuIncluso($query, 'ser_fl_ativo', 'ser_id', $incluirIds);
@@ -117,6 +127,19 @@ class SerieController extends Controller
                 ["%{$qNorm}%"]
             ))
             ->when($exclude, fn ($q2) => $q2->where('ser_id', '!=', (int) $exclude))
+            ->when(
+                $promoSegId > 0 && $promoOrdem !== null && $promoSegOrdem !== null,
+                fn ($q2) => $q2->where(function ($w) use ($promoSegId, $promoOrdem, $promoSegOrdem) {
+                    $w->where(function ($a) use ($promoSegId, $promoOrdem) {
+                        $a->where('seg_id', $promoSegId)
+                          ->where('ser_ordem_no_segmento', '>', $promoOrdem);
+                    })->orWhereIn('seg_id', function ($sub) use ($promoSegOrdem) {
+                        $sub->select('seg_id')
+                            ->from('edu_segmento')
+                            ->where('seg_ordem', '>', $promoSegOrdem);
+                    });
+                })
+            )
             ->orderBy('ser_ordem_no_segmento')
             ->limit(50)
             ->get(['ser_id', 'ser_nome']);

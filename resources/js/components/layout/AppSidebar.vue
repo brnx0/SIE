@@ -49,6 +49,7 @@ const matriculasMenu = [
         icon: ClipboardList,
         children: [
             { title: 'Matrículas', href: '/matriculas' },
+            { title: 'Matrículas AEE', href: '/matriculas-aee' },
             { title: 'Movimentações', href: '/movimentacoes' },
             { title: '2ª Via Comprovante', href: '/matriculas/segunda-via' },
         ],

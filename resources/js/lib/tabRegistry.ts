@@ -41,6 +41,7 @@ export function pathOf(url: string): string {
 
 const PATH_LABELS: Record<string, string> = {
     '/matriculas/segunda-via': '2ª Via Comprovante',
+    '/matriculas-aee': 'Matrículas AEE',
     '/grade-disciplinar':      'Grade Disciplinar',
     '/turmas-aee':             'Turmas AEE',
     '/movimentacoes':          'Movimentações',
@@ -49,8 +50,11 @@ const PATH_LABELS: Record<string, string> = {
     '/relatorios/declaracao-matricula': 'Declaração de Matrícula',
     '/relatorios/formacao-classes': 'Formação de Classes',
     '/relatorios/formacao-classes-aee': 'Formação de Classes — AEE',
-    '/relatorios/formacao-classes-atividade': 'Formação de Classes — Atividade',
     '/relatorios/alunos-deficiencia': 'Alunos com Deficiência',
+    '/relatorios/alunos-transtorno': 'Alunos com Transtorno',
+    '/relatorios/dados-alunos-turma': 'Dados de Alunos por Turma',
+    '/relatorios/relacao-turmas-aee': 'Relação de Turmas AEE',
+    '/relatorios/relacao-turmas-atividade': 'Relação de Turmas de Atividade',
     '/relatorios/ficha-matricula': 'Ficha de Matrícula',
     '/relatorios/sumario-matriculas': 'Sumário de Matrículas',
 };

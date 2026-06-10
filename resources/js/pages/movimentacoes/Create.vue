@@ -6,8 +6,23 @@ import FormLabel from '@/components/common/FormLabel.vue';
 import InputError from '@/components/common/InputError.vue';
 import type { BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/vue3';
-import { Loader2 } from 'lucide-vue-next';
+import { ArrowDown, ArrowLeftRight, GraduationCap, Info, Loader2, User } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
+
+const TIPO_META: Record<number, { titulo: string; descricao: string; cor: string; icon: any }> = {
+    5: {
+        titulo: 'Remanejamento',
+        descricao: 'Mover aluno entre turmas da MESMA escola e MESMA série (ex.: troca de turno).',
+        cor: 'amber',
+        icon: ArrowLeftRight,
+    },
+    7: {
+        titulo: 'Reclassificação',
+        descricao: 'Avanço/recuo de série na mesma escola após avaliação. Destino deve ser série DIFERENTE da origem.',
+        cor: 'violet',
+        icon: GraduationCap,
+    },
+};
 
 interface Tipo {
     tmv_cod: number;
@@ -38,6 +53,9 @@ const form = useForm({
 
 const tipoSelecionado = computed(() => props.tipos.find(t => t.tmv_cod === form.tmv_cod) ?? null);
 const exigeDestino   = computed(() => !!tipoSelecionado.value?.tmv_tas_cod_entrada);
+const tipoMeta       = computed(() => (form.tmv_cod != null ? TIPO_META[form.tmv_cod] : null) ?? null);
+const isReclassificacao = computed(() => form.tmv_cod === 7);
+const isRemanejamento   = computed(() => form.tmv_cod === 5);
 
 // ── Cascata Origem ────────────────────────────────────────────────────────────
 const anosLetivos    = ref<{ anl_id: number; anl_ano: number }[]>(props.anosLetivos);
@@ -68,7 +86,11 @@ async function loadTurmas(escId: number, anlId: number, segId: number, serId: nu
 }
 async function loadAlunos(turId: number) {
     const r = await fetch(`/api/turmas/${turId}/alunos`);
-    if (r.ok) alunos.value = await r.json();
+    if (r.ok) {
+        const lista: any[] = await r.json();
+        // Lista apenas matriculas sem situacao de saida (ainda ativas na turma).
+        alunos.value = lista.filter(a => a.tma_tas_cod_saida == null);
+    }
 }
 
 watch([oEsc, oAnl], async ([e, a]) => {
@@ -99,10 +121,15 @@ const turmasD    = ref<{ tur_id: number; tur_nome: string }[]>([]);
 const dSeg = ref<number | ''>('');
 const dSer = ref<number | ''>('');
 
-watch(exigeDestino, async (v) => {
-    if (v && oEsc.value && oAnl.value) {
-        const r = await fetch(`/api/segmentos/by-escola?esc_id=${oEsc.value}&anl_id=${oAnl.value}`);
-        if (r.ok) segmentosD.value = await r.json();
+async function loadSegmentosDestino() {
+    if (!oEsc.value || !oAnl.value) { segmentosD.value = []; return; }
+    const r = await fetch(`/api/segmentos/by-escola?esc_id=${oEsc.value}&anl_id=${oAnl.value}`);
+    if (r.ok) segmentosD.value = await r.json();
+}
+
+watch([exigeDestino, oEsc, oAnl], async ([v]) => {
+    if (v) {
+        await loadSegmentosDestino();
     } else {
         segmentosD.value = []; seriesD.value = []; turmasD.value = [];
         dSeg.value = ''; dSer.value = ''; form.tur_id_destino = null;
@@ -112,7 +139,12 @@ watch(dSeg, async (v) => {
     seriesD.value = []; turmasD.value = [];
     dSer.value = ''; form.tur_id_destino = null;
     if (v && oEsc.value && oAnl.value) {
-        const r = await fetch(`/api/series/by-turmas-abertas?esc_id=${oEsc.value}&anl_id=${oAnl.value}&seg_id=${v}`);
+        // Reclassificação: lista todas as séries do segmento (pode ir p/ série sem turma aberta ainda).
+        // Demais: somente séries com turmas abertas.
+        const url = isReclassificacao.value
+            ? `/api/series?seg_id=${v}`
+            : `/api/series/by-turmas-abertas?esc_id=${oEsc.value}&anl_id=${oAnl.value}&seg_id=${v}`;
+        const r = await fetch(url);
         if (r.ok) seriesD.value = await r.json();
     }
 });
@@ -123,12 +155,51 @@ watch(dSer, async (v) => {
         const r = await fetch(`/api/matriculas/turmas?${p}`);
         if (r.ok) {
             const lista = (await r.json()).filter((t: any) => t.tur_situacao === 'ABERTA');
-            // Remanejamento: remove a turma de origem da lista destino
-            turmasD.value = form.tmv_cod === 5
+            // Remanejamento e Reclassificação: turma destino deve diferir da origem.
+            turmasD.value = (isRemanejamento.value || isReclassificacao.value)
                 ? lista.filter((t: any) => t.tur_id !== Number(oTur.value))
                 : lista;
         }
     }
+});
+
+// Lookups derivados p/ resumo
+const escolaNome   = computed(() => props.escolas.find(e => e.esc_id === Number(oEsc.value))?.esc_nome ?? '');
+const segmentoNome = computed(() => segmentos.value.find(s => s.seg_id === Number(oSeg.value))?.seg_nome ?? '');
+const serieNome    = computed(() => series.value.find(s => s.ser_id === Number(oSer.value))?.ser_nome ?? '');
+const turmaNome    = computed(() => turmas.value.find(t => t.tur_id === Number(oTur.value))?.tur_nome ?? '');
+const alunoNome    = computed(() => alunos.value.find(a => a.tma_id === form.tma_id_origem)?.aln_nome ?? '');
+
+const segmentoDestNome = computed(() => segmentosD.value.find(s => s.seg_id === Number(dSeg.value))?.seg_nome ?? '');
+const serieDestNome    = computed(() => seriesD.value.find(s => s.ser_id === Number(dSer.value))?.ser_nome ?? '');
+const turmaDestNome    = computed(() => turmasD.value.find(t => t.tur_id === form.tur_id_destino)?.tur_nome ?? '');
+
+// Remanejamento: pré-preenche segmento/série destino com origem (editável).
+// Roda após segmentosD/seriesD carregarem para garantir option existir no select.
+watch([isRemanejamento, exigeDestino, segmentosD, oSeg], ([rem, exige, segs, seg]) => {
+    if (!rem || !exige) return;
+    if (seg && !dSeg.value && (segs as any[]).some(s => s.seg_id === Number(seg))) {
+        dSeg.value = seg as any;
+    }
+});
+watch([isRemanejamento, seriesD, oSer], ([rem, sers, ser]) => {
+    if (!rem) return;
+    if (ser && !dSer.value && (sers as any[]).some(s => s.ser_id === Number(ser))) {
+        dSer.value = ser as any;
+    }
+});
+
+// Reclassificação: série destino deve diferir da origem.
+const seriesDestinoFiltradas = computed(() =>
+    isReclassificacao.value && oSer.value
+        ? seriesD.value.filter(s => s.ser_id !== Number(oSer.value))
+        : seriesD.value,
+);
+
+const destinoLabel = computed(() => {
+    if (isRemanejamento.value) return 'Destino — mesma série, outra turma';
+    if (isReclassificacao.value) return 'Destino — nova série na mesma escola';
+    return 'Destino (mesma escola)';
 });
 
 function submit() {
@@ -174,6 +245,41 @@ function submit() {
                         <Input v-model="form.protocolo" maxlength="50" placeholder="Ex.: 2026/0001" />
                         <InputError :message="form.errors.protocolo" />
                     </div>
+                </div>
+
+                <!-- Info do tipo selecionado -->
+                <div
+                    v-if="tipoMeta"
+                    class="flex items-start gap-3 rounded-lg border p-4"
+                    :class="{
+                        'border-amber-200 bg-amber-50/60 dark:bg-amber-900/10':  tipoMeta.cor === 'amber',
+                        'border-violet-200 bg-violet-50/60 dark:bg-violet-900/10': tipoMeta.cor === 'violet',
+                    }"
+                >
+                    <component :is="tipoMeta.icon" class="mt-0.5 size-5 shrink-0"
+                        :class="{
+                            'text-amber-600':  tipoMeta.cor === 'amber',
+                            'text-violet-600': tipoMeta.cor === 'violet',
+                        }"
+                    />
+                    <div class="text-sm">
+                        <p class="font-semibold"
+                            :class="{
+                                'text-amber-900 dark:text-amber-200':  tipoMeta.cor === 'amber',
+                                'text-violet-900 dark:text-violet-200': tipoMeta.cor === 'violet',
+                            }"
+                        >
+                            {{ tipoMeta.titulo }}
+                        </p>
+                        <p class="text-muted-foreground">{{ tipoMeta.descricao }}</p>
+                    </div>
+                </div>
+
+                <div v-else-if="form.tmv_cod" class="flex items-start gap-3 rounded-lg border bg-slate-50/60 p-4 text-sm dark:bg-slate-900/20">
+                    <Info class="mt-0.5 size-5 shrink-0 text-slate-500" />
+                    <p class="text-muted-foreground">
+                        {{ tipoSelecionado?.tmv_descricao }} — saída do aluno da turma de origem.
+                    </p>
                 </div>
 
                 <!-- Origem -->
@@ -226,22 +332,37 @@ function submit() {
                     </div>
                 </div>
 
+                <!-- Seta visual origem → destino -->
+                <div v-if="exigeDestino" class="flex justify-center">
+                    <div class="grid size-9 place-items-center rounded-full border bg-background shadow-sm">
+                        <ArrowDown class="size-4 text-muted-foreground" />
+                    </div>
+                </div>
+
                 <!-- Destino -->
                 <div v-if="exigeDestino" class="grid gap-3 rounded-lg border border-fuchsia-200 bg-fuchsia-50/40 p-4">
-                    <h3 class="text-sm font-semibold text-fuchsia-800">Destino (mesma escola)</h3>
+                    <h3 class="text-sm font-semibold text-fuchsia-800">{{ destinoLabel }}</h3>
                     <div class="grid gap-4 sm:grid-cols-3">
                         <div class="grid gap-1.5">
                             <FormLabel :required="true">Segmento</FormLabel>
-                            <select v-model="dSeg" class="rounded-md border bg-background px-3 py-2 text-sm" :disabled="!segmentosD.length">
+                            <select
+                                v-model="dSeg"
+                                class="rounded-md border bg-background px-3 py-2 text-sm"
+                                :disabled="!segmentosD.length"
+                            >
                                 <option value="">—</option>
                                 <option v-for="s in segmentosD" :key="s.seg_id" :value="s.seg_id">{{ s.seg_nome }}</option>
                             </select>
                         </div>
                         <div class="grid gap-1.5">
                             <FormLabel :required="true">Série</FormLabel>
-                            <select v-model="dSer" class="rounded-md border bg-background px-3 py-2 text-sm" :disabled="!seriesD.length">
+                            <select
+                                v-model="dSer"
+                                class="rounded-md border bg-background px-3 py-2 text-sm"
+                                :disabled="!seriesDestinoFiltradas.length"
+                            >
                                 <option value="">—</option>
-                                <option v-for="s in seriesD" :key="s.ser_id" :value="s.ser_id">{{ s.ser_nome }}</option>
+                                <option v-for="s in seriesDestinoFiltradas" :key="s.ser_id" :value="s.ser_id">{{ s.ser_nome }}</option>
                             </select>
                         </div>
                         <div class="grid gap-1.5">
@@ -252,6 +373,27 @@ function submit() {
                             </select>
                             <InputError :message="form.errors.tur_id_destino" />
                         </div>
+                    </div>
+                </div>
+
+                <!-- Resumo -->
+                <div
+                    v-if="alunoNome && (exigeDestino ? form.tur_id_destino : form.tma_id_origem)"
+                    class="rounded-lg border border-emerald-200 bg-emerald-50/60 p-4 dark:bg-emerald-900/10"
+                >
+                    <div class="mb-2 flex items-center gap-2 text-sm font-semibold text-emerald-900 dark:text-emerald-200">
+                        <User class="size-4" /> Resumo da Movimentação
+                    </div>
+                    <div class="text-sm">
+                        <p><span class="font-medium">Aluno:</span> {{ alunoNome }}</p>
+                        <p class="text-muted-foreground">
+                            <span class="font-medium text-foreground">De:</span>
+                            {{ escolaNome }} • {{ segmentoNome }} • {{ serieNome }} • Turma {{ turmaNome }}
+                        </p>
+                        <p v-if="exigeDestino && form.tur_id_destino" class="text-muted-foreground">
+                            <span class="font-medium text-foreground">Para:</span>
+                            {{ escolaNome }} • {{ segmentoDestNome }} • {{ serieDestNome }} • Turma {{ turmaDestNome }}
+                        </p>
                     </div>
                 </div>
 

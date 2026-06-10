@@ -13,8 +13,9 @@ interface Ficha {
     nacionalidade: string | null;
     pais_origem: string | null;
     cor_raca: string | null;
-    codigo_aluno: string | null;
     foto_url: string | null;
+    contato_emergencia: string | null;
+    telefone_emergencia: string | null;
     cpf: string | null;
     cd_inep: string | null;
     nis: string | null;
@@ -35,10 +36,22 @@ interface Ficha {
     celular: string | null;
     email: string | null;
     usa_transporte: string;
+    tipo_sanguineo: string | null;
+    plano_saude: string | null;
     alergia: string | null;
+    restricoes_alimentares: string | null;
+    remedio_febre: string | null;
+    remedio_cefaleia: string | null;
+    patologias: string[];
+    outra_doenca: string | null;
+    patologias_infancia: string[];
+    outra_doenca_infancia: string | null;
+    clinicas: string[];
+    recursos_inep: string[];
     pcd: string;
     altas_habilidades: string;
     deficiencias: string[];
+    deficiencia_outro: string | null;
     cid: string | null;
     saude_obs: string | null;
     nr_matricula: number | null;
@@ -154,7 +167,6 @@ const sexoLabel = (s: string | null) => {
                     <div class="dados-campos">
                         <div class="campo full"><b>NOME:</b> {{ f.nome ?? '—' }}</div>
                         <div class="campo"><b>DATA DE NASCIMENTO:</b> {{ f.dt_nascimento ?? '—' }}</div>
-                        <div class="campo"><b>CÓDIGO ALUNO:</b> {{ f.codigo_aluno ?? '—' }}</div>
                         <div class="campo"><b>SEXO:</b> {{ sexoLabel(f.sexo) }}</div>
                         <div class="campo"><b>NACIONALIDADE:</b> {{ f.nacionalidade ?? '—' }}</div>
                         <div class="campo"><b>NATURALIDADE:</b> {{ f.naturalidade ?? '—' }}</div>
@@ -212,16 +224,38 @@ const sexoLabel = (s: string | null) => {
                     <div class="campo"><b>CELULAR:</b> {{ f.celular ?? '—' }}</div>
                     <div class="campo full"><b>E-MAIL:</b> {{ f.email ?? '—' }}</div>
                     <div class="campo"><b>UTILIZA TRANSPORTE:</b> {{ f.usa_transporte }}</div>
+                    <div class="campo"><b>CONTATO DE EMERGÊNCIA:</b> {{ f.contato_emergencia ?? '—' }}</div>
+                    <div class="campo"><b>TEL. EMERGÊNCIA:</b> {{ f.telefone_emergencia ?? '—' }}</div>
                 </div>
             </section>
 
-            <!-- Deficiência / Saúde -->
+            <!-- Saúde -->
             <section class="bloco">
-                <div class="bloco-titulo">DEFICIÊNCIA / SAÚDE</div>
+                <div class="bloco-titulo">SAÚDE</div>
+                <div class="bloco-corpo dois-cols">
+                    <div class="campo"><b>TIPO SANGUÍNEO:</b> {{ f.tipo_sanguineo ?? '—' }}</div>
+                    <div class="campo"><b>PLANO DE SAÚDE:</b> {{ f.plano_saude ?? '—' }}</div>
+                    <div class="campo full"><b>ALERGIA A:</b> {{ f.alergia ?? '—' }}</div>
+                    <div class="campo full"><b>RESTRIÇÕES ALIMENTARES:</b> {{ f.restricoes_alimentares ?? '—' }}</div>
+                    <div class="campo"><b>REMÉDIO P/ FEBRE:</b> {{ f.remedio_febre ?? '—' }}</div>
+                    <div class="campo"><b>REMÉDIO P/ CEFALÉIA:</b> {{ f.remedio_cefaleia ?? '—' }}</div>
+                    <div class="campo full"><b>PATOLOGIAS:</b> {{ f.patologias.length ? f.patologias.join(', ') : '—' }}</div>
+                    <div class="campo full"><b>OUTRA DOENÇA:</b> {{ f.outra_doenca ?? '—' }}</div>
+                    <div class="campo full"><b>PATOLOGIAS DA INFÂNCIA:</b> {{ f.patologias_infancia.length ? f.patologias_infancia.join(', ') : '—' }}</div>
+                    <div class="campo full"><b>OUTRA DOENÇA (INFÂNCIA):</b> {{ f.outra_doenca_infancia ?? '—' }}</div>
+                    <div class="campo full"><b>CLÍNICAS QUE FREQUENTA:</b> {{ f.clinicas.length ? f.clinicas.join(', ') : '—' }}</div>
+                    <div class="campo full"><b>RECURSOS INEP:</b> {{ f.recursos_inep.length ? f.recursos_inep.join(', ') : '—' }}</div>
+                </div>
+            </section>
+
+            <!-- Deficiência -->
+            <section class="bloco">
+                <div class="bloco-titulo">DEFICIÊNCIA / TGD / ALTAS HABILIDADES</div>
                 <div class="bloco-corpo dois-cols">
                     <div class="campo"><b>PCD:</b> {{ f.pcd }}</div>
                     <div class="campo"><b>ALTAS HABILIDADES:</b> {{ f.altas_habilidades }}</div>
-                    <div class="campo full"><b>DEFICIÊNCIAS:</b> {{ f.deficiencias.length ? f.deficiencias.join(', ') : '—' }}</div>
+                    <div class="campo full"><b>DEFICIÊNCIAS / TRANSTORNOS:</b> {{ f.deficiencias.length ? f.deficiencias.join(', ') : '—' }}</div>
+                    <div class="campo full"><b>OUTRA DEFICIÊNCIA:</b> {{ f.deficiencia_outro ?? '—' }}</div>
                     <div class="campo full"><b>CID:</b> {{ f.cid ?? '—' }}</div>
                     <div class="campo full"><b>OBSERVAÇÃO:</b> {{ f.saude_obs ?? '—' }}</div>
                 </div>

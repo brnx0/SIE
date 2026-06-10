@@ -39,6 +39,7 @@ class TurmaAlunoController extends Controller
                 'tma_dt_matricula'=> $m->tma_dt_matricula?->format('Y-m-d'),
                 'tma_fl_renovado' => (bool) $m->tma_fl_renovado,
                 'tma_situacao'         => $m->tma_situacao,
+                'tma_tas_cod_saida'    => $m->tma_tas_cod_saida,
                 'tas_descricao_entrada'=> $m->situacaoEntrada?->tas_descricao_enturmacao,
                 'tas_descricao_saida'  => $m->situacaoSaida?->tas_descricao_enturmacao,
                 'aln_id'          => $m->aluno?->aln_id,

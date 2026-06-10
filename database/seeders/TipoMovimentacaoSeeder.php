@@ -10,7 +10,7 @@ class TipoMovimentacaoSeeder extends Seeder
     public function run(): void
     {
         $tipos = [
-            ['tmv_cod' => 1,  'tmv_descricao' => 'Evasão',                                   'tmv_tas_cod_entrada' => null, 'tmv_tas_cod_saida' => 4,    'tmv_fl_ativo' => true],
+            ['tmv_cod' => 1,  'tmv_descricao' => 'Evasão',                                   'tmv_tas_cod_entrada' => null, 'tmv_tas_cod_saida' => 4,    'tmv_fl_ativo' => false],
             ['tmv_cod' => 2,  'tmv_descricao' => 'Desistência',                              'tmv_tas_cod_entrada' => null, 'tmv_tas_cod_saida' => 2,    'tmv_fl_ativo' => false],
             ['tmv_cod' => 3,  'tmv_descricao' => 'Transferência',                            'tmv_tas_cod_entrada' => null, 'tmv_tas_cod_saida' => 3,    'tmv_fl_ativo' => true],
             ['tmv_cod' => 4,  'tmv_descricao' => 'Transferência - Dentro da Rede Municipal', 'tmv_tas_cod_entrada' => 18,   'tmv_tas_cod_saida' => 19,   'tmv_fl_ativo' => false],

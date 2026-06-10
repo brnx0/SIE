@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
+import AlunoCombobox from '@/components/relatorio/AlunoCombobox.vue';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import FormLabel from '@/components/common/FormLabel.vue';
 import type { BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
-import { FileText, Loader2, Search } from 'lucide-vue-next';
+import { FileText, Loader2 } from 'lucide-vue-next';
 import { onMounted, ref, watch } from 'vue';
 
 interface Escola { esc_id: number; esc_nome: string }
@@ -31,8 +31,6 @@ const alunos = ref<AlunoResultado[]>([]);
 const loadingTurmas = ref(false);
 const loadingAlunos = ref(false);
 const gerando = ref(false);
-
-const buscaAluno = ref('');
 
 async function loadTurmas() {
     turmas.value = [];
@@ -76,12 +74,6 @@ async function loadAlunos() {
 onMounted(loadTurmas);
 watch(escId, loadTurmas);
 watch(turId, loadAlunos);
-
-const alunosFiltrados = () => {
-    if (!buscaAluno.value) return alunos.value;
-    const q = buscaAluno.value.toLowerCase();
-    return alunos.value.filter(a => a.aln_nome.toLowerCase().includes(q));
-};
 
 function gerar() {
     if (!escId.value) return;
@@ -135,17 +127,17 @@ function gerar() {
 
                 <div class="grid gap-1.5">
                     <FormLabel>Aluno (opcional)</FormLabel>
-                    <div v-if="turId" class="grid gap-1.5">
-                        <div class="relative">
-                            <Search class="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                            <Input v-model="buscaAluno" placeholder="Filtrar aluno..." class="pl-9" :disabled="!alunos.length" />
-                        </div>
-                        <select v-model="alnId" :disabled="!alunos.length" class="rounded-md border bg-background px-3 py-2 text-sm">
-                            <option :value="null">Todos da turma</option>
-                            <option v-for="a in alunosFiltrados()" :key="a.aln_id" :value="a.aln_id">{{ a.aln_nome }}</option>
-                        </select>
+                    <template v-if="turId">
+                        <AlunoCombobox
+                            :model-value="alnId"
+                            :alunos="alunos"
+                            :loading="loadingAlunos"
+                            :disabled="!alunos.length"
+                            all-label="Todos da turma"
+                            @update:model-value="(v) => (alnId = v)"
+                        />
                         <p v-if="loadingAlunos" class="text-xs text-muted-foreground">Carregando alunos...</p>
-                    </div>
+                    </template>
                     <p v-else class="text-xs text-muted-foreground">Selecione uma turma para filtrar aluno específico.</p>
                 </div>
 

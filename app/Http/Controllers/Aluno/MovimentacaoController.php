@@ -8,10 +8,13 @@ use App\Models\Aluno\TipoMovimentacao;
 use App\Models\Escola\Escola;
 use App\Models\Parametro\AnoLetivo;
 use App\Services\Aluno\AplicaMovimentacao;
+use App\Services\Aluno\DesfazerMovimentacao;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response as HttpResponse;
 use Inertia\Inertia;
 use Inertia\Response;
+use Mpdf\Mpdf;
 
 class MovimentacaoController extends Controller
 {
@@ -60,8 +63,17 @@ class MovimentacaoController extends Controller
 
     public function store(Request $request, AplicaMovimentacao $service): RedirectResponse
     {
+        $request->validate([
+            'tmv_cod' => ['required', 'integer', 'exists:edu_tipo_movimentacao,tmv_cod'],
+        ], [], ['tmv_cod' => 'tipo de movimentação']);
+
         $tipo = TipoMovimentacao::where('tmv_fl_ativo', true)
-            ->findOrFail($request->input('tmv_cod'));
+            ->where('tmv_cod', $request->input('tmv_cod'))
+            ->first();
+
+        if (! $tipo) {
+            return back()->withErrors(['tmv_cod' => 'Tipo de movimentação inválido ou inativo.'])->withInput();
+        }
 
         $rules = [
             'tmv_cod'         => ['required', 'integer', 'exists:edu_tipo_movimentacao,tmv_cod'],
@@ -101,10 +113,62 @@ class MovimentacaoController extends Controller
             'matriculaDestino.turma.segmento',
             'matriculaDestino.turma.serie',
             'user',
+            'canceladaPor:id,name',
         ]);
 
         return Inertia::render('movimentacoes/Show', [
             'movimentacao' => $movimentacao,
         ]);
+    }
+
+    public function declaracaoTransferencia(AlunoMovimentacao $movimentacao): HttpResponse
+    {
+        if (! in_array($movimentacao->mva_tmv_cod, [3, 4], true)) {
+            abort(404, 'Declaração de transferência só disponível para movimentações de transferência.');
+        }
+
+        $movimentacao->load([
+            'aluno',
+            'tipo',
+            'matriculaOrigem.turma.escola',
+            'matriculaOrigem.turma.segmento',
+            'matriculaOrigem.turma.serie.promoSerie1',
+            'matriculaOrigem.turma.anoLetivo',
+        ]);
+
+        $parametros = \App\Models\Parametro\ParametroEntidade::first();
+        $turma      = $movimentacao->matriculaOrigem?->turma;
+
+        $html = view('exports.declaracao_transferencia_pdf', [
+            'parametros'   => $parametros,
+            'movimentacao' => $movimentacao,
+            'aluno'        => $movimentacao->aluno,
+            'turma'        => $turma,
+            'escola'       => $turma?->escola,
+            'segmento'     => $turma?->segmento,
+            'serie'        => $turma?->serie,
+            'serieApto'    => $turma?->serie?->promoSerie1 ?? $turma?->serie,
+            'anoLetivo'    => $turma?->anoLetivo,
+        ])->render();
+
+        $filename = 'declaracao_transferencia_' . $movimentacao->mva_id . '.pdf';
+        $mpdf     = new Mpdf(['format' => 'A4', 'margin_top' => 18, 'margin_bottom' => 18, 'margin_left' => 20, 'margin_right' => 20, 'tempDir' => sys_get_temp_dir()]);
+        $mpdf->WriteHTML($html);
+
+        return response($mpdf->Output($filename, 'S'), 200, [
+            'Content-Type'        => 'application/pdf',
+            'Content-Disposition' => "inline; filename=\"{$filename}\"",
+        ]);
+    }
+
+    public function desfazer(Request $request, AlunoMovimentacao $movimentacao, DesfazerMovimentacao $service): RedirectResponse
+    {
+        $data = $request->validate([
+            'motivo' => ['nullable', 'string', 'max:500'],
+        ], [], ['motivo' => 'motivo']);
+
+        $service->executar($movimentacao, $data['motivo'] ?? null);
+
+        return back()->with('success', 'Movimentação desfeita com sucesso.');
     }
 }

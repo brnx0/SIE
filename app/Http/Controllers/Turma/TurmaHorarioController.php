@@ -98,18 +98,6 @@ class TurmaHorarioController extends Controller
             ]);
         }
 
-        // Slot já ocupado nesta turma
-        $slotOcupado = TurmaHorario::where('trh_tur_id', $turma->tur_id)
-            ->where('trh_tempo', $data['trh_tempo'])
-            ->where('trh_dia', $data['trh_dia'])
-            ->exists();
-
-        if ($slotOcupado) {
-            return back()->withErrors([
-                'trh_tempo' => "Já existe alocação no {$data['trh_tempo']}º tempo neste dia para esta turma.",
-            ]);
-        }
-
         $conflito = TurmaHorario::with('turma')
             ->where('trh_tempo', $data['trh_tempo'])
             ->where('trh_dia', $data['trh_dia'])
@@ -133,23 +121,41 @@ class TurmaHorarioController extends Controller
             }
         }
 
-        $turma->horarios()->create([
-            'trh_tur_id' => $turma->tur_id,
+        // Upsert no slot (trh_tur_id, trh_tempo, trh_dia) — re-aloca sem violar unique.
+        // withTrashed: unique constraint atinge linhas soft-deleted; precisa restaurar/atualizar.
+        $existing = TurmaHorario::withTrashed()
+            ->where('trh_tur_id', $turma->tur_id)
+            ->where('trh_tempo', $data['trh_tempo'])
+            ->where('trh_dia', $data['trh_dia'])
+            ->first();
+
+        $payload = [
             'trh_grh_id' => null,
-            'trh_tempo'  => $data['trh_tempo'],
             'trh_hora'   => $data['trh_hora'] ?? null,
-            'trh_dia'    => $data['trh_dia'],
             'trh_fun_id' => $data['trh_fun_id'],
             'trh_dis_id' => $data['trh_dis_id'],
             'trh_fl_tc'  => $data['trh_fl_tc'],
-        ]);
+        ];
+
+        if ($existing) {
+            $existing->fill($payload);
+            $existing->trh_deleted_at = null;
+            $existing->save();
+        } else {
+            TurmaHorario::create(array_merge($payload, [
+                'trh_tur_id' => $turma->tur_id,
+                'trh_tempo'  => $data['trh_tempo'],
+                'trh_dia'    => $data['trh_dia'],
+            ]));
+        }
 
         return back()->with('success', 'Horário alocado com sucesso.');
     }
 
     public function destroy(Turma $turma, TurmaHorario $turmaHorario): RedirectResponse
     {
-        $turmaHorario->delete();
+        // forceDelete: unique constraint do slot ignora soft delete.
+        $turmaHorario->forceDelete();
 
         return back()->with('success', 'Horário removido com sucesso.');
     }

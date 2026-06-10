@@ -7,7 +7,13 @@ export function useSeries() {
     const items = ref<SerieResumo[]>([]);
     let controller: AbortController | null = null;
 
-    async function search(q: string, exclude?: number | null, segId?: number | null): Promise<void> {
+    async function search(
+        q: string,
+        exclude?: number | null,
+        segId?: number | null,
+        promoSegId?: number | null,
+        promoSerOrdem?: number | null,
+    ): Promise<void> {
         if (controller) controller.abort();
         controller = new AbortController();
 
@@ -17,6 +23,8 @@ export function useSeries() {
             if (q) params.set('q', q);
             if (exclude != null) params.set('exclude', String(exclude));
             if (segId != null) params.set('seg_id', String(segId));
+            if (promoSegId != null) params.set('promo_seg_id', String(promoSegId));
+            if (promoSerOrdem != null) params.set('promo_ser_ordem', String(promoSerOrdem));
 
             const res = await apiFetch(`/api/series/search?${params.toString()}`, {
                 signal: controller.signal,

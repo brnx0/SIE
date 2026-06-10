@@ -84,6 +84,13 @@ const remove = (tup: TurmaProfessor) => {
     router.delete(`/turmas/${props.turma.tur_id}/professores/${tup.tup_id}`, {
         preserveScroll: true,
         preserveState: true,
+        onSuccess: () => {
+            router.reload({
+                only: ['turma', 'flash'],
+                preserveScroll: true,
+                preserveState: true,
+            });
+        },
     });
 };
 

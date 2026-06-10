@@ -1,16 +1,16 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
+import AlunoCombobox from '@/components/relatorio/AlunoCombobox.vue';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import FormLabel from '@/components/common/FormLabel.vue';
 import type { BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
-import { ClipboardList, Loader2, Search } from 'lucide-vue-next';
+import { ClipboardList, Loader2 } from 'lucide-vue-next';
 import { onMounted, ref, watch } from 'vue';
 
 interface AnoLetivo { anl_id: number; anl_ano: number; anl_fl_em_exercicio: boolean }
 interface Escola { esc_id: number; esc_nome: string }
-interface Turma { tur_id: number; tur_nome: string; tur_situacao: string; tur_modalidade?: string }
+interface Turma { tur_id: number; tur_nome: string; tur_situacao: string; tur_modalidade?: string; serie?: { ser_nome: string } | null }
 interface AlunoResultado { tma_id: number; aln_id: number; aln_nome: string }
 
 const props = defineProps<{
@@ -35,8 +35,6 @@ const alunos = ref<AlunoResultado[]>([]);
 const loadingTurmas = ref(false);
 const loadingAlunos = ref(false);
 const gerando = ref(false);
-
-const buscaAluno = ref('');
 
 async function loadTurmas() {
     turmas.value = [];
@@ -80,12 +78,6 @@ async function loadAlunos() {
 onMounted(loadTurmas);
 watch([escId, anlId], loadTurmas);
 watch(turId, loadAlunos);
-
-const alunosFiltrados = () => {
-    if (!buscaAluno.value) return alunos.value;
-    const q = buscaAluno.value.toLowerCase();
-    return alunos.value.filter(a => a.aln_nome.toLowerCase().includes(q));
-};
 
 function gerar() {
     if (!escId.value || !anlId.value || !turId.value) return;
@@ -138,24 +130,24 @@ function gerar() {
                     <FormLabel :required="true">Turma</FormLabel>
                     <select v-model="turId" :disabled="!turmas.length" class="rounded-md border bg-background px-3 py-2 text-sm">
                         <option value="">—</option>
-                        <option v-for="t in turmas" :key="t.tur_id" :value="t.tur_id">{{ t.tur_nome }}</option>
+                        <option v-for="t in turmas" :key="t.tur_id" :value="t.tur_id">{{ t.serie?.ser_nome ? `${t.serie.ser_nome} ${t.tur_nome}` : t.tur_nome }}</option>
                     </select>
                     <p v-if="loadingTurmas" class="text-xs text-muted-foreground">Carregando turmas...</p>
                 </div>
 
                 <div class="grid gap-1.5">
                     <FormLabel>Aluno (opcional)</FormLabel>
-                    <div v-if="turId" class="grid gap-1.5">
-                        <div class="relative">
-                            <Search class="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                            <Input v-model="buscaAluno" placeholder="Filtrar aluno..." class="pl-9" :disabled="!alunos.length" />
-                        </div>
-                        <select v-model="alnId" :disabled="!alunos.length" class="rounded-md border bg-background px-3 py-2 text-sm">
-                            <option :value="null">Todos da turma (lote)</option>
-                            <option v-for="a in alunosFiltrados()" :key="a.aln_id" :value="a.aln_id">{{ a.aln_nome }}</option>
-                        </select>
+                    <template v-if="turId">
+                        <AlunoCombobox
+                            :model-value="alnId"
+                            :alunos="alunos"
+                            :loading="loadingAlunos"
+                            :disabled="!alunos.length"
+                            all-label="Todos da turma (lote)"
+                            @update:model-value="(v) => (alnId = v)"
+                        />
                         <p v-if="loadingAlunos" class="text-xs text-muted-foreground">Carregando alunos...</p>
-                    </div>
+                    </template>
                     <p v-else class="text-xs text-muted-foreground">Selecione uma turma para filtrar aluno específico.</p>
                 </div>
 

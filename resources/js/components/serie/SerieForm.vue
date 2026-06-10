@@ -297,6 +297,8 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar série' : 'Salvar alter
                     v-model="form.ser_promo_ser_id_1"
                     :initial="initial?.promoSerie1 ?? null"
                     :exclude="initial?.ser_id ?? null"
+                    :promo-seg-id="form.seg_id"
+                    :promo-ser-ordem="form.ser_ordem_no_segmento"
                     placeholder="Selecionar série..."
                     :invalid="!!form.errors.ser_promo_ser_id_1"
                 />
@@ -310,6 +312,8 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar série' : 'Salvar alter
                     v-model="form.ser_promo_ser_id_2"
                     :initial="initial?.promoSerie2 ?? null"
                     :exclude="initial?.ser_id ?? null"
+                    :promo-seg-id="form.seg_id"
+                    :promo-ser-ordem="form.ser_ordem_no_segmento"
                     placeholder="Selecionar série..."
                     :invalid="!!form.errors.ser_promo_ser_id_2"
                 />

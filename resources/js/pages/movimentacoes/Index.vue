@@ -20,6 +20,8 @@ interface Movimentacao {
     matricula_origem: { tma_id: number; turma: { tur_nome: string; escola: { esc_nome: string } | null } | null } | null;
     matricula_destino: { tma_id: number; turma: { tur_nome: string; escola: { esc_nome: string } | null } | null } | null;
     user: { id: number; name: string } | null;
+    mva_fl_cancelada: boolean;
+    mva_cancelada_at: string | null;
 }
 
 const props = defineProps<{
@@ -105,10 +107,21 @@ const formatDate = (iso: string | null) => {
                         <tr v-if="movimentacoes.data.length === 0">
                             <td colspan="8" class="px-4 py-10 text-center text-muted-foreground">Nenhuma movimentação encontrada.</td>
                         </tr>
-                        <tr v-for="mv in movimentacoes.data" :key="mv.mva_id" class="border-b hover:bg-muted/20">
+                        <tr
+                            v-for="mv in movimentacoes.data"
+                            :key="mv.mva_id"
+                            class="border-b hover:bg-muted/20"
+                            :class="{ 'bg-rose-50/40 dark:bg-rose-900/10': mv.mva_fl_cancelada }"
+                        >
                             <td class="px-4 py-3">{{ formatDate(mv.mva_dt_movimentacao) }}</td>
-                            <td class="px-4 py-3 font-medium">{{ mv.aluno?.aln_nome ?? '—' }}</td>
-                            <td class="px-4 py-3">{{ mv.tipo?.tmv_descricao ?? '—' }}</td>
+                            <td class="px-4 py-3 font-medium">
+                                {{ mv.aluno?.aln_nome ?? '—' }}
+                                <span
+                                    v-if="mv.mva_fl_cancelada"
+                                    class="ml-2 inline-flex rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-semibold text-rose-700 dark:bg-rose-900/40 dark:text-rose-300"
+                                >DESFEITA</span>
+                            </td>
+                            <td class="px-4 py-3" :class="{ 'line-through text-muted-foreground': mv.mva_fl_cancelada }">{{ mv.tipo?.tmv_descricao ?? '—' }}</td>
                             <td class="px-4 py-3 text-xs">
                                 <div>{{ mv.matricula_origem?.turma?.escola?.esc_nome ?? '—' }}</div>
                                 <div class="text-muted-foreground">{{ mv.matricula_origem?.turma?.tur_nome ?? '' }}</div>

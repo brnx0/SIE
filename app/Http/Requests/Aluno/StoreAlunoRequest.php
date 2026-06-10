@@ -45,6 +45,7 @@ class StoreAlunoRequest extends FormRequest
             'aln_cep' => $this->filled('aln_cep') ? $strip($this->input('aln_cep')) : null,
             'aln_telefone' => $this->filled('aln_telefone') ? $strip($this->input('aln_telefone')) : null,
             'aln_cd_inep' => $this->filled('aln_cd_inep') ? $strip($this->input('aln_cd_inep')) : null,
+            'aln_nis' => $this->filled('aln_nis') ? $strip($this->input('aln_nis')) : null,
             'aln_uf' => $this->filled('aln_uf') ? strtoupper($this->input('aln_uf')) : null,
         ]);
     }
@@ -68,6 +69,15 @@ class StoreAlunoRequest extends FormRequest
             'aln_cd_inep' => ['nullable', 'digits:12', Rule::unique('edu_aluno', 'aln_cd_inep')->ignore($alunoId, 'aln_id')->whereNull('aln_deleted_at')],
             'aln_nr_matricula' => ['nullable', 'integer', 'min:1', Rule::unique('edu_aluno', 'aln_nr_matricula')->ignore($alunoId, 'aln_id')->whereNull('aln_deleted_at')],
             'aln_nr_certidao' => ['nullable', 'string', 'max:32'],
+            'aln_nis' => ['nullable', 'digits:11'],
+
+            'aln_fl_trouxe_transferencia'  => ['boolean'],
+            'aln_fl_trouxe_rg'             => ['boolean'],
+            'aln_fl_trouxe_reg_nascimento' => ['boolean'],
+            'aln_fl_bolsa_familia'         => ['boolean'],
+            'aln_fl_recebe_merenda'        => ['boolean'],
+            'aln_fl_usa_transporte'        => ['boolean'],
+            'aln_fl_usa_biblioteca'        => ['boolean'],
 
             'aln_filiacao_1'      => ['required', 'string', 'max:100'],
             'aln_filiacao_1_tipo' => ['required', Rule::in(['PAI', 'MAE'])],
@@ -215,6 +225,14 @@ class StoreAlunoRequest extends FormRequest
             'aln_cd_inep' => 'identificação INEP',
             'aln_nr_matricula' => 'número de matrícula',
             'aln_nr_certidao' => 'matrícula da certidão',
+            'aln_nis' => 'NIS (PIS/PASEP)',
+            'aln_fl_trouxe_transferencia'  => 'trouxe declaração de transferência',
+            'aln_fl_trouxe_rg'             => 'trouxe RG',
+            'aln_fl_trouxe_reg_nascimento' => 'trouxe registro de nascimento',
+            'aln_fl_bolsa_familia'         => 'bolsa família',
+            'aln_fl_recebe_merenda'        => 'recebe merenda',
+            'aln_fl_usa_transporte'        => 'usa transporte escolar',
+            'aln_fl_usa_biblioteca'        => 'usa biblioteca',
             'aln_filiacao_1'      => 'filiação 1',
             'aln_filiacao_1_tipo' => 'tipo da filiação 1',
             'aln_filiacao_2'      => 'filiação 2',

@@ -13,11 +13,12 @@ class MatriculaTurmaController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $anlId    = (int) $request->input('anl_id');
-        $escId    = (int) $request->input('esc_id');
-        $segId    = (int) $request->input('seg_id');
-        $serId    = (int) $request->input('ser_id');
-        $semestre = (int) $request->input('semestre');
+        $anlId      = (int) $request->input('anl_id');
+        $escId      = (int) $request->input('esc_id');
+        $segId      = (int) $request->input('seg_id');
+        $serId      = (int) $request->input('ser_id');
+        $semestre   = (int) $request->input('semestre');
+        $modalidade = trim((string) $request->input('modalidade', ''));
 
         if (! $anlId || ! $escId) {
             return response()->json([]);
@@ -35,6 +36,7 @@ class MatriculaTurmaController extends Controller
             ->when($segId, fn ($q) => $q->where('tur_seg_id', $segId))
             ->when($serId, fn ($q) => $q->where('tur_ser_id', $serId))
             ->when($semestre, fn ($q) => $q->where('tur_semestre', $semestre))
+            ->when($modalidade !== '', fn ($q) => $q->where('tur_modalidade', $modalidade))
             ->withCount([
                 'matriculas as total_matriculados' => fn ($q) => $q->where('tma_situacao', Matricula::SITUACAO_ATIVA),
             ])

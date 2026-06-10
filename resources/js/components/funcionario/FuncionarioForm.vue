@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AdmissaoLotacaoTab from '@/components/funcionario/AdmissaoLotacaoTab.vue';
+import HorariosTab from '@/components/funcionario/HorariosTab.vue';
 import CharCounter from '@/components/common/CharCounter.vue';
 import CpfDuplicadoDialog from '@/components/funcionario/CpfDuplicadoDialog.vue';
 import FuncionarioHomonimoDialog, { type FuncionarioHomonimoMatch } from '@/components/funcionario/FuncionarioHomonimoDialog.vue';
@@ -34,9 +35,23 @@ import { Link, useForm, usePage } from '@inertiajs/vue3';
 import { Camera, ChevronLeft, ChevronRight, Loader2, LoaderCircle, Save, Trash2, Upload } from 'lucide-vue-next';
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 
+interface HorarioItem {
+    trh_id: number;
+    matricula: string | null;
+    turma: string | null;
+    escola: string | null;
+    dia: string;
+    dia_cod: string;
+    horario: string | null;
+    disciplina: string | null;
+    tempo: number;
+    turno: string | null;
+}
+
 const props = defineProps<{
     mode: 'create' | 'edit';
     initial?: Funcionario;
+    horarios?: HorarioItem[];
 }>();
 
 const page = usePage<SharedData>();
@@ -58,7 +73,7 @@ const alertarAcentos = computed(() => params.value.alertar_acentos_nomes);
 
 const stripAccents = (str: string) => str.normalize('NFD').replace(/[̀-ͯ]/g, '');
 
-const TABS = ['dados-pessoais', 'documentacao', 'endereco-contato', 'admissao-lotacao'] as const;
+const TABS = ['dados-pessoais', 'documentacao', 'endereco-contato', 'admissao-lotacao', 'horario'] as const;
 type TabId = (typeof TABS)[number];
 
 const TAB_FIELDS: Record<TabId, string[]> = {
@@ -83,6 +98,7 @@ const TAB_FIELDS: Record<TabId, string[]> = {
         'fun_telefone', 'fun_celular', 'fun_email',
     ],
     'admissao-lotacao': [],
+    horario: [],
 };
 
 const formatDateBR = (iso: string | null | undefined): string => {
@@ -401,6 +417,9 @@ const initials = computed(() => {
                 </TabsTrigger>
                 <TabsTrigger value="admissao-lotacao" :has-error="tabHasError('admissao-lotacao')">
                     4. Admissão / Lotação
+                </TabsTrigger>
+                <TabsTrigger v-if="mode === 'edit'" value="horario">
+                    5. Horário
                 </TabsTrigger>
             </TabsList>
 
@@ -977,6 +996,10 @@ const initials = computed(() => {
                     Salve o funcionário primeiro para gerenciar admissões e lotações.
                 </div>
                 <AdmissaoLotacaoTab v-else-if="initial" :funcionario="initial" />
+            </TabsContent>
+
+            <TabsContent v-if="mode === 'edit'" value="horario">
+                <HorariosTab :horarios="horarios ?? []" />
             </TabsContent>
         </Tabs>
 

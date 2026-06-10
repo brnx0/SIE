@@ -5,7 +5,20 @@ import { type BreadcrumbItem } from '@/types';
 import type { Funcionario } from '@/types/funcionario';
 import { Head } from '@inertiajs/vue3';
 
-const props = defineProps<{ funcionario: Funcionario }>();
+interface HorarioItem {
+    trh_id: number;
+    matricula: string | null;
+    turma: string | null;
+    escola: string | null;
+    dia: string;
+    dia_cod: string;
+    horario: string | null;
+    disciplina: string | null;
+    tempo: number;
+    turno: string | null;
+}
+
+const props = defineProps<{ funcionario: Funcionario; horarios?: HorarioItem[] }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Funcionários', href: '/funcionarios' },
@@ -23,7 +36,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                 </h1>
                 <p class="text-sm text-slate-500 dark:text-slate-400">{{ funcionario.fun_nome }}</p>
             </div>
-            <FuncionarioForm mode="edit" :initial="funcionario" />
+            <FuncionarioForm mode="edit" :initial="funcionario" :horarios="horarios ?? []" />
         </div>
     </AppLayout>
 </template>

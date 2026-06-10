@@ -78,8 +78,49 @@ class FuncionarioController extends Controller
             'admissoes.lotacoes.cargo:crg_id,crg_nome',
         ]);
 
+        $diasMap = [
+            'dom' => 'Domingo', 'seg' => 'Segunda', 'ter' => 'Terça', 'qua' => 'Quarta',
+            'qui' => 'Quinta', 'sex' => 'Sexta', 'sab' => 'Sábado',
+        ];
+
+        $matriculaFun = \App\Models\Funcionario\FuncionarioAdmissao::where('adm_fun_id', $funcionario->fun_id)
+            ->whereNull('adm_deleted_at')
+            ->orderByDesc('adm_dt_admissao')
+            ->value('adm_matricula');
+
+        $horarios = \App\Models\Turma\TurmaHorario::query()
+            ->with([
+                'turma:tur_id,tur_nome,tur_cd_inep,tur_turno,tur_esc_id,tur_anl_id,tur_ser_id',
+                'turma.escola:esc_id,esc_nome',
+                'turma.serie:ser_id,ser_nome',
+                'turma.anoLetivo:anl_id,anl_ano,anl_fl_em_exercicio',
+                'disciplina:dis_id,dis_nome',
+            ])
+            ->where('trh_fun_id', $funcionario->fun_id)
+            ->whereHas('turma.anoLetivo', fn ($q) => $q->where('anl_fl_em_exercicio', true))
+            ->orderBy('trh_dia')
+            ->orderBy('trh_tempo')
+            ->get()
+            ->map(function ($h) use ($diasMap, $matriculaFun) {
+                $serie = $h->turma?->serie?->ser_nome;
+                $turNome = $h->turma?->tur_nome;
+                return [
+                    'trh_id'     => $h->trh_id,
+                    'matricula'  => $matriculaFun,
+                    'turma'      => trim(($serie ? "$serie " : '') . ($turNome ?? '')),
+                    'escola'     => $h->turma?->escola?->esc_nome,
+                    'dia'        => $diasMap[$h->trh_dia] ?? $h->trh_dia,
+                    'dia_cod'    => $h->trh_dia,
+                    'horario'    => $h->trh_hora ? substr($h->trh_hora, 0, 5) : null,
+                    'disciplina' => $h->disciplina?->dis_nome,
+                    'tempo'      => $h->trh_tempo,
+                    'turno'      => $h->turma?->tur_turno,
+                ];
+            });
+
         return Inertia::render('funcionarios/Edit', [
             'funcionario' => $funcionario,
+            'horarios'    => $horarios,
         ]);
     }
 

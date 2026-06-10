@@ -101,15 +101,11 @@ class Aluno extends Model
     }
 
     /**
-     * Público-alvo do AEE: deficiência (PCD), transtorno global do
-     * desenvolvimento (TGD) ou altas habilidades/superdotação.
+     * Público-alvo do AEE: flag única "Aluno com Deficiência (PCD), TGD
+     * ou Altas Habilidades" no quadro de saúde (als_fl_pcd).
      */
     public function scopePublicoAee($query)
     {
-        return $query->whereHas('saude', function ($q) {
-            $q->where('als_fl_pcd', true)
-              ->orWhere('als_fl_altas_habilidades', true)
-              ->orWhereRaw("jsonb_array_length(coalesce(als_transtornos_globais, '[]')::jsonb) > 0");
-        });
+        return $query->whereHas('saude', fn ($q) => $q->where('als_fl_pcd', true));
     }
 }
