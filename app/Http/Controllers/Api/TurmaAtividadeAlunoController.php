@@ -50,7 +50,7 @@ class TurmaAtividadeAlunoController extends Controller
             ->when($search !== '', fn ($q) => $q->whereRaw('aln_nome ilike ?', ["%{$search}%"]))
             ->orderBy('aln_nome')
             ->limit(50)
-            ->get(['aln_id', 'aln_nome', 'aln_nr_matricula']);
+            ->get(['aln_id', 'aln_nome', 'aln_nr_matricula', 'aln_dt_nascimento', 'aln_cpf']);
 
         return response()->json($alunos);
     }

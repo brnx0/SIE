@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Parametro\GradeHorario;
 use App\Models\Turma\Turma;
 use App\Models\Turma\TurmaHorario;
+use App\Models\Turma\TurmaProfessor;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
@@ -84,6 +85,18 @@ class TurmaHorarioController extends Controller
         ]);
 
         $data['trh_fl_tc'] = $request->boolean('trh_fl_tc');
+
+        // Professor + disciplina devem estar alocados na turma (aba Professores).
+        $alocado = TurmaProfessor::where('tup_tur_id', $turma->tur_id)
+            ->where('tup_fun_id', $data['trh_fun_id'])
+            ->where('tup_dis_id', $data['trh_dis_id'])
+            ->exists();
+
+        if (! $alocado) {
+            return back()->withErrors([
+                'trh_fun_id' => 'Professor não está alocado nesta turma com a disciplina informada. Aloque na aba Professores antes.',
+            ]);
+        }
 
         // Slot já ocupado nesta turma
         $slotOcupado = TurmaHorario::where('trh_tur_id', $turma->tur_id)

@@ -46,6 +46,13 @@ const PATH_LABELS: Record<string, string> = {
     '/movimentacoes':          'Movimentações',
     '/relatorios':             'Relatórios',
     '/relatorios/alunos-por-turma': 'Alunos por Turma',
+    '/relatorios/declaracao-matricula': 'Declaração de Matrícula',
+    '/relatorios/formacao-classes': 'Formação de Classes',
+    '/relatorios/formacao-classes-aee': 'Formação de Classes — AEE',
+    '/relatorios/formacao-classes-atividade': 'Formação de Classes — Atividade',
+    '/relatorios/alunos-deficiencia': 'Alunos com Deficiência',
+    '/relatorios/ficha-matricula': 'Ficha de Matrícula',
+    '/relatorios/sumario-matriculas': 'Sumário de Matrículas',
 };
 
 export function prettifyPath(path: string): string {

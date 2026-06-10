@@ -420,7 +420,7 @@ const selectClass = (hasError: boolean) =>
                     :turma="initial!"
                     :horarios="horarios ?? []"
                     :grade-horarios="gradeHorarios ?? []"
-                    :professores-disponiveis="professoresDisponiveis ?? []"
+                    :professores="professores ?? []"
                     :disciplinas="disciplinas ?? []"
                 />
             </TabsContent>

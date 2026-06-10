@@ -144,10 +144,6 @@ const clampAno4Digitos = (field: keyof AnoLetivoFormData) => (e: Event) => {
                     <Switch id="anl_fl_em_exercicio" v-model="form.anl_fl_em_exercicio" />
                     <Label for="anl_fl_em_exercicio" class="text-sm font-normal">Ano em Exercício</Label>
                 </div>
-                <p v-if="form.anl_fl_em_exercicio" class="-mt-2 text-xs text-amber-600 sm:col-span-2 dark:text-amber-400">
-                    Apenas um registro pode estar em exercício. Os demais serão desmarcados ao salvar.
-                </p>
-
                 <div class="flex items-center gap-3 sm:col-span-1">
                     <Switch id="anl_fl_progressao_parcial" v-model="form.anl_fl_progressao_parcial" />
                     <Label for="anl_fl_progressao_parcial" class="text-sm font-normal">Possui Progressão Parcial</Label>

@@ -9,9 +9,9 @@ import { Label } from '@/components/ui/label';
 import type {
     DisciplinaResumo,
     GradeHorarioResumo,
-    ProfessorResumo,
     Turma,
     TurmaHorario,
+    TurmaProfessor,
 } from '@/types/turma';
 import { DIAS_SEMANA } from '@/types/turma';
 import { router } from '@inertiajs/vue3';
@@ -22,7 +22,7 @@ const props = defineProps<{
     turma: Turma;
     horarios: TurmaHorario[];
     gradeHorarios: GradeHorarioResumo[];
-    professoresDisponiveis: ProfessorResumo[];
+    professores: TurmaProfessor[];
     disciplinas: DisciplinaResumo[];
 }>();
 
@@ -47,13 +47,34 @@ const horarioMap = computed(() => {
     return m;
 });
 
-const professoresItems = computed(() =>
-    props.professoresDisponiveis.map((p) => ({ id: p.fun_id, label: p.fun_nome })),
-);
+// Só professores alocados na turma (com disciplina) podem ser selecionados.
+const professoresItems = computed(() => {
+    const vistos = new Set<number>();
+    const out: { id: number; label: string }[] = [];
+    for (const p of props.professores ?? []) {
+        if (p.tup_fun_id && !vistos.has(p.tup_fun_id)) {
+            vistos.add(p.tup_fun_id);
+            out.push({ id: p.tup_fun_id, label: p.funcionario?.fun_nome ?? '—' });
+        }
+    }
+    return out;
+});
 
-const disciplinasItems = computed(() =>
-    props.disciplinas.map((d) => ({ id: d.dis_id, label: d.dis_nome })),
-);
+// Disciplinas filtradas pelo professor selecionado (apenas as que ele leciona na turma).
+const disciplinasItems = computed(() => {
+    const alocadas = (props.professores ?? []).filter(
+        (p) => p.tup_fun_id === form.trh_fun_id,
+    );
+    const vistas = new Set<number>();
+    const out: { id: number; label: string }[] = [];
+    for (const p of alocadas) {
+        if (p.tup_dis_id && !vistas.has(p.tup_dis_id)) {
+            vistas.add(p.tup_dis_id);
+            out.push({ id: p.tup_dis_id, label: p.disciplina?.dis_nome ?? '—' });
+        }
+    }
+    return out;
+});
 
 // Form state
 const showFormKey = ref<string | null>(null); // `${dia}:${tempo}`
@@ -84,6 +105,12 @@ const openForm = (dia: string, tempo: number) => {
 const cancelForm = () => {
     showFormKey.value = null;
     errors.value = {};
+};
+
+// Troca de professor zera disciplina (lista depende do professor).
+const onProfessorChange = (v: number | null) => {
+    form.trh_fun_id = v;
+    form.trh_dis_id = null;
 };
 
 const submit = () => {
@@ -191,9 +218,12 @@ const remove = (trh: TurmaHorario) => {
                                                 :items="professoresItems"
                                                 :invalid="!!errors.trh_fun_id"
                                                 placeholder="Buscar professor..."
-                                                @update:model-value="(v) => (form.trh_fun_id = v)"
+                                                @update:model-value="onProfessorChange"
                                             />
                                             <InputError :message="errors.trh_fun_id" />
+                                            <p v-if="professoresItems.length === 0" class="text-xs text-amber-600">
+                                                Nenhum professor alocado nesta turma. Aloque na aba Professores.
+                                            </p>
                                         </div>
                                         <div class="grid min-w-0 gap-1">
                                             <FormLabel :required="true">Disciplina</FormLabel>

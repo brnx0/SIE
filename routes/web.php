@@ -2,7 +2,14 @@
 
 use App\Http\Controllers\Aluno\AlunoController;
 use App\Http\Controllers\Aluno\MovimentacaoController;
+use App\Http\Controllers\Relatorio\AlunosDeficienciaController;
 use App\Http\Controllers\Relatorio\AlunosPorTurmaRelatorioController;
+use App\Http\Controllers\Relatorio\FichaMatriculaController;
+use App\Http\Controllers\Relatorio\SumarioMatriculasController;
+use App\Http\Controllers\Relatorio\DeclaracaoMatriculaController;
+use App\Http\Controllers\Relatorio\FormacaoClassesAeeController;
+use App\Http\Controllers\Relatorio\FormacaoClassesAtividadeController;
+use App\Http\Controllers\Relatorio\FormacaoClassesController;
 use App\Http\Controllers\Relatorio\RelatorioCentralController;
 use App\Http\Controllers\Api\AlunoSearchController;
 use App\Http\Controllers\Api\BairroController;
@@ -136,6 +143,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('relatorios', [RelatorioCentralController::class, 'index'])->name('relatorios.index');
     Route::get('relatorios/alunos-por-turma', [AlunosPorTurmaRelatorioController::class, 'form'])->name('relatorios.alunos-por-turma.form');
     Route::get('relatorios/alunos-por-turma/gerar', [AlunosPorTurmaRelatorioController::class, 'gerar'])->name('relatorios.alunos-por-turma.gerar');
+    Route::get('relatorios/declaracao-matricula', [DeclaracaoMatriculaController::class, 'form'])->name('relatorios.declaracao-matricula.form');
+    Route::get('relatorios/declaracao-matricula/gerar', [DeclaracaoMatriculaController::class, 'gerar'])->name('relatorios.declaracao-matricula.gerar');
+    Route::get('relatorios/formacao-classes', [FormacaoClassesController::class, 'form'])->name('relatorios.formacao-classes.form');
+    Route::get('relatorios/formacao-classes/gerar', [FormacaoClassesController::class, 'gerar'])->name('relatorios.formacao-classes.gerar');
+    Route::get('relatorios/formacao-classes-aee', [FormacaoClassesAeeController::class, 'form'])->name('relatorios.formacao-classes-aee.form');
+    Route::get('relatorios/formacao-classes-aee/gerar', [FormacaoClassesAeeController::class, 'gerar'])->name('relatorios.formacao-classes-aee.gerar');
+    Route::get('relatorios/formacao-classes-atividade', [FormacaoClassesAtividadeController::class, 'form'])->name('relatorios.formacao-classes-atividade.form');
+    Route::get('relatorios/formacao-classes-atividade/gerar', [FormacaoClassesAtividadeController::class, 'gerar'])->name('relatorios.formacao-classes-atividade.gerar');
+    Route::get('relatorios/alunos-deficiencia', [AlunosDeficienciaController::class, 'form'])->name('relatorios.alunos-deficiencia.form');
+    Route::get('relatorios/alunos-deficiencia/gerar', [AlunosDeficienciaController::class, 'gerar'])->name('relatorios.alunos-deficiencia.gerar');
+    Route::get('relatorios/ficha-matricula', [FichaMatriculaController::class, 'form'])->name('relatorios.ficha-matricula.form');
+    Route::get('relatorios/ficha-matricula/gerar', [FichaMatriculaController::class, 'gerar'])->name('relatorios.ficha-matricula.gerar');
+    Route::get('relatorios/sumario-matriculas', [SumarioMatriculasController::class, 'form'])->name('relatorios.sumario-matriculas.form');
+    Route::get('relatorios/sumario-matriculas/gerar', [SumarioMatriculasController::class, 'gerar'])->name('relatorios.sumario-matriculas.gerar');
 
     Route::get('movimentacoes', [MovimentacaoController::class, 'index'])->name('movimentacoes.index');
     Route::get('movimentacoes/create', [MovimentacaoController::class, 'create'])->name('movimentacoes.create');

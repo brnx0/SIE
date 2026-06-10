@@ -2,7 +2,7 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/vue3';
-import { Users, FileBarChart } from 'lucide-vue-next';
+import { Users, FileBarChart, FileText, LayoutGrid, Accessibility, Activity, ClipboardList, Table } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 interface Relatorio {
@@ -27,7 +27,7 @@ const grupos = computed(() => {
     return Object.entries(map);
 });
 
-const iconMap: Record<string, any> = { Users, FileBarChart };
+const iconMap: Record<string, any> = { Users, FileBarChart, FileText, LayoutGrid, Accessibility, Activity, ClipboardList, Table };
 </script>
 
 <template>

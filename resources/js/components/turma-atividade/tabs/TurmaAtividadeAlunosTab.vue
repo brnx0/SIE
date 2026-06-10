@@ -20,7 +20,18 @@ interface AlunoElegivel {
     aln_id: number;
     aln_nome: string;
     aln_nr_matricula: number | null;
+    aln_dt_nascimento: string | null;
+    aln_cpf: string | null;
 }
+
+const formatarDataNasc = (d: string | null) =>
+    d ? new Date(d.substring(0, 10) + 'T00:00:00').toLocaleDateString('pt-BR') : null;
+
+const formatarCpf = (cpf: string | null) => {
+    if (!cpf) return null;
+    const d = cpf.replace(/\D/g, '');
+    return d.length === 11 ? `${d.slice(0,3)}.${d.slice(3,6)}.${d.slice(6,9)}-${d.slice(9)}` : cpf;
+};
 
 const { push } = useToast();
 const alunos  = ref<AlunoAlocado[]>([]);
@@ -170,9 +181,15 @@ onMounted(load);
                 <table v-else class="w-full text-sm">
                     <tbody class="divide-y">
                         <tr v-for="e in elegiveis" :key="e.aln_id" class="hover:bg-muted/20">
-                            <td class="px-4 py-2.5 tabular-nums text-muted-foreground">{{ e.aln_nr_matricula ?? '—' }}</td>
-                            <td class="px-4 py-2.5 font-medium">{{ e.aln_nome }}</td>
-                            <td class="px-4 py-2.5 text-right">
+                            <td class="px-4 py-2.5 tabular-nums text-muted-foreground align-top">{{ e.aln_nr_matricula ?? '—' }}</td>
+                            <td class="px-4 py-2.5">
+                                <div class="font-medium">{{ e.aln_nome }}</div>
+                                <div class="flex flex-wrap gap-x-3 text-xs text-muted-foreground">
+                                    <span>Nasc.: {{ formatarDataNasc(e.aln_dt_nascimento) ?? '—' }}</span>
+                                    <span>CPF: {{ formatarCpf(e.aln_cpf) ?? '—' }}</span>
+                                </div>
+                            </td>
+                            <td class="px-4 py-2.5 text-right align-top">
                                 <Button type="button" size="sm" variant="outline" :disabled="alocando === e.aln_id" @click="alocar(e)">
                                     <Loader2 v-if="alocando === e.aln_id" class="mr-1 size-4 animate-spin" />
                                     <Plus v-else class="mr-1 size-4" />
