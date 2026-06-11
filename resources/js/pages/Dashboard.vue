@@ -2,20 +2,29 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem, type SharedData } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/vue3';
-import { BookMarked, GraduationCap, NotebookPen, School, UserPlus, Users } from 'lucide-vue-next';
+import { BookMarked, ClipboardList, GraduationCap, School, UserPlus, Users } from 'lucide-vue-next';
 import { computed } from 'vue';
+
+interface DashStats {
+    alunos_matriculados: number;
+    funcionarios_ativos: number;
+    turmas_andamento: number;
+    escolas_ativas: number;
+}
+
+const props = defineProps<{ stats?: DashStats }>();
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Painel', href: '/dashboard' }];
 
 const page = usePage<SharedData>();
 const userName = computed(() => page.props.auth.user?.name ?? 'Educador');
 
-const stats = [
-    { label: 'Alunos matriculados', value: '—', icon: GraduationCap, tone: 'sky' },
-    { label: 'Funcionários ativos', value: '—', icon: School, tone: 'teal' },
-    { label: 'Turmas em andamento', value: '—', icon: BookMarked, tone: 'amber' },
-    { label: 'Notas lançadas', value: '—', icon: NotebookPen, tone: 'rose' },
-] as const;
+const stats = computed(() => [
+    { label: 'Alunos matriculados', value: props.stats?.alunos_matriculados ?? '—', icon: GraduationCap, tone: 'sky' },
+    { label: 'Funcionários ativos', value: props.stats?.funcionarios_ativos ?? '—', icon: School, tone: 'teal' },
+    { label: 'Turmas em andamento', value: props.stats?.turmas_andamento ?? '—', icon: BookMarked, tone: 'amber' },
+    { label: 'Escolas ativas', value: props.stats?.escolas_ativas ?? '—', icon: Users, tone: 'rose' },
+]);
 
 const toneClass: Record<string, string> = {
     sky: 'bg-sky-50 text-sky-600 dark:bg-sky-900/30 dark:text-sky-300',
@@ -25,10 +34,10 @@ const toneClass: Record<string, string> = {
 };
 
 const shortcuts = [
-    { title: 'Cadastrar aluno', desc: 'Registre uma nova matrícula', href: '/alunos/create', icon: GraduationCap },
-    { title: 'Cadastrar funcionário', desc: 'Professores e equipe pedagógica', href: '/users/create', icon: UserPlus },
-    { title: 'Criar turma', desc: 'Defina disciplinas, horários e professores', href: '#', icon: BookMarked },
-    { title: 'Lançar notas', desc: 'Avalie o desempenho dos alunos', href: '#', icon: NotebookPen },
+    { title: 'Cadastrar aluno', desc: 'Registre um novo aluno', href: '/alunos/create', icon: GraduationCap },
+    { title: 'Cadastrar funcionário', desc: 'Professores e equipe pedagógica', href: '/funcionarios/create', icon: UserPlus },
+    { title: 'Criar turma', desc: 'Defina disciplinas, horários e professores', href: '/turmas/create', icon: BookMarked },
+    { title: 'Realizar matrícula', desc: 'Matricule alunos nas turmas', href: '/matriculas', icon: ClipboardList },
 ];
 </script>
 

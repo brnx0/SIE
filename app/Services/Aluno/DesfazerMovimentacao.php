@@ -19,6 +19,12 @@ class DesfazerMovimentacao
         }
 
         return DB::transaction(function () use ($mva, $motivo) {
+            // Remove matrícula de destino ANTES de reativar origem,
+            // senão índice parcial "1 ATIVA por ano" dispara unique violation.
+            if ($mva->mva_tma_id_destino) {
+                Matricula::where('tma_id', $mva->mva_tma_id_destino)->delete();
+            }
+
             // Reativa matrícula de origem
             if ($mva->mva_tma_id_origem) {
                 Matricula::where('tma_id', $mva->mva_tma_id_origem)->update([
@@ -37,11 +43,6 @@ class DesfazerMovimentacao
                         'tma_dt_saida'      => null,
                     ]);
                 }
-            }
-
-            // Remove matrícula de destino criada (se houver)
-            if ($mva->mva_tma_id_destino) {
-                Matricula::where('tma_id', $mva->mva_tma_id_destino)->delete();
             }
 
             $mva->update([

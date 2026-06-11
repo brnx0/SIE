@@ -104,10 +104,25 @@ class TurmaProfessorController extends Controller
             ]);
         }
 
-        $turmaProfessor->update([
-            'tup_fun_id' => $data['tup_fun_id'],
-            'tup_dis_id' => $data['tup_dis_id'],
-        ]);
+        $oldFunId = $turmaProfessor->tup_fun_id;
+        $oldDisId = $turmaProfessor->tup_dis_id;
+
+        DB::transaction(function () use ($turma, $turmaProfessor, $data, $oldFunId, $oldDisId) {
+            $turmaProfessor->update([
+                'tup_fun_id' => $data['tup_fun_id'],
+                'tup_dis_id' => $data['tup_dis_id'],
+            ]);
+
+            if ($oldFunId !== $data['tup_fun_id'] || $oldDisId !== $data['tup_dis_id']) {
+                TurmaHorario::where('trh_tur_id', $turma->tur_id)
+                    ->where('trh_fun_id', $oldFunId)
+                    ->where('trh_dis_id', $oldDisId)
+                    ->update([
+                        'trh_fun_id' => $data['tup_fun_id'],
+                        'trh_dis_id' => $data['tup_dis_id'],
+                    ]);
+            }
+        });
 
         return back()->with('success', 'Alocação atualizada com sucesso.');
     }

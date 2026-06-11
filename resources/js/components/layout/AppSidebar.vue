@@ -61,6 +61,7 @@ const relatoriosMenu = [
         icon: FileBarChart,
         children: [
             { title: 'Central de Relatórios', href: '/relatorios' },
+            { title: 'Relatórios da Escola', href: '/relatorios-escola' },
         ],
     },
 ];

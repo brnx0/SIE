@@ -13,11 +13,22 @@ interface Relatorio {
     icone: string;
 }
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
     relatorios: Relatorio[];
-}>();
+    titulo?: string;
+    subtitulo?: string;
+    grupo?: string;
+}>(), {
+    titulo: 'Central de Relatórios',
+    subtitulo: 'Selecione um relatório para gerar.',
+    grupo: 'central',
+});
 
-const breadcrumbs: BreadcrumbItem[] = [{ title: 'Relatórios', href: '/relatorios' }];
+const breadcrumbs = computed<BreadcrumbItem[]>(() =>
+    props.grupo === 'escola'
+        ? [{ title: 'Relatórios da Escola', href: '/relatorios-escola' }]
+        : [{ title: 'Relatórios', href: '/relatorios' }],
+);
 
 const grupos = computed(() => {
     const map: Record<string, Relatorio[]> = {};
@@ -31,11 +42,11 @@ const iconMap: Record<string, any> = { Users, FileBarChart, FileText, LayoutGrid
 </script>
 
 <template>
-    <Head title="Relatórios" />
+    <Head :title="titulo" />
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="mx-auto w-[95%] py-6">
-            <h1 class="text-xl font-semibold mb-1">Central de Relatórios</h1>
-            <p class="text-sm text-muted-foreground mb-6">Selecione um relatório para gerar.</p>
+            <h1 class="text-xl font-semibold mb-1">{{ titulo }}</h1>
+            <p class="text-sm text-muted-foreground mb-6">{{ subtitulo }}</p>
 
             <div v-for="[categoria, lista] in grupos" :key="categoria" class="mb-8">
                 <h2 class="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">{{ categoria }}</h2>

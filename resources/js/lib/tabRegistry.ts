@@ -46,6 +46,7 @@ const PATH_LABELS: Record<string, string> = {
     '/turmas-aee':             'Turmas AEE',
     '/movimentacoes':          'Movimentações',
     '/relatorios':             'Relatórios',
+    '/relatorios-escola':      'Relatórios da Escola',
     '/relatorios/alunos-por-turma': 'Alunos por Turma',
     '/relatorios/declaracao-matricula': 'Declaração de Matrícula',
     '/relatorios/formacao-classes': 'Formação de Classes',

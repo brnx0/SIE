@@ -66,7 +66,33 @@ Route::get('/', function () {
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
-        return Inertia::render('Dashboard');
+        $anlId = \Illuminate\Support\Facades\DB::table('cfg_ano_letivo')
+            ->where('anl_fl_em_exercicio', true)
+            ->value('anl_id');
+
+        return Inertia::render('Dashboard', [
+            'stats' => [
+                'alunos_matriculados' => \Illuminate\Support\Facades\DB::table('edu_turma_aluno')
+                    ->where('tma_situacao', 'ATIVA')
+                    ->when($anlId, fn ($q) => $q->where('tma_anl_id', $anlId))
+                    ->whereNull('tma_deleted_at')
+                    ->distinct('tma_aln_id')
+                    ->count('tma_aln_id'),
+                'funcionarios_ativos' => \Illuminate\Support\Facades\DB::table('edu_funcionario')
+                    ->where('fun_fl_ativo', true)
+                    ->whereNull('fun_deleted_at')
+                    ->count(),
+                'turmas_andamento' => \Illuminate\Support\Facades\DB::table('edu_turma')
+                    ->where('tur_situacao', 'ABERTA')
+                    ->when($anlId, fn ($q) => $q->where('tur_anl_id', $anlId))
+                    ->whereNull('tur_deleted_at')
+                    ->count(),
+                'escolas_ativas' => \Illuminate\Support\Facades\DB::table('edu_escola')
+                    ->where('esc_fl_ativo', true)
+                    ->whereNull('esc_deleted_at')
+                    ->count(),
+            ],
+        ]);
     })->name('dashboard');
 
     Route::get('users/export', [UsersController::class, 'export'])->name('users.export');
@@ -144,6 +170,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('api/series/{serie}/indicadores', [SerieIndicadorController::class, 'index'])->name('api.series.indicadores');
 
     Route::get('relatorios', [RelatorioCentralController::class, 'index'])->name('relatorios.index');
+    Route::get('relatorios-escola', [RelatorioCentralController::class, 'escola'])->name('relatorios.escola');
     Route::get('relatorios/alunos-por-turma', [AlunosPorTurmaRelatorioController::class, 'form'])->name('relatorios.alunos-por-turma.form');
     Route::get('relatorios/alunos-por-turma/gerar', [AlunosPorTurmaRelatorioController::class, 'gerar'])->name('relatorios.alunos-por-turma.gerar');
     Route::get('relatorios/dados-alunos-turma', [DadosAlunosTurmaController::class, 'form'])->name('relatorios.dados-alunos-turma.form');

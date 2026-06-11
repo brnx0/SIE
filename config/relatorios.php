@@ -6,6 +6,7 @@ return [
         'titulo'    => 'Alunos por Turma',
         'descricao' => 'Lista nominal com dados pessoais, situação e contato dos alunos por turma.',
         'categoria' => 'Aluno',
+        'grupo'     => 'central',
         'icone'     => 'Users',
     ],
     [
@@ -13,6 +14,7 @@ return [
         'titulo'    => 'Declaração de Matrícula',
         'descricao' => 'Emite declaração de matrícula por aluno ou em lote por turma.',
         'categoria' => 'Aluno',
+        'grupo'     => 'central',
         'icone'     => 'FileText',
     ],
     [
@@ -20,6 +22,7 @@ return [
         'titulo'    => 'Formação de Classes',
         'descricao' => 'Quadro de turmas com capacidade, expansão, alunos da rede, novos e vagas.',
         'categoria' => 'Turma',
+        'grupo'     => 'central',
         'icone'     => 'LayoutGrid',
     ],
     [
@@ -27,6 +30,7 @@ return [
         'titulo'    => 'Formação de Classes — AEE',
         'descricao' => 'Quadro de turmas AEE com capacidade, expansão, alunos da rede, novos e vagas.',
         'categoria' => 'Turma',
+        'grupo'     => 'central',
         'icone'     => 'Accessibility',
     ],
     [
@@ -34,6 +38,7 @@ return [
         'titulo'    => 'Sumário de Matrículas',
         'descricao' => 'Total de matrículas REGULAR por escola e série.',
         'categoria' => 'Aluno',
+        'grupo'     => 'central',
         'icone'     => 'Table',
     ],
     [
@@ -41,6 +46,7 @@ return [
         'titulo'    => 'Ficha de Matrícula',
         'descricao' => 'Emite ficha completa de matrícula por aluno ou em lote por turma.',
         'categoria' => 'Aluno',
+        'grupo'     => 'central',
         'icone'     => 'ClipboardList',
     ],
     [
@@ -48,6 +54,7 @@ return [
         'titulo'    => 'Alunos com Deficiência',
         'descricao' => 'Lista de alunos PCD matriculados, agrupados por escola.',
         'categoria' => 'Aluno',
+        'grupo'     => 'escola',
         'icone'     => 'Accessibility',
     ],
     [
@@ -55,6 +62,7 @@ return [
         'titulo'    => 'Alunos com Transtorno',
         'descricao' => 'Lista de alunos com TEA/TDAH/Dislexia/Disgrafia/Discalculia/Dislalia/TPAC. Indicadores por aluno.',
         'categoria' => 'Aluno',
+        'grupo'     => 'escola',
         'icone'     => 'Brain',
     ],
     [
@@ -62,6 +70,7 @@ return [
         'titulo'    => 'Dados de Alunos por Turma',
         'descricao' => 'Cadastro completo dos alunos por turma: documentos, filiação, endereço, etnia, idade.',
         'categoria' => 'Aluno',
+        'grupo'     => 'escola',
         'icone'     => 'ClipboardList',
     ],
     [
@@ -69,6 +78,7 @@ return [
         'titulo'    => 'Relação de Turmas AEE',
         'descricao' => 'Lista de turmas AEE com INEP, escola, turno, dias de atendimento e quantidade de alunos.',
         'categoria' => 'Turma',
+        'grupo'     => 'escola',
         'icone'     => 'Users',
     ],
     [
@@ -76,6 +86,7 @@ return [
         'titulo'    => 'Relação de Turmas de Atividade',
         'descricao' => 'Lista de turmas de atividade complementar com INEP, escola, turno, atividades, dias e qtd. de alunos.',
         'categoria' => 'Turma',
+        'grupo'     => 'escola',
         'icone'     => 'Activity',
     ],
 ];

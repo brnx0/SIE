@@ -24,7 +24,7 @@ import type {
     Escola,
 } from '@/types/funcionario';
 import { router } from '@inertiajs/vue3';
-import { Edit3, Loader2, MapPin, Plus, Trash2, X } from 'lucide-vue-next';
+import { Briefcase, Edit3, Loader2, MapPin, Plus, Trash2, X } from 'lucide-vue-next';
 import { computed, reactive, ref, watch } from 'vue';
 
 const props = defineProps<{
@@ -32,6 +32,13 @@ const props = defineProps<{
 }>();
 
 const admissoes = computed<FuncionarioAdmissao[]>(() => props.funcionario.admissoes ?? []);
+
+// Lotações achatadas (todas as admissões), com referência à admissão
+const lotacoesFlat = computed(() =>
+    admissoes.value.flatMap((adm) =>
+        (adm.lotacoes ?? []).map((lot) => ({ adm, lot })),
+    ),
+);
 
 const formatDateBR = (iso: string | null | undefined): string => {
     if (!iso) return '';
@@ -223,9 +230,12 @@ const resetLotForm = () => {
     lotAdmId.value = null;
 };
 
-const openNewLot = (admId: number) => {
+const openNewLot = () => {
     resetLotForm();
-    lotAdmId.value = admId;
+    // Pré-seleciona se houver apenas uma admissão
+    if (admissoes.value.length === 1) {
+        lotAdmId.value = admissoes.value[0].adm_id;
+    }
     showLotForm.value = true;
 };
 
@@ -256,7 +266,10 @@ const onLotCargoSelect = (cargo: Cargo | null) => {
 };
 
 const submitLot = () => {
-    if (!lotAdmId.value) return;
+    if (!lotAdmId.value) {
+        lotErrors.value = { lot_adm_id: 'Selecione a admissão vinculada.' };
+        return;
+    }
     lotProcessing.value = true;
     lotErrors.value = {};
 
@@ -305,129 +318,190 @@ const toggleFuncaoSala = (funcao: string) => {
 </script>
 
 <template>
-    <div class="grid gap-6">
-        <!-- Header + Nova Admissão -->
-        <div class="flex items-center justify-between">
-            <h3 class="text-sm font-semibold">Admissões na Rede</h3>
-            <div class="flex items-center gap-2">
-                <RefreshButton />
-                <Button type="button" size="sm" variant="outline" @click="openNewAdm">
-                    <Plus class="mr-1 size-4" /> Nova Admissão
-                </Button>
+    <div class="grid gap-8">
+        <!-- ════════════ SEÇÃO 1 — ADMISSÃO ════════════ -->
+        <section class="overflow-hidden rounded-xl border bg-card shadow-sm">
+            <div class="flex items-center justify-between border-b border-l-4 border-l-sky-600 bg-sky-50/60 px-5 py-3 dark:bg-sky-900/20">
+                <div class="flex items-center gap-2">
+                    <Briefcase class="size-4 text-sky-700 dark:text-sky-300" />
+                    <h3 class="text-sm font-semibold text-sky-900 dark:text-sky-200">Admissão</h3>
+                    <span class="rounded-full bg-sky-600 px-2 py-0.5 text-xs font-medium text-white">
+                        {{ admissoes.length }}
+                    </span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <RefreshButton />
+                    <Button type="button" size="sm" class="bg-sky-600 text-white hover:bg-sky-700" @click="openNewAdm">
+                        <Plus class="mr-1 size-4" /> Nova Admissão
+                    </Button>
+                </div>
             </div>
-        </div>
 
-        <!-- Form Admissão -->
-        <div v-if="showAdmForm" class="rounded-xl border border-sky-200 bg-sky-50/50 p-5 shadow-sm dark:border-sky-800 dark:bg-sky-900/20">
-            <div class="mb-3 flex items-center justify-between">
-                <h4 class="text-sm font-medium">{{ editingAdmId ? 'Editar Admissão' : 'Nova Admissão' }}</h4>
-                <button type="button" class="rounded p-1 hover:bg-muted" @click="resetAdmForm">
-                    <X class="size-4" />
-                </button>
+            <div class="grid gap-4 p-5">
+                <!-- Form Admissão -->
+                <div v-if="showAdmForm" class="rounded-xl border border-sky-200 bg-sky-50/50 p-5 shadow-sm dark:border-sky-800 dark:bg-sky-900/20">
+                    <div class="mb-3 flex items-center justify-between">
+                        <h4 class="text-sm font-medium">{{ editingAdmId ? 'Editar Admissão' : 'Nova Admissão' }}</h4>
+                        <button type="button" class="rounded p-1 hover:bg-muted" @click="resetAdmForm">
+                            <X class="size-4" />
+                        </button>
+                    </div>
+                    <div class="grid gap-4 sm:grid-cols-4">
+                        <div class="grid gap-2">
+                            <FormLabel for="adm_matricula" :required="true">Matrícula</FormLabel>
+                            <Input id="adm_matricula" v-model="admForm.adm_matricula" maxlength="30" />
+                            <InputError :message="admErrors.adm_matricula" />
+                        </div>
+                        <div class="grid gap-2">
+                            <FormLabel for="adm_dt_admissao" :required="true">Data de Admissão</FormLabel>
+                            <Input
+                                id="adm_dt_admissao"
+                                v-model="admDtBR"
+                                v-maska="'##/##/####'"
+                                inputmode="numeric"
+                                placeholder="DD/MM/AAAA"
+                                maxlength="10"
+                            />
+                            <InputError :message="admErrors.adm_dt_admissao" />
+                        </div>
+                        <div class="grid gap-2">
+                            <FormLabel :required="true">Cargo de Admissão</FormLabel>
+                            <CargoCombobox
+                                :model-value="admForm.adm_crg_id"
+                                :initial="admCargoInitial"
+                                :invalid="!!admErrors.adm_crg_id"
+                                @update:model-value="(v) => (admForm.adm_crg_id = v)"
+                            />
+                            <InputError :message="admErrors.adm_crg_id" />
+                        </div>
+                        <div class="grid gap-2">
+                            <Label for="adm_escolaridade">Escolaridade na Admissão</Label>
+                            <select
+                                id="adm_escolaridade"
+                                :value="admForm.adm_escolaridade_admissao === '' ? '' : admForm.adm_escolaridade_admissao"
+                                @change="(e: Event) => (admForm.adm_escolaridade_admissao = (e.target as HTMLSelectElement).value === '' ? '' : Number((e.target as HTMLSelectElement).value) as any)"
+                                class="h-10 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                            >
+                                <option value="">Selecione...</option>
+                                <option v-for="opt in ESCOLARIDADES" :key="opt.value" :value="opt.value">
+                                    {{ opt.label }}
+                                </option>
+                            </select>
+                            <InputError :message="admErrors.adm_escolaridade_admissao" />
+                        </div>
+                    </div>
+                    <div class="mt-4 flex justify-end gap-2">
+                        <Button type="button" variant="outline" size="sm" @click="resetAdmForm">Cancelar</Button>
+                        <Button
+                            type="button"
+                            size="sm"
+                            :disabled="admProcessing"
+                            class="bg-sky-600 text-white hover:bg-sky-700"
+                            @click="submitAdm"
+                        >
+                            <Loader2 v-if="admProcessing" class="mr-1 size-4 animate-spin" />
+                            {{ editingAdmId ? 'Salvar' : 'Adicionar' }}
+                        </Button>
+                    </div>
+                </div>
+
+                <!-- Lista Admissões -->
+                <div v-if="admissoes.length === 0 && !showAdmForm" class="rounded-xl border-2 border-dashed py-10 text-center text-sm text-muted-foreground">
+                    Nenhuma admissão cadastrada. Clique em "Nova Admissão" para começar.
+                </div>
+
+                <div v-else-if="admissoes.length" class="overflow-x-auto rounded-lg border">
+                    <table class="w-full text-sm">
+                        <thead class="bg-muted/50">
+                            <tr>
+                                <th class="px-4 py-2.5 text-left font-semibold whitespace-nowrap">Matrícula</th>
+                                <th class="px-4 py-2.5 text-left font-semibold">Cargo de Admissão</th>
+                                <th class="px-4 py-2.5 text-left font-semibold whitespace-nowrap">Dt. Admissão</th>
+                                <th class="px-4 py-2.5 text-center font-semibold whitespace-nowrap">Lotações</th>
+                                <th class="w-20 px-4 py-2.5"></th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y">
+                            <tr v-for="(adm, idx) in admissoes" :key="adm.adm_id" :class="idx % 2 === 0 ? 'bg-white dark:bg-transparent' : 'bg-slate-50 dark:bg-slate-900/40'">
+                                <td class="px-4 py-2.5">
+                                    <span class="rounded bg-sky-100 px-2 py-0.5 font-mono text-xs font-semibold text-sky-800 dark:bg-sky-900/40 dark:text-sky-300">
+                                        {{ adm.adm_matricula }}
+                                    </span>
+                                </td>
+                                <td class="px-4 py-2.5 font-medium">{{ adm.cargo?.crg_nome ?? '—' }}</td>
+                                <td class="px-4 py-2.5 text-muted-foreground tabular-nums">{{ formatDateBR(adm.adm_dt_admissao) }}</td>
+                                <td class="px-4 py-2.5 text-center">
+                                    <span class="rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300">
+                                        {{ adm.lotacoes?.length ?? 0 }}
+                                    </span>
+                                </td>
+                                <td class="px-4 py-2.5">
+                                    <div class="flex justify-end gap-1">
+                                        <button type="button" class="rounded p-1.5 hover:bg-muted" title="Editar admissão" @click="openEditAdm(adm)">
+                                            <Edit3 class="size-4 text-sky-600" />
+                                        </button>
+                                        <button type="button" class="rounded p-1.5 hover:bg-muted" title="Remover admissão" @click="deleteAdm(adm)">
+                                            <Trash2 class="size-4 text-rose-500" />
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-            <div class="grid gap-4 sm:grid-cols-4">
-                <div class="grid gap-2">
-                    <FormLabel for="adm_matricula" :required="true">Matrícula</FormLabel>
-                    <Input id="adm_matricula" v-model="admForm.adm_matricula" maxlength="30" />
-                    <InputError :message="admErrors.adm_matricula" />
+        </section>
+
+        <!-- ════════════ SEÇÃO 2 — LOTAÇÃO ════════════ -->
+        <section class="overflow-hidden rounded-xl border bg-card shadow-sm">
+            <div class="flex items-center justify-between border-b border-l-4 border-l-indigo-600 bg-indigo-50/60 px-5 py-3 dark:bg-indigo-900/20">
+                <div class="flex items-center gap-2">
+                    <MapPin class="size-4 text-indigo-700 dark:text-indigo-300" />
+                    <h3 class="text-sm font-semibold text-indigo-900 dark:text-indigo-200">Lotação</h3>
+                    <span class="rounded-full bg-indigo-600 px-2 py-0.5 text-xs font-medium text-white">
+                        {{ lotacoesFlat.length }}
+                    </span>
                 </div>
-                <div class="grid gap-2">
-                    <FormLabel for="adm_dt_admissao" :required="true">Data de Admissão</FormLabel>
-                    <Input
-                        id="adm_dt_admissao"
-                        v-model="admDtBR"
-                        v-maska="'##/##/####'"
-                        inputmode="numeric"
-                        placeholder="DD/MM/AAAA"
-                        maxlength="10"
-                    />
-                    <InputError :message="admErrors.adm_dt_admissao" />
-                </div>
-                <div class="grid gap-2">
-                    <FormLabel :required="true">Cargo de Admissão</FormLabel>
-                    <CargoCombobox
-                        :model-value="admForm.adm_crg_id"
-                        :initial="admCargoInitial"
-                        :invalid="!!admErrors.adm_crg_id"
-                        @update:model-value="(v) => (admForm.adm_crg_id = v)"
-                    />
-                    <InputError :message="admErrors.adm_crg_id" />
-                </div>
-                <div class="grid gap-2">
-                    <Label for="adm_escolaridade">Escolaridade na Admissão</Label>
-                    <select
-                        id="adm_escolaridade"
-                        :value="admForm.adm_escolaridade_admissao === '' ? '' : admForm.adm_escolaridade_admissao"
-                        @change="(e: Event) => (admForm.adm_escolaridade_admissao = (e.target as HTMLSelectElement).value === '' ? '' : Number((e.target as HTMLSelectElement).value) as any)"
-                        class="h-10 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
-                    >
-                        <option value="">Selecione...</option>
-                        <option v-for="opt in ESCOLARIDADES" :key="opt.value" :value="opt.value">
-                            {{ opt.label }}
-                        </option>
-                    </select>
-                    <InputError :message="admErrors.adm_escolaridade_admissao" />
-                </div>
-            </div>
-            <div class="mt-4 flex justify-end gap-2">
-                <Button type="button" variant="outline" size="sm" @click="resetAdmForm">Cancelar</Button>
                 <Button
                     type="button"
                     size="sm"
-                    :disabled="admProcessing"
-                    class="bg-sky-600 text-white hover:bg-sky-700"
-                    @click="submitAdm"
+                    class="bg-indigo-600 text-white hover:bg-indigo-700"
+                    :disabled="!admissoes.length"
+                    @click="openNewLot"
                 >
-                    <Loader2 v-if="admProcessing" class="mr-1 size-4 animate-spin" />
-                    {{ editingAdmId ? 'Salvar' : 'Adicionar' }}
+                    <Plus class="mr-1 size-4" /> Nova Lotação
                 </Button>
             </div>
-        </div>
 
-        <!-- Nenhuma admissão -->
-        <div v-if="admissoes.length === 0 && !showAdmForm" class="rounded-xl border-2 border-dashed bg-card py-12 text-center text-sm text-muted-foreground shadow-sm">
-            Nenhuma admissão cadastrada. Clique em "Nova Admissão" para começar.
-        </div>
+            <div class="grid gap-4 p-5">
+                <p v-if="!admissoes.length" class="rounded-xl border-2 border-dashed py-10 text-center text-sm text-muted-foreground">
+                    Cadastre uma admissão antes de criar lotações.
+                </p>
 
-        <!-- Cards de admissão (cada um com suas lotações) -->
-        <div v-for="adm in admissoes" :key="adm.adm_id" class="rounded-xl border bg-card shadow-sm">
-            <!-- Admissão header -->
-            <div class="flex items-center gap-3 border-b bg-muted/30 px-5 py-3">
-                <span class="rounded bg-sky-100 px-2.5 py-1 font-mono text-xs font-semibold text-sky-800 dark:bg-sky-900/40 dark:text-sky-300">
-                    {{ adm.adm_matricula }}
-                </span>
-                <div class="flex-1">
-                    <span class="text-sm font-medium">{{ adm.cargo?.crg_nome ?? '—' }}</span>
-                    <span class="ml-2 text-xs text-muted-foreground">{{ formatDateBR(adm.adm_dt_admissao) }}</span>
-                </div>
-                <div class="flex gap-1">
-                    <button type="button" class="rounded p-1.5 hover:bg-muted" title="Editar admissão" @click="openEditAdm(adm)">
-                        <Edit3 class="size-4 text-sky-600" />
-                    </button>
-                    <button type="button" class="rounded p-1.5 hover:bg-muted" title="Remover admissão" @click="deleteAdm(adm)">
-                        <Trash2 class="size-4 text-rose-500" />
-                    </button>
-                </div>
-            </div>
-
-            <!-- Lotações (sempre visíveis) -->
-            <div class="p-5">
-                <div class="mb-3 flex items-center justify-between">
-                    <h4 class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                        <MapPin class="mr-1 inline size-3.5" />Lotações
-                    </h4>
-                    <Button type="button" size="sm" variant="outline" class="h-7 text-xs" @click="openNewLot(adm.adm_id)">
-                        <Plus class="mr-1 size-3" /> Nova Lotação
-                    </Button>
-                </div>
-
-                <!-- Lotação form -->
-                <div v-if="showLotForm && lotAdmId === adm.adm_id" class="mb-4 rounded-lg border border-indigo-200 bg-indigo-50/50 p-4 dark:border-indigo-800 dark:bg-indigo-900/20">
+                <!-- Form Lotação -->
+                <div v-if="showLotForm" class="rounded-lg border border-indigo-200 bg-indigo-50/50 p-4 dark:border-indigo-800 dark:bg-indigo-900/20">
                     <div class="mb-3 flex items-center justify-between">
                         <h4 class="text-sm font-medium">{{ editingLotId ? 'Editar Lotação' : 'Nova Lotação' }}</h4>
                         <button type="button" class="rounded p-1 hover:bg-muted" @click="resetLotForm">
                             <X class="size-4" />
                         </button>
+                    </div>
+
+                    <!-- Admissão vinculada -->
+                    <div class="mb-4 grid gap-2 sm:max-w-md">
+                        <FormLabel :required="true">Admissão vinculada</FormLabel>
+                        <select
+                            :value="lotAdmId ?? ''"
+                            :disabled="!!editingLotId"
+                            @change="(e: Event) => (lotAdmId = Number((e.target as HTMLSelectElement).value) || null)"
+                            class="h-10 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                            <option value="">Selecione a admissão...</option>
+                            <option v-for="adm in admissoes" :key="adm.adm_id" :value="adm.adm_id">
+                                {{ adm.adm_matricula }} — {{ adm.cargo?.crg_nome ?? '—' }} ({{ formatDateBR(adm.adm_dt_admissao) }})
+                            </option>
+                        </select>
+                        <InputError :message="lotErrors.lot_adm_id" />
                     </div>
 
                     <div class="grid gap-4 sm:grid-cols-2">
@@ -564,13 +638,20 @@ const toggleFuncaoSala = (funcao: string) => {
                     </div>
                 </div>
 
-                <!-- Lotação list -->
-                <div v-if="!adm.lotacoes?.length && !(showLotForm && lotAdmId === adm.adm_id)" class="rounded-lg border-2 border-dashed py-6 text-center text-xs text-muted-foreground">
-                    Nenhuma lotação cadastrada para esta admissão.
+                <!-- Lista Lotações -->
+                <div v-if="admissoes.length && !lotacoesFlat.length && !showLotForm" class="rounded-xl border-2 border-dashed py-10 text-center text-sm text-muted-foreground">
+                    Nenhuma lotação cadastrada. Clique em "Nova Lotação" para começar.
                 </div>
 
-                <div v-else class="grid gap-2">
-                    <div v-for="lot in adm.lotacoes" :key="lot.lot_id" class="flex items-center gap-3 rounded-lg border px-4 py-3 text-sm">
+                <div v-else-if="lotacoesFlat.length" class="grid gap-2">
+                    <div
+                        v-for="{ adm, lot } in lotacoesFlat"
+                        :key="lot.lot_id"
+                        class="flex items-center gap-3 rounded-lg border px-4 py-3 text-sm"
+                    >
+                        <span class="rounded bg-sky-100 px-2 py-0.5 font-mono text-[10px] font-semibold text-sky-800 dark:bg-sky-900/40 dark:text-sky-300" :title="`Admissão ${adm.adm_matricula}`">
+                            {{ adm.adm_matricula }}
+                        </span>
                         <div class="flex-1">
                             <div class="flex flex-wrap items-center gap-2">
                                 <span class="font-medium">{{ lot.escola?.esc_nome ?? '—' }}</span>
@@ -602,6 +683,6 @@ const toggleFuncaoSala = (funcao: string) => {
                     </div>
                 </div>
             </div>
-        </div>
+        </section>
     </div>
 </template>
