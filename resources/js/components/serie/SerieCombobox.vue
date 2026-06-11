@@ -13,6 +13,7 @@ const props = defineProps<{
     promoSerOrdem?: number | null;
     placeholder?: string;
     invalid?: boolean;
+    disabled?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -95,11 +96,13 @@ onBeforeUnmount(() => document.removeEventListener('mousedown', handleOutside));
     <div ref="wrapper" class="relative">
         <button
             type="button"
+            :disabled="disabled"
             :class="[
                 'flex h-10 w-full items-center justify-between rounded-md border bg-background px-3 py-2 text-sm shadow-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500',
                 invalid ? 'border-rose-500' : 'border-input',
+                disabled ? 'cursor-not-allowed opacity-50' : '',
             ]"
-            @click="openPanel"
+            @click="!disabled && openPanel()"
         >
             <span v-if="selected" class="flex items-center gap-2 truncate">
                 <BookOpen class="size-4 shrink-0 text-indigo-500 dark:text-indigo-400" />

@@ -10,7 +10,7 @@ import type { Segmento } from '@/types/segmento';
 import type { Serie, SerieFormData, SerieIndicador, SerieParaReplicar } from '@/types/serie';
 import { Link, useForm } from '@inertiajs/vue3';
 import { ChevronLeft, LoaderCircle, Save } from 'lucide-vue-next';
-import { watch } from 'vue';
+import { computed, watch } from 'vue';
 
 const props = defineProps<{
     mode: 'create' | 'edit';
@@ -61,6 +61,19 @@ const hasDescritiva = () => form.ser_tipo_avaliacao.includes('descritiva');
 watch(() => form.ser_tipo_avaliacao, (v) => {
     if (!v.includes('descritiva')) form.ser_tipo_avaliacao_descritiva = '';
 }, { deep: true });
+
+const SEG_SEM_CONSERVACAO = ['Creche', 'Pré-escolar'];
+const conservacaoBloqueada = computed(() => {
+    const seg = props.segmentos.find(s => s.seg_id === form.seg_id);
+    return !!seg && SEG_SEM_CONSERVACAO.includes(seg.seg_nome_reduzido);
+});
+
+watch(conservacaoBloqueada, (bloqueado) => {
+    if (bloqueado) {
+        form.ser_cons_ser_id_1 = null;
+        form.ser_cons_ser_id_2 = null;
+    }
+});
 
 const submitLabel = props.mode === 'create' ? 'Cadastrar série' : 'Salvar alterações';
 </script>
@@ -325,10 +338,12 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar série' : 'Salvar alter
                 <FormLabel>Conservação — 1ª opção</FormLabel>
                 <SerieCombobox
                     v-model="form.ser_cons_ser_id_1"
-                    :initial="initial?.consSerie1 ?? null"
+                    :initial="conservacaoBloqueada ? null : (initial?.consSerie1 ?? null)"
+                    :disabled="conservacaoBloqueada"
                     placeholder="Selecionar série..."
                     :invalid="!!form.errors.ser_cons_ser_id_1"
                 />
+                <p v-if="conservacaoBloqueada" class="text-xs text-muted-foreground">Segmento sem conservação.</p>
                 <InputError :message="form.errors.ser_cons_ser_id_1" />
             </div>
 
@@ -337,10 +352,12 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar série' : 'Salvar alter
                 <FormLabel>Conservação — 2ª opção</FormLabel>
                 <SerieCombobox
                     v-model="form.ser_cons_ser_id_2"
-                    :initial="initial?.consSerie2 ?? null"
+                    :initial="conservacaoBloqueada ? null : (initial?.consSerie2 ?? null)"
+                    :disabled="conservacaoBloqueada"
                     placeholder="Selecionar série..."
                     :invalid="!!form.errors.ser_cons_ser_id_2"
                 />
+                <p v-if="conservacaoBloqueada" class="text-xs text-muted-foreground">Segmento sem conservação.</p>
                 <InputError :message="form.errors.ser_cons_ser_id_2" />
             </div>
         </div>

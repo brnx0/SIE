@@ -13,6 +13,7 @@ class DatabaseSeeder extends Seeder
         $this->call(MunicipioSeeder::class);
         $this->call(ParametroEntidadeSeeder::class);
         $this->call(SegmentoSeeder::class);
+        $this->call(SerieSeeder::class);
         $this->call(CargoSeeder::class);
         $this->call(AreaConhecimentoSeeder::class);
         $this->call(TipoMovimentacaoSeeder::class);
