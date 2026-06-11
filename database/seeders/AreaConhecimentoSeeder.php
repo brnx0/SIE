@@ -18,11 +18,10 @@ class AreaConhecimentoSeeder extends Seeder
         ];
 
         foreach ($areas as $nome) {
-            DB::table('edu_area_conhecimento')->insertOrIgnore([
-                'arc_nome'   => $nome,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+            DB::table('edu_area_conhecimento')->updateOrInsert(
+                ['arc_nome' => $nome],
+                ['updated_at' => now(), 'created_at' => now()],
+            );
         }
     }
 }

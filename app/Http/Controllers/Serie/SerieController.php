@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Serie;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Serie\StoreSerieRequest;
+use App\Models\Disciplina\Disciplina;
 use App\Models\Segmento\Segmento;
 use App\Models\Serie\Serie;
 use Illuminate\Http\RedirectResponse;
@@ -80,8 +81,17 @@ class SerieController extends Controller
         $resumo = fn ($s) => $s ? ['ser_id' => $s->ser_id, 'ser_nome' => $s->ser_nome] : null;
 
         $indicadores = $serie->indicadores()
+            ->with('disciplina:dis_id,dis_nome')
             ->orderBy('ind_id')
-            ->get(['ind_id', 'ind_ser_id', 'ind_descricao', 'ind_fl_ativo']);
+            ->get(['ind_id', 'ind_ser_id', 'ind_dis_id', 'ind_descricao', 'ind_fl_ativo'])
+            ->map(fn ($i) => [
+                'ind_id'        => $i->ind_id,
+                'ind_ser_id'    => $i->ind_ser_id,
+                'ind_dis_id'    => $i->ind_dis_id,
+                'ind_descricao' => $i->ind_descricao,
+                'ind_fl_ativo'  => $i->ind_fl_ativo,
+                'disciplina'    => $i->disciplina ? ['dis_id' => $i->disciplina->dis_id, 'dis_nome' => $i->disciplina->dis_nome] : null,
+            ]);
 
         $seriesParaReplicar = Serie::query()
             ->where('ser_id', '!=', $serie->ser_id)
@@ -109,6 +119,7 @@ class SerieController extends Controller
                 'consSerie2'  => $resumo($serie->consSerie2),
             ]),
             'segmentos'          => Segmento::orderBy('seg_ordem')->get(['seg_id', 'seg_nome_reduzido']),
+            'disciplinas'        => Disciplina::where('dis_fl_ativo', true)->orderBy('dis_nome')->get(['dis_id', 'dis_nome']),
             'indicadores'        => $indicadores,
             'seriesParaReplicar' => $seriesParaReplicar,
         ]);

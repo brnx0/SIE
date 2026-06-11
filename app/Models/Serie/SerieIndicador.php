@@ -2,6 +2,7 @@
 
 namespace App\Models\Serie;
 
+use App\Models\Disciplina\Disciplina;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -19,6 +20,7 @@ class SerieIndicador extends Model
 
     protected $fillable = [
         'ind_ser_id',
+        'ind_dis_id',
         'ind_descricao',
         'ind_fl_ativo',
     ];
@@ -30,5 +32,10 @@ class SerieIndicador extends Model
     public function serie(): BelongsTo
     {
         return $this->belongsTo(Serie::class, 'ind_ser_id', 'ser_id');
+    }
+
+    public function disciplina(): BelongsTo
+    {
+        return $this->belongsTo(Disciplina::class, 'ind_dis_id', 'dis_id');
     }
 }

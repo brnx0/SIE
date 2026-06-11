@@ -19,7 +19,7 @@ class SerieIndicadorController extends Controller
         return response()->json(
             SerieIndicador::where('ind_ser_id', $serie->ser_id)
                 ->orderBy('ind_id')
-                ->get(['ind_id', 'ind_descricao', 'ind_fl_ativo'])
+                ->get(['ind_id', 'ind_dis_id', 'ind_descricao', 'ind_fl_ativo'])
         );
     }
 
@@ -27,6 +27,7 @@ class SerieIndicadorController extends Controller
     {
         $data = $request->validate([
             'ind_descricao' => ['required', 'string', 'max:1000'],
+            'ind_dis_id'    => ['nullable', 'integer', 'exists:edu_disciplina,dis_id'],
             'ind_fl_ativo'  => ['boolean'],
         ]);
 
@@ -44,6 +45,7 @@ class SerieIndicadorController extends Controller
 
         SerieIndicador::create([
             'ind_ser_id'    => $serie->ser_id,
+            'ind_dis_id'    => $data['ind_dis_id'] ?? null,
             'ind_descricao' => $descricao,
             'ind_fl_ativo'  => $request->boolean('ind_fl_ativo', true),
         ]);
@@ -57,6 +59,7 @@ class SerieIndicadorController extends Controller
 
         $data = $request->validate([
             'ind_descricao' => ['required', 'string', 'max:1000'],
+            'ind_dis_id'    => ['nullable', 'integer', 'exists:edu_disciplina,dis_id'],
             'ind_fl_ativo'  => ['boolean'],
         ]);
 
@@ -75,6 +78,7 @@ class SerieIndicadorController extends Controller
 
         $indicador->update([
             'ind_descricao' => $descricao,
+            'ind_dis_id'    => array_key_exists('ind_dis_id', $data) ? $data['ind_dis_id'] : $indicador->ind_dis_id,
             'ind_fl_ativo'  => $request->boolean('ind_fl_ativo', $indicador->ind_fl_ativo),
         ]);
 
@@ -103,7 +107,7 @@ class SerieIndicadorController extends Controller
         $origens = SerieIndicador::where('ind_ser_id', (int) $data['ser_id_origem'])
             ->where('ind_fl_ativo', true)
             ->orderBy('ind_id')
-            ->get(['ind_descricao']);
+            ->get(['ind_descricao', 'ind_dis_id']);
 
         if ($origens->isEmpty()) {
             throw ValidationException::withMessages([
@@ -133,6 +137,7 @@ class SerieIndicadorController extends Controller
 
                 SerieIndicador::create([
                     'ind_ser_id'    => $serie->ser_id,
+                    'ind_dis_id'    => $o->ind_dis_id,
                     'ind_descricao' => $descricao,
                     'ind_fl_ativo'  => true,
                 ]);

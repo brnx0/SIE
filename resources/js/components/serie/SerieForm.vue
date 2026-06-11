@@ -15,6 +15,7 @@ import { computed, watch } from 'vue';
 const props = defineProps<{
     mode: 'create' | 'edit';
     segmentos: Pick<Segmento, 'seg_id' | 'seg_nome_reduzido'>[];
+    disciplinas?: { dis_id: number; dis_nome: string }[];
     initial?: Serie;
     indicadores?: SerieIndicador[];
     seriesParaReplicar?: SerieParaReplicar[];
@@ -368,6 +369,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar série' : 'Salvar alter
             <IndicadoresTab
                 :ser-id="initial.ser_id"
                 :indicadores="indicadores ?? []"
+                :disciplinas="disciplinas ?? []"
                 :series-para-replicar="seriesParaReplicar ?? []"
             />
         </div>

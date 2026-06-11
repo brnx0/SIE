@@ -9,6 +9,7 @@ import { Head } from '@inertiajs/vue3';
 const props = defineProps<{
     serie: Serie;
     segmentos: Pick<Segmento, 'seg_id' | 'seg_nome_reduzido'>[];
+    disciplinas: { dis_id: number; dis_nome: string }[];
     indicadores: SerieIndicador[];
     seriesParaReplicar: SerieParaReplicar[];
 }>();
@@ -31,6 +32,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                 mode="edit"
                 :initial="serie"
                 :segmentos="segmentos"
+                :disciplinas="disciplinas"
                 :indicadores="indicadores"
                 :series-para-replicar="seriesParaReplicar"
             />

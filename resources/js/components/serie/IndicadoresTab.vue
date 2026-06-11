@@ -14,20 +14,41 @@ import { computed, reactive, ref, watch } from 'vue';
 const props = defineProps<{
     serId: number;
     indicadores: SerieIndicador[];
+    disciplinas: { dis_id: number; dis_nome: string }[];
     seriesParaReplicar: SerieParaReplicar[];
 }>();
 
 const list = computed<SerieIndicador[]>(() => props.indicadores ?? []);
 
+const filtroDisId = ref<number | null | 'sem'>(null);
+
+const disciplinasDisponiveis = computed(() => {
+    const ids = new Set<number>();
+    let temSem = false;
+    for (const i of list.value) {
+        if (i.ind_dis_id == null) temSem = true;
+        else ids.add(i.ind_dis_id);
+    }
+    const arr = props.disciplinas.filter(d => ids.has(d.dis_id));
+    return { arr, temSem };
+});
+
+const listaFiltrada = computed<SerieIndicador[]>(() => {
+    if (filtroDisId.value === null) return list.value;
+    if (filtroDisId.value === 'sem') return list.value.filter(i => i.ind_dis_id == null);
+    return list.value.filter(i => i.ind_dis_id === filtroDisId.value);
+});
+
 const showForm = ref(false);
 const editing = ref<SerieIndicador | null>(null);
-const formData = reactive({ ind_descricao: '', ind_fl_ativo: true });
+const formData = reactive({ ind_descricao: '', ind_dis_id: null as number | null, ind_fl_ativo: true });
 const errors = ref<Record<string, string>>({});
 const processing = ref(false);
 
 const abrirCriar = () => {
     editing.value = null;
     formData.ind_descricao = '';
+    formData.ind_dis_id = null;
     formData.ind_fl_ativo = true;
     errors.value = {};
     showForm.value = true;
@@ -36,6 +57,7 @@ const abrirCriar = () => {
 const abrirEditar = (ind: SerieIndicador) => {
     editing.value = ind;
     formData.ind_descricao = ind.ind_descricao;
+    formData.ind_dis_id = ind.ind_dis_id ?? null;
     formData.ind_fl_ativo = ind.ind_fl_ativo;
     errors.value = {};
     showForm.value = true;
@@ -81,6 +103,7 @@ const remover = (ind: SerieIndicador) => {
 const toggleAtivo = (ind: SerieIndicador) => {
     router.put(`/series/${props.serId}/indicadores/${ind.ind_id}`, {
         ind_descricao: ind.ind_descricao,
+        ind_dis_id: ind.ind_dis_id ?? null,
         ind_fl_ativo: !ind.ind_fl_ativo,
     }, { preserveScroll: true, preserveState: true });
 };
@@ -147,10 +170,21 @@ const podeReplicar = computed(() => (props.seriesParaReplicar ?? []).length > 0)
 
 <template>
     <div class="grid gap-4 rounded-xl border bg-card p-6 shadow-sm">
-        <div class="flex items-center justify-between gap-2">
-            <p class="text-sm text-muted-foreground">
-                {{ list.length }} indicador{{ list.length !== 1 ? 'es' : '' }} cadastrado{{ list.length !== 1 ? 's' : '' }}
-            </p>
+        <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-3">
+                <p class="text-sm text-muted-foreground">
+                    {{ listaFiltrada.length }} / {{ list.length }} indicador{{ list.length !== 1 ? 'es' : '' }}
+                </p>
+                <select
+                    v-if="disciplinasDisponiveis.arr.length > 0 || disciplinasDisponiveis.temSem"
+                    v-model="filtroDisId"
+                    class="h-8 rounded-md border border-input bg-background px-2 text-xs shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                >
+                    <option :value="null">Todas as disciplinas</option>
+                    <option v-for="d in disciplinasDisponiveis.arr" :key="d.dis_id" :value="d.dis_id">{{ d.dis_nome }}</option>
+                    <option v-if="disciplinasDisponiveis.temSem" value="sem">— Sem disciplina —</option>
+                </select>
+            </div>
             <div class="flex items-center gap-2">
                 <RefreshButton />
                 <Button
@@ -181,6 +215,20 @@ const podeReplicar = computed(() => (props.seriesParaReplicar ?? []).length > 0)
             </h4>
 
             <div class="grid gap-4">
+                <div class="grid gap-1.5">
+                    <FormLabel for="ind_dis_id">Disciplina (opcional)</FormLabel>
+                    <select
+                        id="ind_dis_id"
+                        v-model.number="formData.ind_dis_id"
+                        class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                        :class="{ 'border-red-500': errors.ind_dis_id }"
+                    >
+                        <option :value="null">— Sem disciplina —</option>
+                        <option v-for="d in disciplinas" :key="d.dis_id" :value="d.dis_id">{{ d.dis_nome }}</option>
+                    </select>
+                    <InputError :message="errors.ind_dis_id" />
+                </div>
+
                 <div class="grid gap-1.5">
                     <FormLabel for="ind_descricao" :required="true">Descrição</FormLabel>
                     <textarea
@@ -223,22 +271,26 @@ const podeReplicar = computed(() => (props.seriesParaReplicar ?? []).length > 0)
             <table class="w-full text-left text-sm">
                 <thead class="bg-indigo-600 text-white">
                     <tr>
+                        <th class="w-48 px-3 py-2 font-semibold">Disciplina</th>
                         <th class="px-3 py-2 font-semibold">Descrição</th>
                         <th class="w-24 px-3 py-2 text-center font-semibold">Ativo</th>
                         <th class="w-28 px-3 py-2 text-right font-semibold">Ações</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-if="list.length === 0">
-                        <td colspan="3" class="px-3 py-6 text-center text-muted-foreground">
-                            Nenhum indicador cadastrado.
+                    <tr v-if="listaFiltrada.length === 0">
+                        <td colspan="4" class="px-3 py-6 text-center text-muted-foreground">
+                            {{ list.length === 0 ? 'Nenhum indicador cadastrado.' : 'Nenhum indicador para esta disciplina.' }}
                         </td>
                     </tr>
                     <tr
-                        v-for="(ind, idx) in list"
+                        v-for="(ind, idx) in listaFiltrada"
                         :key="ind.ind_id"
                         :class="idx % 2 === 0 ? 'bg-white dark:bg-transparent' : 'bg-slate-50 dark:bg-slate-900/40'"
                     >
+                        <td class="px-3 py-2 text-xs" :class="{ 'text-muted-foreground': !ind.ind_fl_ativo }">
+                            {{ ind.disciplina?.dis_nome ?? '—' }}
+                        </td>
                         <td class="whitespace-pre-wrap px-3 py-2" :class="{ 'text-muted-foreground line-through': !ind.ind_fl_ativo }">
                             {{ ind.ind_descricao }}
                         </td>
