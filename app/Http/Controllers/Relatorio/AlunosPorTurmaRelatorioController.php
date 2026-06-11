@@ -49,7 +49,8 @@ class AlunosPorTurmaRelatorioController extends Controller
             ->with([
                 'aluno:aln_id,aln_nome,aln_sexo,aln_dt_nascimento,aln_cpf,aln_filiacao_1,aln_filiacao_2,aln_telefone,aln_email,aln_fl_usa_transporte',
                 'aluno.saude:als_id,als_aln_id,als_cartao_sus,als_fl_pcd,als_fl_altas_habilidades,als_deficiencias,als_transtornos_globais,als_transtornos_aprendizagem',
-                'turma:tur_id,tur_nome,tur_esc_id,tur_anl_id,tur_modalidade,tur_turno',
+                'turma:tur_id,tur_nome,tur_ser_id,tur_esc_id,tur_anl_id,tur_modalidade,tur_turno',
+                'turma.serie:ser_id,ser_nome',
                 'situacaoEntrada:tas_cod,tas_descricao_enturmacao',
                 'situacaoSaida:tas_cod,tas_descricao_enturmacao',
             ])
@@ -96,7 +97,7 @@ class AlunosPorTurmaRelatorioController extends Controller
                 : ($m->situacaoSaida?->tas_descricao_enturmacao ?? $m->tma_situacao);
 
             return [
-                'turma'              => $m->turma?->tur_nome,
+                'turma'              => trim(($m->turma?->serie?->ser_nome ? $m->turma->serie->ser_nome . ' - ' : '') . ($m->turma?->tur_nome ?? '')) ?: null,
                 'tur_id'             => $m->turma?->tur_id,
                 'aln_id'             => $aln?->aln_id,
                 'nome'               => $aln?->aln_nome,

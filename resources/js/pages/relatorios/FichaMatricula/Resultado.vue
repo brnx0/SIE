@@ -400,7 +400,7 @@ const sexoLabel = (s: string | null) => {
 #print-area { display: none; }
 
 @media print {
-    @page { size: A4 portrait; margin: 4mm 10mm 8mm 10mm; }
+    @page { size: A4 portrait; margin: 4mm 8mm 6mm 8mm; }
     body > *:not(#print-area) { display: none !important; }
     #print-area {
         display: block !important;
@@ -409,12 +409,12 @@ const sexoLabel = (s: string | null) => {
         font-family: Arial, Helvetica, sans-serif;
         color: #000;
         background: white;
-        font-size: 8.5pt;
+        font-size: 8pt;
     }
 
     .ficha-aluno { }
     .folha {
-        padding: 0 4mm;
+        padding: 0 2mm;
     }
     .folha.pagina-1 {
         page-break-after: always;
@@ -460,44 +460,44 @@ const sexoLabel = (s: string | null) => {
 
     .cabecalho-ficha {
         display: grid;
-        grid-template-columns: 80px 1fr 80px;
+        grid-template-columns: 65px 1fr 65px;
         align-items: center;
-        gap: 8px;
-        padding: 0 0 3px;
+        gap: 6px;
+        padding: 0 0 2px;
         margin-top: 0;
         border-bottom: 1.5px solid #000;
-        margin-bottom: 4px;
+        margin-bottom: 2px;
     }
-    .brasao img, .logomarca img { max-width: 80px; max-height: 80px; object-fit: contain; }
-    .cab-textos { text-align: center; line-height: 1.25; }
-    .cab-linha { font-size: 8pt; font-weight: 700; }
-    .cab-entidade { font-size: 9pt; font-weight: 700; }
-    .cab-escola-nome { font-size: 10pt; font-weight: 700; margin-top: 2px; }
-    .cab-end { font-size: 7.5pt; }
+    .brasao img, .logomarca img { max-width: 65px; max-height: 65px; object-fit: contain; }
+    .cab-textos { text-align: center; line-height: 1.15; }
+    .cab-linha { font-size: 7.5pt; font-weight: 700; }
+    .cab-entidade { font-size: 8.5pt; font-weight: 700; }
+    .cab-escola-nome { font-size: 9pt; font-weight: 700; margin-top: 1px; }
+    .cab-end { font-size: 7pt; }
     .ml-3 { margin-left: 12px; }
 
     .titulo-ficha {
         text-align: center;
-        font-size: 11pt;
+        font-size: 10pt;
         font-weight: 700;
-        margin: 2px 0 4px;
+        margin: 1px 0 3px;
     }
 
     .bloco {
         border: 1px solid #000;
-        margin-bottom: 4px;
+        margin-bottom: 2px;
         page-break-inside: avoid;
     }
     .bloco-titulo {
         background: transparent;
         border-bottom: 1px solid #000;
-        padding: 2px 6px;
-        font-size: 8.5pt;
+        padding: 1px 5px;
+        font-size: 8pt;
         font-weight: 700;
         text-transform: uppercase;
     }
     .bloco-corpo {
-        padding: 4px 6px;
+        padding: 2px 5px;
     }
     .bloco.destaque .bloco-titulo {
         border-bottom: 2px solid #000;
@@ -513,18 +513,18 @@ const sexoLabel = (s: string | null) => {
 
     .dados-aluno-grid {
         display: grid;
-        grid-template-columns: 1fr 90px;
-        gap: 6px;
+        grid-template-columns: 1fr 75px;
+        gap: 4px;
     }
     .dados-campos {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 2px 12px;
+        gap: 1px 10px;
     }
     .foto-box {
         border: 1px solid #000;
-        width: 85px;
-        height: 110px;
+        width: 72px;
+        height: 92px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -536,22 +536,22 @@ const sexoLabel = (s: string | null) => {
     .dois-cols {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 2px 12px;
+        gap: 1px 10px;
     }
-    .campo { font-size: 8.5pt; line-height: 1.35; }
+    .campo { font-size: 8pt; line-height: 1.25; }
     .campo.full { grid-column: 1 / -1; }
     .campo b { text-transform: uppercase; }
 
     .declaracao {
-        margin-top: 10px;
-        font-size: 8pt;
+        margin-top: 4px;
+        font-size: 7.5pt;
     }
 
     .assinaturas {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 30px;
-        margin-top: 22px;
+        gap: 24px;
+        margin-top: 12px;
     }
     .ass-box { text-align: center; }
     .linha-ass {
@@ -559,7 +559,7 @@ const sexoLabel = (s: string | null) => {
         margin-bottom: 2px;
     }
     .ass-label {
-        font-size: 8pt;
+        font-size: 7.5pt;
     }
 }
 </style>

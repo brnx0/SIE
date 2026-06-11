@@ -146,9 +146,7 @@ const localData = () => {
     #print-area, #print-area * { visibility: visible !important; }
     #print-area {
         display: block !important;
-        position: absolute;
-        left: 0;
-        top: 0;
+        position: static;
         width: 100%;
         font-family: 'Times New Roman', Times, serif;
         color: #000;
@@ -157,9 +155,15 @@ const localData = () => {
 
     .folha-declaracao {
         page-break-after: always;
+        break-after: page;
+        page-break-inside: avoid;
+        break-inside: avoid;
         padding: 0 12mm;
     }
-    .folha-declaracao:last-child { page-break-after: auto; }
+    .folha-declaracao:last-child {
+        page-break-after: auto;
+        break-after: auto;
+    }
 
     .cabecalho-impressao {
         display: grid;

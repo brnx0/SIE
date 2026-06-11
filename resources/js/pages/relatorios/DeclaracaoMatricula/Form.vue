@@ -9,7 +9,7 @@ import { FileText, Loader2 } from 'lucide-vue-next';
 import { onMounted, ref, watch } from 'vue';
 
 interface Escola { esc_id: number; esc_nome: string }
-interface Turma { tur_id: number; tur_nome: string; tur_situacao: string; tur_modalidade?: string }
+interface Turma { tur_id: number; tur_nome: string; tur_situacao: string; tur_modalidade?: string; serie?: { ser_nome: string } | null }
 interface AlunoResultado { tma_id: number; aln_id: number; aln_nome: string }
 
 const props = defineProps<{
@@ -120,7 +120,7 @@ function gerar() {
                     <FormLabel>Turma (opcional)</FormLabel>
                     <select v-model="turId" :disabled="!turmas.length" class="rounded-md border bg-background px-3 py-2 text-sm">
                         <option value="">Todas as turmas regulares</option>
-                        <option v-for="t in turmas" :key="t.tur_id" :value="t.tur_id">{{ t.tur_nome }}</option>
+                        <option v-for="t in turmas" :key="t.tur_id" :value="t.tur_id">{{ (t.serie?.ser_nome ? t.serie.ser_nome + ' - ' : '') + t.tur_nome }}</option>
                     </select>
                     <p v-if="loadingTurmas" class="text-xs text-muted-foreground">Carregando turmas...</p>
                 </div>
