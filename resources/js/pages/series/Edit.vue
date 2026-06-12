@@ -12,6 +12,9 @@ const props = defineProps<{
     disciplinas: { dis_id: number; dis_nome: string }[];
     indicadores: SerieIndicador[];
     seriesParaReplicar: SerieParaReplicar[];
+    anosLetivos: { anl_id: number; anl_ano: number; anl_fl_em_exercicio: boolean }[];
+    anlIdSelecionado: number;
+    anosReplicacao: { anl_id: number; anl_ano: number }[];
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -35,6 +38,9 @@ const breadcrumbs: BreadcrumbItem[] = [
                 :disciplinas="disciplinas"
                 :indicadores="indicadores"
                 :series-para-replicar="seriesParaReplicar"
+                :anos-letivos="anosLetivos"
+                :anl-id-selecionado="anlIdSelecionado"
+                :anos-replicacao="anosReplicacao"
             />
         </div>
     </AppLayout>

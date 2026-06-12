@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Disciplina\Disciplina;
+use App\Models\Parametro\AnoLetivo;
 use App\Models\Segmento\Segmento;
 use App\Models\Serie\Serie;
 use App\Models\Serie\SerieIndicador;
@@ -96,6 +97,12 @@ class SerieIndicadorSeeder extends Seeder
             ->get()
             ->keyBy('dis_nome');
 
+        $anlId = AnoLetivo::where('anl_fl_em_exercicio', true)->value('anl_id');
+        if (! $anlId) {
+            $this->command?->warn('Nenhum ano letivo em exercício — abortando SerieIndicadorSeeder.');
+            return;
+        }
+
         $total = 0;
         foreach ($series as $serie) {
             foreach ($indicadoresPorDisciplina as $disciplinaCsv => $indicadores) {
@@ -108,6 +115,7 @@ class SerieIndicadorSeeder extends Seeder
 
                 $existentes = SerieIndicador::where('ind_ser_id', $serie->ser_id)
                     ->where('ind_dis_id', $disciplina->dis_id)
+                    ->where('ind_anl_id', $anlId)
                     ->pluck('ind_descricao')
                     ->map(fn ($d) => mb_strtoupper(trim($d), 'UTF-8'))
                     ->flip();
@@ -122,6 +130,7 @@ class SerieIndicadorSeeder extends Seeder
                     SerieIndicador::create([
                         'ind_ser_id'    => $serie->ser_id,
                         'ind_dis_id'    => $disciplina->dis_id,
+                        'ind_anl_id'    => $anlId,
                         'ind_descricao' => $desc,
                         'ind_fl_ativo'  => true,
                     ]);

@@ -5,8 +5,11 @@ namespace App\Http\Controllers\Serie;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Serie\StoreSerieRequest;
 use App\Models\Disciplina\Disciplina;
+use App\Models\Parametro\AnoLetivo;
+use App\Models\Parametro\GradeDisciplinar;
 use App\Models\Segmento\Segmento;
 use App\Models\Serie\Serie;
+use App\Models\Serie\SerieIndicador;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -69,7 +72,7 @@ class SerieController extends Controller
         return to_route('series.edit', $serie)->with('success', 'Série cadastrada com sucesso.');
     }
 
-    public function edit(Serie $serie): Response
+    public function edit(Serie $serie, Request $request): Response
     {
         $serie->load([
             'promoSerie1:ser_id,ser_nome',
@@ -80,18 +83,55 @@ class SerieController extends Controller
 
         $resumo = fn ($s) => $s ? ['ser_id' => $s->ser_id, 'ser_nome' => $s->ser_nome] : null;
 
+        // Ano letivo selecionado (?anl_id) ou em exercício como padrão.
+        $anosLetivos = AnoLetivo::orderByDesc('anl_ano')->get(['anl_id', 'anl_ano', 'anl_fl_em_exercicio']);
+        $anlIdSelecionado = (int) $request->input('anl_id');
+        if (! $anlIdSelecionado || ! $anosLetivos->firstWhere('anl_id', $anlIdSelecionado)) {
+            $anlIdSelecionado = (int) ($anosLetivos->firstWhere('anl_fl_em_exercicio', true)?->anl_id
+                ?? $anosLetivos->first()?->anl_id);
+        }
+
+        // Disciplinas disponíveis = somente as que estão na grade do (ano, série) e ativas.
+        $disciplinasGrade = Disciplina::query()
+            ->whereExists(function ($q) use ($serie, $anlIdSelecionado) {
+                $q->select(DB::raw(1))
+                    ->from('edu_grade_disciplinar')
+                    ->whereColumn('edu_grade_disciplinar.grd_dis_id', 'edu_disciplina.dis_id')
+                    ->where('edu_grade_disciplinar.grd_ser_id', $serie->ser_id)
+                    ->where('edu_grade_disciplinar.grd_anl_id', $anlIdSelecionado)
+                    ->where('edu_grade_disciplinar.grd_fl_ativo', true)
+                    ->whereNull('edu_grade_disciplinar.grd_deleted_at');
+            })
+            ->where('dis_fl_ativo', true)
+            ->orderBy('dis_nome')
+            ->get(['dis_id', 'dis_nome']);
+
         $indicadores = $serie->indicadores()
             ->with('disciplina:dis_id,dis_nome')
+            ->where('ind_anl_id', $anlIdSelecionado)
             ->orderBy('ind_id')
-            ->get(['ind_id', 'ind_ser_id', 'ind_dis_id', 'ind_descricao', 'ind_fl_ativo'])
+            ->get(['ind_id', 'ind_ser_id', 'ind_dis_id', 'ind_anl_id', 'ind_descricao', 'ind_fl_ativo'])
             ->map(fn ($i) => [
                 'ind_id'        => $i->ind_id,
                 'ind_ser_id'    => $i->ind_ser_id,
                 'ind_dis_id'    => $i->ind_dis_id,
+                'ind_anl_id'    => $i->ind_anl_id,
                 'ind_descricao' => $i->ind_descricao,
                 'ind_fl_ativo'  => $i->ind_fl_ativo,
                 'disciplina'    => $i->disciplina ? ['dis_id' => $i->disciplina->dis_id, 'dis_nome' => $i->disciplina->dis_nome] : null,
             ]);
+
+        // Anos letivos com indicadores cadastrados nesta série (para replicar de outro ano).
+        $anosComIndicadores = SerieIndicador::where('ind_ser_id', $serie->ser_id)
+            ->whereNotNull('ind_anl_id')
+            ->where('ind_anl_id', '!=', $anlIdSelecionado)
+            ->distinct()
+            ->pluck('ind_anl_id')
+            ->all();
+        $anosReplicacao = $anosLetivos
+            ->whereIn('anl_id', $anosComIndicadores)
+            ->values()
+            ->map(fn ($a) => ['anl_id' => $a->anl_id, 'anl_ano' => $a->anl_ano]);
 
         $seriesParaReplicar = Serie::query()
             ->where('ser_id', '!=', $serie->ser_id)
@@ -119,9 +159,12 @@ class SerieController extends Controller
                 'consSerie2'  => $resumo($serie->consSerie2),
             ]),
             'segmentos'          => Segmento::orderBy('seg_ordem')->get(['seg_id', 'seg_nome_reduzido']),
-            'disciplinas'        => Disciplina::where('dis_fl_ativo', true)->orderBy('dis_nome')->get(['dis_id', 'dis_nome']),
+            'disciplinas'        => $disciplinasGrade,
             'indicadores'        => $indicadores,
             'seriesParaReplicar' => $seriesParaReplicar,
+            'anosLetivos'        => $anosLetivos->map(fn ($a) => ['anl_id' => $a->anl_id, 'anl_ano' => $a->anl_ano, 'anl_fl_em_exercicio' => $a->anl_fl_em_exercicio]),
+            'anlIdSelecionado'   => $anlIdSelecionado,
+            'anosReplicacao'     => $anosReplicacao,
         ]);
     }
 

@@ -19,6 +19,9 @@ const props = defineProps<{
     initial?: Serie;
     indicadores?: SerieIndicador[];
     seriesParaReplicar?: SerieParaReplicar[];
+    anosLetivos?: { anl_id: number; anl_ano: number; anl_fl_em_exercicio: boolean }[];
+    anlIdSelecionado?: number;
+    anosReplicacao?: { anl_id: number; anl_ano: number }[];
 }>();
 
 const form = useForm<SerieFormData>({
@@ -371,6 +374,9 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar série' : 'Salvar alter
                 :indicadores="indicadores ?? []"
                 :disciplinas="disciplinas ?? []"
                 :series-para-replicar="seriesParaReplicar ?? []"
+                :anos-letivos="anosLetivos ?? []"
+                :anl-id-selecionado="anlIdSelecionado ?? 0"
+                :anos-replicacao="anosReplicacao ?? []"
             />
         </div>
     </form>

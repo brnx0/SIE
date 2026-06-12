@@ -163,6 +163,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::prefix('series/{serie}/indicadores')->name('series.indicadores.')->group(function () {
         Route::post('replicar', [SerieIndicadorController::class, 'replicar'])->name('replicar');
+        Route::post('replicar-ano', [SerieIndicadorController::class, 'replicarAno'])->name('replicar-ano');
         Route::post('/', [SerieIndicadorController::class, 'store'])->name('store');
         Route::put('/{indicador}', [SerieIndicadorController::class, 'update'])->name('update');
         Route::delete('/{indicador}', [SerieIndicadorController::class, 'destroy'])->name('destroy');

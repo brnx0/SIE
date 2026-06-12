@@ -16,7 +16,22 @@ const props = defineProps<{
     indicadores: SerieIndicador[];
     disciplinas: { dis_id: number; dis_nome: string }[];
     seriesParaReplicar: SerieParaReplicar[];
+    anosLetivos: { anl_id: number; anl_ano: number; anl_fl_em_exercicio: boolean }[];
+    anlIdSelecionado: number;
+    anosReplicacao: { anl_id: number; anl_ano: number }[];
 }>();
+
+const anoSelecionado = ref<number>(props.anlIdSelecionado);
+watch(() => props.anlIdSelecionado, (v) => { anoSelecionado.value = v; });
+
+const trocarAno = (anlId: number) => {
+    if (!anlId || anlId === props.anlIdSelecionado) return;
+    router.get(window.location.pathname, { anl_id: anlId }, {
+        preserveScroll: true,
+        preserveState: true,
+        replace: true,
+    });
+};
 
 const list = computed<SerieIndicador[]>(() => props.indicadores ?? []);
 
@@ -76,17 +91,18 @@ const salvar = () => {
     const onOk = () => { showForm.value = false; editing.value = null; };
     const onErr = (errs: Record<string, string>) => { errors.value = errs; };
     const onEnd = () => { processing.value = false; };
+    const payload = { ...formData, ind_anl_id: props.anlIdSelecionado };
 
     if (editing.value) {
         router.put(
             `/series/${props.serId}/indicadores/${editing.value.ind_id}`,
-            { ...formData },
+            payload,
             { preserveScroll: true, preserveState: true, onSuccess: onOk, onError: onErr, onFinish: onEnd },
         );
     } else {
         router.post(
             `/series/${props.serId}/indicadores`,
-            { ...formData },
+            payload,
             { preserveScroll: true, preserveState: true, onSuccess: onOk, onError: onErr, onFinish: onEnd },
         );
     }
@@ -104,6 +120,7 @@ const toggleAtivo = (ind: SerieIndicador) => {
     router.put(`/series/${props.serId}/indicadores/${ind.ind_id}`, {
         ind_descricao: ind.ind_descricao,
         ind_dis_id: ind.ind_dis_id ?? null,
+        ind_anl_id: ind.ind_anl_id ?? props.anlIdSelecionado,
         ind_fl_ativo: !ind.ind_fl_ativo,
     }, { preserveScroll: true, preserveState: true });
 };
@@ -155,6 +172,7 @@ const replicar = () => {
 
     router.post(`/series/${props.serId}/indicadores/replicar`, {
         ser_id_origem: Number(replicarOrigemId.value),
+        anl_id_destino: props.anlIdSelecionado,
         substituir: replicarSubstituir.value,
     }, {
         preserveScroll: true,
@@ -166,10 +184,66 @@ const replicar = () => {
 };
 
 const podeReplicar = computed(() => (props.seriesParaReplicar ?? []).length > 0);
+
+// --- Replicar de outro ano (mesma série) ---
+const replicarAnoOpen = ref(false);
+const replicarAnoOrigem = ref<number | ''>('');
+const replicarAnoSubstituir = ref(false);
+const replicarAnoProcessando = ref(false);
+const replicarAnoErrors = ref<Record<string, string>>({});
+
+const abrirReplicarAno = () => {
+    replicarAnoOrigem.value = '';
+    replicarAnoSubstituir.value = false;
+    replicarAnoErrors.value = {};
+    replicarAnoOpen.value = true;
+};
+
+const replicarAno = () => {
+    if (!replicarAnoOrigem.value) return;
+    replicarAnoProcessando.value = true;
+    replicarAnoErrors.value = {};
+
+    router.post(`/series/${props.serId}/indicadores/replicar-ano`, {
+        anl_id_origem: Number(replicarAnoOrigem.value),
+        anl_id_destino: props.anlIdSelecionado,
+        substituir: replicarAnoSubstituir.value,
+    }, {
+        preserveScroll: true,
+        preserveState: true,
+        onSuccess: () => { replicarAnoOpen.value = false; },
+        onError: (errs) => { replicarAnoErrors.value = errs as Record<string, string>; },
+        onFinish: () => { replicarAnoProcessando.value = false; },
+    });
+};
+
+const podeReplicarAno = computed(() => (props.anosReplicacao ?? []).length > 0);
+const semDisciplinasGrade = computed(() => (props.disciplinas ?? []).length === 0);
 </script>
 
 <template>
     <div class="grid gap-4 rounded-xl border bg-card p-6 shadow-sm">
+        <div class="flex flex-wrap items-center gap-3 border-b pb-3">
+            <div class="flex items-center gap-2">
+                <Label class="text-sm font-medium">Ano letivo:</Label>
+                <select
+                    :value="anlIdSelecionado"
+                    @change="(e) => trocarAno(Number((e.target as HTMLSelectElement).value))"
+                    class="h-9 rounded-md border border-input bg-background px-2 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                >
+                    <option v-for="a in anosLetivos" :key="a.anl_id" :value="a.anl_id">
+                        {{ a.anl_ano }}{{ a.anl_fl_em_exercicio ? ' (em exercício)' : '' }}
+                    </option>
+                </select>
+            </div>
+            <div
+                v-if="semDisciplinasGrade"
+                class="rounded-md border border-amber-300 bg-amber-50 px-3 py-1.5 text-xs text-amber-800 dark:bg-amber-900/30 dark:text-amber-200"
+            >
+                Sem disciplinas cadastradas na grade desta série para o ano selecionado.
+            </div>
+        </div>
+
         <div class="flex flex-wrap items-center justify-between gap-2">
             <div class="flex items-center gap-3">
                 <p class="text-sm text-muted-foreground">
@@ -191,6 +265,16 @@ const podeReplicar = computed(() => (props.seriesParaReplicar ?? []).length > 0)
                     type="button"
                     size="sm"
                     variant="outline"
+                    :disabled="!podeReplicarAno"
+                    :title="podeReplicarAno ? 'Replicar indicadores de outro ano letivo desta série' : 'Esta série não possui indicadores em outro ano letivo'"
+                    @click="abrirReplicarAno"
+                >
+                    <Copy class="mr-2 size-4" /> Replicar de outro ano
+                </Button>
+                <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
                     :disabled="!podeReplicar"
                     :title="podeReplicar ? 'Replicar indicadores de outra série' : 'Nenhuma outra série possui indicadores cadastrados'"
                     @click="abrirReplicar"
@@ -202,6 +286,8 @@ const podeReplicar = computed(() => (props.seriesParaReplicar ?? []).length > 0)
                     type="button"
                     size="sm"
                     class="bg-indigo-600 hover:bg-indigo-700"
+                    :disabled="semDisciplinasGrade"
+                    :title="semDisciplinasGrade ? 'Cadastre a grade desta série antes de adicionar indicadores' : ''"
                     @click="abrirCriar"
                 >
                     <Plus class="mr-2 size-4" /> Adicionar Indicador
@@ -387,6 +473,55 @@ const podeReplicar = computed(() => (props.seriesParaReplicar ?? []).length > 0)
                         @click="replicar"
                     >
                         <LoaderCircle v-if="replicarProcessando" class="mr-2 size-4 animate-spin" />
+                        <Copy v-else class="mr-2 size-4" />
+                        Replicar
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+
+        <!-- Dialog Replicar Ano -->
+        <Dialog :open="replicarAnoOpen" @update:open="(v) => (replicarAnoOpen = v)">
+            <DialogContent class="sm:max-w-lg">
+                <DialogHeader>
+                    <DialogTitle>Replicar Indicadores de Outro Ano</DialogTitle>
+                    <DialogDescription>
+                        Copia indicadores ativos desta série de um ano letivo anterior para o ano atual.
+                        Disciplinas fora da grade do ano destino ficam sem vínculo.
+                    </DialogDescription>
+                </DialogHeader>
+
+                <div class="grid gap-4">
+                    <div class="grid gap-1.5">
+                        <FormLabel :required="true">Ano letivo de origem</FormLabel>
+                        <select
+                            v-model.number="replicarAnoOrigem"
+                            class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                            :class="{ 'border-red-500': replicarAnoErrors.anl_id_origem }"
+                        >
+                            <option value="">Selecione...</option>
+                            <option v-for="a in anosReplicacao" :key="a.anl_id" :value="a.anl_id">{{ a.anl_ano }}</option>
+                        </select>
+                        <InputError :message="replicarAnoErrors.anl_id_origem" />
+                    </div>
+
+                    <div class="flex items-center gap-3 rounded-md border bg-muted/30 px-3 py-2">
+                        <Switch id="replicar_ano_substituir" v-model="replicarAnoSubstituir" />
+                        <Label for="replicar_ano_substituir" class="text-sm">
+                            Substituir indicadores existentes no ano destino
+                        </Label>
+                    </div>
+                </div>
+
+                <DialogFooter>
+                    <Button type="button" variant="outline" @click="replicarAnoOpen = false">Cancelar</Button>
+                    <Button
+                        type="button"
+                        :disabled="!replicarAnoOrigem || replicarAnoProcessando"
+                        class="bg-indigo-600 hover:bg-indigo-700"
+                        @click="replicarAno"
+                    >
+                        <LoaderCircle v-if="replicarAnoProcessando" class="mr-2 size-4 animate-spin" />
                         <Copy v-else class="mr-2 size-4" />
                         Replicar
                     </Button>

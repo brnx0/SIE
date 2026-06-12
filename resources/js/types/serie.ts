@@ -37,6 +37,7 @@ export interface SerieIndicador {
     ind_id: number;
     ind_ser_id: number | null;
     ind_dis_id: number | null;
+    ind_anl_id: number | null;
     ind_descricao: string;
     ind_fl_ativo: boolean;
     disciplina?: { dis_id: number; dis_nome: string } | null;
