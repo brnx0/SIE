@@ -8,6 +8,7 @@ use App\Models\Escola\Escola;
 use App\Models\Funcionario\Funcionario;
 use App\Models\Parametro\AnoLetivo;
 use App\Models\Turma\Turma;
+use App\Support\UserAccess;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
@@ -49,11 +50,9 @@ class TurmaAeeController extends Controller
                 ['per_page' => $perPage],
             ),
             'anosLetivos' => $anosLetivos,
-            'escolas'     => $user->isAdmin()
-                ? Escola::where('esc_fl_ativo', true)->orderBy('esc_nome')->get(['esc_id', 'esc_nome'])
-                : [],
+            'escolas'     => UserAccess::escolasVisiveis($user),
             'isAdmin'     => $user->isAdmin(),
-            'userEscola'  => $user->isAdmin() ? null : ['esc_id' => $user->esc_id, 'esc_nome' => $user->escola?->esc_nome],
+            'userEscola'  => UserAccess::escolaDefault($user),
         ]);
     }
 
@@ -83,11 +82,9 @@ class TurmaAeeController extends Controller
 
         return Inertia::render('turmas-aee/Create', [
             'anosLetivos' => AnoLetivo::paraCadastro()->orderByDesc('anl_ano')->get(['anl_id', 'anl_ano']),
-            'escolas'     => $user->isAdmin()
-                ? Escola::where('esc_fl_ativo', true)->orderBy('esc_nome')->get(['esc_id', 'esc_nome'])
-                : [],
+            'escolas'     => UserAccess::escolasVisiveis($user),
             'isAdmin'     => $user->isAdmin(),
-            'userEscola'  => $user->isAdmin() ? null : ['esc_id' => $user->esc_id, 'esc_nome' => $user->escola?->esc_nome],
+            'userEscola'  => UserAccess::escolaDefault($user),
         ]);
     }
 
@@ -122,11 +119,9 @@ class TurmaAeeController extends Controller
                 ] : null,
             ]),
             'anosLetivos'            => AnoLetivo::paraCadastro([$turma->tur_anl_id])->orderByDesc('anl_ano')->get(['anl_id', 'anl_ano']),
-            'escolas'                => $user->isAdmin()
-                ? Escola::where('esc_fl_ativo', true)->orderBy('esc_nome')->get(['esc_id', 'esc_nome'])
-                : [],
+            'escolas'                => UserAccess::escolasVisiveis($user),
             'isAdmin'                => $user->isAdmin(),
-            'userEscola'             => $user->isAdmin() ? null : ['esc_id' => $user->esc_id, 'esc_nome' => $user->escola?->esc_nome],
+            'userEscola'             => UserAccess::escolaDefault($user),
             'professoresDisponiveis' => Funcionario::whereHas('admissoes.lotacoes', fn ($q) =>
                 $q->where('lot_esc_id', $turma->tur_esc_id)
                   ->whereJsonContains('lot_funcoes_sala_aula', 'Docente AEE')
@@ -165,9 +160,8 @@ class TurmaAeeController extends Controller
             'anoLetivo:anl_id,anl_ano',
         ]);
 
-        if (! $user->isAdmin()) {
-            $query->where('tur_esc_id', $user->esc_id);
-        } elseif ($escId = $request->integer('esc_id')) {
+        UserAccess::scopeEscolas($query, $user, 'tur_esc_id');
+        if ($user->isAdmin() && ($escId = $request->integer('esc_id'))) {
             $query->where('tur_esc_id', $escId);
         }
 

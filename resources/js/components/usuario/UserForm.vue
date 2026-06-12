@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import EscolaCombobox from '@/components/funcionario/EscolaCombobox.vue';
 import FuncionarioCombobox from '@/components/usuario/FuncionarioCombobox.vue';
 import InputError from '@/components/common/InputError.vue';
 import { Button } from '@/components/ui/button';
@@ -8,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Link, useForm } from '@inertiajs/vue3';
 import { LoaderCircle, Save } from 'lucide-vue-next';
-import { computed, watch } from 'vue';
+import { computed } from 'vue';
 
 interface UserFormData {
     name: string;
@@ -16,20 +15,17 @@ interface UserFormData {
     role: string;
     phone: string;
     active: boolean;
-    esc_id: number | null;
     fun_id: number | null;
     password?: string;
     password_confirmation?: string;
     [key: string]: any;
 }
 
-interface EscolaOpt { esc_id: number; esc_nome: string; }
 interface FuncionarioInitial { fun_id: number; fun_nome: string; fun_cpf: string | null; }
 
 const props = defineProps<{
     initial?: Partial<UserFormData> & { id?: number };
     roles: Record<string, string>;
-    escolas?: EscolaOpt[];
     initialFuncionario?: FuncionarioInitial | null;
     mode: 'create' | 'edit';
 }>();
@@ -40,15 +36,9 @@ const form = useForm<UserFormData>({
     role:                  props.initial?.role ?? '',
     phone:                 props.initial?.phone ?? '',
     active:                props.initial?.active ?? true,
-    esc_id:                props.initial?.esc_id ?? null,
     fun_id:                props.initial?.fun_id ?? null,
     password:              '',
     password_confirmation: '',
-});
-
-// Limpa escola quando role = admin
-watch(() => form.role, (r) => {
-    if (r === 'admin') form.esc_id = null;
 });
 
 const submitLabel = computed(() => (props.mode === 'create' ? 'Cadastrar usuário' : 'Salvar alterações'));
@@ -93,18 +83,6 @@ const submit = () => {
                     <option v-for="(label, key) in roles" :key="key" :value="key">{{ label }}</option>
                 </select>
                 <InputError :message="form.errors.role" />
-            </div>
-
-            <!-- Escola — visível para roles que não são admin -->
-            <div v-if="form.role && form.role !== 'admin'" class="grid gap-2 sm:col-span-2">
-                <Label>Escola vinculada</Label>
-                <EscolaCombobox
-                    :model-value="form.esc_id"
-                    :invalid="!!form.errors.esc_id"
-                    placeholder="Buscar escola..."
-                    @update:model-value="(v) => (form.esc_id = v)"
-                />
-                <InputError :message="form.errors.esc_id" />
             </div>
 
             <!-- Colaborador vinculado -->

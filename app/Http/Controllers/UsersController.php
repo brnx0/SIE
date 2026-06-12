@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Escola\Escola;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -52,18 +51,10 @@ class UsersController extends Controller
         return $this->exportCsv($users);
     }
 
-    private function getEscolas(): \Illuminate\Support\Collection
-    {
-        return Escola::where('esc_fl_ativo', true)
-            ->orderBy('esc_nome')
-            ->get(['esc_id', 'esc_nome']);
-    }
-
     public function create(): Response
     {
         return Inertia::render('users/Create', [
-            'roles'   => $this->getRoles(),
-            'escolas' => $this->getEscolas(),
+            'roles' => $this->getRoles(),
         ]);
     }
 
@@ -75,7 +66,6 @@ class UsersController extends Controller
             'role'     => ['required', Rule::in(array_keys($this->getRoles()))],
             'phone'    => ['nullable', 'string', 'max:30'],
             'active'   => ['boolean'],
-            'esc_id'   => ['nullable', 'integer', 'exists:edu_escola,esc_id'],
             'fun_id'   => ['nullable', 'integer', 'exists:edu_funcionario,fun_id'],
             'password' => ['required', 'confirmed', Password::defaults()],
         ]);
@@ -95,7 +85,6 @@ class UsersController extends Controller
         return Inertia::render('users/Edit', [
             'user'               => $user,
             'roles'              => $this->getRoles(),
-            'escolas'            => $this->getEscolas(),
             'initialFuncionario' => $user->funcionario
                 ? $user->funcionario->only(['fun_id', 'fun_nome', 'fun_cpf'])
                 : null,
@@ -110,7 +99,6 @@ class UsersController extends Controller
             'role'     => ['required', Rule::in(array_keys($this->getRoles()))],
             'phone'    => ['nullable', 'string', 'max:30'],
             'active'   => ['boolean'],
-            'esc_id'   => ['nullable', 'integer', 'exists:edu_escola,esc_id'],
             'fun_id'   => ['nullable', 'integer', 'exists:edu_funcionario,fun_id'],
             'password' => ['nullable', 'confirmed', Password::defaults()],
         ]);

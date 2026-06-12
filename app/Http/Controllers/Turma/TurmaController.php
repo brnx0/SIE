@@ -12,6 +12,7 @@ use App\Models\Parametro\GradeDisciplinar;
 use App\Models\Parametro\GradeHorario;
 use App\Models\Matricula\Matricula;
 use App\Models\Turma\Turma;
+use App\Support\UserAccess;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
@@ -60,11 +61,9 @@ class TurmaController extends Controller
                 ['per_page' => $perPage],
             ),
             'anosLetivos' => $anosLetivos,
-            'escolas'     => $user->isAdmin()
-                ? Escola::where('esc_fl_ativo', true)->orderBy('esc_nome')->get(['esc_id', 'esc_nome'])
-                : [],
+            'escolas'     => UserAccess::escolasVisiveis($user),
             'isAdmin'     => $user->isAdmin(),
-            'userEscola'  => $user->isAdmin() ? null : ['esc_id' => $user->esc_id, 'esc_nome' => $user->escola?->esc_nome],
+            'userEscola'  => UserAccess::escolaDefault($user),
         ]);
     }
 
@@ -94,11 +93,9 @@ class TurmaController extends Controller
 
         return Inertia::render('turmas/Create', [
             'anosLetivos' => AnoLetivo::paraCadastro()->orderByDesc('anl_ano')->get(['anl_id', 'anl_ano']),
-            'escolas'     => $user->isAdmin()
-                ? Escola::where('esc_fl_ativo', true)->orderBy('esc_nome')->get(['esc_id', 'esc_nome'])
-                : [],
+            'escolas'     => UserAccess::escolasVisiveis($user),
             'isAdmin'     => $user->isAdmin(),
-            'userEscola'  => $user->isAdmin() ? null : ['esc_id' => $user->esc_id, 'esc_nome' => $user->escola?->esc_nome],
+            'userEscola'  => UserAccess::escolaDefault($user),
         ]);
     }
 
@@ -138,11 +135,9 @@ class TurmaController extends Controller
                 ] : null,
             ]),
             'anosLetivos'            => AnoLetivo::paraCadastro([$turma->tur_anl_id])->orderByDesc('anl_ano')->get(['anl_id', 'anl_ano']),
-            'escolas'                => $user->isAdmin()
-                ? Escola::where('esc_fl_ativo', true)->orderBy('esc_nome')->get(['esc_id', 'esc_nome'])
-                : [],
+            'escolas'                => UserAccess::escolasVisiveis($user),
             'isAdmin'                => $user->isAdmin(),
-            'userEscola'             => $user->isAdmin() ? null : ['esc_id' => $user->esc_id, 'esc_nome' => $user->escola?->esc_nome],
+            'userEscola'             => UserAccess::escolaDefault($user),
             'disciplinas'            => Disciplina::whereIn('dis_id',
                     GradeDisciplinar::where('grd_anl_id', $turma->tur_anl_id)
                         ->where('grd_ser_id', $turma->tur_ser_id)
@@ -183,9 +178,8 @@ class TurmaController extends Controller
             'serie:ser_id,ser_nome',
         ]);
 
-        if (! $user->isAdmin()) {
-            $query->where('tur_esc_id', $user->esc_id);
-        } elseif ($escId = $request->integer('esc_id')) {
+        UserAccess::scopeEscolas($query, $user, 'tur_esc_id');
+        if ($user->isAdmin() && ($escId = $request->integer('esc_id'))) {
             $query->where('tur_esc_id', $escId);
         }
 

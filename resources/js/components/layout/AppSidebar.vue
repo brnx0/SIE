@@ -61,6 +61,7 @@ const diarioMenu = [
         icon: BookOpen,
         children: [
             { title: 'Planos de Aula', href: '/diario/planos' },
+            { title: 'Planos de Aula AEE', href: '/diario/planos-aee' },
         ],
     },
 ];

@@ -273,6 +273,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('planos/{plano}', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'update'])->name('planos.update');
         Route::delete('planos/{plano}', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'destroy'])->name('planos.destroy');
         Route::get('planos/{plano}/pdf', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'pdf'])->name('planos.pdf');
+
+        Route::get('planos-aee', [\App\Http\Controllers\Diario\PlanoAeeController::class, 'index'])->name('planos-aee.index');
+        Route::get('planos-aee/create', [\App\Http\Controllers\Diario\PlanoAeeController::class, 'create'])->name('planos-aee.create');
+        Route::post('planos-aee', [\App\Http\Controllers\Diario\PlanoAeeController::class, 'store'])->name('planos-aee.store');
+        Route::get('planos-aee/{plano}/edit', [\App\Http\Controllers\Diario\PlanoAeeController::class, 'edit'])->name('planos-aee.edit');
+        Route::put('planos-aee/{plano}', [\App\Http\Controllers\Diario\PlanoAeeController::class, 'update'])->name('planos-aee.update');
+        Route::delete('planos-aee/{plano}', [\App\Http\Controllers\Diario\PlanoAeeController::class, 'destroy'])->name('planos-aee.destroy');
+        Route::get('planos-aee/{plano}/pdf', [\App\Http\Controllers\Diario\PlanoAeeController::class, 'pdf'])->name('planos-aee.pdf');
     });
     Route::prefix('api/diario')->name('api.diario.')->group(function () {
         Route::get('planos/escolas', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'lookupEscolas'])->name('planos.escolas');
@@ -280,6 +288,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('planos/disciplinas', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'lookupDisciplinas'])->name('planos.disciplinas');
         Route::get('planos/unidades', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'lookupUnidades'])->name('planos.unidades');
         Route::get('planos/indicadores', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'lookupIndicadores'])->name('planos.indicadores');
+
+        Route::get('planos-aee/escolas', [\App\Http\Controllers\Diario\PlanoAeeController::class, 'lookupEscolas'])->name('planos-aee.escolas');
+        Route::get('planos-aee/turmas', [\App\Http\Controllers\Diario\PlanoAeeController::class, 'lookupTurmas'])->name('planos-aee.turmas');
     });
 
     Route::middleware('can:admin')->group(function () {

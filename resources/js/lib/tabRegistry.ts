@@ -43,6 +43,7 @@ const PATH_LABELS: Record<string, string> = {
     '/matriculas/segunda-via': '2ª Via Comprovante',
     '/matriculas-aee': 'Matrículas AEE',
     '/diario/planos':          'Plano de Aula',
+    '/diario/planos-aee':      'Plano de Aula AEE',
     '/grade-disciplinar':      'Grade Disciplinar',
     '/turmas-aee':             'Turmas AEE',
     '/movimentacoes':          'Movimentações',

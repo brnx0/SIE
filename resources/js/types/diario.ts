@@ -72,3 +72,34 @@ export interface AnoLetivoResumo {
     anl_ano: number;
     anl_fl_em_exercicio: boolean;
 }
+
+export interface PlanoAeeTurmaResumo {
+    tur_id: number;
+    tur_nome: string;
+    tur_esc_id: number;
+    tur_anl_id: number;
+    esc_nome?: string;
+}
+
+export interface PlanoAee {
+    dae_id: number;
+    dae_fun_id: number;
+    dae_esc_id: number;
+    dae_anl_id: number;
+    dae_tur_id: number;
+    dae_tema: string;
+    dae_dt_inicio: string;
+    dae_dt_fim: string;
+    dae_objetivo: string;
+    dae_diagnostico: string | null;
+    dae_area_desenv: string | null;
+    dae_metas: string;
+    dae_estrategias: string;
+    dae_recursos: string;
+    dae_avaliacao: string | null;
+    dae_obs_coordenador: string | null;
+    dae_status: PlanoStatus;
+    turma?: PlanoAeeTurmaResumo;
+    escola?: { esc_id: number; esc_nome: string };
+    anoLetivo?: { anl_id: number; anl_ano: number };
+}

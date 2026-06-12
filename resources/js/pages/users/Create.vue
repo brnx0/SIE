@@ -4,7 +4,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
 
-defineProps<{ roles: Record<string, string>; escolas: { esc_id: number; esc_nome: string }[] }>();
+defineProps<{ roles: Record<string, string> }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
 
@@ -21,7 +21,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                 <h1 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">Cadastrar funcionário</h1>
                 <p class="text-sm text-slate-500 dark:text-slate-400">Preencha os dados para criar um novo acesso ao sistema.</p>
             </div>
-            <UserForm mode="create" :roles="roles" :escolas="escolas" />
+            <UserForm mode="create" :roles="roles" />
         </div>
     </AppLayout>
 </template>

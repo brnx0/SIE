@@ -8,6 +8,7 @@ use App\Models\Matricula\Matricula;
 use App\Models\Parametro\AnoLetivo;
 use App\Models\Parametro\ParametroEntidade;
 use App\Models\Turma\Turma;
+use App\Support\UserAccess;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Inertia\Inertia;
@@ -21,10 +22,8 @@ class DeclaracaoMatriculaController extends Controller
 
         return Inertia::render('relatorios/DeclaracaoMatricula/Form', [
             'anoLetivo' => AnoLetivo::where('anl_fl_em_exercicio', true)->first(['anl_id', 'anl_ano']),
-            'escolas'   => $user->isAdmin()
-                ? Escola::where('esc_fl_ativo', true)->orderBy('esc_nome')->get(['esc_id', 'esc_nome'])
-                : Escola::where('esc_id', $user->esc_id)->get(['esc_id', 'esc_nome']),
-            'userEscola' => $user->isAdmin() ? null : ['esc_id' => $user->esc_id, 'esc_nome' => $user->escola?->esc_nome],
+            'escolas'   => UserAccess::escolasVisiveis($user),
+            'userEscola' => UserAccess::escolaDefault($user),
             'isAdmin'   => $user->isAdmin(),
         ]);
     }
