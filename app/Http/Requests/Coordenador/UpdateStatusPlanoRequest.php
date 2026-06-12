@@ -11,8 +11,10 @@ class UpdateStatusPlanoRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        $role = $this->user()?->role;
-        return in_array($role, ['coordenador', 'admin'], true) && !empty($this->user()->fun_id);
+        $user = $this->user();
+        if (!$user) return false;
+        if ($user->role === 'admin') return true;
+        return $user->role === 'coordenador' && !empty($user->fun_id);
     }
 
     public function rules(): array

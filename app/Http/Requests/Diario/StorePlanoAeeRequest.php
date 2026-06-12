@@ -12,8 +12,10 @@ class StorePlanoAeeRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        $role = $this->user()?->role;
-        return in_array($role, ['professor', 'admin'], true) && !empty($this->user()->fun_id);
+        $user = $this->user();
+        if (!$user) return false;
+        if ($user->role === 'admin') return true;
+        return $user->role === 'professor' && !empty($user->fun_id);
     }
 
     public function rules(): array
