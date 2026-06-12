@@ -264,6 +264,24 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('api/disciplinas/search', [DisciplinaApiController::class, 'search'])->name('api.disciplinas.search');
     Route::get('api/grade-disciplinar', [GradeDisciplinarController::class, 'index'])->name('api.grade-disciplinar.index');
 
+    // Diário — Plano de Aula (turmas regulares)
+    Route::prefix('diario')->name('diario.')->group(function () {
+        Route::get('planos', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'index'])->name('planos.index');
+        Route::get('planos/create', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'create'])->name('planos.create');
+        Route::post('planos', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'store'])->name('planos.store');
+        Route::get('planos/{plano}/edit', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'edit'])->name('planos.edit');
+        Route::put('planos/{plano}', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'update'])->name('planos.update');
+        Route::delete('planos/{plano}', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'destroy'])->name('planos.destroy');
+        Route::get('planos/{plano}/pdf', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'pdf'])->name('planos.pdf');
+    });
+    Route::prefix('api/diario')->name('api.diario.')->group(function () {
+        Route::get('planos/escolas', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'lookupEscolas'])->name('planos.escolas');
+        Route::get('planos/turmas', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'lookupTurmas'])->name('planos.turmas');
+        Route::get('planos/disciplinas', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'lookupDisciplinas'])->name('planos.disciplinas');
+        Route::get('planos/unidades', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'lookupUnidades'])->name('planos.unidades');
+        Route::get('planos/indicadores', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'lookupIndicadores'])->name('planos.indicadores');
+    });
+
     Route::middleware('can:admin')->group(function () {
         Route::get('parametros', [ParametroController::class, 'edit'])->name('parametros.edit');
         Route::put('parametros', [ParametroController::class, 'update'])->name('parametros.update');

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed, provide, watch, type Component } from 'vue';
-import { usePage } from '@inertiajs/vue3';
+import { computed, onBeforeUnmount, provide, watch, type Component } from 'vue';
+import { router, usePage } from '@inertiajs/vue3';
 import AppContent from '@/components/layout/AppContent.vue';
 import AppShell from '@/components/layout/AppShell.vue';
 import AppSidebar from '@/components/layout/AppSidebar.vue';
@@ -24,14 +24,27 @@ const activeBreadcrumbs = computed(() => store.activeTab?.breadcrumbs ?? []);
 
 // Sincroniza URL do browser com aba ativa (cosmético; replaceState não
 // dispara nova requisição nem cria entry no histórico).
-watch(
-    () => store.activeTab?.url,
-    (url) => {
-        if (url && url !== window.location.pathname + window.location.search) {
-            window.history.replaceState(window.history.state, '', url);
-        }
-    },
-);
+const syncUrl = () => {
+    const url = store.activeTab?.url;
+    if (url && url !== window.location.pathname + window.location.search) {
+        window.history.replaceState(window.history.state, '', url);
+    }
+};
+watch(() => store.activeTab?.url, syncUrl);
+
+// Inertia faz pushState para a URL respondida em QUALQUER visita, inclusive
+// reloads de abas ocultas. Se isso colocar o browser em URL diferente da
+// aba ativa, força volta para a URL da aba ativa.
+watch(() => page.url, syncUrl);
+
+// Defesa adicional: alguns push/replaceState do Inertia rodam fora do ciclo
+// reativo (queue interna). Listener nos eventos do router cobre esses casos.
+const offFinish = router.on('finish', () => syncUrl());
+const offNavigate = router.on('navigate', () => syncUrl());
+onBeforeUnmount(() => {
+    offFinish();
+    offNavigate();
+});
 
 // Reset de abas em transições de auth (login/logout) → evita aba "Login"
 // persistir após autenticar, e abas autenticadas após logout.

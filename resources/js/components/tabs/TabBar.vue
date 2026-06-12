@@ -5,7 +5,22 @@ import { useTabStore } from '@/stores/tabs';
 
 const store = useTabStore();
 
-const select = (id: string) => store.setActive(id);
+const select = (id: string) => {
+    store.markUserVisit();
+    store.setActive(id);
+    // Sincroniza estado interno do Inertia com a URL da aba ativa. Sem isso,
+    // submits/validações erradas restauram a URL para a "página atual" interna
+    // do Inertia, que pode ser de outra aba → flipa de aba após erro.
+    const tab = store.tabs.find((t) => t.id === id);
+    const here = window.location.pathname + window.location.search;
+    if (tab && tab.url !== here) {
+        router.visit(tab.url, {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+        });
+    }
+};
 
 const close = (id: string) => {
     const fallbackUrl = store.closeTab(id);

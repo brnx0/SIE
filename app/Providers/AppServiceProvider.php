@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\Diario\DiarioPlanoAula;
 use App\Models\Funcionario\Funcionario;
 use App\Models\Funcionario\FuncionarioAdmissao;
 use App\Models\Funcionario\FuncionarioLotacao;
@@ -29,5 +30,6 @@ class AppServiceProvider extends ServiceProvider
         Route::model('funcionario', Funcionario::class);
         Route::model('admissao', FuncionarioAdmissao::class);
         Route::model('lotacao', FuncionarioLotacao::class);
+        Route::model('plano', DiarioPlanoAula::class);
     }
 }

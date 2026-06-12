@@ -10,6 +10,7 @@ import { initializeTheme } from './composables/useAppearance';
 import TabShell from './components/tabs/TabShell.vue';
 import TabRegistrar from './components/tabs/TabRegistrar.vue';
 import { pageCache } from './lib/tabRegistry';
+import { useTabStore } from './stores/tabs';
 
 // Extend ImportMeta interface for Vite...
 declare module 'vite/client' {
@@ -41,12 +42,26 @@ createInertiaApp({
     },
     setup({ el, App, props, plugin }) {
         const inertiaProps = props as unknown as Record<string, unknown>;
+        const pinia = createPinia();
         createApp({ render: () => h(TabShell, { inertiaApp: App, inertiaProps }) })
             .use(plugin)
-            .use(createPinia())
+            .use(pinia)
             .use(ZiggyVue)
             .directive('maska', vMaska)
             .mount(el);
+
+        // Marca timestamp em interações reais do usuário (click/submit/Enter).
+        // Visitas Inertia disparadas <500ms depois entram como user-initiated
+        // → openTab troca de aba. Reloads automáticos de aba oculta (watcher,
+        // timer) não têm interação recente → openTab só atualiza dados sem
+        // trocar a aba ativa.
+        const store = useTabStore(pinia);
+        const mark = () => store.markUserVisit();
+        document.addEventListener('click', mark, { capture: true });
+        document.addEventListener('submit', mark, { capture: true });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') mark();
+        }, { capture: true });
     },
     progress: {
         color: '#4B5563',

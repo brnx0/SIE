@@ -25,6 +25,7 @@ export const useTabStore = defineStore('tabs', {
     state: () => ({
         tabs: [] as Tab[],
         activeId: '' as string,
+        lastUserVisit: 0 as number,
     }),
 
     getters: {
@@ -32,17 +33,28 @@ export const useTabStore = defineStore('tabs', {
     },
 
     actions: {
+        // Marca timestamp de visita iniciada pelo usuário (Link, submit, router.visit).
+        // Usado para decidir se openTab deve trocar de aba ativa ou apenas
+        // atualizar dados em background.
+        markUserVisit(): void {
+            this.lastUserVisit = Date.now();
+        },
+
         // Chamado pelo TabRegistrar a cada navegação real do Inertia.
         openTab(payload: OpenPayload): string {
             const path = pathOf(payload.url);
             const existing = this.tabs.find((t) => t.path === path);
+            // Visita do usuário < 500ms atrás → troca de aba; senão é background.
+            const userInitiated = Date.now() - this.lastUserVisit < 500;
 
             if (existing) {
                 // Mesma tela (ex.: paginação/filtro) → atualiza dados sem remontar.
                 existing.url = payload.url;
                 existing.props = payload.props;
                 existing.component = markRaw(payload.component);
-                this.activeId = existing.id;
+                if (userInitiated || existing.id === this.activeId) {
+                    this.activeId = existing.id;
+                }
                 return existing.id;
             }
 
