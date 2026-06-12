@@ -99,8 +99,7 @@ class SerieController extends Controller
                     ->whereColumn('edu_grade_disciplinar.grd_dis_id', 'edu_disciplina.dis_id')
                     ->where('edu_grade_disciplinar.grd_ser_id', $serie->ser_id)
                     ->where('edu_grade_disciplinar.grd_anl_id', $anlIdSelecionado)
-                    ->where('edu_grade_disciplinar.grd_fl_ativo', true)
-                    ->whereNull('edu_grade_disciplinar.grd_deleted_at');
+                    ->where('edu_grade_disciplinar.grd_fl_ativo', true);
             })
             ->where('dis_fl_ativo', true)
             ->orderBy('dis_nome')
