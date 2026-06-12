@@ -199,37 +199,10 @@ class PlanoValidacaoController extends Controller
     {
         $this->abortIfNotCoordenador();
 
-        $funId = (int) $request->user()->fun_id;
-
-        $lotacoes = DB::table('edu_funcionario_lotacao as l')
-            ->join('edu_funcionario_admissao as a', 'a.adm_id', '=', 'l.lot_adm_id')
-            ->where('a.adm_fun_id', $funId)
-            ->whereNull('a.adm_deleted_at')
-            ->where('l.lot_fl_ativo', true)
-            ->select('l.lot_dt_inicio', 'l.lot_dt_fim')
-            ->get();
-
-        if ($lotacoes->isEmpty()) {
-            return response()->json([]);
-        }
-
-        $query = AnoLetivo::query()->whereNull('anl_deleted_at');
-        $query->where(function ($outer) use ($lotacoes) {
-            foreach ($lotacoes as $lot) {
-                $outer->orWhere(function ($q) use ($lot) {
-                    $q->where(function ($qq) use ($lot) {
-                        $qq->whereNull('anl_dt_fim')
-                            ->orWhere('anl_dt_fim', '>=', $lot->lot_dt_inicio);
-                    });
-                    if ($lot->lot_dt_fim) {
-                        $q->where('anl_dt_inicio_ano', '<=', $lot->lot_dt_fim);
-                    }
-                });
-            }
-        });
-
         return response()->json(
-            $query->orderByDesc('anl_ano')
+            AnoLetivo::query()
+                ->whereNull('anl_deleted_at')
+                ->orderByDesc('anl_ano')
                 ->get(['anl_id', 'anl_ano', 'anl_fl_em_exercicio'])
         );
     }
