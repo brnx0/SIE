@@ -293,6 +293,34 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('planos-aee/turmas', [\App\Http\Controllers\Diario\PlanoAeeController::class, 'lookupTurmas'])->name('planos-aee.turmas');
     });
 
+    // Coordenador Pedagógico — Validação de Planos
+    Route::prefix('coordenador')->name('coordenador.')->group(function () {
+        Route::get('planos', [\App\Http\Controllers\Coordenador\PlanoValidacaoController::class, 'index'])->name('planos.index');
+        Route::put('planos/{plano}/status', [\App\Http\Controllers\Coordenador\PlanoValidacaoController::class, 'update'])->name('planos.status');
+        Route::get('planos/{plano}/pdf', [\App\Http\Controllers\Coordenador\PlanoValidacaoController::class, 'pdf'])->name('planos.pdf');
+    });
+    Route::prefix('api/coordenador')->name('api.coordenador.')->group(function () {
+        Route::get('planos/{plano}',          [\App\Http\Controllers\Coordenador\PlanoValidacaoController::class, 'show'])->name('planos.show');
+        Route::get('planos-lookup/anos',      [\App\Http\Controllers\Coordenador\PlanoValidacaoController::class, 'lookupAnos'])->name('planos.anos');
+        Route::get('planos-lookup/escolas',   [\App\Http\Controllers\Coordenador\PlanoValidacaoController::class, 'lookupEscolas'])->name('planos.escolas');
+        Route::get('planos-lookup/segmentos', [\App\Http\Controllers\Coordenador\PlanoValidacaoController::class, 'lookupSegmentos'])->name('planos.segmentos');
+        Route::get('planos-lookup/series',    [\App\Http\Controllers\Coordenador\PlanoValidacaoController::class, 'lookupSeries'])->name('planos.series');
+        Route::get('planos-lookup/turmas',    [\App\Http\Controllers\Coordenador\PlanoValidacaoController::class, 'lookupTurmas'])->name('planos.turmas');
+    });
+
+    // Coordenador Pedagógico Interno — Validação de Planos AEE
+    Route::prefix('coordenador-interno')->name('coordenador-interno.')->group(function () {
+        Route::get('planos-aee', [\App\Http\Controllers\Coordenador\PlanoAeeValidacaoController::class, 'index'])->name('planos-aee.index');
+        Route::put('planos-aee/{plano}/status', [\App\Http\Controllers\Coordenador\PlanoAeeValidacaoController::class, 'update'])->name('planos-aee.status');
+        Route::get('planos-aee/{plano}/pdf', [\App\Http\Controllers\Coordenador\PlanoAeeValidacaoController::class, 'pdf'])->name('planos-aee.pdf');
+    });
+    Route::prefix('api/coordenador-interno')->name('api.coordenador-interno.')->group(function () {
+        Route::get('planos-aee/{plano}',         [\App\Http\Controllers\Coordenador\PlanoAeeValidacaoController::class, 'show'])->name('planos-aee.show');
+        Route::get('planos-aee-lookup/anos',     [\App\Http\Controllers\Coordenador\PlanoAeeValidacaoController::class, 'lookupAnos'])->name('planos-aee.anos');
+        Route::get('planos-aee-lookup/escolas',  [\App\Http\Controllers\Coordenador\PlanoAeeValidacaoController::class, 'lookupEscolas'])->name('planos-aee.escolas');
+        Route::get('planos-aee-lookup/turmas',   [\App\Http\Controllers\Coordenador\PlanoAeeValidacaoController::class, 'lookupTurmas'])->name('planos-aee.turmas');
+    });
+
     Route::middleware('can:admin')->group(function () {
         Route::get('parametros', [ParametroController::class, 'edit'])->name('parametros.edit');
         Route::put('parametros', [ParametroController::class, 'update'])->name('parametros.update');

@@ -112,6 +112,7 @@ class PlanoAulaController extends Controller
             'unidade:uni_id,uni_numero,uni_tipo,uni_dt_inicio,uni_dt_fim,uni_anl_id',
             'escola:esc_id,esc_nome',
             'indicadores',
+            'validadoPor:id,name',
         ]);
 
         $funId = (int) $request->user()->fun_id;
@@ -333,11 +334,15 @@ class PlanoAulaController extends Controller
     private function abortIfNotProfessor(): void
     {
         $user = request()->user();
-        abort_unless($user && $user->role === 'professor' && $user->fun_id, 403, 'Acesso restrito a professores.');
+        $rolesPermitidos = ['professor', 'admin'];
+        abort_unless($user && in_array($user->role, $rolesPermitidos, true) && $user->fun_id, 403, 'Acesso restrito a professores.');
     }
 
     private function abortIfNotOwner(DiarioPlanoAula $plano, Request $request): void
     {
+        if ($request->user()->role === 'admin') {
+            return;
+        }
         abort_unless((int) $plano->dpa_fun_id === (int) $request->user()->fun_id, 403);
     }
 

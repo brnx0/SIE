@@ -52,12 +52,20 @@ class DiarioPlanoAee extends Model
         'dae_avaliacao',
         'dae_obs_coordenador',
         'dae_status',
+        'dae_validado_por_user_id',
+        'dae_validado_em',
     ];
 
     protected $casts = [
-        'dae_dt_inicio' => 'date',
-        'dae_dt_fim'    => 'date',
+        'dae_dt_inicio'   => 'date',
+        'dae_dt_fim'      => 'date',
+        'dae_validado_em' => 'datetime',
     ];
+
+    public function validadoPor(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\User::class, 'dae_validado_por_user_id', 'id');
+    }
 
     public function funcionario(): BelongsTo
     {

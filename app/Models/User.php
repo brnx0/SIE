@@ -17,6 +17,7 @@ class User extends Authenticatable
         'professor' => 'Professor',
         'professor_aee' => 'Professor AEE',
         'coordenador' => 'Coordenador Pedagógico',
+        'coordenador_interno' => 'Coordenador Pedagógico Interno',
         'diretor' => 'Diretor',
         'secretaria_escola' => 'Secretaria Escolar',
         'admin' => 'Administrador',

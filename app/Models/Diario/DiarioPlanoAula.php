@@ -55,12 +55,20 @@ class DiarioPlanoAula extends Model
         'dpa_avaliacao',
         'dpa_obs_coordenador',
         'dpa_status',
+        'dpa_validado_por_user_id',
+        'dpa_validado_em',
     ];
 
     protected $casts = [
-        'dpa_dt_inicio' => 'date',
-        'dpa_dt_fim'    => 'date',
+        'dpa_dt_inicio'   => 'date',
+        'dpa_dt_fim'      => 'date',
+        'dpa_validado_em' => 'datetime',
     ];
+
+    public function validadoPor(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\User::class, 'dpa_validado_por_user_id', 'id');
+    }
 
     public function funcionario(): BelongsTo
     {

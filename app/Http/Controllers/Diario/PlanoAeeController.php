@@ -88,6 +88,7 @@ class PlanoAeeController extends Controller
             'turma:tur_id,tur_nome,tur_esc_id,tur_anl_id',
             'escola:esc_id,esc_nome',
             'anoLetivo:anl_id,anl_ano',
+            'validadoPor:id,name',
         ]);
 
         $funId = (int) $request->user()->fun_id;
@@ -228,11 +229,15 @@ class PlanoAeeController extends Controller
     private function abortIfNotProfessor(): void
     {
         $user = request()->user();
-        abort_unless($user && $user->role === 'professor' && $user->fun_id, 403, 'Acesso restrito a professores.');
+        $rolesPermitidos = ['professor', 'admin'];
+        abort_unless($user && in_array($user->role, $rolesPermitidos, true) && $user->fun_id, 403, 'Acesso restrito a professores.');
     }
 
     private function abortIfNotOwner(DiarioPlanoAee $plano, Request $request): void
     {
+        if ($request->user()->role === 'admin') {
+            return;
+        }
         abort_unless((int) $plano->dae_fun_id === (int) $request->user()->fun_id, 403);
     }
 

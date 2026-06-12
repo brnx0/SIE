@@ -17,7 +17,7 @@ import type {
     ProfessorResumoDiario,
 } from '@/types/diario';
 import { Head, router, useForm, usePage } from '@inertiajs/vue3';
-import { Printer, Save, Search } from 'lucide-vue-next';
+import { ArrowLeft, Printer, Save, Search } from 'lucide-vue-next';
 import { computed, onMounted, ref, watch } from 'vue';
 
 const props = defineProps<{
@@ -175,6 +175,12 @@ const labelUnidade = computed(() => {
     return 'Unidade';
 });
 
+const formatDateTime = (d?: string | null) => {
+    if (!d) return '—';
+    const dt = new Date(d);
+    if (isNaN(dt.getTime())) return '—';
+    return dt.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
+};
 const fmtDate = (d: string) => {
     if (!d) return '';
     const [y, m, day] = d.substring(0, 10).split('-');
@@ -250,6 +256,9 @@ const breadcrumbs: BreadcrumbItem[] = [
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
+                    <Button variant="outline" @click="router.visit('/diario/planos')">
+                        <ArrowLeft class="mr-2 size-4" /> Voltar
+                    </Button>
                     <Button v-if="isEdit" variant="outline" @click="imprimir">
                         <Printer class="mr-2 size-4" /> Imprimir
                     </Button>
@@ -386,7 +395,13 @@ const breadcrumbs: BreadcrumbItem[] = [
 
             <!-- Coordenação (só se status != pendente) -->
             <section v-if="isEdit && statusAtual !== 'pendente'" class="rounded-xl border bg-card p-4 shadow-sm">
-                <h2 class="mb-3 text-sm font-semibold text-muted-foreground">Observação do coordenador</h2>
+                <div class="mb-3 flex items-center justify-between">
+                    <h2 class="text-sm font-semibold text-muted-foreground">Observação do coordenador</h2>
+                    <div v-if="(plano as any)?.validado_por || (plano as any)?.dpa_validado_em" class="text-xs text-muted-foreground">
+                        Validado por <span class="font-medium">{{ (plano as any)?.validado_por?.name ?? '—' }}</span>
+                        em <span class="font-medium">{{ formatDateTime((plano as any)?.dpa_validado_em) }}</span>
+                    </div>
+                </div>
                 <textarea :value="plano?.dpa_obs_coordenador ?? ''" readonly rows="4"
                     class="w-full rounded-md border bg-muted/30 p-2 text-sm" />
             </section>

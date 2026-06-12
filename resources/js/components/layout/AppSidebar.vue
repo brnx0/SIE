@@ -5,7 +5,7 @@ import NavSearch, { type FlatNavLeaf } from '@/components/layout/NavSearch.vue';
 import NavUser from '@/components/layout/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { Link } from '@inertiajs/vue3';
-import { LayoutDashboard, LifeBuoy, UserPlus, Cog, ClipboardList, FileBarChart, BookOpen } from 'lucide-vue-next';
+import { LayoutDashboard, LifeBuoy, UserPlus, Cog, ClipboardList, FileBarChart, BookOpen, ClipboardCheck } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import type { SharedData } from '@/types';
@@ -13,6 +13,14 @@ import AppLogo from './AppLogo.vue';
 
 const page = usePage<SharedData>();
 const isAdmin = computed(() => page.props.auth?.user?.role === 'admin');
+const isCoordenador = computed(() => {
+    const r = page.props.auth?.user?.role;
+    return r === 'coordenador' || r === 'admin';
+});
+const isCoordenadorInterno = computed(() => {
+    const r = page.props.auth?.user?.role;
+    return r === 'coordenador_interno' || r === 'admin';
+});
 
 const overview = [
     { title: 'Painel', href: '/dashboard', icon: LayoutDashboard },
@@ -75,6 +83,16 @@ const relatoriosMenu = [
         ],
     },
 ];
+const coordenadorMenu = computed<any[]>(() => {
+    if (!isCoordenador.value && !isCoordenadorInterno.value) return [];
+
+    const children: { title: string; href: string }[] = [];
+    if (isCoordenador.value) children.push({ title: 'Validação de Planos', href: '/coordenador/planos' });
+    if (isCoordenadorInterno.value) children.push({ title: 'Validação de Planos AEE', href: '/coordenador-interno/planos-aee' });
+
+    return [{ title: 'Pedagógico', icon: ClipboardCheck, children }];
+});
+
 const administracao = computed<any[]>(() => [
     {
         title: 'Sistema',
@@ -111,6 +129,7 @@ const flatLeaves = computed<FlatNavLeaf[]>(() => [
     ...flattenItems(cadastros),
     ...flattenItems(matriculasMenu),
     ...flattenItems(diarioMenu),
+    ...flattenItems(coordenadorMenu.value),
     ...flattenItems(relatoriosMenu),
     ...flattenItems(administracao.value),
 ]);
@@ -140,6 +159,7 @@ const searching = computed(() => search.value.trim().length > 0);
                 <NavMain label="Gestão" :items="cadastros" />
                 <NavMain label="Matrículas" :items="matriculasMenu" />
                 <NavMain label="Diário" :items="diarioMenu" />
+                <NavMain v-if="isCoordenador || isCoordenadorInterno" label="Pedagógico" :items="coordenadorMenu" />
                 <NavMain label="Relatórios" :items="relatoriosMenu" />
                 <NavMain label="Administração" :items="administracao" />
             </template>
