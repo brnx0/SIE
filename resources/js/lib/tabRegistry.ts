@@ -44,6 +44,7 @@ const PATH_LABELS: Record<string, string> = {
     '/matriculas-aee': 'Matrículas AEE',
     '/diario/planos':          'Plano de Aula',
     '/diario/planos-aee':      'Plano de Aula AEE',
+    '/diario/quadro-horario':  'Quadro de Horário',
     '/coordenador/planos':     'Validação de Planos',
     '/coordenador-interno/planos-aee': 'Validação de Planos AEE',
     '/grade-disciplinar':      'Grade Disciplinar',

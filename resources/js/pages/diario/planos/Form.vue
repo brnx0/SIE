@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import InputError from '@/components/common/InputError.vue';
 import LocalCombobox from '@/components/common/LocalCombobox.vue';
+import PdfPreviewModal from '@/components/common/PdfPreviewModal.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -214,9 +215,10 @@ const submit = () => {
     }
 };
 
+const previewUrl = ref<string | null>(null);
 const imprimir = () => {
     if (!props.plano?.dpa_id) return;
-    window.open(`/diario/planos/${props.plano.dpa_id}/pdf`, '_blank');
+    previewUrl.value = `/diario/planos/${props.plano.dpa_id}/pdf`;
 };
 
 const statusBadge = (s: PlanoStatus) => ({
@@ -415,5 +417,6 @@ const breadcrumbs: BreadcrumbItem[] = [
                 </Button>
             </div>
         </div>
+        <PdfPreviewModal v-if="previewUrl" :url="previewUrl" :filename="`plano_${plano?.dpa_id ?? ''}.pdf`" title="Pré-visualização do Plano" @close="previewUrl = null" />
     </AppLayout>
 </template>

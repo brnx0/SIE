@@ -17,9 +17,96 @@ use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 use Mpdf\Mpdf;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class PlanoAulaController extends Controller
 {
+    public function export(Request $request): StreamedResponse|HttpResponse
+    {
+        $this->abortIfNotProfessor();
+
+        $funId = (int) $request->user()->fun_id;
+
+        $planos = DiarioPlanoAula::query()
+            ->where('dpa_fun_id', $funId)
+            ->with([
+                'turma:tur_id,tur_nome,tur_ser_id',
+                'turma.serie:ser_id,ser_nome',
+                'disciplina:dis_id,dis_nome',
+                'unidade:uni_id,uni_numero,uni_tipo',
+                'escola:esc_id,esc_nome',
+                'funcionario:fun_id,fun_nome',
+            ])
+            ->when($request->input('search'), fn ($q, $s) => $q->where('dpa_tema', 'ilike', "%{$s}%"))
+            ->when($request->input('status'), fn ($q, $st) => $q->where('dpa_status', $st))
+            ->when($request->input('tur_id'), fn ($q, $t) => $q->where('dpa_tur_id', (int) $t))
+            ->when($request->input('dis_id'), fn ($q, $d) => $q->where('dpa_dis_id', (int) $d))
+            ->when($request->input('uni_id'), fn ($q, $u) => $q->where('dpa_uni_id', (int) $u))
+            ->orderByDesc('dpa_dt_inicio')
+            ->get();
+
+        if ($request->input('format') === 'pdf') {
+            return $this->exportPdf($planos, $request, 'Planos de Aula');
+        }
+
+        return $this->exportCsv($planos, 'planos_aula');
+    }
+
+    private function exportCsv($planos, string $prefix): StreamedResponse
+    {
+        $filename = "{$prefix}_" . now()->format('Ymd_His') . '.csv';
+
+        return response()->streamDownload(function () use ($planos) {
+            $out = fopen('php://output', 'w');
+            fprintf($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
+            fputcsv($out, ['Status', 'Professor', 'Escola', 'Turma', 'Série', 'Disciplina', 'Unidade', 'Tema', 'Data Inicial', 'Data Final'], ';');
+            foreach ($planos as $p) {
+                fputcsv($out, [
+                    ucfirst($p->dpa_status ?? ''),
+                    $p->funcionario?->fun_nome ?? '',
+                    $p->escola?->esc_nome ?? '',
+                    $p->turma?->tur_nome ?? '',
+                    $p->turma?->serie?->ser_nome ?? '',
+                    $p->disciplina?->dis_nome ?? '',
+                    $p->unidade ? ($p->unidade->uni_numero . 'º ' . $p->unidade->uni_tipo) : '',
+                    $p->dpa_tema,
+                    optional($p->dpa_dt_inicio)?->format('d/m/Y') ?? '',
+                    optional($p->dpa_dt_fim)?->format('d/m/Y') ?? '',
+                ], ';');
+            }
+            fclose($out);
+        }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
+    private function exportPdf($planos, Request $request, string $titulo): HttpResponse
+    {
+        $collection = collect($planos);
+        $filename   = 'planos_aula_' . now()->format('Ymd_His') . '.pdf';
+
+        $statusCounts = $collection->groupBy('dpa_status')->map->count()->all();
+
+        $filtroParts = [];
+        if ($request->input('search')) $filtroParts[] = 'Busca: "' . $request->input('search') . '"';
+        if ($request->input('status')) $filtroParts[] = 'Status: ' . ucfirst($request->input('status'));
+
+        $html = view('exports.planos_lista_pdf', [
+            'titulo'           => $titulo,
+            'planos'           => $collection,
+            'total'            => $collection->count(),
+            'statusCounts'     => $statusCounts,
+            'mostraProfessor'  => false,
+            'filtroDescricao'  => implode(' · ', $filtroParts),
+        ])->render();
+
+        $mpdf = new Mpdf(['orientation' => 'L', 'format' => 'A4', 'margin_top' => 8, 'margin_bottom' => 8, 'margin_left' => 10, 'margin_right' => 10, 'tempDir' => sys_get_temp_dir()]);
+        $mpdf->WriteHTML($html);
+
+        return response($mpdf->Output($filename, 'S'), 200, [
+            'Content-Type'        => 'application/pdf',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+        ]);
+    }
+
     public function index(Request $request): Response
     {
         $this->abortIfNotProfessor();
@@ -198,7 +285,7 @@ class PlanoAulaController extends Controller
 
         $mpdf = new Mpdf([
             'format'        => 'A4',
-            'margin_top'    => 8,
+            'margin_top'    => 4,
             'margin_bottom' => 8,
             'margin_left'   => 10,
             'margin_right'  => 10,

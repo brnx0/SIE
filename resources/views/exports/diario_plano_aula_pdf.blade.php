@@ -3,31 +3,31 @@
 <head>
 <meta charset="UTF-8">
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: DejaVu Sans, sans-serif; font-size: 10.5px; color: #111; }
-.page { padding: 10mm 12mm; }
-.header { text-align: center; border-bottom: 2px solid #4338ca; padding-bottom: 4mm; margin-bottom: 5mm; }
-.header .entidade { font-size: 12px; font-weight: bold; }
-.header .titulo { font-size: 14px; font-weight: bold; color: #4338ca; margin-top: 2mm; }
-.header .sub { font-size: 9px; color: #555; }
-.status { display: inline-block; padding: 1mm 3mm; border-radius: 10px; font-size: 9px; font-weight: bold; }
-.s-pendente { background: #fef3c7; color: #92400e; }
-.s-aprovado { background: #d1fae5; color: #065f46; }
-.s-reprovado { background: #fee2e2; color: #991b1b; }
-.s-correcao { background: #dbeafe; color: #1e40af; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: DejaVu Sans, sans-serif; font-size: 10.5px; color: #1f2937; line-height: 1.4; }
+    .page { padding: 4mm 12mm 10mm; position: relative; }
 
-.box { border: 1px solid #ddd; border-radius: 4px; padding: 3mm 4mm; margin-bottom: 4mm; }
-.box h3 { font-size: 10px; color: #4338ca; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 2mm; border-bottom: 1px solid #eee; padding-bottom: 1mm; }
-.grid { width: 100%; }
-.grid td { vertical-align: top; padding: 1mm 2mm; font-size: 10px; }
-.label { font-size: 8.5px; color: #6b7280; text-transform: uppercase; letter-spacing: .04em; }
-.valor { font-size: 11px; font-weight: bold; color: #111; }
+    .header { text-align: center; padding-bottom: 3mm; margin-bottom: 4mm; border-bottom: 1px solid #cbd5e1; }
+    .header .entidade { font-size: 10.5px; font-weight: 600; color: #374151; }
+    .header .titulo { font-size: 14px; font-weight: 700; letter-spacing: .03em; margin-top: 1mm; color: #111827; }
+    .header .sub { font-size: 8.5px; color: #6b7280; margin-top: 0.5mm; }
+    .status-top { position: absolute; top: 4mm; right: 12mm; }
 
-.bloco { font-size: 10px; line-height: 1.5; white-space: pre-wrap; padding: 2mm 0; }
-.indicadores { font-size: 10px; line-height: 1.6; }
-.indicadores li { margin-left: 5mm; padding: 0.5mm 0; }
+    .meta { display: table; width: 100%; margin-bottom: 5mm; }
+    .meta .row { display: table-row; }
+    .meta .cell { display: table-cell; vertical-align: top; padding: 1mm 0; }
+    .meta .label { font-size: 8.5px; color: #6b7280; text-transform: uppercase; letter-spacing: .05em; }
+    .meta .valor { font-size: 10.5px; color: #111827; font-weight: 500; }
+    .status { display: inline-block; padding: 0.5mm 2.5mm; font-size: 9px; font-weight: 600; border: 1px solid #94a3b8; color: #334155; border-radius: 2px; }
 
-.foot { margin-top: 8mm; font-size: 9px; color: #555; text-align: center; border-top: 1px solid #eee; padding-top: 3mm; }
+    .section { margin-top: 5mm; padding-top: 3mm; border-top: 1px solid #e5e7eb; }
+    .section h3 { font-size: 10px; font-weight: 700; color: #111827; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 2mm; }
+    .bloco { font-size: 10.5px; line-height: 1.55; white-space: pre-wrap; color: #1f2937; }
+
+    .indicadores { list-style: disc; padding-left: 5mm; font-size: 10.5px; line-height: 1.6; }
+    .indicadores li { margin-bottom: 0.5mm; }
+
+    .foot { margin-top: 10mm; padding-top: 3mm; border-top: 1px solid #e5e7eb; font-size: 8.5px; color: #6b7280; text-align: center; }
 </style>
 </head>
 <body>
@@ -41,67 +41,57 @@ body { font-family: DejaVu Sans, sans-serif; font-size: 10.5px; color: #111; }
         $tipoUnidadeLabel = ucfirst(strtolower($plano->unidade->uni_tipo ?? 'Unidade'));
     @endphp
 
+    <span class="status status-top">{{ $statusMap[$plano->dpa_status] ?? $plano->dpa_status }}</span>
+
     <div class="header">
         <div class="entidade">{{ $entidade ?? 'Secretaria Municipal de Educação' }}</div>
-        <div class="titulo">PLANO DE AULA</div>
+        <div class="titulo">Plano de Aula</div>
         <div class="sub">Diário Online</div>
     </div>
 
-    <div class="box">
-        <h3>Identificação</h3>
-        <table class="grid">
-            <tr>
-                <td width="65%">
-                    <div class="label">Professor</div>
-                    <div class="valor">{{ $plano->funcionario->fun_nome ?? '—' }}</div>
-                </td>
-                <td width="35%">
-                    <div class="label">Status</div>
-                    <span class="status s-{{ $plano->dpa_status }}">{{ $statusMap[$plano->dpa_status] ?? $plano->dpa_status }}</span>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <div class="label">Tema</div>
-                    <div class="valor">{{ $plano->dpa_tema }}</div>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <div class="label">Escola</div>
-                    <div>{{ $plano->escola->esc_nome ?? '—' }}</div>
-                </td>
-                <td>
-                    <div class="label">Ano Letivo</div>
-                    <div>{{ $plano->anoLetivo->anl_ano ?? '—' }}</div>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <div class="label">Turma</div>
-                    <div>{{ ($plano->turma->serie->ser_nome ?? '') }} / {{ $plano->turma->tur_nome ?? '—' }}</div>
-                </td>
-                <td>
-                    <div class="label">Componente Curricular</div>
-                    <div>{{ $plano->disciplina->dis_nome ?? '—' }}</div>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <div class="label">{{ $tipoUnidadeLabel }}</div>
-                    <div>{{ $plano->unidade->uni_numero ?? '' }}º {{ $tipoUnidadeLabel }}</div>
-                </td>
-                <td>
-                    <div class="label">Período do Plano</div>
-                    <div>{{ $dtIni }} até {{ $dtFim }}</div>
-                </td>
-            </tr>
-        </table>
+    <div style="margin-bottom:4mm">
+        <div class="label">Professor</div>
+        <div class="valor">{{ $plano->funcionario->fun_nome ?? '—' }}</div>
+    </div>
+    <div style="margin-bottom:4mm">
+        <div class="label">Tema</div>
+        <div class="valor">{{ $plano->dpa_tema }}</div>
     </div>
 
+    <table style="width:100%; margin-bottom:4mm">
+        <tr>
+            <td style="width:50%; padding-right:4mm">
+                <div class="label" style="font-size:8.5px; color:#6b7280; text-transform:uppercase; letter-spacing:.05em">Escola</div>
+                <div style="font-size:10.5px">{{ $plano->escola->esc_nome ?? '—' }}</div>
+            </td>
+            <td style="width:25%">
+                <div class="label" style="font-size:8.5px; color:#6b7280; text-transform:uppercase; letter-spacing:.05em">Ano Letivo</div>
+                <div style="font-size:10.5px">{{ $plano->anoLetivo->anl_ano ?? '—' }}</div>
+            </td>
+            <td style="width:25%">
+                <div class="label" style="font-size:8.5px; color:#6b7280; text-transform:uppercase; letter-spacing:.05em">{{ $tipoUnidadeLabel }}</div>
+                <div style="font-size:10.5px">{{ $plano->unidade->uni_numero ?? '' }}º {{ $tipoUnidadeLabel }}</div>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding-top:3mm">
+                <div class="label" style="font-size:8.5px; color:#6b7280; text-transform:uppercase; letter-spacing:.05em">Turma</div>
+                <div style="font-size:10.5px">{{ ($plano->turma->serie->ser_nome ?? '') }} / {{ $plano->turma->tur_nome ?? '—' }}</div>
+            </td>
+            <td style="padding-top:3mm">
+                <div class="label" style="font-size:8.5px; color:#6b7280; text-transform:uppercase; letter-spacing:.05em">Componente</div>
+                <div style="font-size:10.5px">{{ $plano->disciplina->dis_nome ?? '—' }}</div>
+            </td>
+            <td style="padding-top:3mm">
+                <div class="label" style="font-size:8.5px; color:#6b7280; text-transform:uppercase; letter-spacing:.05em">Período</div>
+                <div style="font-size:10.5px">{{ $dtIni }} a {{ $dtFim }}</div>
+            </td>
+        </tr>
+    </table>
+
     @if($indicadores->count() > 0)
-    <div class="box">
-        <h3>Objetivos Complementares / Recomposição / Descritor</h3>
+    <div class="section">
+        <h3>Objetivos / Descritores</h3>
         <ul class="indicadores">
             @foreach($indicadores as $ind)
                 <li>{{ $ind->ind_descricao }}</li>
@@ -110,41 +100,47 @@ body { font-family: DejaVu Sans, sans-serif; font-size: 10.5px; color: #111; }
     </div>
     @endif
 
-    <div class="box">
-        <h3>Objeto do Conhecimento / Saberes</h3>
+    <div class="section">
+        <h3>Objeto do Conhecimento</h3>
         <div class="bloco">{{ $plano->dpa_objeto_conhecimento }}</div>
     </div>
 
     @if($plano->dpa_estrategias)
-    <div class="box">
+    <div class="section">
         <h3>Estratégias / Metodologia</h3>
         <div class="bloco">{{ $plano->dpa_estrategias }}</div>
     </div>
     @endif
 
-    <div class="box">
+    <div class="section">
         <h3>Recursos Didáticos</h3>
         <div class="bloco">{{ $plano->dpa_recursos }}</div>
     </div>
 
     @if($plano->dpa_competencias)
-    <div class="box">
+    <div class="section">
         <h3>Competências Gerais</h3>
         <div class="bloco">{{ $plano->dpa_competencias }}</div>
     </div>
     @endif
 
     @if($plano->dpa_avaliacao)
-    <div class="box">
+    <div class="section">
         <h3>Avaliação</h3>
         <div class="bloco">{{ $plano->dpa_avaliacao }}</div>
     </div>
     @endif
 
     @if($plano->dpa_status !== 'pendente' && $plano->dpa_obs_coordenador)
-    <div class="box">
+    <div class="section">
         <h3>Observação do Coordenador</h3>
         <div class="bloco">{{ $plano->dpa_obs_coordenador }}</div>
+        @if(!empty($plano->validadoPor) || !empty($plano->dpa_validado_em))
+            <div style="font-size:8.5px; color:#6b7280; margin-top:2mm">
+                Validado por {{ $plano->validadoPor->name ?? '—' }} em
+                {{ $plano->dpa_validado_em ? \Carbon\Carbon::parse($plano->dpa_validado_em)->format('d/m/Y H:i') : '—' }}
+            </div>
+        @endif
     </div>
     @endif
 

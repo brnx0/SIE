@@ -18,13 +18,18 @@ import { router } from '@inertiajs/vue3';
 import { Loader2, Plus, Trash2, X } from 'lucide-vue-next';
 import { computed, reactive, ref } from 'vue';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
     turma: Turma;
     horarios: TurmaHorario[];
     gradeHorarios: GradeHorarioResumo[];
     professores: TurmaProfessor[];
     disciplinas: DisciplinaResumo[];
-}>();
+    apiBaseUrl?: string;
+}>(), {
+    apiBaseUrl: '',
+});
+
+const baseUrl = computed(() => props.apiBaseUrl || `/turmas/${props.turma.tur_id}/horarios`);
 
 const horasOpts = computed(() =>
     (props.gradeHorarios ?? []).map(g => g.grh_hora.substring(0, 5)),
@@ -117,7 +122,7 @@ const submit = () => {
     processing.value = true;
     errors.value = {};
 
-    router.post(`/turmas/${props.turma.tur_id}/horarios`, form as Record<string, any>, {
+    router.post(baseUrl.value, form as Record<string, any>, {
         preserveScroll: true,
         preserveState: true,
         onSuccess: () => cancelForm(),
@@ -129,7 +134,7 @@ const submit = () => {
 const remove = (trh: TurmaHorario) => {
     const label = `${trh.funcionario?.fun_nome} / ${trh.disciplina?.dis_nome}`;
     if (!confirm(`Remover "${label}" do ${trh.trh_tempo}º tempo?`)) return;
-    router.delete(`/turmas/${props.turma.tur_id}/horarios/${trh.trh_id}`, { preserveScroll: true, preserveState: true });
+    router.delete(`${baseUrl.value}/${trh.trh_id}`, { preserveScroll: true, preserveState: true });
 };
 </script>
 

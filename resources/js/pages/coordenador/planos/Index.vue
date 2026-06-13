@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import LocalCombobox from '@/components/common/LocalCombobox.vue';
+import PdfPreviewModal from '@/components/common/PdfPreviewModal.vue';
 import PerPageSelect from '@/components/common/PerPageSelect.vue';
 import RefreshButton from '@/components/common/RefreshButton.vue';
 import RevisarPlanoModal from '@/components/coordenador/RevisarPlanoModal.vue';
@@ -10,7 +11,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem, type Paginated } from '@/types';
 import type { PlanoStatus } from '@/types/diario';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { ClipboardCheck, FileText, Search } from 'lucide-vue-next';
+import { ClipboardCheck, FileText, Printer, Search } from 'lucide-vue-next';
 import { computed, onMounted, ref, watch } from 'vue';
 
 interface PlanoListaItem {
@@ -167,6 +168,13 @@ const fmtDate = (d: string) => {
     return `${day}/${m}/${y}`;
 };
 
+const previewUrl = ref<string | null>(null);
+const previewFilename = ref<string>('plano.pdf');
+const imprimir = (id: number) => {
+    previewUrl.value = `/coordenador/planos/${id}/pdf`;
+    previewFilename.value = `plano_${id}.pdf`;
+};
+
 const planoSelecionado = ref<number | null>(null);
 const abrirRevisao = (id: number) => { planoSelecionado.value = id; };
 const fecharRevisao = () => { planoSelecionado.value = null; };
@@ -287,9 +295,14 @@ const breadcrumbs: BreadcrumbItem[] = [
                             </td>
                             <td class="px-4 py-3">{{ p.dpa_tema }}</td>
                             <td class="px-4 py-3 text-right">
-                                <Button variant="ghost" size="sm" @click.stop="abrirRevisao(p.dpa_id)">
-                                    <FileText class="size-4" />
-                                </Button>
+                                <div class="flex items-center justify-end gap-1">
+                                    <Button variant="ghost" size="sm" title="Imprimir" @click.stop="imprimir(p.dpa_id)">
+                                        <Printer class="size-4" />
+                                    </Button>
+                                    <Button variant="ghost" size="sm" title="Revisar" @click.stop="abrirRevisao(p.dpa_id)">
+                                        <FileText class="size-4" />
+                                    </Button>
+                                </div>
                             </td>
                         </tr>
                     </tbody>
@@ -312,5 +325,6 @@ const breadcrumbs: BreadcrumbItem[] = [
             :plano-id="planoSelecionado"
             @close="fecharRevisao"
             @saved="aposRevisar" />
+        <PdfPreviewModal v-if="previewUrl" :url="previewUrl" :filename="previewFilename" title="Pré-visualização do Plano" @close="previewUrl = null" />
     </AppLayout>
 </template>

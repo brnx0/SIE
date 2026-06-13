@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import PdfPreviewModal from '@/components/common/PdfPreviewModal.vue';
+import ExportMenu from '@/components/common/ExportMenu.vue';
 import PerPageSelect from '@/components/common/PerPageSelect.vue';
 import RefreshButton from '@/components/common/RefreshButton.vue';
 import { Button } from '@/components/ui/button';
@@ -7,7 +9,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem, type Paginated } from '@/types';
 import type { PlanoAula, PlanoStatus } from '@/types/diario';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { BookOpen, Pencil, Plus, Search, Trash2 } from 'lucide-vue-next';
+import { BookOpen, Pencil, Plus, Printer, Search, Trash2 } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
 
 const props = defineProps<{
@@ -36,6 +38,13 @@ watch([status, perPage], () => apply(true));
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Plano de Aula', href: '/diario/planos' },
 ];
+
+const previewUrl = ref<string | null>(null);
+const previewFilename = ref<string>('plano.pdf');
+const imprimir = (p: PlanoAula) => {
+    previewUrl.value = `/diario/planos/${p.dpa_id}/pdf`;
+    previewFilename.value = `plano_${p.dpa_id}.pdf`;
+};
 
 const remove = (p: PlanoAula) => {
     if (p.dpa_status !== 'pendente') {
@@ -98,6 +107,7 @@ const fmtDate = (d: string) => {
                 <div class="ml-auto flex items-center gap-3">
                     <RefreshButton />
                     <PerPageSelect v-model="perPage" />
+                    <ExportMenu base-url="/diario/planos/export" :filters="{ search, status }" />
                 </div>
             </div>
 
@@ -143,6 +153,9 @@ const fmtDate = (d: string) => {
                             </td>
                             <td class="px-4 py-3">
                                 <div class="flex items-center justify-end gap-1">
+                                    <Button variant="ghost" size="sm" title="Imprimir" @click="imprimir(p)">
+                                        <Printer class="size-4" />
+                                    </Button>
                                     <Link :href="`/diario/planos/${p.dpa_id}/edit`">
                                         <Button variant="ghost" size="sm"><Pencil class="size-4" /></Button>
                                     </Link>
@@ -169,5 +182,6 @@ const fmtDate = (d: string) => {
                 </div>
             </div>
         </div>
+        <PdfPreviewModal v-if="previewUrl" :url="previewUrl" :filename="previewFilename" title="Pré-visualização do Plano" @close="previewUrl = null" />
     </AppLayout>
 </template>

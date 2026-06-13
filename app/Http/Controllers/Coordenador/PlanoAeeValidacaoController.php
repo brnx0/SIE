@@ -133,7 +133,7 @@ class PlanoAeeValidacaoController extends Controller
 
         $mpdf = new Mpdf([
             'format'        => 'A4',
-            'margin_top'    => 8,
+            'margin_top'    => 4,
             'margin_bottom' => 8,
             'margin_left'   => 10,
             'margin_right'  => 10,

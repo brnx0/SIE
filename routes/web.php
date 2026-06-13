@@ -266,6 +266,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Diário — Plano de Aula (turmas regulares)
     Route::prefix('diario')->name('diario.')->group(function () {
+        Route::get('planos/export', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'export'])->name('planos.export');
         Route::get('planos', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'index'])->name('planos.index');
         Route::get('planos/create', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'create'])->name('planos.create');
         Route::post('planos', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'store'])->name('planos.store');
@@ -274,6 +275,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('planos/{plano}', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'destroy'])->name('planos.destroy');
         Route::get('planos/{plano}/pdf', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'pdf'])->name('planos.pdf');
 
+        Route::get('planos-aee/export', [\App\Http\Controllers\Diario\PlanoAeeController::class, 'export'])->name('planos-aee.export');
         Route::get('planos-aee', [\App\Http\Controllers\Diario\PlanoAeeController::class, 'index'])->name('planos-aee.index');
         Route::get('planos-aee/create', [\App\Http\Controllers\Diario\PlanoAeeController::class, 'create'])->name('planos-aee.create');
         Route::post('planos-aee', [\App\Http\Controllers\Diario\PlanoAeeController::class, 'store'])->name('planos-aee.store');
@@ -281,8 +283,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('planos-aee/{plano}', [\App\Http\Controllers\Diario\PlanoAeeController::class, 'update'])->name('planos-aee.update');
         Route::delete('planos-aee/{plano}', [\App\Http\Controllers\Diario\PlanoAeeController::class, 'destroy'])->name('planos-aee.destroy');
         Route::get('planos-aee/{plano}/pdf', [\App\Http\Controllers\Diario\PlanoAeeController::class, 'pdf'])->name('planos-aee.pdf');
+
+        Route::get('quadro-horario', [\App\Http\Controllers\Diario\QuadroHorarioController::class, 'index'])->name('quadro-horario.index');
+        Route::post('quadro-horario/{turma}/horarios', [\App\Http\Controllers\Diario\QuadroHorarioController::class, 'store'])->name('quadro-horario.store');
+        Route::delete('quadro-horario/{turma}/horarios/{turmaHorario}', [\App\Http\Controllers\Diario\QuadroHorarioController::class, 'destroy'])->name('quadro-horario.destroy');
     });
     Route::prefix('api/diario')->name('api.diario.')->group(function () {
+        Route::get('quadro-horario/escolas', [\App\Http\Controllers\Diario\QuadroHorarioController::class, 'lookupEscolas'])->name('quadro-horario.escolas');
+        Route::get('quadro-horario/turmas', [\App\Http\Controllers\Diario\QuadroHorarioController::class, 'lookupTurmas'])->name('quadro-horario.turmas');
         Route::get('planos/escolas', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'lookupEscolas'])->name('planos.escolas');
         Route::get('planos/turmas', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'lookupTurmas'])->name('planos.turmas');
         Route::get('planos/disciplinas', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'lookupDisciplinas'])->name('planos.disciplinas');
@@ -295,6 +303,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Coordenador Pedagógico — Validação de Planos
     Route::prefix('coordenador')->name('coordenador.')->group(function () {
+        Route::get('planos/export', [\App\Http\Controllers\Coordenador\PlanoValidacaoController::class, 'export'])->name('planos.export-lista');
         Route::get('planos', [\App\Http\Controllers\Coordenador\PlanoValidacaoController::class, 'index'])->name('planos.index');
         Route::put('planos/{plano}/status', [\App\Http\Controllers\Coordenador\PlanoValidacaoController::class, 'update'])->name('planos.status');
         Route::get('planos/{plano}/pdf', [\App\Http\Controllers\Coordenador\PlanoValidacaoController::class, 'pdf'])->name('planos.pdf');

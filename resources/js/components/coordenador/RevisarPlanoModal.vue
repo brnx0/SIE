@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import InputError from '@/components/common/InputError.vue';
+import PdfPreviewModal from '@/components/common/PdfPreviewModal.vue';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import type { PlanoStatus } from '@/types/diario';
@@ -99,8 +100,9 @@ const salvar = () => {
     });
 };
 
+const previewUrl = ref<string | null>(null);
 const imprimir = () => {
-    window.open(`/coordenador/planos/${props.planoId}/pdf`, '_blank');
+    previewUrl.value = `/coordenador/planos/${props.planoId}/pdf`;
 };
 </script>
 
@@ -244,5 +246,6 @@ const imprimir = () => {
                 </Button>
             </div>
         </div>
+        <PdfPreviewModal v-if="previewUrl" :url="previewUrl" :filename="`plano_${planoId}.pdf`" title="Pré-visualização do Plano" @close="previewUrl = null" />
     </div>
 </template>
