@@ -284,6 +284,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('planos-aee/{plano}', [\App\Http\Controllers\Diario\PlanoAeeController::class, 'destroy'])->name('planos-aee.destroy');
         Route::get('planos-aee/{plano}/pdf', [\App\Http\Controllers\Diario\PlanoAeeController::class, 'pdf'])->name('planos-aee.pdf');
 
+        Route::get('instrumentos-avaliativos/export', [\App\Http\Controllers\Diario\InstrumentoAvaliativoController::class, 'export'])->name('instrumentos-avaliativos.export');
+        Route::resource('instrumentos-avaliativos', \App\Http\Controllers\Diario\InstrumentoAvaliativoController::class)
+            ->parameters(['instrumentos-avaliativos' => 'instrumento'])
+            ->except(['show']);
+
         Route::get('quadro-horario', [\App\Http\Controllers\Diario\QuadroHorarioController::class, 'index'])->name('quadro-horario.index');
         Route::post('quadro-horario/{turma}/horarios', [\App\Http\Controllers\Diario\QuadroHorarioController::class, 'store'])->name('quadro-horario.store');
         Route::delete('quadro-horario/{turma}/horarios/{turmaHorario}', [\App\Http\Controllers\Diario\QuadroHorarioController::class, 'destroy'])->name('quadro-horario.destroy');

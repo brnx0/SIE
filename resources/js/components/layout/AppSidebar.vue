@@ -68,6 +68,12 @@ const diarioMenu = [
         title: 'Diário Online',
         icon: BookOpen,
         children: [
+            {
+                title: 'Cadastro',
+                children: [
+                    { title: 'Instrumentos Avaliativos', href: '/diario/instrumentos-avaliativos' },
+                ],
+            },
             { title: 'Planos de Aula', href: '/diario/planos' },
             { title: 'Planos de Aula AEE', href: '/diario/planos-aee' },
             { title: 'Quadro de Horário', href: '/diario/quadro-horario' },
