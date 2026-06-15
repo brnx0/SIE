@@ -450,7 +450,7 @@ class PlanoValidacaoController extends Controller
         if ($user->isAdmin()) {
             return;
         }
-        abort_unless($user->hasRole('coordenador') && $user->fun_id, 403, 'Acesso restrito a coordenadores pedagógicos.');
+        abort_unless($user->hasRole('coordenador'), 403, 'Acesso restrito a coordenadores pedagógicos.');
     }
 
     private function coordenadorLotadoNaEscola(int $funId, int $escId): bool
