@@ -189,17 +189,44 @@ const fmtDate = (d: string) => {
     return `${day}/${m}/${y}`;
 };
 
-const itemsTurma = computed(() => turmas.value.map((t) => ({
-    id: t.tur_id,
-    label: t.ser_nome ? `${t.ser_nome} / ${t.tur_nome}` : t.tur_nome,
-})));
-const itemsDisciplina = computed(() => disciplinas.value.map((d) => ({ id: d.dis_id, label: d.dis_nome })));
-const itemsUnidade = computed(() => unidades.value.map((u) => ({
-    id: u.uni_id,
-    label: `${u.uni_numero}º ${labelUnidade.value} (${fmtDate(u.uni_dt_inicio)} até ${fmtDate(u.uni_dt_fim)})`,
-})));
-const itemsEscola = computed(() => escolas.value.map((e) => ({ id: e.esc_id, label: e.esc_nome })));
-const itemsAno = computed(() => props.anosLetivos.map((a) => ({ id: a.anl_id, label: String(a.anl_ano) })));
+// Garante que o valor salvo no registro sempre apareça no lookup, mesmo
+// que o filtro (vínculo do professor) não o retorne — padrão incluir_ids.
+const itemsTurma = computed(() => {
+    const list = turmas.value.map((t) => ({
+        id: t.tur_id,
+        label: t.ser_nome ? `${t.ser_nome} / ${t.tur_nome}` : t.tur_nome,
+    }));
+    const s = props.plano?.turma;
+    if (s && !list.some((i) => i.id === s.tur_id)) {
+        list.unshift({ id: s.tur_id, label: s.serie?.ser_nome ? `${s.serie.ser_nome} / ${s.tur_nome}` : s.tur_nome });
+    }
+    return list;
+});
+const itemsDisciplina = computed(() => {
+    const list = disciplinas.value.map((d) => ({ id: d.dis_id, label: d.dis_nome }));
+    const s = props.plano?.disciplina;
+    if (s && !list.some((i) => i.id === s.dis_id)) list.unshift({ id: s.dis_id, label: s.dis_nome });
+    return list;
+});
+const unidadeLabel = (u: PlanoUnidade) => `${u.uni_numero}º ${labelUnidade.value} (${fmtDate(u.uni_dt_inicio)} até ${fmtDate(u.uni_dt_fim)})`;
+const itemsUnidade = computed(() => {
+    const list = unidades.value.map((u) => ({ id: u.uni_id, label: unidadeLabel(u) }));
+    const s = props.plano?.unidade;
+    if (s && !list.some((i) => i.id === s.uni_id)) list.unshift({ id: s.uni_id, label: unidadeLabel(s) });
+    return list;
+});
+const itemsEscola = computed(() => {
+    const list = escolas.value.map((e) => ({ id: e.esc_id, label: e.esc_nome }));
+    const s = props.plano?.escola;
+    if (s && !list.some((i) => i.id === s.esc_id)) list.unshift({ id: s.esc_id, label: s.esc_nome });
+    return list;
+});
+const itemsAno = computed(() => {
+    const list = props.anosLetivos.map((a) => ({ id: a.anl_id, label: String(a.anl_ano) }));
+    const s = props.plano?.anoLetivo;
+    if (s && !list.some((i) => i.id === s.anl_id)) list.unshift({ id: s.anl_id, label: String(s.anl_ano) });
+    return list;
+});
 
 const toggleIndicador = (id: number) => {
     if (readonly.value) return;

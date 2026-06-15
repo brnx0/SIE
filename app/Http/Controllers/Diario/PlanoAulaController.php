@@ -198,6 +198,7 @@ class PlanoAulaController extends Controller
             'disciplina:dis_id,dis_nome',
             'unidade:uni_id,uni_numero,uni_tipo,uni_dt_inicio,uni_dt_fim,uni_anl_id',
             'escola:esc_id,esc_nome',
+            'anoLetivo:anl_id,anl_ano',
             'indicadores',
             'validadoPor:id,name',
         ]);
@@ -305,10 +306,11 @@ class PlanoAulaController extends Controller
     {
         $this->abortIfNotProfessor();
 
-        $funId = (int) $request->user()->fun_id;
+        $user = $request->user();
+        $funId = (int) $user->fun_id;
         $anlId = (int) $request->input('anl_id');
 
-        if (! $funId) {
+        if ($user->isAdmin() || ! $funId) {
             $escolas = DB::table('edu_turma as t')
                 ->join('edu_escola as e', 'e.esc_id', '=', 't.tur_esc_id')
                 ->whereNull('t.tur_deleted_at')
@@ -342,11 +344,12 @@ class PlanoAulaController extends Controller
     {
         $this->abortIfNotProfessor();
 
-        $funId = (int) $request->user()->fun_id;
+        $user = $request->user();
+        $funId = (int) $user->fun_id;
         $anlId = (int) $request->input('anl_id');
         $escId = (int) $request->input('esc_id');
 
-        $base = $funId
+        $base = ($funId && ! $user->isAdmin())
             ? DB::table('edu_turma_professor as tp')
                 ->join('edu_turma as t', 't.tur_id', '=', 'tp.tup_tur_id')
                 ->where('tp.tup_fun_id', $funId)
@@ -373,10 +376,11 @@ class PlanoAulaController extends Controller
     {
         $this->abortIfNotProfessor();
 
-        $funId = (int) $request->user()->fun_id;
+        $user = $request->user();
+        $funId = (int) $user->fun_id;
         $turId = (int) $request->input('tur_id');
 
-        if (! $funId) {
+        if (! $funId || $user->isAdmin()) {
             $serId = DB::table('edu_turma')->where('tur_id', $turId)->value('tur_ser_id');
             $disciplinas = DB::table('edu_grade_disciplinar as gd')
                 ->join('edu_disciplina as d', 'd.dis_id', '=', 'gd.grd_dis_id')
@@ -481,7 +485,7 @@ class PlanoAulaController extends Controller
 
     private function anosLetivosDoProfessor(int $funId): array
     {
-        if (! $funId) {
+        if (! $funId || request()->user()->isAdmin()) {
             return AnoLetivo::query()
                 ->whereNull('anl_deleted_at')
                 ->orderByDesc('anl_ano')

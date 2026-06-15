@@ -14,7 +14,11 @@ class StorePlanoAulaRequest extends FormRequest
         $user = $this->user();
         if (!$user) return false;
         if ($user->isAdmin()) return true;
-        return $user->hasRole('professor');
+        if (!$user->hasRole('professor')) return false;
+
+        // Edição: apenas o autor do próprio plano
+        $plano = $this->route('plano');
+        return !$plano || (int) $plano->dpa_user_id === (int) $user->id;
     }
 
     public function rules(): array

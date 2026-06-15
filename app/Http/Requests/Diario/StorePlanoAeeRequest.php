@@ -15,7 +15,11 @@ class StorePlanoAeeRequest extends FormRequest
         $user = $this->user();
         if (!$user) return false;
         if ($user->isAdmin()) return true;
-        return $user->hasAnyRole(['professor', 'professor_aee']);
+        if (!$user->hasAnyRole(['professor', 'professor_aee'])) return false;
+
+        // Edição: apenas o autor do próprio plano
+        $plano = $this->route('plano');
+        return !$plano || (int) $plano->dae_user_id === (int) $user->id;
     }
 
     public function rules(): array

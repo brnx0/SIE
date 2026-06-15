@@ -248,9 +248,10 @@ class PlanoAeeController extends Controller
     {
         $this->abortIfNotProfessor();
 
-        $funId = (int) $request->user()->fun_id;
+        $user = $request->user();
+        $funId = (int) $user->fun_id;
 
-        if (! $funId) {
+        if ($user->isAdmin() || ! $funId) {
             return response()->json(
                 DB::table('edu_escola')
                     ->whereNull('esc_deleted_at')
@@ -280,7 +281,8 @@ class PlanoAeeController extends Controller
     {
         $this->abortIfNotProfessor();
 
-        $funId = (int) $request->user()->fun_id;
+        $user = $request->user();
+        $funId = (int) $user->fun_id;
         $anlId = (int) $request->input('anl_id');
         $escId = (int) $request->input('esc_id');
 
@@ -288,7 +290,7 @@ class PlanoAeeController extends Controller
             return response()->json([]);
         }
 
-        if ($funId) {
+        if ($funId && ! $user->isAdmin()) {
             $temLotacao = DB::table('edu_funcionario_lotacao as l')
                 ->join('edu_funcionario_admissao as a', 'a.adm_id', '=', 'l.lot_adm_id')
                 ->where('a.adm_fun_id', $funId)
@@ -350,7 +352,7 @@ class PlanoAeeController extends Controller
 
     private function anosLetivosDoProfessor(int $funId): array
     {
-        if (! $funId) {
+        if (! $funId || request()->user()->isAdmin()) {
             return AnoLetivo::query()
                 ->whereNull('anl_deleted_at')
                 ->orderByDesc('anl_ano')

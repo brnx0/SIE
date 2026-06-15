@@ -307,13 +307,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // Coordenador Pedagógico — Validação de Planos
-    Route::prefix('coordenador')->name('coordenador.')->group(function () {
+    Route::prefix('coordenador')->name('coordenador.')->middleware('role:coordenador')->group(function () {
         Route::get('planos/export', [\App\Http\Controllers\Coordenador\PlanoValidacaoController::class, 'export'])->name('planos.export-lista');
         Route::get('planos', [\App\Http\Controllers\Coordenador\PlanoValidacaoController::class, 'index'])->name('planos.index');
         Route::put('planos/{plano}/status', [\App\Http\Controllers\Coordenador\PlanoValidacaoController::class, 'update'])->name('planos.status');
         Route::get('planos/{plano}/pdf', [\App\Http\Controllers\Coordenador\PlanoValidacaoController::class, 'pdf'])->name('planos.pdf');
     });
-    Route::prefix('api/coordenador')->name('api.coordenador.')->group(function () {
+    Route::prefix('api/coordenador')->name('api.coordenador.')->middleware('role:coordenador')->group(function () {
         Route::get('planos/{plano}',          [\App\Http\Controllers\Coordenador\PlanoValidacaoController::class, 'show'])->name('planos.show');
         Route::get('planos-lookup/anos',      [\App\Http\Controllers\Coordenador\PlanoValidacaoController::class, 'lookupAnos'])->name('planos.anos');
         Route::get('planos-lookup/escolas',   [\App\Http\Controllers\Coordenador\PlanoValidacaoController::class, 'lookupEscolas'])->name('planos.escolas');
@@ -323,12 +323,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // Coordenador Pedagógico Interno — Validação de Planos AEE
-    Route::prefix('coordenador-interno')->name('coordenador-interno.')->group(function () {
+    Route::prefix('coordenador-interno')->name('coordenador-interno.')->middleware('role:coordenador_interno')->group(function () {
         Route::get('planos-aee', [\App\Http\Controllers\Coordenador\PlanoAeeValidacaoController::class, 'index'])->name('planos-aee.index');
         Route::put('planos-aee/{plano}/status', [\App\Http\Controllers\Coordenador\PlanoAeeValidacaoController::class, 'update'])->name('planos-aee.status');
         Route::get('planos-aee/{plano}/pdf', [\App\Http\Controllers\Coordenador\PlanoAeeValidacaoController::class, 'pdf'])->name('planos-aee.pdf');
     });
-    Route::prefix('api/coordenador-interno')->name('api.coordenador-interno.')->group(function () {
+    Route::prefix('api/coordenador-interno')->name('api.coordenador-interno.')->middleware('role:coordenador_interno')->group(function () {
         Route::get('planos-aee/{plano}',         [\App\Http\Controllers\Coordenador\PlanoAeeValidacaoController::class, 'show'])->name('planos-aee.show');
         Route::get('planos-aee-lookup/anos',     [\App\Http\Controllers\Coordenador\PlanoAeeValidacaoController::class, 'lookupAnos'])->name('planos-aee.anos');
         Route::get('planos-aee-lookup/escolas',  [\App\Http\Controllers\Coordenador\PlanoAeeValidacaoController::class, 'lookupEscolas'])->name('planos-aee.escolas');

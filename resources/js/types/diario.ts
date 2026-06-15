@@ -60,6 +60,7 @@ export interface PlanoAula {
     disciplina?: PlanoDisciplinaResumo;
     unidade?: PlanoUnidade;
     escola?: { esc_id: number; esc_nome: string };
+    anoLetivo?: { anl_id: number; anl_ano: number };
     indicadores?: PlanoIndicadorPivot[];
 }
 

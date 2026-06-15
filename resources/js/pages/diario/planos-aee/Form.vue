@@ -96,9 +96,26 @@ onMounted(async () => {
     if (form.dae_esc_id) await fetchTurmas();
 });
 
-const itemsTurma = computed(() => turmas.value.map((t) => ({ id: t.tur_id, label: t.tur_nome })));
-const itemsEscola = computed(() => escolas.value.map((e) => ({ id: e.esc_id, label: e.esc_nome })));
-const itemsAno = computed(() => props.anosLetivos.map((a) => ({ id: a.anl_id, label: String(a.anl_ano) })));
+// Garante que o valor salvo no registro sempre apareça no lookup, mesmo
+// que o filtro (lotação/vínculo) não o retorne — padrão incluir_ids.
+const itemsEscola = computed(() => {
+    const list = escolas.value.map((e) => ({ id: e.esc_id, label: e.esc_nome }));
+    const s = props.plano?.escola;
+    if (s && !list.some((i) => i.id === s.esc_id)) list.unshift({ id: s.esc_id, label: s.esc_nome });
+    return list;
+});
+const itemsTurma = computed(() => {
+    const list = turmas.value.map((t) => ({ id: t.tur_id, label: t.tur_nome }));
+    const s = props.plano?.turma;
+    if (s && !list.some((i) => i.id === s.tur_id)) list.unshift({ id: s.tur_id, label: s.tur_nome });
+    return list;
+});
+const itemsAno = computed(() => {
+    const list = props.anosLetivos.map((a) => ({ id: a.anl_id, label: String(a.anl_ano) }));
+    const s = props.plano?.anoLetivo;
+    if (s && !list.some((i) => i.id === s.anl_id)) list.unshift({ id: s.anl_id, label: String(s.anl_ano) });
+    return list;
+});
 
 const submit = () => {
     if (isEdit.value) {
