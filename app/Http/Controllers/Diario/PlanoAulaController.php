@@ -425,7 +425,7 @@ class PlanoAulaController extends Controller
         if ($user->isAdmin()) {
             return;
         }
-        abort_unless($user->hasRole('professor') && $user->fun_id, 403, 'Acesso restrito a professores.');
+        abort_unless($user->hasRole('professor'), 403, 'Acesso restrito a professores.');
     }
 
     private function abortIfNotOwner(DiarioPlanoAula $plano, Request $request): void
