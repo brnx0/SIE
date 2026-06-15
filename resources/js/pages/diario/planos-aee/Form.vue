@@ -36,7 +36,12 @@ const anlInicial = computed<number | null>(() => {
     return exer?.anl_id ?? null;
 });
 
-const form = useForm({
+// Valores iniciais derivados do prop atual. Extraído numa função porque o
+// painel é mantido em cache pelo shell de abas (keep-alive): a MESMA instância
+// do Form é reusada entre create/edit/edit-de-outro-registro. Sem re-sincronizar
+// o useForm quando props.plano muda, o form fica preso aos valores do 1º mount
+// (tudo em branco quando o 1º mount foi o "Novo plano").
+const buildData = () => ({
     dae_esc_id: props.plano?.dae_esc_id ?? null,
     dae_anl_id: anlInicial.value,
     dae_tur_id: props.plano?.dae_tur_id ?? null,
@@ -51,6 +56,8 @@ const form = useForm({
     dae_recursos: props.plano?.dae_recursos ?? '',
     dae_avaliacao: props.plano?.dae_avaliacao ?? '',
 });
+
+const form = useForm(buildData());
 
 const turmas = ref<PlanoAeeTurmaResumo[]>([]);
 const escolas = ref<{ esc_id: number; esc_nome: string }[]>([]);
@@ -94,6 +101,18 @@ watch(() => form.dae_esc_id, () => {
 onMounted(async () => {
     await fetchEscolas();
     if (form.dae_esc_id) await fetchTurmas();
+});
+
+// Painel reusado pelo shell de abas: re-sincroniza o form e os lookups quando
+// o registro muda (create -> edit, edit de outro plano). Sem isto a instância
+// em cache mantém os dados do 1º mount e a edição abre em branco.
+watch(() => props.plano?.dae_id, async () => {
+    form.defaults(buildData());
+    form.reset();
+    form.clearErrors();
+    await fetchEscolas();
+    if (form.dae_esc_id) await fetchTurmas();
+    else turmas.value = [];
 });
 
 // Garante que o valor salvo no registro sempre apareça no lookup, mesmo
