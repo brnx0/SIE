@@ -7,7 +7,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -63,17 +62,22 @@ class UsersController extends Controller
         $data = $request->validate([
             'name'     => ['required', 'string', 'max:255'],
             'email'    => ['required', 'email', 'max:255', 'unique:users,email'],
-            'role'     => ['required', Rule::in(array_keys($this->getRoles()))],
+            'roles'    => ['required', 'array', 'min:1'],
+            'roles.*'  => ['string', 'in:' . implode(',', array_keys(User::ROLES))],
             'phone'    => ['nullable', 'string', 'max:30'],
             'active'   => ['boolean'],
             'fun_id'   => ['nullable', 'integer', 'exists:edu_funcionario,fun_id'],
             'password' => ['required', 'confirmed', Password::defaults()],
         ]);
 
+        $roles = $data['roles'];
+        unset($data['roles']);
+
         $data['password'] = Hash::make($data['password']);
         $data['active']   = $data['active'] ?? true;
 
         $user = User::create($data);
+        $user->syncRoles($roles);
 
         return to_route('users.edit', $user)->with('success', 'Usuário cadastrado com sucesso.');
     }
@@ -95,13 +99,17 @@ class UsersController extends Controller
     {
         $data = $request->validate([
             'name'     => ['required', 'string', 'max:255'],
-            'email'    => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
-            'role'     => ['required', Rule::in(array_keys($this->getRoles()))],
+            'email'    => ['required', 'email', 'max:255', \Illuminate\Validation\Rule::unique('users')->ignore($user->id)],
+            'roles'    => ['required', 'array', 'min:1'],
+            'roles.*'  => ['string', 'in:' . implode(',', array_keys(User::ROLES))],
             'phone'    => ['nullable', 'string', 'max:30'],
             'active'   => ['boolean'],
             'fun_id'   => ['nullable', 'integer', 'exists:edu_funcionario,fun_id'],
             'password' => ['nullable', 'confirmed', Password::defaults()],
         ]);
+
+        $roles = $data['roles'];
+        unset($data['roles']);
 
         if (! empty($data['password'])) {
             $data['password'] = Hash::make($data['password']);
@@ -110,6 +118,7 @@ class UsersController extends Controller
         }
 
         $user->update($data);
+        $user->syncRoles($roles);
 
         return to_route('users.edit', $user)->with('success', 'Usuário atualizado com sucesso.');
     }
@@ -130,13 +139,14 @@ class UsersController extends Controller
         $role   = $request->string('role')->toString();
 
         return User::query()
+            ->with('userRoles')
             ->when($search, function ($q) use ($search) {
                 $q->where(function ($q) use ($search) {
                     $q->where('name', 'ilike', "%{$search}%")
                       ->orWhere('email', 'ilike', "%{$search}%");
                 });
             })
-            ->when($role, fn ($q) => $q->where('role', $role))
+            ->when($role, fn ($q) => $q->whereHas('userRoles', fn ($q) => $q->where('role', $role)))
             ->orderBy('name');
     }
 
@@ -148,12 +158,13 @@ class UsersController extends Controller
         return response()->streamDownload(function () use ($users, $roles) {
             $out = fopen('php://output', 'w');
             fprintf($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
-            fputcsv($out, ['Nome', 'E-mail', 'Perfil', 'Status'], ';');
+            fputcsv($out, ['Nome', 'E-mail', 'Perfis', 'Status'], ';');
             foreach ($users as $u) {
+                $labels = collect($u->roles)->map(fn ($r) => $roles[$r] ?? $r)->implode(', ');
                 fputcsv($out, [
                     $u->name,
                     $u->email,
-                    $roles[$u->role] ?? $u->role,
+                    $labels,
                     $u->active ? 'Ativo' : 'Inativo',
                 ], ';');
             }

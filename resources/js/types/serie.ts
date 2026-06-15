@@ -13,6 +13,7 @@ export interface Serie {
     ser_nr_ordenacao: number;
     ser_ordem_no_segmento: number;
     ser_fl_ativo: boolean;
+    ser_fl_multi: boolean;
     ser_tipo_avaliacao: string[] | null;
     ser_tipo_avaliacao_descritiva: 'por_aluno' | 'por_unidade' | null;
     ser_promo_ser_id_1: number | null;
@@ -61,6 +62,7 @@ export interface SerieFormData {
     ser_nr_ordenacao: number | null;
     ser_ordem_no_segmento: number | null;
     ser_fl_ativo: boolean;
+    ser_fl_multi: boolean;
     ser_tipo_avaliacao: string[];
     ser_tipo_avaliacao_descritiva: string;
     ser_promo_ser_id_1: number | null;

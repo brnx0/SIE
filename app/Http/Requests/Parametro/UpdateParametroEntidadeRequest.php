@@ -8,7 +8,7 @@ class UpdateParametroEntidadeRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->role === 'admin';
+        return $this->user()?->isAdmin() ?? false;
     }
 
     public function rules(): array

@@ -10,7 +10,7 @@ export interface TurmaMatricula {
     total_matriculados: number;
     vagas_disponiveis: number | null;
     escola: { esc_id: number; esc_nome: string; esc_cd_escola: string } | null;
-    serie: { ser_id: number; ser_nome: string; ser_idade: number } | null;
+    serie: { ser_id: number; ser_nome: string; ser_idade: number; ser_fl_multi: boolean } | null;
     segmento: { seg_id: number; seg_nome_reduzido: string } | null;
     ano_letivo: { anl_id: number; anl_ano: number; anl_dt_corte: string } | null;
 }

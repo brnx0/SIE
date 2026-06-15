@@ -78,6 +78,7 @@ class SerieSeeder extends Seeder
                     'ser_ordem_no_segmento' => $ordem,
                     'ser_tipo_avaliacao'    => $tipo ? [$tipo] : null,
                     'ser_fl_ativo'          => true,
+                    'ser_fl_multi'          => str_contains($serNome, 'MULTI'),
                 ],
             );
         }

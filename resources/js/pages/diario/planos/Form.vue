@@ -59,6 +59,7 @@ const form = useForm({
     dpa_recursos: props.plano?.dpa_recursos ?? '',
     dpa_competencias: props.plano?.dpa_competencias ?? '',
     dpa_avaliacao: props.plano?.dpa_avaliacao ?? '',
+    dpa_objetivos_complementares: props.plano?.dpa_objetivos_complementares ?? '',
     indicadores: [...props.indicadoresSelecionados] as number[],
 });
 
@@ -334,7 +335,7 @@ const breadcrumbs: BreadcrumbItem[] = [
             <!-- Indicadores -->
             <section class="rounded-xl border bg-card p-4 shadow-sm">
                 <div class="mb-3 flex items-center justify-between">
-                    <h2 class="text-sm font-semibold text-muted-foreground">Objetivos Complementares / Recomposição / Descritor</h2>
+                    <h2 class="text-sm font-semibold text-muted-foreground">Objetivos de Aprendizagem e Desenvolvimento (Indicadores)</h2>
                     <span class="text-xs text-muted-foreground">{{ form.indicadores.length }} selecionado(s)</span>
                 </div>
                 <div class="relative mb-3 max-w-md">
@@ -391,6 +392,12 @@ const breadcrumbs: BreadcrumbItem[] = [
                         <textarea v-model="form.dpa_avaliacao" rows="4" :disabled="readonly"
                             class="w-full rounded-md border bg-background p-2 text-sm" />
                         <InputError :message="form.errors.dpa_avaliacao" />
+                    </div>
+                    <div>
+                        <Label>Objetivos Complementares / Recomposição / Descritor</Label>
+                        <textarea v-model="form.dpa_objetivos_complementares" rows="4" :disabled="readonly"
+                            class="w-full rounded-md border bg-background p-2 text-sm" />
+                        <InputError :message="form.errors.dpa_objetivos_complementares" />
                     </div>
                 </div>
             </section>

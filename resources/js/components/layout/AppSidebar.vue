@@ -12,15 +12,10 @@ import type { SharedData } from '@/types';
 import AppLogo from './AppLogo.vue';
 
 const page = usePage<SharedData>();
-const isAdmin = computed(() => page.props.auth?.user?.role === 'admin');
-const isCoordenador = computed(() => {
-    const r = page.props.auth?.user?.role;
-    return r === 'coordenador' || r === 'admin';
-});
-const isCoordenadorInterno = computed(() => {
-    const r = page.props.auth?.user?.role;
-    return r === 'coordenador_interno' || r === 'admin';
-});
+const userRoles = computed(() => page.props.auth?.user?.roles ?? []);
+const isAdmin = computed(() => userRoles.value.includes('admin'));
+const isCoordenador = computed(() => userRoles.value.includes('coordenador') || isAdmin.value);
+const isCoordenadorInterno = computed(() => userRoles.value.includes('coordenador_interno') || isAdmin.value);
 
 const overview = [
     { title: 'Painel', href: '/dashboard', icon: LayoutDashboard },
@@ -86,7 +81,7 @@ const relatoriosMenu = [
         icon: FileBarChart,
         children: [
             { title: 'Central de Relatórios', href: '/relatorios' },
-            { title: 'Relatórios da Escola', href: '/relatorios-escola' },
+            { title: 'Relatórios Gerais', href: '/relatorios-escola' },
         ],
     },
 ];

@@ -26,7 +26,7 @@ const props = withDefaults(defineProps<{
 
 const breadcrumbs = computed<BreadcrumbItem[]>(() =>
     props.grupo === 'escola'
-        ? [{ title: 'Relatórios da Escola', href: '/relatorios-escola' }]
+        ? [{ title: 'Relatórios Gerais', href: '/relatorios-escola' }]
         : [{ title: 'Relatórios', href: '/relatorios' }],
 );
 

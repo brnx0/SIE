@@ -170,7 +170,7 @@ const imprimir = () => {
                     <!-- Indicadores -->
                     <section v-if="indicadores.length" class="rounded-lg border bg-background p-4">
                         <h3 class="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                            Objetivos Complementares / Recomposição / Descritor
+                            Objetivos de Aprendizagem e Desenvolvimento (Indicadores)
                         </h3>
                         <ul class="list-disc pl-5 text-sm">
                             <li v-for="ind in indicadores" :key="ind.ind_id">{{ ind.ind_descricao }}</li>
@@ -198,6 +198,10 @@ const imprimir = () => {
                         <div class="rounded-lg border bg-background p-4 md:col-span-2">
                             <h3 class="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Avaliação</h3>
                             <p class="whitespace-pre-wrap text-sm">{{ plano.dpa_avaliacao || '—' }}</p>
+                        </div>
+                        <div class="rounded-lg border bg-background p-4 md:col-span-2">
+                            <h3 class="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Objetivos Complementares / Recomposição / Descritor</h3>
+                            <p class="whitespace-pre-wrap text-sm">{{ plano.dpa_objetivos_complementares || '—' }}</p>
                         </div>
                     </section>
 

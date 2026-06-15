@@ -84,7 +84,7 @@ const remove = (user: User) => {
                         <tr>
                             <th class="px-4 py-3">Nome</th>
                             <th class="px-4 py-3">E-mail</th>
-                            <th class="px-4 py-3">Perfil</th>
+                            <th class="px-4 py-3">Perfis</th>
                             <th class="px-4 py-3">Status</th>
                             <th class="px-4 py-3 text-right">Ações</th>
                         </tr>
@@ -104,9 +104,16 @@ const remove = (user: User) => {
                             </td>
                             <td class="px-4 py-3 text-muted-foreground">{{ user.email }}</td>
                             <td class="px-4 py-3">
-                                <span :class="['inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium', roleClass(user.role)]">
-                                    {{ roles[user.role ?? 'aluno'] ?? user.role }}
-                                </span>
+                                <div class="flex flex-wrap gap-1">
+                                    <span
+                                        v-for="r in (user.roles ?? [])"
+                                        :key="r"
+                                        :class="['inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium', roleClass(r)]"
+                                    >
+                                        {{ roles[r] ?? r }}
+                                    </span>
+                                    <span v-if="!user.roles?.length" class="text-xs text-muted-foreground">—</span>
+                                </div>
                             </td>
                             <td class="px-4 py-3">
                                 <span v-if="user.active" class="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-600 dark:text-emerald-400">

@@ -13,8 +13,8 @@ class StorePlanoAulaRequest extends FormRequest
     {
         $user = $this->user();
         if (!$user) return false;
-        if ($user->role === 'admin') return true;
-        return $user->role === 'professor' && !empty($user->fun_id);
+        if ($user->isAdmin()) return true;
+        return $user->hasRole('professor') && !empty($user->fun_id);
     }
 
     public function rules(): array
@@ -33,6 +33,7 @@ class StorePlanoAulaRequest extends FormRequest
             'dpa_recursos'            => ['required', 'string', 'max:5000'],
             'dpa_competencias'        => ['nullable', 'string', 'max:5000'],
             'dpa_avaliacao'           => ['nullable', 'string', 'max:5000'],
+            'dpa_objetivos_complementares' => ['nullable', 'string', 'max:5000'],
             'indicadores'             => ['nullable', 'array'],
             'indicadores.*'           => ['integer', 'exists:edu_serie_indicador,ind_id'],
         ];

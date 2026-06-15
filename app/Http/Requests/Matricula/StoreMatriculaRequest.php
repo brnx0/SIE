@@ -50,6 +50,7 @@ class StoreMatriculaRequest extends FormRequest
             // Matrícula
             'tma_tur_id'                   => ['required', 'integer', 'exists:edu_turma,tur_id'],
             'tma_aln_id'                   => ['nullable', 'integer', 'exists:edu_aluno,aln_id'],
+            'tma_ser_id'                   => ['nullable', 'integer', 'exists:edu_serie,ser_id'],
 
             'tma_dt_matricula'             => ['required', 'date'],
             'tma_obs'                      => ['nullable', 'string'],
@@ -184,6 +185,7 @@ class StoreMatriculaRequest extends FormRequest
     {
         return [
             'tma_tur_id'          => 'turma',
+            'tma_ser_id'          => 'série do aluno',
 
             'tma_dt_matricula'    => 'data de matrícula',
             'aluno.aln_nome'      => 'nome',

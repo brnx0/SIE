@@ -25,7 +25,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Gate::define('admin', fn ($user) => $user->role === 'admin');
+        Gate::define('admin', fn ($user) => $user->isAdmin());
 
         Route::model('funcionario', Funcionario::class);
         Route::model('admissao', FuncionarioAdmissao::class);

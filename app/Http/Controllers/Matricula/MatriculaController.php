@@ -171,7 +171,15 @@ class MatriculaController extends Controller
     {
         $request->checkDuplicataAluno();
 
-        $turma = Turma::with(['anoLetivo:anl_id,anl_ano', 'segmento:seg_id,seg_nome_reduzido'])->findOrFail($request->integer('tma_tur_id'));
+        $turma = Turma::with(['anoLetivo:anl_id,anl_ano', 'segmento:seg_id,seg_nome_reduzido', 'serie:ser_id,ser_fl_multi'])->findOrFail($request->integer('tma_tur_id'));
+
+        // Turma multi exige série do aluno
+        if ($turma->serie?->ser_fl_multi && ! $request->integer('tma_ser_id')) {
+            return response()->json([
+                'message' => 'Série do aluno é obrigatória para turmas multi.',
+                'errors'  => ['tma_ser_id' => ['Informe a série do aluno.']],
+            ], 422);
+        }
 
         // Verifica capacidade
         if ($turma->tur_capacidade !== null) {
@@ -220,6 +228,7 @@ class MatriculaController extends Controller
                 return Matricula::create([
                     'tma_aln_id'                   => $alunoId,
                     'tma_tur_id'                   => $turma->tur_id,
+                    'tma_ser_id'                   => $request->integer('tma_ser_id') ?: null,
                     'tma_anl_id'                   => $turma->tur_anl_id,
 
                     'tma_situacao'                 => Matricula::SITUACAO_ATIVA,

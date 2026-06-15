@@ -15,7 +15,8 @@ class StoreSerieRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->merge([
-            'ser_fl_ativo' => $this->boolean('ser_fl_ativo'),
+            'ser_fl_ativo'  => $this->boolean('ser_fl_ativo'),
+            'ser_fl_multi'  => $this->boolean('ser_fl_multi'),
             'ser_nome'     => mb_strtoupper($this->input('ser_nome', ''), 'UTF-8'),
         ]);
     }
@@ -34,6 +35,7 @@ class StoreSerieRequest extends FormRequest
             'ser_nr_ordenacao'        => ['nullable', 'integer'],
             'ser_ordem_no_segmento'   => ['required', 'integer'],
             'ser_fl_ativo'            => ['boolean'],
+            'ser_fl_multi'            => ['boolean'],
             'ser_tipo_avaliacao'      => ['nullable', 'array'],
             'ser_tipo_avaliacao.*'    => ['string', Rule::in(['diagnostico', 'conceitual', 'numerica', 'descritiva'])],
             'ser_tipo_avaliacao_descritiva' => [

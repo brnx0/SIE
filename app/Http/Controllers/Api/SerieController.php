@@ -18,10 +18,13 @@ class SerieController extends Controller
         $incluirIds  = $this->incluirIds($request);
 
         $query = Serie::where('seg_id', $segId);
+        if ($request->boolean('excluir_multi')) {
+            $query->where('ser_fl_multi', false);
+        }
         $this->filtroAtivoOuIncluso($query, 'ser_fl_ativo', 'ser_id', $incluirIds);
 
         return response()->json(
-            $query->orderBy('ser_ordem_no_segmento')->get(['ser_id', 'ser_nome'])
+            $query->orderBy('ser_ordem_no_segmento')->get(['ser_id', 'ser_nome', 'ser_idade'])
         );
     }
 
@@ -57,7 +60,10 @@ class SerieController extends Controller
         $ordemFim    = $esg->serieFim?->ser_ordem_no_segmento ?? PHP_INT_MAX;
 
         $query = Serie::where('seg_id', $segId)
-            ->whereBetween('ser_ordem_no_segmento', [$ordemInicio, $ordemFim]);
+            ->where(function ($q) use ($ordemInicio, $ordemFim) {
+                $q->whereBetween('ser_ordem_no_segmento', [$ordemInicio, $ordemFim])
+                  ->orWhereRaw("ser_nome ILIKE '%MULTI%'");
+            });
         $this->filtroAtivoOuIncluso($query, 'ser_fl_ativo', 'ser_id', $incluirIds);
 
         return response()->json(

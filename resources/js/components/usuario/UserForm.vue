@@ -6,13 +6,13 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Link, useForm } from '@inertiajs/vue3';
-import { LoaderCircle, Save } from 'lucide-vue-next';
+import { LoaderCircle, Save, X } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 interface UserFormData {
     name: string;
     email: string;
-    role: string;
+    roles: string[];
     phone: string;
     active: boolean;
     fun_id: number | null;
@@ -33,13 +33,27 @@ const props = defineProps<{
 const form = useForm<UserFormData>({
     name:                  props.initial?.name ?? '',
     email:                 props.initial?.email ?? '',
-    role:                  props.initial?.role ?? '',
+    roles:                 props.initial?.roles ?? [],
     phone:                 props.initial?.phone ?? '',
     active:                props.initial?.active ?? true,
     fun_id:                props.initial?.fun_id ?? null,
     password:              '',
     password_confirmation: '',
 });
+
+const availableRoles = computed(() =>
+    Object.entries(props.roles).filter(([key]) => !form.roles.includes(key))
+);
+
+const addRole = (key: string) => {
+    if (!form.roles.includes(key)) {
+        form.roles.push(key);
+    }
+};
+
+const removeRole = (key: string) => {
+    form.roles = form.roles.filter(r => r !== key);
+};
 
 const submitLabel = computed(() => (props.mode === 'create' ? 'Cadastrar usuário' : 'Salvar alterações'));
 
@@ -73,16 +87,30 @@ const submit = () => {
                 <InputError :message="form.errors.phone" />
             </div>
 
-            <div class="grid gap-2">
-                <Label for="role">Perfil</Label>
+            <div class="grid gap-2 sm:col-span-2">
+                <Label>Perfis de acesso</Label>
+                <div v-if="form.roles.length" class="flex flex-wrap gap-2 mb-1">
+                    <span
+                        v-for="key in form.roles"
+                        :key="key"
+                        class="inline-flex items-center gap-1 rounded-full bg-sky-100 px-3 py-1 text-xs font-medium text-sky-700 dark:bg-sky-900/40 dark:text-sky-300"
+                    >
+                        {{ roles[key] ?? key }}
+                        <button type="button" class="ml-0.5 rounded-full p-0.5 hover:bg-sky-200 dark:hover:bg-sky-800" @click="removeRole(key)">
+                            <X class="size-3" />
+                        </button>
+                    </span>
+                </div>
                 <select
-                    id="role"
-                    v-model="form.role"
+                    v-if="availableRoles.length"
                     class="h-9 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                    @change="(e) => { addRole((e.target as HTMLSelectElement).value); (e.target as HTMLSelectElement).selectedIndex = 0; }"
                 >
-                    <option v-for="(label, key) in roles" :key="key" :value="key">{{ label }}</option>
+                    <option value="" disabled selected>Adicionar perfil...</option>
+                    <option v-for="[key, label] in availableRoles" :key="key" :value="key">{{ label }}</option>
                 </select>
-                <InputError :message="form.errors.role" />
+                <p v-if="!form.roles.length" class="text-xs text-destructive">Selecione ao menos um perfil de acesso.</p>
+                <InputError :message="(form.errors as any).roles || (form.errors as any)['roles.0']" />
             </div>
 
             <!-- Colaborador vinculado -->

@@ -91,7 +91,7 @@
 
     @if($indicadores->count() > 0)
     <div class="section">
-        <h3>Objetivos / Descritores</h3>
+        <h3>Objetivos de Aprendizagem e Desenvolvimento (Indicadores)</h3>
         <ul class="indicadores">
             @foreach($indicadores as $ind)
                 <li>{{ $ind->ind_descricao }}</li>
@@ -128,6 +128,13 @@
     <div class="section">
         <h3>Avaliação</h3>
         <div class="bloco">{{ $plano->dpa_avaliacao }}</div>
+    </div>
+    @endif
+
+    @if($plano->dpa_objetivos_complementares)
+    <div class="section">
+        <h3>Objetivos Complementares / Recomposição / Descritor</h3>
+        <div class="bloco">{{ $plano->dpa_objetivos_complementares }}</div>
     </div>
     @endif
 

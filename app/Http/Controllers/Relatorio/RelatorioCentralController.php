@@ -22,7 +22,7 @@ class RelatorioCentralController extends Controller
     {
         return Inertia::render('relatorios/Index', [
             'relatorios' => $this->filtrar('escola'),
-            'titulo'     => 'Relatórios da Escola',
+            'titulo'     => 'Relatórios Gerais',
             'subtitulo'  => 'Relatórios específicos do contexto da escola.',
             'grupo'      => 'escola',
         ]);

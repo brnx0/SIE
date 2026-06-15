@@ -27,7 +27,7 @@ class MatriculaTurmaController extends Controller
         $turmas = Turma::query()
             ->with([
                 'escola:esc_id,esc_nome,esc_cd_escola',
-                'serie:ser_id,ser_nome,ser_idade',
+                'serie:ser_id,ser_nome,ser_idade,ser_fl_multi',
                 'segmento:seg_id,seg_nome_reduzido',
                 'anoLetivo:anl_id,anl_ano,anl_dt_corte',
             ])
@@ -59,7 +59,7 @@ class MatriculaTurmaController extends Controller
                 ? max(0, $t->tur_capacidade - $t->total_matriculados)
                 : null,
             'escola'              => $t->escola ? ['esc_id' => $t->escola->esc_id, 'esc_nome' => $t->escola->esc_nome, 'esc_cd_escola' => $t->escola->esc_cd_escola] : null,
-            'serie'               => $t->serie ? ['ser_id' => $t->serie->ser_id, 'ser_nome' => $t->serie->ser_nome, 'ser_idade' => $t->serie->ser_idade] : null,
+            'serie'               => $t->serie ? ['ser_id' => $t->serie->ser_id, 'ser_nome' => $t->serie->ser_nome, 'ser_idade' => $t->serie->ser_idade, 'ser_fl_multi' => (bool) $t->serie->ser_fl_multi] : null,
             'segmento'            => $t->segmento ? ['seg_id' => $t->segmento->seg_id, 'seg_nome_reduzido' => $t->segmento->seg_nome_reduzido] : null,
             'ano_letivo'          => $t->anoLetivo ? ['anl_id' => $t->anoLetivo->anl_id, 'anl_ano' => $t->anoLetivo->anl_ano, 'anl_dt_corte' => $t->anoLetivo->anl_dt_corte?->format('Y-m-d')] : null,
         ]));

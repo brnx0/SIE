@@ -32,7 +32,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                     id: user.id,
                     name: user.name,
                     email: user.email,
-                    role: user.role,
+                    roles: user.roles ?? [],
                     phone: user.phone ?? '',
                     active: user.active ?? true,
                     fun_id: (user as any).fun_id ?? null,

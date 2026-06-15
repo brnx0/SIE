@@ -53,6 +53,7 @@ export interface PlanoAula {
     dpa_recursos: string;
     dpa_competencias: string | null;
     dpa_avaliacao: string | null;
+    dpa_objetivos_complementares: string | null;
     dpa_obs_coordenador: string | null;
     dpa_status: PlanoStatus;
     turma?: PlanoTurmaResumo & { serie?: { ser_id: number; ser_nome: string } };

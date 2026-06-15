@@ -53,6 +53,7 @@ class DiarioPlanoAula extends Model
         'dpa_recursos',
         'dpa_competencias',
         'dpa_avaliacao',
+        'dpa_objetivos_complementares',
         'dpa_obs_coordenador',
         'dpa_status',
         'dpa_validado_por_user_id',

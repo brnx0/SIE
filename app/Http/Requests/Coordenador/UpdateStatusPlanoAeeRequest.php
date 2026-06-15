@@ -11,8 +11,8 @@ class UpdateStatusPlanoAeeRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        $role = $this->user()?->role;
-        return in_array($role, ['coordenador_interno', 'admin'], true);
+        $user = $this->user();
+        return $user && $user->hasAnyRole(['coordenador_interno', 'admin']);
     }
 
     public function rules(): array

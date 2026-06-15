@@ -28,7 +28,7 @@ export function pathOf(url: string): string {
     }
     const segs = pathname.split('/').filter(Boolean);
     if (!segs.length) return '/';
-    const first  = segs[0];
+    const first = segs[0];
     const second = segs[1];
 
     // Segundo segmento existe, não é numérico e não é "create"/"edit" → rota nomeada → aba própria
@@ -42,17 +42,17 @@ export function pathOf(url: string): string {
 const PATH_LABELS: Record<string, string> = {
     '/matriculas/segunda-via': '2ª Via Comprovante',
     '/matriculas-aee': 'Matrículas AEE',
-    '/diario/planos':          'Plano de Aula',
-    '/diario/planos-aee':      'Plano de Aula AEE',
-    '/diario/quadro-horario':  'Quadro de Horário',
+    '/diario/planos': 'Plano de Aula',
+    '/diario/planos-aee': 'Plano de Aula AEE',
+    '/diario/quadro-horario': 'Quadro de Horário',
     '/diario/instrumentos-avaliativos': 'Instrumentos Avaliativos',
-    '/coordenador/planos':     'Validação de Planos',
+    '/coordenador/planos': 'Validação de Planos',
     '/coordenador-interno/planos-aee': 'Validação de Planos AEE',
-    '/grade-disciplinar':      'Grade Disciplinar',
-    '/turmas-aee':             'Turmas AEE',
-    '/movimentacoes':          'Movimentações',
-    '/relatorios':             'Relatórios',
-    '/relatorios-escola':      'Relatórios da Escola',
+    '/grade-disciplinar': 'Grade Disciplinar',
+    '/turmas-aee': 'Turmas AEE',
+    '/movimentacoes': 'Movimentações',
+    '/relatorios': 'Relatórios',
+    '/relatorios-escola': 'Relatórios Gerais',
     '/relatorios/alunos-por-turma': 'Alunos por Turma',
     '/relatorios/declaracao-matricula': 'Declaração de Matrícula',
     '/relatorios/formacao-classes': 'Formação de Classes',

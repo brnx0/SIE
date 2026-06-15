@@ -14,6 +14,7 @@ import { TIPOS_SANGUINEOS } from '@/lib/tiposSanguineos';
 import Switch from '@/components/common/Switch.vue';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/composables/useToast';
+import { useSeriesBySegmento, type SerieSegmentoItem } from '@/composables/useSeriesBySegmento';
 import { computed, reactive, ref, watch } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { LoaderCircle, Save, X } from 'lucide-vue-next';
@@ -47,6 +48,25 @@ const duplicataMatches = ref<HomonimoMatch[]>([]);
 let   confirmDuplicata = false;
 
 const possuiDeficiencia = ref(false);
+
+// ── Turma Multi ──────────────────────────────────────────────────────────────
+const isMulti = computed(() => !!props.turma?.serie?.ser_fl_multi);
+const { loading: seriesLoading, items: seriesMulti, search: searchSeries, clear: clearSeries } = useSeriesBySegmento();
+const serieSelecionadaId = ref<number | null>(null);
+
+const serieSelecionada = computed<SerieSegmentoItem | undefined>(() =>
+    seriesMulti.value.find(s => s.ser_id === serieSelecionadaId.value)
+);
+
+watch(() => props.open, (v) => {
+    if (v && isMulti.value && props.turma?.segmento?.seg_id) {
+        searchSeries(props.turma.segmento.seg_id);
+    }
+    if (!v) {
+        serieSelecionadaId.value = null;
+        clearSeries();
+    }
+});
 
 const formMatricula = reactive({
     tma_dt_matricula:             new Date().toISOString().slice(0, 10),
@@ -224,6 +244,7 @@ const reset = () => {
     // Matricula defaults
     formMatricula.tma_dt_matricula = new Date().toISOString().slice(0, 10);
     formMatricula.tma_obs          = '';
+    serieSelecionadaId.value       = null;
 
     // Saúde — limpa antes de popular para não sobrescrever dados do aluno
     formSaude.als_tipo_sanguineo           = '';
@@ -314,11 +335,20 @@ const submit = async () => {
         return;
     }
 
-    // Valida idade — sempre que série tiver requisito de idade
+    // Turma multi exige série do aluno
+    if (isMulti.value && !serieSelecionadaId.value) {
+        activeTab.value = 'dados';
+        errors.value['tma_ser_id'] = 'Informe a série do aluno.';
+        return;
+    }
+
+    // Valida idade — usa série selecionada (multi) ou série da turma (regular)
     {
         const dtNasc   = formAluno.aln_dt_nascimento;
         const dtCorte  = props.turma.ano_letivo?.anl_dt_corte;
-        const serIdade = props.turma.serie?.ser_idade;
+        const serIdade = isMulti.value
+            ? serieSelecionada.value?.ser_idade
+            : props.turma.serie?.ser_idade;
 
         if (dtNasc && dtCorte && serIdade != null) {
             const nasc  = new Date(dtNasc  + 'T00:00:00');
@@ -356,6 +386,7 @@ const submit = async () => {
 
     const payload: Record<string, any> = {
         tma_tur_id:         props.turma.tur_id,
+        tma_ser_id:         isMulti.value ? serieSelecionadaId.value : null,
         tma_dt_matricula:   formMatricula.tma_dt_matricula,
         tma_obs:            formMatricula.tma_obs,
         possui_deficiencia: possuiDeficiencia.value,
@@ -450,7 +481,7 @@ const selectClass = 'flex h-10 w-full rounded-md border border-input bg-backgrou
                 <DialogTitle>
                     Matrícula
                     <span v-if="turma" class="ml-2 text-sm font-normal text-muted-foreground">
-                        {{ turma.escola?.esc_nome }} · {{ turma.serie?.ser_nome }} · Turma {{ turma.tur_nome }} · {{ labelSemestre(turma.tur_semestre) }}
+                        {{ turma.escola?.esc_nome }} · {{ isMulti && serieSelecionada ? serieSelecionada.ser_nome : turma.serie?.ser_nome }} · Turma {{ turma.tur_nome }} · {{ labelSemestre(turma.tur_semestre) }}
                     </span>
                 </DialogTitle>
             </DialogHeader>
@@ -462,6 +493,26 @@ const selectClass = 'flex h-10 w-full rounded-md border border-input bg-backgrou
                 <span v-if="aluno.aln_dt_nascimento" class="ml-2 text-muted-foreground">
                     Nasc. {{ new Date(aluno.aln_dt_nascimento + 'T00:00:00').toLocaleDateString('pt-BR') }}
                 </span>
+            </div>
+
+            <!-- Série do aluno (turma multi) -->
+            <div v-if="isMulti" class="shrink-0 border-b bg-amber-50 px-6 py-3 dark:bg-amber-900/20">
+                <div class="grid gap-1.5">
+                    <FormLabel for="tma_ser_id" :required="true" class="text-amber-800 dark:text-amber-200">
+                        Série do aluno (turma multi)
+                    </FormLabel>
+                    <select
+                        id="tma_ser_id"
+                        v-model="serieSelecionadaId"
+                        class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground"
+                    >
+                        <option :value="null" disabled>Selecione a série...</option>
+                        <option v-for="s in seriesMulti" :key="s.ser_id" :value="s.ser_id">
+                            {{ s.ser_nome }}
+                        </option>
+                    </select>
+                    <InputError :message="err('tma_ser_id')" />
+                </div>
             </div>
 
             <!-- Abas -->

@@ -3,6 +3,7 @@
 namespace App\Models\Matricula;
 
 use App\Models\Aluno\Aluno;
+use App\Models\Serie\Serie;
 use App\Models\Turma\Turma;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -31,6 +32,7 @@ class Matricula extends Model
     protected $fillable = [
         'tma_aln_id',
         'tma_tur_id',
+        'tma_ser_id',
         'tma_anl_id',
         'tma_modalidade',
         'tma_situacao',
@@ -46,6 +48,7 @@ class Matricula extends Model
     protected $casts = [
         'tma_aln_id'          => 'integer',
         'tma_tur_id'          => 'integer',
+        'tma_ser_id'          => 'integer',
         'tma_anl_id'          => 'integer',
         'tma_tas_cod_entrada'  => 'integer',
         'tma_tas_cod_saida'    => 'integer',
@@ -63,6 +66,16 @@ class Matricula extends Model
     public function turma(): BelongsTo
     {
         return $this->belongsTo(Turma::class, 'tma_tur_id', 'tur_id');
+    }
+
+    public function serie(): BelongsTo
+    {
+        return $this->belongsTo(Serie::class, 'tma_ser_id', 'ser_id');
+    }
+
+    public function getSerieEfetivaIdAttribute(): ?int
+    {
+        return $this->tma_ser_id ?? $this->turma?->tur_ser_id;
     }
 
     public function situacaoEntrada(): BelongsTo

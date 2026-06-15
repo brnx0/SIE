@@ -35,7 +35,7 @@
         <tr>
             <th>Nome</th>
             <th>E-mail</th>
-            <th>Perfil</th>
+            <th>Perfis</th>
             <th style="text-align:center">Status</th>
         </tr>
     </thead>
@@ -44,7 +44,7 @@
         <tr>
             <td><strong>{{ $u->name }}</strong></td>
             <td>{{ $u->email }}</td>
-            <td>{{ $roles[$u->role] ?? $u->role }}</td>
+            <td>{{ collect($u->roles)->map(fn ($r) => $roles[$r] ?? $r)->implode(', ') }}</td>
             <td style="text-align:center">
                 <span class="badge {{ $u->active ? 'badge-active' : 'badge-inactive' }}">
                     {{ $u->active ? 'Ativo' : 'Inativo' }}
