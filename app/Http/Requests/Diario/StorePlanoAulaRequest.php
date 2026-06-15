@@ -14,7 +14,7 @@ class StorePlanoAulaRequest extends FormRequest
         $user = $this->user();
         if (!$user) return false;
         if ($user->isAdmin()) return true;
-        return $user->hasRole('professor') && !empty($user->fun_id);
+        return $user->hasRole('professor');
     }
 
     public function rules(): array

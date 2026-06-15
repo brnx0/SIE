@@ -15,7 +15,7 @@ class StorePlanoAeeRequest extends FormRequest
         $user = $this->user();
         if (!$user) return false;
         if ($user->isAdmin()) return true;
-        return $user->hasRole('professor') && !empty($user->fun_id);
+        return $user->hasAnyRole(['professor', 'professor_aee']);
     }
 
     public function rules(): array
