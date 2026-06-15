@@ -2,7 +2,6 @@
 
 namespace App\Providers;
 
-use App\Models\Diario\DiarioPlanoAula;
 use App\Models\Funcionario\Funcionario;
 use App\Models\Funcionario\FuncionarioAdmissao;
 use App\Models\Funcionario\FuncionarioLotacao;
@@ -30,6 +29,10 @@ class AppServiceProvider extends ServiceProvider
         Route::model('funcionario', Funcionario::class);
         Route::model('admissao', FuncionarioAdmissao::class);
         Route::model('lotacao', FuncionarioLotacao::class);
-        Route::model('plano', DiarioPlanoAula::class);
+        // NÃO usar Route::model('plano', ...): o parâmetro {plano} é compartilhado
+        // pelas rotas de plano de aula regular (DiarioPlanoAula) E de plano AEE
+        // (DiarioPlanoAee). Um binding explícito forçaria TODO {plano} para um único
+        // model, causando 404 nas rotas AEE (buscava na tabela errada). O binding
+        // implícito resolve cada rota pelo type-hint do controller.
     }
 }
