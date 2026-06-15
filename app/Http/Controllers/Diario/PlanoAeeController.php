@@ -22,14 +22,14 @@ class PlanoAeeController extends Controller
     {
         $this->abortIfNotProfessor();
 
-        $funId = (int) $request->user()->fun_id;
+        $user = $request->user();
 
         $planos = DiarioPlanoAee::query()
-            ->where('dae_fun_id', $funId)
+            ->when(! $user->isAdmin(), fn ($q) => $q->where('dae_user_id', (int) $user->id))
             ->with([
                 'turma:tur_id,tur_nome',
                 'escola:esc_id,esc_nome',
-                'funcionario:fun_id,fun_nome',
+                'funcionario:edu_funcionario.fun_id,edu_funcionario.fun_nome',
             ])
             ->when($request->input('search'), fn ($q, $s) => $q->where('dae_tema', 'ilike', "%{$s}%"))
             ->when($request->input('status'), fn ($q, $st) => $q->where('dae_status', $st))
@@ -104,10 +104,10 @@ class PlanoAeeController extends Controller
             ? (int) $request->input('per_page')
             : 10;
 
-        $funId = (int) $request->user()->fun_id;
+        $user = $request->user();
 
         $planos = DiarioPlanoAee::query()
-            ->where('dae_fun_id', $funId)
+            ->when(! $user->isAdmin(), fn ($q) => $q->where('dae_user_id', (int) $user->id))
             ->with([
                 'turma:tur_id,tur_nome',
                 'escola:esc_id,esc_nome',
@@ -150,7 +150,7 @@ class PlanoAeeController extends Controller
     public function store(StorePlanoAeeRequest $request): RedirectResponse
     {
         $data = $request->validated();
-        $data['dae_fun_id'] = (int) $request->user()->fun_id;
+        $data['dae_user_id'] = (int) $request->user()->id;
         $data['dae_status'] = DiarioPlanoAee::STATUS_PENDENTE;
 
         $plano = DiarioPlanoAee::create($data);
@@ -211,7 +211,7 @@ class PlanoAeeController extends Controller
         $this->abortIfNotOwner($plano, $request);
 
         $plano->load([
-            'funcionario:fun_id,fun_nome',
+            'funcionario:edu_funcionario.fun_id,edu_funcionario.fun_nome',
             'escola:esc_id,esc_nome',
             'anoLetivo:anl_id,anl_ano',
             'turma:tur_id,tur_nome',
@@ -250,6 +250,17 @@ class PlanoAeeController extends Controller
 
         $funId = (int) $request->user()->fun_id;
 
+        if (! $funId) {
+            return response()->json(
+                DB::table('edu_escola')
+                    ->whereNull('esc_deleted_at')
+                    ->where('esc_fl_ativa', true)
+                    ->select('esc_id', 'esc_nome')
+                    ->orderBy('esc_nome')
+                    ->get()
+            );
+        }
+
         $escolas = DB::table('edu_funcionario_lotacao as l')
             ->join('edu_funcionario_admissao as a', 'a.adm_id', '=', 'l.lot_adm_id')
             ->join('edu_escola as e', 'e.esc_id', '=', 'l.lot_esc_id')
@@ -277,17 +288,19 @@ class PlanoAeeController extends Controller
             return response()->json([]);
         }
 
-        $temLotacao = DB::table('edu_funcionario_lotacao as l')
-            ->join('edu_funcionario_admissao as a', 'a.adm_id', '=', 'l.lot_adm_id')
-            ->where('a.adm_fun_id', $funId)
-            ->whereNull('a.adm_deleted_at')
-            ->where('l.lot_esc_id', $escId)
-            ->where('l.lot_fl_ativo', true)
-            ->whereJsonContains('l.lot_funcoes_sala_aula', 'Docente AEE')
-            ->exists();
+        if ($funId) {
+            $temLotacao = DB::table('edu_funcionario_lotacao as l')
+                ->join('edu_funcionario_admissao as a', 'a.adm_id', '=', 'l.lot_adm_id')
+                ->where('a.adm_fun_id', $funId)
+                ->whereNull('a.adm_deleted_at')
+                ->where('l.lot_esc_id', $escId)
+                ->where('l.lot_fl_ativo', true)
+                ->whereJsonContains('l.lot_funcoes_sala_aula', 'Docente AEE')
+                ->exists();
 
-        if (! $temLotacao) {
-            return response()->json([]);
+            if (! $temLotacao) {
+                return response()->json([]);
+            }
         }
 
         $turmas = DB::table('edu_turma as t')
@@ -320,21 +333,31 @@ class PlanoAeeController extends Controller
         if ($request->user()->isAdmin()) {
             return;
         }
-        abort_unless((int) $plano->dae_fun_id === (int) $request->user()->fun_id, 403);
+        abort_unless((int) $plano->dae_user_id === (int) $request->user()->id, 403);
     }
 
     private function resumoProfessor($user): array
     {
+        if (! $user->fun_id) {
+            return ['fun_id' => null, 'fun_nome' => $user->name];
+        }
         $fun = DB::table('edu_funcionario')->where('fun_id', $user->fun_id)->first(['fun_id', 'fun_nome']);
         return [
             'fun_id'   => $fun?->fun_id,
-            'fun_nome' => $fun?->fun_nome,
+            'fun_nome' => $fun?->fun_nome ?? $user->name,
         ];
     }
 
     private function anosLetivosDoProfessor(int $funId): array
     {
-        // Períodos de lotação ativa "Docente AEE" do professor
+        if (! $funId) {
+            return AnoLetivo::query()
+                ->whereNull('anl_deleted_at')
+                ->orderByDesc('anl_ano')
+                ->get(['anl_id', 'anl_ano', 'anl_fl_em_exercicio'])
+                ->toArray();
+        }
+
         $lotacoes = DB::table('edu_funcionario_lotacao as l')
             ->join('edu_funcionario_admissao as a', 'a.adm_id', '=', 'l.lot_adm_id')
             ->where('a.adm_fun_id', $funId)
@@ -348,7 +371,6 @@ class PlanoAeeController extends Controller
             return [];
         }
 
-        // Ano letivo conta se período da lotação intersecta com período do ano
         $query = AnoLetivo::query()->whereNull('anl_deleted_at');
         $query->where(function ($outer) use ($lotacoes) {
             foreach ($lotacoes as $lot) {

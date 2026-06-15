@@ -31,6 +31,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                 :initial="{
                     id: user.id,
                     name: user.name,
+                    login: (user as any).login ?? '',
                     email: user.email,
                     roles: user.roles ?? [],
                     phone: user.phone ?? '',

@@ -43,8 +43,8 @@ const carregar = async () => {
 onMounted(carregar);
 
 const page = usePage();
-const meuFunId = computed<number | null>(() => (page.props as any).auth?.user?.fun_id ?? null);
-const ehMeuPlano = computed(() => meuFunId.value !== null && plano.value && Number(plano.value.dae_fun_id) === Number(meuFunId.value));
+const meuUserId = computed<number | null>(() => (page.props as any).auth?.user?.id ?? null);
+const ehMeuPlano = computed(() => meuUserId.value !== null && plano.value && Number(plano.value.dae_user_id) === Number(meuUserId.value));
 
 const podeRevisar = computed(() => statusOriginal.value === 'pendente' && !ehMeuPlano.value);
 const statusMudou = computed(() => statusNovo.value !== statusOriginal.value);

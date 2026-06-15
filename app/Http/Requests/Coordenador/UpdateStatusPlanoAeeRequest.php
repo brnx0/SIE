@@ -36,9 +36,7 @@ class UpdateStatusPlanoAeeRequest extends FormRequest
                 return;
             }
 
-            $funId = (int) ($this->user()->fun_id ?? 0);
-
-            if ($funId && (int) $plano->dae_fun_id === $funId) {
+            if ((int) $plano->dae_user_id === (int) $this->user()->id) {
                 $v->errors()->add('dae_status', 'Você não pode validar um plano que você mesmo criou.');
                 return;
             }

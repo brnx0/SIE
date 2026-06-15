@@ -25,17 +25,17 @@ class PlanoAulaController extends Controller
     {
         $this->abortIfNotProfessor();
 
-        $funId = (int) $request->user()->fun_id;
+        $user = $request->user();
 
         $planos = DiarioPlanoAula::query()
-            ->where('dpa_fun_id', $funId)
+            ->when(! $user->isAdmin(), fn ($q) => $q->where('dpa_user_id', (int) $user->id))
             ->with([
                 'turma:tur_id,tur_nome,tur_ser_id',
                 'turma.serie:ser_id,ser_nome',
                 'disciplina:dis_id,dis_nome',
                 'unidade:uni_id,uni_numero,uni_tipo',
                 'escola:esc_id,esc_nome',
-                'funcionario:fun_id,fun_nome',
+                'funcionario:edu_funcionario.fun_id,edu_funcionario.fun_nome',
             ])
             ->when($request->input('search'), fn ($q, $s) => $q->where('dpa_tema', 'ilike', "%{$s}%"))
             ->when($request->input('status'), fn ($q, $st) => $q->where('dpa_status', $st))
@@ -115,10 +115,10 @@ class PlanoAulaController extends Controller
             ? (int) $request->input('per_page')
             : 10;
 
-        $funId = (int) $request->user()->fun_id;
+        $user = $request->user();
 
         $planos = DiarioPlanoAula::query()
-            ->where('dpa_fun_id', $funId)
+            ->when(! $user->isAdmin(), fn ($q) => $q->where('dpa_user_id', (int) $user->id))
             ->with([
                 'turma:tur_id,tur_nome,tur_ser_id',
                 'turma.serie:ser_id,ser_nome',
@@ -168,7 +168,7 @@ class PlanoAulaController extends Controller
     public function store(StorePlanoAulaRequest $request): RedirectResponse
     {
         $data = $request->validated();
-        $data['dpa_fun_id'] = (int) $request->user()->fun_id;
+        $data['dpa_user_id'] = (int) $request->user()->id;
         $data['dpa_status'] = DiarioPlanoAula::STATUS_PENDENTE;
 
         $indicadores = collect($request->input('indicadores', []))->map(fn ($i) => (int) $i)->unique()->all();
@@ -258,7 +258,7 @@ class PlanoAulaController extends Controller
         $this->abortIfNotOwner($plano, $request);
 
         $plano->load([
-            'funcionario:fun_id,fun_nome',
+            'funcionario:edu_funcionario.fun_id,edu_funcionario.fun_nome',
             'escola:esc_id,esc_nome',
             'anoLetivo:anl_id,anl_ano',
             'turma:tur_id,tur_nome,tur_ser_id',
@@ -308,6 +308,20 @@ class PlanoAulaController extends Controller
         $funId = (int) $request->user()->fun_id;
         $anlId = (int) $request->input('anl_id');
 
+        if (! $funId) {
+            $escolas = DB::table('edu_turma as t')
+                ->join('edu_escola as e', 'e.esc_id', '=', 't.tur_esc_id')
+                ->whereNull('t.tur_deleted_at')
+                ->where('t.tur_modalidade', 'REGULAR')
+                ->when($anlId, fn ($q) => $q->where('t.tur_anl_id', $anlId))
+                ->select('e.esc_id', 'e.esc_nome')
+                ->distinct()
+                ->orderBy('e.esc_nome')
+                ->get();
+
+            return response()->json($escolas);
+        }
+
         $escolas = DB::table('edu_turma_professor as tp')
             ->join('edu_turma as t', 't.tur_id', '=', 'tp.tup_tur_id')
             ->join('edu_escola as e', 'e.esc_id', '=', 't.tur_esc_id')
@@ -332,12 +346,16 @@ class PlanoAulaController extends Controller
         $anlId = (int) $request->input('anl_id');
         $escId = (int) $request->input('esc_id');
 
-        $turmas = DB::table('edu_turma_professor as tp')
-            ->join('edu_turma as t', 't.tur_id', '=', 'tp.tup_tur_id')
+        $base = $funId
+            ? DB::table('edu_turma_professor as tp')
+                ->join('edu_turma as t', 't.tur_id', '=', 'tp.tup_tur_id')
+                ->where('tp.tup_fun_id', $funId)
+                ->whereNull('tp.tup_deleted_at')
+            : DB::table('edu_turma as t');
+
+        $turmas = $base
             ->join('edu_escola as e', 'e.esc_id', '=', 't.tur_esc_id')
             ->leftJoin('edu_serie as s', 's.ser_id', '=', 't.tur_ser_id')
-            ->where('tp.tup_fun_id', $funId)
-            ->whereNull('tp.tup_deleted_at')
             ->whereNull('t.tur_deleted_at')
             ->where('t.tur_modalidade', 'REGULAR')
             ->when($anlId, fn ($q) => $q->where('t.tur_anl_id', $anlId))
@@ -357,6 +375,19 @@ class PlanoAulaController extends Controller
 
         $funId = (int) $request->user()->fun_id;
         $turId = (int) $request->input('tur_id');
+
+        if (! $funId) {
+            $serId = DB::table('edu_turma')->where('tur_id', $turId)->value('tur_ser_id');
+            $disciplinas = DB::table('edu_grade_disciplinar as gd')
+                ->join('edu_disciplina as d', 'd.dis_id', '=', 'gd.grd_dis_id')
+                ->where('gd.grd_ser_id', $serId)
+                ->select('d.dis_id', 'd.dis_nome')
+                ->distinct()
+                ->orderBy('d.dis_nome')
+                ->get();
+
+            return response()->json($disciplinas);
+        }
 
         $disciplinas = DB::table('edu_turma_professor as tp')
             ->join('edu_disciplina as d', 'd.dis_id', '=', 'tp.tup_dis_id')
@@ -433,21 +464,31 @@ class PlanoAulaController extends Controller
         if ($request->user()->isAdmin()) {
             return;
         }
-        abort_unless((int) $plano->dpa_fun_id === (int) $request->user()->fun_id, 403);
+        abort_unless((int) $plano->dpa_user_id === (int) $request->user()->id, 403);
     }
 
     private function resumoProfessor($user): array
     {
+        if (! $user->fun_id) {
+            return ['fun_id' => null, 'fun_nome' => $user->name];
+        }
         $fun = DB::table('edu_funcionario')->where('fun_id', $user->fun_id)->first(['fun_id', 'fun_nome']);
         return [
             'fun_id'   => $fun?->fun_id,
-            'fun_nome' => $fun?->fun_nome,
+            'fun_nome' => $fun?->fun_nome ?? $user->name,
         ];
     }
 
     private function anosLetivosDoProfessor(int $funId): array
     {
-        // Anos letivos das turmas onde o prof é regente (REGULAR)
+        if (! $funId) {
+            return AnoLetivo::query()
+                ->whereNull('anl_deleted_at')
+                ->orderByDesc('anl_ano')
+                ->get(['anl_id', 'anl_ano', 'anl_fl_em_exercicio'])
+                ->toArray();
+        }
+
         $anosVinculados = DB::table('edu_turma_professor as tp')
             ->join('edu_turma as t', 't.tur_id', '=', 'tp.tup_tur_id')
             ->where('tp.tup_fun_id', $funId)

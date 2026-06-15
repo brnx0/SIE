@@ -65,7 +65,7 @@ const remove = (user: User) => {
             <div class="flex flex-wrap items-center gap-3">
                 <div class="relative flex-1">
                     <Search class="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input v-model="search" placeholder="Buscar por nome ou e-mail..." class="pl-9" />
+                    <Input v-model="search" placeholder="Buscar por nome, login ou e-mail..." class="pl-9" />
                 </div>
                 <select v-model="role" class="h-9 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring">
                     <option value="">Todos os perfis</option>
@@ -83,6 +83,7 @@ const remove = (user: User) => {
                     <thead class="bg-muted/50 text-left text-xs uppercase tracking-wide text-muted-foreground">
                         <tr>
                             <th class="px-4 py-3">Nome</th>
+                            <th class="px-4 py-3">Login</th>
                             <th class="px-4 py-3">E-mail</th>
                             <th class="px-4 py-3">Perfis</th>
                             <th class="px-4 py-3">Status</th>
@@ -91,7 +92,7 @@ const remove = (user: User) => {
                     </thead>
                     <tbody class="divide-y">
                         <tr v-if="users.data.length === 0">
-                            <td colspan="5" class="px-4 py-12 text-center text-muted-foreground">Nenhum usuário encontrado.</td>
+                            <td colspan="6" class="px-4 py-12 text-center text-muted-foreground">Nenhum usuário encontrado.</td>
                         </tr>
                         <tr v-for="user in users.data" :key="user.id" class="transition-colors hover:bg-muted/30">
                             <td class="px-4 py-3">
@@ -102,7 +103,8 @@ const remove = (user: User) => {
                                     <span class="font-medium">{{ user.name }}</span>
                                 </div>
                             </td>
-                            <td class="px-4 py-3 text-muted-foreground">{{ user.email }}</td>
+                            <td class="px-4 py-3 font-mono text-sm text-muted-foreground">{{ (user as any).login }}</td>
+                            <td class="px-4 py-3 text-muted-foreground">{{ user.email || '—' }}</td>
                             <td class="px-4 py-3">
                                 <div class="flex flex-wrap gap-1">
                                     <span

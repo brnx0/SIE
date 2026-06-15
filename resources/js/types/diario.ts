@@ -39,7 +39,7 @@ export interface PlanoIndicadorPivot {
 
 export interface PlanoAula {
     dpa_id: number;
-    dpa_fun_id: number;
+    dpa_user_id: number;
     dpa_esc_id: number;
     dpa_anl_id: number;
     dpa_tur_id: number;
@@ -84,7 +84,7 @@ export interface PlanoAeeTurmaResumo {
 
 export interface PlanoAee {
     dae_id: number;
-    dae_fun_id: number;
+    dae_user_id: number;
     dae_esc_id: number;
     dae_anl_id: number;
     dae_tur_id: number;

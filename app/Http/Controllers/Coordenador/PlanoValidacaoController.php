@@ -34,14 +34,14 @@ class PlanoValidacaoController extends Controller
 
         $planos = collect();
 
-        if ($anlId && $escId && $this->coordenadorLotadoNaEscola($funId, $escId)) {
+        if ($anlId && $escId && ($request->user()->isAdmin() || ($funId && $this->coordenadorLotadoNaEscola($funId, $escId)))) {
             $planos = DiarioPlanoAula::query()
                 ->with([
                     'turma:tur_id,tur_nome,tur_ser_id',
                     'turma.serie:ser_id,ser_nome',
                     'disciplina:dis_id,dis_nome',
                     'unidade:uni_id,uni_numero,uni_tipo',
-                    'funcionario:fun_id,fun_nome',
+                    'funcionario:edu_funcionario.fun_id,edu_funcionario.fun_nome',
                     'escola:esc_id,esc_nome',
                 ])
                 ->whereHas('turma', function ($q) use ($anlId, $escId, $segId, $serId, $turId) {
@@ -159,8 +159,7 @@ class PlanoValidacaoController extends Controller
         $paginator = null;
 
         if ($anlId && $escId) {
-            // Garantir que coordenador tem lotação na escola
-            $temLotacao = $this->coordenadorLotadoNaEscola($funId, $escId);
+            $temLotacao = $request->user()->isAdmin() || ($funId && $this->coordenadorLotadoNaEscola($funId, $escId));
 
             if ($temLotacao) {
                 $query = DiarioPlanoAula::query()
@@ -170,7 +169,7 @@ class PlanoValidacaoController extends Controller
                         'turma.serie.segmento:seg_id,seg_nome_reduzido,seg_nome_completo',
                         'disciplina:dis_id,dis_nome',
                         'unidade:uni_id,uni_numero,uni_tipo',
-                        'funcionario:fun_id,fun_nome',
+                        'funcionario:edu_funcionario.fun_id,edu_funcionario.fun_nome',
                         'escola:esc_id,esc_nome',
                     ])
                     ->whereHas('turma', function ($q) use ($anlId, $escId, $segId, $serId, $turId) {
@@ -236,7 +235,7 @@ class PlanoValidacaoController extends Controller
         $this->abortIfNotLotadoNaEscolaDoPlano($plano, $request);
 
         $plano->load([
-            'funcionario:fun_id,fun_nome',
+            'funcionario:edu_funcionario.fun_id,edu_funcionario.fun_nome',
             'escola:esc_id,esc_nome',
             'anoLetivo:anl_id,anl_ano',
             'turma:tur_id,tur_nome,tur_ser_id',
@@ -288,7 +287,7 @@ class PlanoValidacaoController extends Controller
             'turma.serie.segmento:seg_id,seg_nome_reduzido',
             'disciplina:dis_id,dis_nome',
             'unidade:uni_id,uni_numero,uni_tipo',
-            'funcionario:fun_id,fun_nome',
+            'funcionario:edu_funcionario.fun_id,edu_funcionario.fun_nome',
             'escola:esc_id,esc_nome',
             'indicadores',
             'validadoPor:id,name',
@@ -324,12 +323,25 @@ class PlanoValidacaoController extends Controller
     {
         $this->abortIfNotCoordenador();
 
-        $funId = (int) $request->user()->fun_id;
         $anlId = (int) $request->input('anl_id');
 
         $ano = AnoLetivo::find($anlId);
         if (! $ano) {
             return response()->json([]);
+        }
+
+        $user = $request->user();
+        $funId = (int) $user->fun_id;
+
+        if ($user->isAdmin() || ! $funId) {
+            return response()->json(
+                DB::table('edu_escola')
+                    ->whereNull('esc_deleted_at')
+                    ->where('esc_fl_ativa', true)
+                    ->select('esc_id', 'esc_nome')
+                    ->orderBy('esc_nome')
+                    ->get()
+            );
         }
 
         $q = DB::table('edu_funcionario_lotacao as l')
@@ -466,7 +478,13 @@ class PlanoValidacaoController extends Controller
 
     private function abortIfNotLotadoNaEscolaDoPlano(DiarioPlanoAula $plano, Request $request): void
     {
+        if ($request->user()->isAdmin()) {
+            return;
+        }
         $funId = (int) $request->user()->fun_id;
+        if (! $funId) {
+            abort(403, 'Seu usuário não possui vínculo de funcionário.');
+        }
         $escId = (int) DB::table('edu_turma')->where('tur_id', $plano->dpa_tur_id)->value('tur_esc_id');
         abort_unless($this->coordenadorLotadoNaEscola($funId, $escId), 403);
     }

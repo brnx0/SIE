@@ -11,6 +11,7 @@ import { computed } from 'vue';
 
 interface UserFormData {
     name: string;
+    login: string;
     email: string;
     roles: string[];
     phone: string;
@@ -32,6 +33,7 @@ const props = defineProps<{
 
 const form = useForm<UserFormData>({
     name:                  props.initial?.name ?? '',
+    login:                 props.initial?.login ?? '',
     email:                 props.initial?.email ?? '',
     roles:                 props.initial?.roles ?? [],
     phone:                 props.initial?.phone ?? '',
@@ -76,8 +78,14 @@ const submit = () => {
             </div>
 
             <div class="grid gap-2">
-                <Label for="email">E-mail</Label>
-                <Input id="email" type="email" v-model="form.email" required placeholder="email@instituicao.edu.br" />
+                <Label for="login">Login</Label>
+                <Input id="login" v-model="form.login" required placeholder="Ex.: maria.silva" />
+                <InputError :message="form.errors.login" />
+            </div>
+
+            <div class="grid gap-2">
+                <Label for="email">E-mail <span class="text-muted-foreground font-normal">(opcional)</span></Label>
+                <Input id="email" type="email" v-model="form.email" placeholder="email@instituicao.edu.br" />
                 <InputError :message="form.errors.email" />
             </div>
 
@@ -139,7 +147,7 @@ const submit = () => {
             <div class="sm:col-span-2">
                 <h3 class="text-sm font-semibold">Senha de acesso</h3>
                 <p class="text-xs text-muted-foreground">
-                    {{ mode === 'edit' ? 'Deixe em branco para manter a senha atual.' : 'Mínimo de 8 caracteres.' }}
+                    {{ mode === 'edit' ? 'Deixe em branco para manter a senha atual. ' : '' }}A senha deve ter no mínimo 8 caracteres.
                 </p>
             </div>
             <div class="grid gap-2">

@@ -14,7 +14,7 @@ class UpdateStatusPlanoRequest extends FormRequest
         $user = $this->user();
         if (!$user) return false;
         if ($user->isAdmin()) return true;
-        return $user->hasRole('coordenador') && !empty($user->fun_id);
+        return $user->hasRole('coordenador');
     }
 
     public function rules(): array
@@ -38,12 +38,24 @@ class UpdateStatusPlanoRequest extends FormRequest
                 return;
             }
 
-            $funId = (int) $this->user()->fun_id;
+            $user = $this->user();
 
-            if ((int) $plano->dpa_fun_id === $funId) {
+            if ($user->isAdmin()) {
+                return;
+            }
+
+            if ((int) $plano->dpa_user_id === (int) $user->id) {
                 $v->errors()->add('dpa_status', 'Você não pode validar um plano que você mesmo criou.');
                 return;
             }
+
+            $funId = (int) $user->fun_id;
+
+            if (! $funId) {
+                $v->errors()->add('dpa_status', 'Seu usuário não possui vínculo de funcionário para verificar lotação.');
+                return;
+            }
+
             $escId = (int) DB::table('edu_turma')->where('tur_id', $plano->dpa_tur_id)->value('tur_esc_id');
 
             $temLotacao = DB::table('edu_funcionario_lotacao as l')

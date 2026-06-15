@@ -46,7 +46,7 @@ class PlanoAeeValidacaoController extends Controller
                 $query = DiarioPlanoAee::query()
                     ->with([
                         'turma:tur_id,tur_nome,tur_esc_id,tur_anl_id',
-                        'funcionario:fun_id,fun_nome',
+                        'funcionario:edu_funcionario.fun_id,edu_funcionario.fun_nome',
                         'escola:esc_id,esc_nome',
                     ])
                     ->whereHas('turma', function ($q) use ($anlId, $escId, $turId) {
@@ -102,7 +102,7 @@ class PlanoAeeValidacaoController extends Controller
 
         $plano->load([
             'turma:tur_id,tur_nome',
-            'funcionario:fun_id,fun_nome',
+            'funcionario:edu_funcionario.fun_id,edu_funcionario.fun_nome',
             'escola:esc_id,esc_nome',
             'anoLetivo:anl_id,anl_ano',
             'validadoPor:id,name',
@@ -116,7 +116,7 @@ class PlanoAeeValidacaoController extends Controller
         $this->abortIfNotCoordenadorInterno();
 
         $plano->load([
-            'funcionario:fun_id,fun_nome',
+            'funcionario:edu_funcionario.fun_id,edu_funcionario.fun_nome',
             'escola:esc_id,esc_nome',
             'anoLetivo:anl_id,anl_ano',
             'turma:tur_id,tur_nome',
@@ -218,7 +218,13 @@ class PlanoAeeValidacaoController extends Controller
 
     private function abortIfNotLotadoNaEscolaDoPlano(DiarioPlanoAee $plano, Request $request): void
     {
+        if ($request->user()->isAdmin()) {
+            return;
+        }
         $funId = (int) $request->user()->fun_id;
+        if (! $funId) {
+            abort(403, 'Seu usuário não possui vínculo de funcionário.');
+        }
         $escId = (int) DB::table('edu_turma')->where('tur_id', $plano->dae_tur_id)->value('tur_esc_id');
         abort_unless($this->lotadoNaEscola($funId, $escId), 403);
     }

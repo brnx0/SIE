@@ -42,7 +42,8 @@ class StorePlanoAulaRequest extends FormRequest
     public function withValidator(Validator $validator): void
     {
         $validator->after(function (Validator $v) {
-            $funId = (int) $this->user()->fun_id;
+            $user = $this->user();
+            $funId = (int) $user->fun_id;
             $turId = (int) $this->input('dpa_tur_id');
             $disId = (int) $this->input('dpa_dis_id');
             $dtIni = $this->input('dpa_dt_inicio');
@@ -54,19 +55,29 @@ class StorePlanoAulaRequest extends FormRequest
                 return;
             }
 
-            $regente = \DB::table('edu_turma_professor')
-                ->where('tup_tur_id', $turId)
-                ->where('tup_fun_id', $funId)
-                ->where('tup_dis_id', $disId)
-                ->whereNull('tup_deleted_at')
-                ->exists();
+            if (! $user->isAdmin()) {
+                if (! $funId) {
+                    $v->errors()->add('dpa_tur_id', 'Seu usuário não possui vínculo de funcionário.');
+                    return;
+                }
 
-            if (! $regente) {
-                $v->errors()->add('dpa_tur_id', 'Você não é regente desta disciplina nesta turma.');
+                $regente = \DB::table('edu_turma_professor')
+                    ->where('tup_tur_id', $turId)
+                    ->where('tup_fun_id', $funId)
+                    ->where('tup_dis_id', $disId)
+                    ->whereNull('tup_deleted_at')
+                    ->exists();
+
+                if (! $regente) {
+                    $v->errors()->add('dpa_tur_id', 'Você não é regente desta disciplina nesta turma.');
+                }
             }
 
-            $planoId = $this->route('plano')?->dpa_id;
-            $duplicado = DiarioPlanoAula::where('dpa_fun_id', $funId)
+            $planoModel = $this->route('plano');
+            $planoId = $planoModel?->dpa_id;
+            // No cadastro: autor é o usuário logado. Na edição: mantém o autor original do plano.
+            $checkUserId = $planoModel ? (int) $planoModel->dpa_user_id : (int) $user->id;
+            $duplicado = DiarioPlanoAula::where('dpa_user_id', $checkUserId)
                 ->where('dpa_tur_id', $turId)
                 ->where('dpa_dis_id', $disId)
                 ->where('dpa_dt_inicio', $dtIni)

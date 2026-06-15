@@ -61,7 +61,8 @@ class UsersController extends Controller
     {
         $data = $request->validate([
             'name'     => ['required', 'string', 'max:255'],
-            'email'    => ['required', 'email', 'max:255', 'unique:users,email'],
+            'login'    => ['required', 'string', 'max:255', 'unique:users,login'],
+            'email'    => ['nullable', 'email', 'max:255'],
             'roles'    => ['required', 'array', 'min:1'],
             'roles.*'  => ['string', 'in:' . implode(',', array_keys(User::ROLES))],
             'phone'    => ['nullable', 'string', 'max:30'],
@@ -99,7 +100,8 @@ class UsersController extends Controller
     {
         $data = $request->validate([
             'name'     => ['required', 'string', 'max:255'],
-            'email'    => ['required', 'email', 'max:255', \Illuminate\Validation\Rule::unique('users')->ignore($user->id)],
+            'login'    => ['required', 'string', 'max:255', \Illuminate\Validation\Rule::unique('users')->ignore($user->id)],
+            'email'    => ['nullable', 'email', 'max:255'],
             'roles'    => ['required', 'array', 'min:1'],
             'roles.*'  => ['string', 'in:' . implode(',', array_keys(User::ROLES))],
             'phone'    => ['nullable', 'string', 'max:30'],
@@ -143,6 +145,7 @@ class UsersController extends Controller
             ->when($search, function ($q) use ($search) {
                 $q->where(function ($q) use ($search) {
                     $q->where('name', 'ilike', "%{$search}%")
+                      ->orWhere('login', 'ilike', "%{$search}%")
                       ->orWhere('email', 'ilike', "%{$search}%");
                 });
             })
@@ -158,11 +161,12 @@ class UsersController extends Controller
         return response()->streamDownload(function () use ($users, $roles) {
             $out = fopen('php://output', 'w');
             fprintf($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
-            fputcsv($out, ['Nome', 'E-mail', 'Perfis', 'Status'], ';');
+            fputcsv($out, ['Nome', 'Login', 'E-mail', 'Perfis', 'Status'], ';');
             foreach ($users as $u) {
                 $labels = collect($u->roles)->map(fn ($r) => $roles[$r] ?? $r)->implode(', ');
                 fputcsv($out, [
                     $u->name,
+                    $u->login,
                     $u->email,
                     $labels,
                     $u->active ? 'Ativo' : 'Inativo',

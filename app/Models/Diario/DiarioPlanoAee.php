@@ -6,8 +6,10 @@ use App\Models\Escola\Escola;
 use App\Models\Funcionario\Funcionario;
 use App\Models\Parametro\AnoLetivo;
 use App\Models\Turma\Turma;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class DiarioPlanoAee extends Model
@@ -36,7 +38,7 @@ class DiarioPlanoAee extends Model
     ];
 
     protected $fillable = [
-        'dae_fun_id',
+        'dae_user_id',
         'dae_esc_id',
         'dae_anl_id',
         'dae_tur_id',
@@ -67,9 +69,25 @@ class DiarioPlanoAee extends Model
         return $this->belongsTo(\App\Models\User::class, 'dae_validado_por_user_id', 'id');
     }
 
-    public function funcionario(): BelongsTo
+    public function usuario(): BelongsTo
     {
-        return $this->belongsTo(Funcionario::class, 'dae_fun_id', 'fun_id');
+        return $this->belongsTo(User::class, 'dae_user_id', 'id');
+    }
+
+    /**
+     * Professor (funcionário) do autor, derivado via users.fun_id.
+     * Mantém o display de nome do professor após a troca fun_id -> user_id.
+     */
+    public function funcionario(): HasOneThrough
+    {
+        return $this->hasOneThrough(
+            Funcionario::class,
+            User::class,
+            'id',          // users.id  <- dae_user_id
+            'fun_id',      // edu_funcionario.fun_id <- users.fun_id
+            'dae_user_id', // local em edu_diario_plano_aee
+            'fun_id',      // local em users
+        );
     }
 
     public function escola(): BelongsTo

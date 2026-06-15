@@ -34,6 +34,7 @@
     <thead>
         <tr>
             <th>Nome</th>
+            <th>Login</th>
             <th>E-mail</th>
             <th>Perfis</th>
             <th style="text-align:center">Status</th>
@@ -43,6 +44,7 @@
         @forelse($users as $u)
         <tr>
             <td><strong>{{ $u->name }}</strong></td>
+            <td>{{ $u->login }}</td>
             <td>{{ $u->email }}</td>
             <td>{{ collect($u->roles)->map(fn ($r) => $roles[$r] ?? $r)->implode(', ') }}</td>
             <td style="text-align:center">
@@ -52,7 +54,7 @@
             </td>
         </tr>
         @empty
-        <tr><td colspan="4" style="text-align:center;padding:20px;color:#94a3b8">Nenhum registro encontrado.</td></tr>
+        <tr><td colspan="5" style="text-align:center;padding:20px;color:#94a3b8">Nenhum registro encontrado.</td></tr>
         @endforelse
     </tbody>
 </table>
