@@ -21,7 +21,7 @@ class UpdateStatusPlanoRequest extends FormRequest
     {
         return [
             'dpa_status'          => ['required', 'in:aprovado,reprovado,correcao'],
-            'dpa_obs_coordenador' => ['required', 'string', 'max:5000'],
+            'dpa_obs_coordenador' => ['nullable', 'string', 'max:5000'],
         ];
     }
 

@@ -333,7 +333,10 @@ class PlanoValidacaoController extends Controller
         $user = $request->user();
         $funId = (int) $user->fun_id;
 
-        if ($user->isAdmin() || ! $funId) {
+        // Regra de perfil: o COORDENADOR vê somente as escolas onde está lotado.
+        // Qualquer outro perfil (admin etc.) vê todas. Keyed na role — não no
+        // fun_id — senão um coordenador sem vínculo cairia em "todas".
+        if ($user->isAdmin() || ! $user->hasRole('coordenador')) {
             return response()->json(
                 DB::table('edu_escola')
                     ->whereNull('esc_deleted_at')
