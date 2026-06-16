@@ -233,7 +233,7 @@ const avaliados = computed(() => alunos.value.filter((a) => a.descricao.trim().l
                 <TriangleAlert class="mt-0.5 size-4 shrink-0" />
                 <span>
                     A série desta turma não tem o <strong>tipo de avaliação descritiva</strong> configurado. Defina
-                    "Por Disciplina" ou "Por Unidade" no Cadastro de Série para liberar o lançamento.
+                    "Por Disciplina" ou "Por Aluno" no Cadastro de Série para liberar o lançamento.
                 </span>
             </div>
             <div v-else-if="!alunos.length" class="py-12 text-center text-sm text-muted-foreground">
