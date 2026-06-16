@@ -63,6 +63,7 @@ use App\Http\Controllers\Parametro\MediaEscolaController;
 use App\Http\Controllers\Parametro\SituacaoBloqueioController;
 use App\Http\Controllers\Parametro\UnidadeController;
 use App\Http\Controllers\UsersController;
+use App\Http\Controllers\Secretaria\AcessoProfessorController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -359,6 +360,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('planos-aee-lookup/anos',     [\App\Http\Controllers\Coordenador\PlanoAeeValidacaoController::class, 'lookupAnos'])->name('planos-aee.anos');
         Route::get('planos-aee-lookup/escolas',  [\App\Http\Controllers\Coordenador\PlanoAeeValidacaoController::class, 'lookupEscolas'])->name('planos-aee.escolas');
         Route::get('planos-aee-lookup/turmas',   [\App\Http\Controllers\Coordenador\PlanoAeeValidacaoController::class, 'lookupTurmas'])->name('planos-aee.turmas');
+    });
+
+    // Secretaria Escolar — geração de acessos de professores
+    Route::prefix('secretaria')->name('secretaria.')->middleware('role:secretaria_escola')->group(function () {
+        Route::get('acessos-professores/export', [AcessoProfessorController::class, 'export'])->name('acessos-professores.export');
+        Route::get('acessos-professores', [AcessoProfessorController::class, 'index'])->name('acessos-professores.index');
+        Route::post('acessos-professores/gerar', [AcessoProfessorController::class, 'gerar'])->name('acessos-professores.gerar');
     });
 
     Route::middleware('can:admin')->group(function () {

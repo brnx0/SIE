@@ -5,7 +5,7 @@ import NavSearch, { type FlatNavLeaf } from '@/components/layout/NavSearch.vue';
 import NavUser from '@/components/layout/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { Link } from '@inertiajs/vue3';
-import { LayoutDashboard, LifeBuoy, UserPlus, Cog, ClipboardList, FileBarChart, BookOpen, ClipboardCheck } from 'lucide-vue-next';
+import { LayoutDashboard, LifeBuoy, UserPlus, Cog, ClipboardList, FileBarChart, BookOpen, ClipboardCheck, KeyRound } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import type { SharedData } from '@/types';
@@ -17,6 +17,7 @@ const isAdmin = computed(() => userRoles.value.includes('admin'));
 const isCoordenador = computed(() => userRoles.value.includes('coordenador') || isAdmin.value);
 const isCoordenadorInterno = computed(() => userRoles.value.includes('coordenador_interno') || isAdmin.value);
 const isProfessor = computed(() => userRoles.value.includes('professor') || isAdmin.value);
+const isSecretariaEscolar = computed(() => userRoles.value.includes('secretaria_escola') || isAdmin.value);
 
 const overview = [
     { title: 'Painel', href: '/dashboard', icon: LayoutDashboard },
@@ -98,6 +99,18 @@ const coordenadorMenu = computed<any[]>(() => {
     return [{ title: 'Pedagógico', icon: ClipboardCheck, children }];
 });
 
+const secretariaMenu = computed<any[]>(() => {
+    if (!isSecretariaEscolar.value) return [];
+
+    return [{
+        title: 'Secretaria Escolar',
+        icon: KeyRound,
+        children: [
+            { title: 'Acessos de Professores', href: '/secretaria/acessos-professores' },
+        ],
+    }];
+});
+
 const administracao = computed<any[]>(() => [
     {
         title: 'Sistema',
@@ -135,6 +148,7 @@ const flatLeaves = computed<FlatNavLeaf[]>(() => [
     ...flattenItems(matriculasMenu),
     ...flattenItems(diarioMenu.value),
     ...flattenItems(coordenadorMenu.value),
+    ...flattenItems(secretariaMenu.value),
     ...flattenItems(relatoriosMenu),
     ...flattenItems(administracao.value),
 ]);
@@ -165,6 +179,7 @@ const searching = computed(() => search.value.trim().length > 0);
                 <NavMain label="Matrículas" :items="matriculasMenu" />
                 <NavMain label="Diário" :items="diarioMenu" />
                 <NavMain v-if="isCoordenador || isCoordenadorInterno" label="Pedagógico" :items="coordenadorMenu" />
+                <NavMain v-if="isSecretariaEscolar" label="Secretaria Escolar" :items="secretariaMenu" />
                 <NavMain label="Relatórios" :items="relatoriosMenu" />
                 <NavMain label="Administração" :items="administracao" />
             </template>
