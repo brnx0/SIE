@@ -16,6 +16,7 @@ const userRoles = computed(() => page.props.auth?.user?.roles ?? []);
 const isAdmin = computed(() => userRoles.value.includes('admin'));
 const isCoordenador = computed(() => userRoles.value.includes('coordenador') || isAdmin.value);
 const isCoordenadorInterno = computed(() => userRoles.value.includes('coordenador_interno') || isAdmin.value);
+const isProfessor = computed(() => userRoles.value.includes('professor') || isAdmin.value);
 
 const overview = [
     { title: 'Painel', href: '/dashboard', icon: LayoutDashboard },
@@ -58,22 +59,24 @@ const matriculasMenu = [
         ],
     },
 ];
-const diarioMenu = [
+const diarioMenu = computed<any[]>(() => [
     {
         title: 'Diário Online',
         icon: BookOpen,
         children: [
+            ...(isProfessor.value ? [{ title: 'Diário de Classe', href: '/diario' }] : []),
             {
                 title: 'Cadastro',
                 children: [
                     { title: 'Instrumentos Avaliativos', href: '/diario/instrumentos-avaliativos' },
+                    ...(isAdmin.value ? [{ title: 'Sábados Letivos', href: '/sabados-letivos' }] : []),
                 ],
             },
             { title: 'Planos de Aula', href: '/diario/planos' },
             { title: 'Planos de Aula AEE', href: '/diario/planos-aee' },
         ],
     },
-];
+]);
 const relatoriosMenu = [
     {
         title: 'Relatórios',
@@ -129,7 +132,7 @@ const flatLeaves = computed<FlatNavLeaf[]>(() => [
     ...flattenItems(overview),
     ...flattenItems(cadastros),
     ...flattenItems(matriculasMenu),
-    ...flattenItems(diarioMenu),
+    ...flattenItems(diarioMenu.value),
     ...flattenItems(coordenadorMenu.value),
     ...flattenItems(relatoriosMenu),
     ...flattenItems(administracao.value),

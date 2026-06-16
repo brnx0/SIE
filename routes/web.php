@@ -55,6 +55,7 @@ use App\Http\Controllers\Parametro\AtividadeController;
 use App\Http\Controllers\Parametro\GradeDisciplinarController;
 use App\Http\Controllers\Parametro\GradeHorarioController;
 use App\Http\Controllers\Parametro\ParametroController;
+use App\Http\Controllers\Parametro\SabadoLetivoController;
 use App\Http\Controllers\Parametro\UnidadeController;
 use App\Http\Controllers\UsersController;
 use Illuminate\Support\Facades\Route;
@@ -266,6 +267,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Diário — Plano de Aula (turmas regulares)
     Route::prefix('diario')->name('diario.')->group(function () {
+        // Diário de Classe — seletor de contexto do professor
+        Route::get('/', [\App\Http\Controllers\Diario\DiarioController::class, 'index'])->name('index');
+
         Route::get('planos/export', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'export'])->name('planos.export');
         Route::get('planos', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'index'])->name('planos.index');
         Route::get('planos/create', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'create'])->name('planos.create');
@@ -294,6 +298,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('quadro-horario/{turma}/horarios/{turmaHorario}', [\App\Http\Controllers\Diario\QuadroHorarioController::class, 'destroy'])->name('quadro-horario.destroy');
     });
     Route::prefix('api/diario')->name('api.diario.')->group(function () {
+        // Diário de Classe — lookups de contexto
+        Route::get('contexto/escolas', [\App\Http\Controllers\Diario\DiarioController::class, 'lookupEscolas'])->name('contexto.escolas');
+        Route::get('contexto/turmas', [\App\Http\Controllers\Diario\DiarioController::class, 'lookupTurmas'])->name('contexto.turmas');
+        Route::get('contexto/disciplinas', [\App\Http\Controllers\Diario\DiarioController::class, 'lookupDisciplinas'])->name('contexto.disciplinas');
+
         Route::get('quadro-horario/escolas', [\App\Http\Controllers\Diario\QuadroHorarioController::class, 'lookupEscolas'])->name('quadro-horario.escolas');
         Route::get('quadro-horario/turmas', [\App\Http\Controllers\Diario\QuadroHorarioController::class, 'lookupTurmas'])->name('quadro-horario.turmas');
         Route::get('planos/escolas', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'lookupEscolas'])->name('planos.escolas');
@@ -362,6 +371,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('parametros/grade-horarios', [GradeHorarioController::class, 'store'])->name('parametros.grade-horarios.store');
         Route::put('parametros/grade-horarios/{gradeHorario}', [GradeHorarioController::class, 'update'])->name('parametros.grade-horarios.update');
         Route::delete('parametros/grade-horarios/{gradeHorario}', [GradeHorarioController::class, 'destroy'])->name('parametros.grade-horarios.destroy');
+
+        Route::get('sabados-letivos', [SabadoLetivoController::class, 'index'])->name('sabados-letivos.index');
+        Route::post('sabados-letivos', [SabadoLetivoController::class, 'store'])->name('sabados-letivos.store');
+        Route::delete('sabados-letivos/{sabadoLetivo}', [SabadoLetivoController::class, 'destroy'])->name('sabados-letivos.destroy');
 
         Route::get('grade-disciplinar', [GradeDisciplinarController::class, 'page'])->name('grade-disciplinar.index');
         Route::post('parametros/grade-disciplinar', [GradeDisciplinarController::class, 'store'])->name('parametros.grade-disciplinar.store');
