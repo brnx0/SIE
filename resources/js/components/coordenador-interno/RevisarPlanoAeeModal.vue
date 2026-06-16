@@ -48,7 +48,7 @@ const ehMeuPlano = computed(() => meuUserId.value !== null && plano.value && Num
 
 const podeRevisar = computed(() => statusOriginal.value === 'pendente' && !ehMeuPlano.value);
 const statusMudou = computed(() => statusNovo.value !== statusOriginal.value);
-const podeSalvar = computed(() => podeRevisar.value && statusMudou.value && obs.value.trim().length > 0 && !enviando.value);
+const podeSalvar = computed(() => podeRevisar.value && statusMudou.value && !enviando.value);
 
 const opcoesStatus: { value: PlanoStatus; label: string }[] = [
     { value: 'aprovado', label: 'Aprovar' },
@@ -212,7 +212,7 @@ const imprimir = () => {
                                 <InputError :message="erros.dae_status" />
                             </div>
                             <div class="md:col-span-2">
-                                <Label>Observação do Coordenador <span class="text-rose-600">*</span></Label>
+                                <Label>Observação do Coordenador</Label>
                                 <textarea v-model="obs" rows="4"
                                     class="mt-1 w-full rounded-md border bg-background p-2 text-sm"
                                     placeholder="Descreva a justificativa da decisão..." />

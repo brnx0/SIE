@@ -56,6 +56,8 @@ use App\Http\Controllers\Parametro\GradeDisciplinarController;
 use App\Http\Controllers\Parametro\GradeHorarioController;
 use App\Http\Controllers\Parametro\ParametroController;
 use App\Http\Controllers\Parametro\SabadoLetivoController;
+use App\Http\Controllers\Parametro\DiaNaoLetivoController;
+use App\Http\Controllers\Parametro\MediaEscolaController;
 use App\Http\Controllers\Parametro\UnidadeController;
 use App\Http\Controllers\UsersController;
 use Illuminate\Support\Facades\Route;
@@ -302,6 +304,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('contexto/escolas', [\App\Http\Controllers\Diario\DiarioController::class, 'lookupEscolas'])->name('contexto.escolas');
         Route::get('contexto/turmas', [\App\Http\Controllers\Diario\DiarioController::class, 'lookupTurmas'])->name('contexto.turmas');
         Route::get('contexto/disciplinas', [\App\Http\Controllers\Diario\DiarioController::class, 'lookupDisciplinas'])->name('contexto.disciplinas');
+        Route::get('contexto/unidades', [\App\Http\Controllers\Diario\DiarioController::class, 'lookupUnidades'])->name('contexto.unidades');
+
+        // Lançamento de avaliação descritiva (autosave por aluno)
+        Route::get('avaliacao-descritiva/alunos', [\App\Http\Controllers\Diario\AvaliacaoDescritivaController::class, 'alunos'])->name('avaliacao-descritiva.alunos');
+        Route::post('avaliacao-descritiva', [\App\Http\Controllers\Diario\AvaliacaoDescritivaController::class, 'salvar'])->name('avaliacao-descritiva.salvar');
 
         Route::get('quadro-horario/escolas', [\App\Http\Controllers\Diario\QuadroHorarioController::class, 'lookupEscolas'])->name('quadro-horario.escolas');
         Route::get('quadro-horario/turmas', [\App\Http\Controllers\Diario\QuadroHorarioController::class, 'lookupTurmas'])->name('quadro-horario.turmas');
@@ -367,6 +374,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('parametros/unidades', [UnidadeController::class, 'store'])->name('parametros.unidades.store');
         Route::put('parametros/unidades/{unidade}', [UnidadeController::class, 'update'])->name('parametros.unidades.update');
         Route::delete('parametros/unidades/{unidade}', [UnidadeController::class, 'destroy'])->name('parametros.unidades.destroy');
+
+        Route::post('parametros/dias-nao-letivos', [DiaNaoLetivoController::class, 'store'])->name('parametros.dias-nao-letivos.store');
+        Route::put('parametros/dias-nao-letivos/{diaNaoLetivo}', [DiaNaoLetivoController::class, 'update'])->name('parametros.dias-nao-letivos.update');
+        Route::delete('parametros/dias-nao-letivos/{diaNaoLetivo}', [DiaNaoLetivoController::class, 'destroy'])->name('parametros.dias-nao-letivos.destroy');
+
+        Route::post('parametros/medias-escola', [MediaEscolaController::class, 'store'])->name('parametros.medias-escola.store');
+        Route::put('parametros/medias-escola/{mediaEscola}', [MediaEscolaController::class, 'update'])->name('parametros.medias-escola.update');
+        Route::delete('parametros/medias-escola/{mediaEscola}', [MediaEscolaController::class, 'destroy'])->name('parametros.medias-escola.destroy');
+        Route::post('parametros/medias-escola/replicar', [MediaEscolaController::class, 'replicar'])->name('parametros.medias-escola.replicar');
 
         Route::post('parametros/grade-horarios', [GradeHorarioController::class, 'store'])->name('parametros.grade-horarios.store');
         Route::put('parametros/grade-horarios/{gradeHorario}', [GradeHorarioController::class, 'update'])->name('parametros.grade-horarios.update');

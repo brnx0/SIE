@@ -28,6 +28,18 @@ class SerieSeeder extends Seeder
             'CONCEITUAL'  => 'conceitual',
         ];
 
+        // Granularidade da avaliação descritiva por segmento:
+        // por_unidade (1 registro por período/aluno) — Creche, Pré-escola, Fund I.
+        // por_disciplina (1 por disciplina) — Fund II, EJA.
+        $descritivaPorSegmento = [
+            'CRECHE'         => 'por_unidade',
+            'PRÉ ESCOLA'     => 'por_unidade',
+            'FUNDAMENTAL I'  => 'por_unidade',
+            'FUNDAMENTAL II' => 'por_disciplina',
+            'EJA I'          => 'por_disciplina',
+            'EJA II'         => 'por_disciplina',
+        ];
+
         // [SEGMENTO_CSV, SER_NOME, TIPO_AVALIACAO_CSV, IDADE, ORDEM]
         $linhas = [
             ['CRECHE',         'GRUPO 01',    'DESCRITIVA',  1,  1],
@@ -70,15 +82,20 @@ class SerieSeeder extends Seeder
             $segId = $segmentosPorNome[$segNome]->seg_id;
             $tipo  = $tipoAvaliacaoMap[$tipoCsv] ?? null;
 
+            // Todas as séries têm avaliação descritiva (além do tipo do CSV).
+            $tipos = array_values(array_unique(array_filter([$tipo, 'descritiva'])));
+            $tipoDescritiva = $descritivaPorSegmento[$segCsv] ?? 'por_disciplina';
+
             Serie::updateOrCreate(
                 ['seg_id' => $segId, 'ser_nome' => $serNome],
                 [
-                    'ser_idade'             => $idade,
-                    'ser_nr_ordenacao'      => $ordem,
-                    'ser_ordem_no_segmento' => $ordem,
-                    'ser_tipo_avaliacao'    => $tipo ? [$tipo] : null,
-                    'ser_fl_ativo'          => true,
-                    'ser_fl_multi'          => str_contains($serNome, 'MULTI'),
+                    'ser_idade'                     => $idade,
+                    'ser_nr_ordenacao'              => $ordem,
+                    'ser_ordem_no_segmento'         => $ordem,
+                    'ser_tipo_avaliacao'            => $tipos,
+                    'ser_tipo_avaliacao_descritiva' => $tipoDescritiva,
+                    'ser_fl_ativo'                  => true,
+                    'ser_fl_multi'                  => str_contains($serNome, 'MULTI'),
                 ],
             );
         }

@@ -39,6 +39,8 @@ export interface AnoLetivo {
     anl_fl_em_exercicio: boolean;
     anl_fl_progressao_parcial: boolean;
     anl_fl_aprovacao_conselho_freq: boolean;
+    anl_frequencia_minima: number | string | null;
+    anl_media_geral: number | string | null;
     anl_created_at: string | null;
     anl_updated_at: string | null;
     created_by?: AnoLetivoUserRef | null;
@@ -54,6 +56,8 @@ export interface AnoLetivoFormData {
     anl_fl_em_exercicio: boolean;
     anl_fl_progressao_parcial: boolean;
     anl_fl_aprovacao_conselho_freq: boolean;
+    anl_frequencia_minima: number | '';
+    anl_media_geral: number | '';
     [key: string]: any;
 }
 
@@ -92,6 +96,37 @@ export interface Unidade {
     uni_created_at?: string | null;
     uni_updated_at?: string | null;
     ano_letivo?: { anl_id: number; anl_ano: number } | null;
+}
+
+export interface DiaNaoLetivo {
+    dnl_id: number;
+    dnl_anl_id: number;
+    dnl_dt_dia: string;
+    dnl_descricao: string;
+    dnl_created_at?: string | null;
+    dnl_updated_at?: string | null;
+}
+
+export interface DiaNaoLetivoFormData {
+    dnl_anl_id: number | null;
+    dnl_dt_dia: string;
+    dnl_descricao: string;
+    _method?: 'put';
+}
+
+export interface MediaEscola {
+    mde_id: number;
+    mde_anl_id: number;
+    mde_esc_id: number;
+    mde_media: number | string;
+    escola?: { esc_id: number; esc_nome: string } | null;
+}
+
+export interface MediaEscolaFormData {
+    mde_anl_id: number | null;
+    mde_esc_id: number | null;
+    mde_media: number | '';
+    _method?: 'put';
 }
 
 export interface AtendimentoAee {

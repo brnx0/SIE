@@ -15,7 +15,7 @@ export interface Serie {
     ser_fl_ativo: boolean;
     ser_fl_multi: boolean;
     ser_tipo_avaliacao: string[] | null;
-    ser_tipo_avaliacao_descritiva: 'por_aluno' | 'por_unidade' | null;
+    ser_tipo_avaliacao_descritiva: 'por_disciplina' | 'por_unidade' | null;
     ser_promo_ser_id_1: number | null;
     ser_promo_ser_id_2: number | null;
     ser_cons_ser_id_1: number | null;

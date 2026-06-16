@@ -27,6 +27,8 @@ class AnoLetivo extends Model
         'anl_fl_em_exercicio',
         'anl_fl_progressao_parcial',
         'anl_fl_aprovacao_conselho_freq',
+        'anl_frequencia_minima',
+        'anl_media_geral',
         'anl_created_by_id',
         'anl_updated_by_id',
     ];
@@ -40,6 +42,8 @@ class AnoLetivo extends Model
         'anl_fl_em_exercicio' => 'boolean',
         'anl_fl_progressao_parcial' => 'boolean',
         'anl_fl_aprovacao_conselho_freq' => 'boolean',
+        'anl_frequencia_minima' => 'decimal:2',
+        'anl_media_geral' => 'decimal:2',
     ];
 
     public function createdBy(): BelongsTo

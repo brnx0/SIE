@@ -29,6 +29,8 @@ class StoreAnoLetivoRequest extends FormRequest
             'anl_fl_em_exercicio' => ['boolean'],
             'anl_fl_progressao_parcial' => ['boolean'],
             'anl_fl_aprovacao_conselho_freq' => ['boolean'],
+            'anl_frequencia_minima' => ['required', 'numeric', 'between:0,100'],
+            'anl_media_geral' => ['required', 'numeric', 'between:0,10'],
         ];
     }
 
@@ -64,6 +66,8 @@ class StoreAnoLetivoRequest extends FormRequest
             'anl_fl_em_exercicio' => 'ano em exercício',
             'anl_fl_progressao_parcial' => 'possui progressão parcial',
             'anl_fl_aprovacao_conselho_freq' => 'aprovação por conselho por frequência',
+            'anl_frequencia_minima' => 'frequência mínima',
+            'anl_media_geral' => 'média geral',
         ];
     }
 

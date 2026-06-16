@@ -19,7 +19,7 @@ class UpdateStatusPlanoAeeRequest extends FormRequest
     {
         return [
             'dae_status'          => ['required', 'in:aprovado,reprovado,correcao'],
-            'dae_obs_coordenador' => ['required', 'string', 'max:5000'],
+            'dae_obs_coordenador' => ['nullable', 'string', 'max:5000'],
         ];
     }
 

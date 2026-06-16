@@ -8,6 +8,8 @@ import TabsContent from '@/components/common/TabsContent.vue';
 import TabsList from '@/components/common/TabsList.vue';
 import TabsTrigger from '@/components/common/TabsTrigger.vue';
 import AnoLetivoDialog from '@/components/parametro/AnoLetivoDialog.vue';
+import DiasNaoLetivosTab from '@/components/parametro/DiasNaoLetivosTab.vue';
+import MediaEscolaTab from '@/components/parametro/MediaEscolaTab.vue';
 import GradeHorariosTab from '@/components/parametro/GradeHorariosTab.vue';
 import UnidadeTab from '@/components/parametro/UnidadeTab.vue';
 import Switch from '@/components/common/Switch.vue';
@@ -15,7 +17,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import type { Municipio } from '@/types/aluno';
-import type { AnoLetivo, GradeHorario, ParametroEntidade, ParametroEntidadeFormData, SegmentoResumo, Unidade } from '@/types/parametro';
+import type { AnoLetivo, DiaNaoLetivo, GradeHorario, MediaEscola, ParametroEntidade, ParametroEntidadeFormData, SegmentoResumo, Unidade } from '@/types/parametro';
 import { router, useForm } from '@inertiajs/vue3';
 import { Building2, Camera, CheckCircle2, LoaderCircle, Pencil, Plus, Save, Shield, Trash2, Upload } from 'lucide-vue-next';
 import { computed, onBeforeUnmount, ref } from 'vue';
@@ -24,11 +26,13 @@ const props = defineProps<{
     initial: ParametroEntidade;
     anosLetivos: AnoLetivo[];
     unidades: Unidade[];
+    diasNaoLetivos: DiaNaoLetivo[];
+    mediasEscola: MediaEscola[];
     segmentos: SegmentoResumo[];
     gradeHorarios: GradeHorario[];
 }>();
 
-const TABS = ['entidade', 'ano_letivo', 'unidade', 'cadastros', 'grade'] as const;
+const TABS = ['entidade', 'ano_letivo', 'unidade', 'dias_nao_letivos', 'medias_escola', 'cadastros', 'grade'] as const;
 type TabId = (typeof TABS)[number];
 
 const TAB_FIELDS: Record<TabId, string[]> = {
@@ -38,6 +42,8 @@ const TAB_FIELDS: Record<TabId, string[]> = {
     ],
     ano_letivo: [],
     unidade: [],
+    dias_nao_letivos: [],
+    medias_escola: [],
     cadastros: [
         'par_fl_nome_pessoa_caixa_alta', 'par_fl_nome_escola_caixa_alta',
         'par_fl_alertar_homonimos', 'par_fl_alertar_acentos_nomes',
@@ -184,8 +190,10 @@ const fmtDateTime = (s?: string | null) => {
                 <TabsTrigger value="entidade" :has-error="tabHasError('entidade')">1. Entidade</TabsTrigger>
                 <TabsTrigger value="ano_letivo" :has-error="tabHasError('ano_letivo')">2. Ano Letivo</TabsTrigger>
                 <TabsTrigger value="unidade" :has-error="tabHasError('unidade')">3. Unidade</TabsTrigger>
-                <TabsTrigger value="cadastros" :has-error="tabHasError('cadastros')">4. Cadastros</TabsTrigger>
-                <TabsTrigger value="grade">5. Grade de Horários</TabsTrigger>
+                <TabsTrigger value="dias_nao_letivos" :has-error="tabHasError('dias_nao_letivos')">4. Dias Não Letivos</TabsTrigger>
+                <TabsTrigger value="medias_escola" :has-error="tabHasError('medias_escola')">5. Média por Escola</TabsTrigger>
+                <TabsTrigger value="cadastros" :has-error="tabHasError('cadastros')">6. Cadastros</TabsTrigger>
+                <TabsTrigger value="grade">7. Grade de Horários</TabsTrigger>
             </TabsList>
 
             <!-- Aba 1: Entidade -->
@@ -317,6 +325,8 @@ const fmtDateTime = (s?: string | null) => {
                                     <th class="px-3 py-2 font-semibold">Início Ano</th>
                                     <th class="px-3 py-2 font-semibold">Fim do Ano</th>
                                     <th class="px-3 py-2 font-semibold">Censo</th>
+                                    <th class="px-3 py-2 text-center font-semibold">Freq. Mín.</th>
+                                    <th class="px-3 py-2 text-center font-semibold">Média Geral</th>
                                     <th class="px-3 py-2 text-center font-semibold">Em Exercício</th>
                                     <th class="px-3 py-2 text-center font-semibold">Prog. Parcial</th>
                                     <th class="px-3 py-2 text-center font-semibold">Aprov. Conselho</th>
@@ -325,7 +335,7 @@ const fmtDateTime = (s?: string | null) => {
                             </thead>
                             <tbody>
                                 <tr v-if="anosLetivos.length === 0">
-                                    <td colspan="10" class="px-3 py-6 text-center text-muted-foreground">
+                                    <td colspan="12" class="px-3 py-6 text-center text-muted-foreground">
                                         Nenhum ano letivo cadastrado.
                                     </td>
                                 </tr>
@@ -340,6 +350,8 @@ const fmtDateTime = (s?: string | null) => {
                                     <td class="px-3 py-2">{{ fmtDate(anl.anl_dt_inicio_ano) }}</td>
                                     <td class="px-3 py-2">{{ fmtDate(anl.anl_dt_fim) }}</td>
                                     <td class="px-3 py-2">{{ fmtDate(anl.anl_dt_censo) }}</td>
+                                    <td class="px-3 py-2 text-center">{{ anl.anl_frequencia_minima != null ? `${Number(anl.anl_frequencia_minima)}%` : '—' }}</td>
+                                    <td class="px-3 py-2 text-center">{{ anl.anl_media_geral != null ? Number(anl.anl_media_geral).toFixed(1) : '—' }}</td>
                                     <td class="px-3 py-2 text-center">
                                         <CheckCircle2 v-if="anl.anl_fl_em_exercicio" class="mx-auto size-4 text-emerald-600" />
                                     </td>
@@ -371,7 +383,17 @@ const fmtDateTime = (s?: string | null) => {
                 <UnidadeTab :unidades="unidades" :anos-letivos="anosLetivos" />
             </TabsContent>
 
-            <!-- Aba 4: Cadastros -->
+            <!-- Aba 4: Dias Não Letivos -->
+            <TabsContent value="dias_nao_letivos">
+                <DiasNaoLetivosTab :dias-nao-letivos="diasNaoLetivos" :anos-letivos="anosLetivos" />
+            </TabsContent>
+
+            <!-- Aba 5: Média por Escola -->
+            <TabsContent value="medias_escola">
+                <MediaEscolaTab :medias-escola="mediasEscola" :anos-letivos="anosLetivos" />
+            </TabsContent>
+
+            <!-- Aba 6: Cadastros -->
             <TabsContent value="cadastros">
                 <form @submit.prevent="submit" novalidate class="grid gap-6">
                     <div class="grid gap-6 rounded-xl border bg-card p-6 shadow-sm sm:grid-cols-2">

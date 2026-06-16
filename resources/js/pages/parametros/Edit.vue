@@ -2,13 +2,15 @@
 import ParametroForm from '@/components/parametro/ParametroForm.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import type { AnoLetivo, GradeHorario, ParametroEntidade, SegmentoResumo, Unidade } from '@/types/parametro';
+import type { AnoLetivo, DiaNaoLetivo, GradeHorario, MediaEscola, ParametroEntidade, SegmentoResumo, Unidade } from '@/types/parametro';
 import { Head } from '@inertiajs/vue3';
 
 defineProps<{
     parametro: ParametroEntidade;
     anosLetivos: AnoLetivo[];
     unidades: Unidade[];
+    diasNaoLetivos: DiaNaoLetivo[];
+    mediasEscola: MediaEscola[];
     segmentos: SegmentoResumo[];
     gradeHorarios: GradeHorario[];
 }>();
@@ -30,6 +32,8 @@ const breadcrumbs: BreadcrumbItem[] = [
                 :initial="parametro"
                 :anos-letivos="anosLetivos"
                 :unidades="unidades"
+                :dias-nao-letivos="diasNaoLetivos"
+                :medias-escola="mediasEscola"
                 :segmentos="segmentos"
                 :grade-horarios="gradeHorarios"
             />

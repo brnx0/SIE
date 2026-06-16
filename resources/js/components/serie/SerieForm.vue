@@ -239,7 +239,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar série' : 'Salvar alter
                     class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
                 >
                     <option value="">Selecione...</option>
-                    <option value="por_aluno">Por Aluno</option>
+                    <option value="por_disciplina">Por Disciplina</option>
                     <option value="por_unidade">Por Unidade</option>
                 </select>
                 <InputError :message="form.errors.ser_tipo_avaliacao_descritiva" />

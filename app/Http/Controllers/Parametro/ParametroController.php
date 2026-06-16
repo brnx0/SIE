@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Parametro;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Parametro\UpdateParametroEntidadeRequest;
 use App\Models\Parametro\AnoLetivo;
+use App\Models\Parametro\DiaNaoLetivo;
 use App\Models\Parametro\GradeHorario;
+use App\Models\Parametro\MediaEscola;
 use App\Models\Parametro\ParametroEntidade;
 use App\Models\Parametro\Unidade;
 use App\Models\Segmento\Segmento;
@@ -33,6 +35,14 @@ class ParametroController extends Controller
             ->orderBy('uni_numero')
             ->get();
 
+        $diasNaoLetivos = DiaNaoLetivo::orderBy('dnl_dt_dia')->get();
+
+        $mediasEscola = MediaEscola::with('escola:esc_id,esc_nome')
+            ->join('edu_escola', 'edu_escola.esc_id', '=', 'cfg_media_escola.mde_esc_id')
+            ->orderBy('edu_escola.esc_nome')
+            ->select('cfg_media_escola.*')
+            ->get();
+
         $segmentos     = Segmento::where('seg_fl_ativo', true)->orderBy('seg_ordem')->get(['seg_id', 'seg_nome_reduzido', 'seg_nome_completo']);
         $gradeHorarios = GradeHorario::with('segmento:seg_id,seg_nome_reduzido')
             ->orderBy('grh_seg_id')
@@ -41,11 +51,13 @@ class ParametroController extends Controller
             ->get();
 
         return Inertia::render('parametros/Edit', [
-            'parametro'     => $parametro,
-            'anosLetivos'   => $anosLetivos,
-            'unidades'      => $unidades,
-            'segmentos'     => $segmentos,
-            'gradeHorarios' => $gradeHorarios,
+            'parametro'      => $parametro,
+            'anosLetivos'    => $anosLetivos,
+            'unidades'       => $unidades,
+            'diasNaoLetivos' => $diasNaoLetivos,
+            'mediasEscola'   => $mediasEscola,
+            'segmentos'      => $segmentos,
+            'gradeHorarios'  => $gradeHorarios,
         ]);
     }
 

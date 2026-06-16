@@ -28,6 +28,7 @@ export interface PlanoUnidade {
     uni_numero: number;
     uni_dt_inicio: string;
     uni_dt_fim: string;
+    uni_dt_fim_efetivo?: string | null;
     uni_anl_id?: number;
 }
 

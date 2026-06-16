@@ -32,6 +32,8 @@ const form = useForm<AnoLetivoFormData>({
     anl_fl_em_exercicio: false,
     anl_fl_progressao_parcial: false,
     anl_fl_aprovacao_conselho_freq: false,
+    anl_frequencia_minima: '',
+    anl_media_geral: '',
 });
 
 const reset = () => {
@@ -44,6 +46,8 @@ const reset = () => {
         form.anl_fl_em_exercicio = props.initial.anl_fl_em_exercicio;
         form.anl_fl_progressao_parcial = props.initial.anl_fl_progressao_parcial;
         form.anl_fl_aprovacao_conselho_freq = props.initial.anl_fl_aprovacao_conselho_freq;
+        form.anl_frequencia_minima = props.initial.anl_frequencia_minima != null ? Number(props.initial.anl_frequencia_minima) : '';
+        form.anl_media_geral = props.initial.anl_media_geral != null ? Number(props.initial.anl_media_geral) : '';
     } else {
         form.reset();
         form.clearErrors();
@@ -138,6 +142,38 @@ const clampAno4Digitos = (field: keyof AnoLetivoFormData) => (e: Event) => {
                     <FormLabel :for="'anl_dt_corte'" :required="true">Data de Corte</FormLabel>
                     <Input id="anl_dt_corte" type="date" min="1900-01-01" max="2999-12-31" v-model="form.anl_dt_corte" :required="true" @input="clampAno4Digitos('anl_dt_corte')" />
                     <InputError :message="form.errors.anl_dt_corte" />
+                </div>
+
+                <div class="grid gap-2 sm:col-span-1">
+                    <FormLabel :for="'anl_frequencia_minima'" :required="true">Frequência Mínima (%)</FormLabel>
+                    <Input
+                        id="anl_frequencia_minima"
+                        type="number"
+                        min="0"
+                        max="100"
+                        step="0.01"
+                        inputmode="decimal"
+                        placeholder="Ex.: 75"
+                        v-model.number="form.anl_frequencia_minima"
+                        :required="true"
+                    />
+                    <InputError :message="form.errors.anl_frequencia_minima" />
+                </div>
+
+                <div class="grid gap-2 sm:col-span-1">
+                    <FormLabel :for="'anl_media_geral'" :required="true">Média Geral</FormLabel>
+                    <Input
+                        id="anl_media_geral"
+                        type="number"
+                        min="0"
+                        max="10"
+                        step="0.01"
+                        inputmode="decimal"
+                        placeholder="Ex.: 6"
+                        v-model.number="form.anl_media_geral"
+                        :required="true"
+                    />
+                    <InputError :message="form.errors.anl_media_geral" />
                 </div>
 
                 <div class="flex items-center gap-3 sm:col-span-2">

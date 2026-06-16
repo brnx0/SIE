@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Diario;
 
 use App\Http\Controllers\Controller;
 use App\Models\Parametro\AnoLetivo;
+use App\Models\Parametro\Unidade;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -139,6 +140,29 @@ class DiarioController extends Controller
             ->get();
 
         return response()->json($disciplinas);
+    }
+
+    /**
+     * Unidades (bimestre/trimestre) do ano letivo. O default de "período corrente"
+     * (aquele que contém a data de hoje) é calculado no frontend via uni_dt_inicio
+     * e uni_dt_fim_efetivo. Inclui uni_dias_extensao p/ o accessor uni_dt_fim_efetivo.
+     */
+    public function lookupUnidades(Request $request): JsonResponse
+    {
+        $this->abortIfNotProfessor();
+
+        $anlId = (int) $request->input('anl_id');
+
+        if (! $anlId) {
+            return response()->json([]);
+        }
+
+        return response()->json(
+            Unidade::query()
+                ->where('uni_anl_id', $anlId)
+                ->orderBy('uni_numero')
+                ->get(['uni_id', 'uni_tipo', 'uni_numero', 'uni_dt_inicio', 'uni_dt_fim', 'uni_dias_extensao'])
+        );
     }
 
     // ============ Helpers ============
