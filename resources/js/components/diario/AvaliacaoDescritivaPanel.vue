@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Input } from '@/components/ui/input';
-import { Check, Loader2, RefreshCw, Search, TriangleAlert, Users } from 'lucide-vue-next';
-import { computed, onMounted, ref, watch } from 'vue';
+import { CheckCircle2, ChevronDown, Circle, Loader2, RefreshCw, Search, TriangleAlert, Users } from 'lucide-vue-next';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
 
 const props = defineProps<{
     anlId: number;
@@ -26,10 +26,12 @@ interface AlunoRow {
 const carregando = ref(true);
 const erroCarregar = ref<string | null>(null);
 const alunos = ref<AlunoRow[]>([]);
-const modo = ref<'por_disciplina' | 'por_unidade'>('por_disciplina');
+const modo = ref<'por_aluno' | 'por_disciplina'>('por_disciplina');
 const periodoAberto = ref(true);
 const tipoConfigurado = ref(true);
 const busca = ref('');
+const abertoId = ref<number | null>(null);
+const textareaEl = ref<HTMLTextAreaElement | null>(null);
 
 // CSRF p/ POST em rota web (cookie XSRF-TOKEN setado pelo Laravel).
 const csrf = (): Record<string, string> => {
@@ -40,6 +42,7 @@ const csrf = (): Record<string, string> => {
 const carregar = async () => {
     carregando.value = true;
     erroCarregar.value = null;
+    abertoId.value = null;
     try {
         const url = new URL('/api/diario/avaliacao-descritiva/alunos', window.location.origin);
         url.searchParams.set('tur_id', String(props.turId));
@@ -84,7 +87,7 @@ const salvar = async (row: AlunoRow) => {
         clearTimeout(row._timer);
         row._timer = null;
     }
-    if (!tipoConfigurado.value) return; // série sem tipo de avaliação descritiva
+    if (!tipoConfigurado.value) return; // série sem tipo de avaliação descritiva configurado
     if (!periodoAberto.value) return; // fora da janela de lançamento
     if (row.descricao === row._original) return; // nada mudou
     row._status = 'saving';
@@ -125,6 +128,26 @@ const aoDigitar = (e: Event, row: AlunoRow) => {
     row._timer = window.setTimeout(() => salvar(row), 1500);
 };
 
+// ref do textarea aberto (só 1 por vez) — função-ref evita array do v-for.
+const bindTextarea = (el: any) => {
+    textareaEl.value = (el as HTMLTextAreaElement) ?? null;
+};
+
+// Abre/fecha o aluno (acordeão). Ao abrir, foca e ajusta a altura.
+const abrir = (row: AlunoRow) => {
+    abertoId.value = abertoId.value === row.aln_id ? null : row.aln_id;
+    if (abertoId.value !== null) {
+        nextTick(() => {
+            const el = textareaEl.value;
+            if (el) {
+                el.focus();
+                el.style.height = 'auto';
+                el.style.height = `${el.scrollHeight}px`;
+            }
+        });
+    }
+};
+
 const iniciais = (nome: string) =>
     nome
         .trim()
@@ -159,7 +182,7 @@ const avaliados = computed(() => alunos.value.filter((a) => a.descricao.trim().l
                     <span
                         class="rounded-full bg-indigo-50 px-2 py-0.5 text-[11px] font-medium text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300"
                     >
-                        {{ modo === 'por_unidade' ? 'Por unidade' : 'Por disciplina' }}
+                        {{ modo === 'por_aluno' ? 'Por aluno' : 'Por disciplina' }}
                     </span>
                 </div>
                 <p class="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -167,7 +190,7 @@ const avaliados = computed(() => alunos.value.filter((a) => a.descricao.trim().l
                     <span class="font-medium text-foreground">{{ avaliados }}</span> de {{ total }} avaliados
                     <span class="text-muted-foreground/60">· salvamento automático</span>
                 </p>
-                <p v-if="modo === 'por_unidade'" class="mt-0.5 text-[11px] text-muted-foreground">
+                <p v-if="modo === 'por_aluno'" class="mt-0.5 text-[11px] text-muted-foreground">
                     Parecer geral do aluno no período — vale para todas as disciplinas.
                 </p>
             </div>
@@ -220,13 +243,15 @@ const avaliados = computed(() => alunos.value.filter((a) => a.descricao.trim().l
                 Nenhum aluno encontrado para "{{ busca }}".
             </div>
 
-            <ul v-else class="flex flex-col gap-3">
+            <ul v-else class="flex flex-col gap-2">
                 <li
                     v-for="row in filtrados"
                     :key="row.aln_id"
-                    class="rounded-lg border bg-background p-3 transition-colors hover:border-indigo-200"
+                    class="overflow-hidden rounded-lg border bg-background transition-colors"
+                    :class="abertoId === row.aln_id ? 'border-indigo-300' : 'hover:border-indigo-200'"
                 >
-                    <div class="mb-2 flex items-center justify-between gap-3">
+                    <!-- Cabeçalho clicável -->
+                    <button type="button" class="flex w-full items-center justify-between gap-3 p-3 text-left" @click="abrir(row)">
                         <div class="flex min-w-0 items-center gap-3">
                             <div
                                 class="flex size-8 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-xs font-semibold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300"
@@ -241,29 +266,39 @@ const avaliados = computed(() => alunos.value.filter((a) => a.descricao.trim().l
                             </div>
                         </div>
 
-                        <span class="shrink-0 text-xs">
+                        <div class="flex shrink-0 items-center gap-3 text-xs">
                             <span v-if="row._status === 'saving'" class="inline-flex items-center gap-1 text-amber-600">
                                 <Loader2 class="size-3.5 animate-spin" /> Salvando
                             </span>
-                            <span v-else-if="row._status === 'saved'" class="inline-flex items-center gap-1 text-emerald-600">
-                                <Check class="size-3.5" /> Salvo
-                            </span>
                             <span v-else-if="row._status === 'error'" class="inline-flex items-center gap-1 text-rose-600">
-                                <TriangleAlert class="size-3.5" /> Erro ao salvar
+                                <TriangleAlert class="size-3.5" /> Erro
                             </span>
-                            <span v-else-if="row._status === 'dirty'" class="text-muted-foreground">Não salvo</span>
-                        </span>
-                    </div>
+                            <span v-else-if="row.descricao.trim()" class="inline-flex items-center gap-1 font-medium text-emerald-600">
+                                <CheckCircle2 class="size-3.5" /> Preenchido
+                            </span>
+                            <span v-else class="inline-flex items-center gap-1 text-muted-foreground">
+                                <Circle class="size-3.5" /> Pendente
+                            </span>
+                            <ChevronDown
+                                class="size-4 text-muted-foreground transition-transform"
+                                :class="abertoId === row.aln_id && 'rotate-180'"
+                            />
+                        </div>
+                    </button>
 
-                    <textarea
-                        v-model="row.descricao"
-                        rows="2"
-                        :disabled="!periodoAberto"
-                        placeholder="Descreva o desenvolvimento do aluno neste período..."
-                        class="w-full resize-none overflow-hidden rounded-md border bg-background p-2.5 text-sm leading-relaxed outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 disabled:cursor-not-allowed disabled:opacity-60 dark:focus:ring-indigo-950"
-                        @input="(e) => aoDigitar(e, row)"
-                        @blur="salvar(row)"
-                    />
+                    <!-- Input (abre ao clicar no aluno) -->
+                    <div v-if="abertoId === row.aln_id" class="px-3 pb-3">
+                        <textarea
+                            :ref="bindTextarea"
+                            v-model="row.descricao"
+                            rows="3"
+                            :disabled="!periodoAberto"
+                            placeholder="Descreva o desenvolvimento do aluno neste período..."
+                            class="w-full resize-none overflow-hidden rounded-md border bg-background p-2.5 text-sm leading-relaxed outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 disabled:cursor-not-allowed disabled:opacity-60 dark:focus:ring-indigo-950"
+                            @input="(e) => aoDigitar(e, row)"
+                            @blur="salvar(row)"
+                        />
+                    </div>
                 </li>
             </ul>
         </div>

@@ -29,12 +29,12 @@ class SerieSeeder extends Seeder
         ];
 
         // Granularidade da avaliação descritiva por segmento:
-        // por_unidade (1 registro por período/aluno) — Creche, Pré-escola, Fund I.
+        // por_aluno (1 registro por período/aluno) — Creche, Pré-escola, Fund I.
         // por_disciplina (1 por disciplina) — Fund II, EJA.
         $descritivaPorSegmento = [
-            'CRECHE'         => 'por_unidade',
-            'PRÉ ESCOLA'     => 'por_unidade',
-            'FUNDAMENTAL I'  => 'por_unidade',
+            'CRECHE'         => 'por_aluno',
+            'PRÉ ESCOLA'     => 'por_aluno',
+            'FUNDAMENTAL I'  => 'por_aluno',
             'FUNDAMENTAL II' => 'por_disciplina',
             'EJA I'          => 'por_disciplina',
             'EJA II'         => 'por_disciplina',

@@ -26,6 +26,7 @@ class StoreDiaNaoLetivoRequest extends FormRequest
                     ->where('dnl_anl_id', $this->input('dnl_anl_id'))
                     ->ignore($selfId, 'dnl_id'),
             ],
+            'dnl_dt_fim'    => ['nullable', 'date', 'after_or_equal:dnl_dt_dia'],
             'dnl_descricao' => ['required', 'string', 'max:255'],
         ];
     }
@@ -43,9 +44,18 @@ class StoreDiaNaoLetivoRequest extends FormRequest
             }
 
             // O dia deve cair dentro do período do ano letivo
+            $inicioAno = $ano->anl_dt_inicio_ano->format('Y-m-d');
+            $fimAno    = $ano->anl_dt_fim->format('Y-m-d');
+
             $dia = $this->input('dnl_dt_dia');
-            if ($dia < $ano->anl_dt_inicio_ano->format('Y-m-d') || $dia > $ano->anl_dt_fim->format('Y-m-d')) {
+            if ($dia < $inicioAno || $dia > $fimAno) {
                 $v->errors()->add('dnl_dt_dia', 'A data deve estar dentro do período do ano letivo selecionado.');
+            }
+
+            // Data fim (opcional) também precisa cair dentro do ano letivo
+            $fim = $this->input('dnl_dt_fim');
+            if ($fim && ($fim < $inicioAno || $fim > $fimAno)) {
+                $v->errors()->add('dnl_dt_fim', 'A data fim deve estar dentro do período do ano letivo selecionado.');
             }
         });
     }
@@ -62,6 +72,7 @@ class StoreDiaNaoLetivoRequest extends FormRequest
         return [
             'dnl_anl_id'    => 'ano letivo',
             'dnl_dt_dia'    => 'data',
+            'dnl_dt_fim'    => 'data fim',
             'dnl_descricao' => 'descrição',
         ];
     }

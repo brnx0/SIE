@@ -13,6 +13,7 @@ use App\Http\Controllers\Relatorio\SumarioMatriculasController;
 use App\Http\Controllers\Relatorio\DeclaracaoMatriculaController;
 use App\Http\Controllers\Relatorio\FormacaoClassesAeeController;
 use App\Http\Controllers\Relatorio\FormacaoClassesController;
+use App\Http\Controllers\Relatorio\ParecerDescritivoController;
 use App\Http\Controllers\Relatorio\RelatorioCentralController;
 use App\Http\Controllers\Api\AlunoSearchController;
 use App\Http\Controllers\Api\BairroController;
@@ -56,8 +57,10 @@ use App\Http\Controllers\Parametro\GradeDisciplinarController;
 use App\Http\Controllers\Parametro\GradeHorarioController;
 use App\Http\Controllers\Parametro\ParametroController;
 use App\Http\Controllers\Parametro\SabadoLetivoController;
+use App\Http\Controllers\Parametro\ConceitoController;
 use App\Http\Controllers\Parametro\DiaNaoLetivoController;
 use App\Http\Controllers\Parametro\MediaEscolaController;
+use App\Http\Controllers\Parametro\SituacaoBloqueioController;
 use App\Http\Controllers\Parametro\UnidadeController;
 use App\Http\Controllers\UsersController;
 use Illuminate\Support\Facades\Route;
@@ -175,6 +178,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('relatorios', [RelatorioCentralController::class, 'index'])->name('relatorios.index');
     Route::get('relatorios-escola', [RelatorioCentralController::class, 'escola'])->name('relatorios.escola');
+    Route::get('relatorios-diario', [RelatorioCentralController::class, 'diario'])->name('relatorios.diario');
+    Route::get('relatorios/parecer-descritivo', [ParecerDescritivoController::class, 'form'])->name('relatorios.parecer-descritivo.form');
+    Route::get('relatorios/parecer-descritivo/unidades', [ParecerDescritivoController::class, 'unidades'])->name('relatorios.parecer-descritivo.unidades');
+    Route::get('relatorios/parecer-descritivo/turmas', [ParecerDescritivoController::class, 'turmas'])->name('relatorios.parecer-descritivo.turmas');
+    Route::get('relatorios/parecer-descritivo/disciplinas', [ParecerDescritivoController::class, 'disciplinas'])->name('relatorios.parecer-descritivo.disciplinas');
+    Route::get('relatorios/parecer-descritivo/alunos', [ParecerDescritivoController::class, 'alunos'])->name('relatorios.parecer-descritivo.alunos');
+    Route::get('relatorios/parecer-descritivo/gerar', [ParecerDescritivoController::class, 'gerar'])->name('relatorios.parecer-descritivo.gerar');
     Route::get('relatorios/alunos-por-turma', [AlunosPorTurmaRelatorioController::class, 'form'])->name('relatorios.alunos-por-turma.form');
     Route::get('relatorios/alunos-por-turma/gerar', [AlunosPorTurmaRelatorioController::class, 'gerar'])->name('relatorios.alunos-por-turma.gerar');
     Route::get('relatorios/dados-alunos-turma', [DadosAlunosTurmaController::class, 'form'])->name('relatorios.dados-alunos-turma.form');
@@ -383,6 +393,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('parametros/medias-escola/{mediaEscola}', [MediaEscolaController::class, 'update'])->name('parametros.medias-escola.update');
         Route::delete('parametros/medias-escola/{mediaEscola}', [MediaEscolaController::class, 'destroy'])->name('parametros.medias-escola.destroy');
         Route::post('parametros/medias-escola/replicar', [MediaEscolaController::class, 'replicar'])->name('parametros.medias-escola.replicar');
+
+        Route::post('parametros/conceitos', [ConceitoController::class, 'store'])->name('parametros.conceitos.store');
+        Route::put('parametros/conceitos/{conceito}', [ConceitoController::class, 'update'])->name('parametros.conceitos.update');
+        Route::delete('parametros/conceitos/{conceito}', [ConceitoController::class, 'destroy'])->name('parametros.conceitos.destroy');
+
+        Route::post('parametros/situacoes-bloqueio', [SituacaoBloqueioController::class, 'store'])->name('parametros.situacoes-bloqueio.store');
+        Route::delete('parametros/situacoes-bloqueio/{situacaoBloqueio}', [SituacaoBloqueioController::class, 'destroy'])->name('parametros.situacoes-bloqueio.destroy');
 
         Route::post('parametros/grade-horarios', [GradeHorarioController::class, 'store'])->name('parametros.grade-horarios.store');
         Route::put('parametros/grade-horarios/{gradeHorario}', [GradeHorarioController::class, 'update'])->name('parametros.grade-horarios.update');

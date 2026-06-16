@@ -28,6 +28,16 @@ class RelatorioCentralController extends Controller
         ]);
     }
 
+    public function diario(): Response
+    {
+        return Inertia::render('relatorios/Index', [
+            'relatorios' => $this->filtrar('diario'),
+            'titulo'     => 'Relatórios do Diário',
+            'subtitulo'  => 'Relatórios do diário de classe.',
+            'grupo'      => 'diario',
+        ]);
+    }
+
     private function filtrar(string $grupo): array
     {
         return array_values(array_filter(

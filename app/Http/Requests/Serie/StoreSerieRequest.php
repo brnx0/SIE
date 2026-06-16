@@ -45,7 +45,7 @@ class StoreSerieRequest extends FormRequest
                     ['nullable']
                 ),
                 'string',
-                Rule::in(['por_disciplina', 'por_unidade']),
+                Rule::in(['por_aluno', 'por_disciplina']),
             ],
             'ser_promo_ser_id_1' => ['nullable', 'integer', 'exists:edu_serie,ser_id'],
             'ser_promo_ser_id_2' => ['nullable', 'integer', 'exists:edu_serie,ser_id'],

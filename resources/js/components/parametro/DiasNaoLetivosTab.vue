@@ -76,6 +76,7 @@ const errors = ref<Record<string, string>>({});
 const emptyForm = (): DiaNaoLetivoFormData => ({
     dnl_anl_id:    selectedAnlId.value,
     dnl_dt_dia:    '',
+    dnl_dt_fim:    '',
     dnl_descricao: '',
 });
 
@@ -92,6 +93,7 @@ const openEdit = (d: DiaNaoLetivo) => {
     editing.value = d;
     form.dnl_anl_id    = d.dnl_anl_id;
     form.dnl_dt_dia    = d.dnl_dt_dia.slice(0, 10);
+    form.dnl_dt_fim    = d.dnl_dt_fim ? d.dnl_dt_fim.slice(0, 10) : '';
     form.dnl_descricao = d.dnl_descricao;
     errors.value = {};
     showForm.value = true;
@@ -110,6 +112,7 @@ const save = () => {
     const data: Record<string, any> = {
         dnl_anl_id:    form.dnl_anl_id,
         dnl_dt_dia:    form.dnl_dt_dia,
+        dnl_dt_fim:    form.dnl_dt_fim || null,
         dnl_descricao: form.dnl_descricao,
     };
 
@@ -197,7 +200,7 @@ const onAnoChange = () => {
             </h4>
             <div class="grid gap-4 sm:grid-cols-12">
                 <div class="grid gap-1.5 sm:col-span-3">
-                    <FormLabel for="dnl_dt_dia" :required="true">Data</FormLabel>
+                    <FormLabel for="dnl_dt_dia" :required="true">Data{{ form.dnl_dt_fim ? ' início' : '' }}</FormLabel>
                     <Input
                         id="dnl_dt_dia"
                         v-model="form.dnl_dt_dia"
@@ -206,7 +209,18 @@ const onAnoChange = () => {
                     />
                     <InputError :message="errors.dnl_dt_dia" />
                 </div>
-                <div class="grid gap-1.5 sm:col-span-9">
+                <div class="grid gap-1.5 sm:col-span-3">
+                    <FormLabel for="dnl_dt_fim">Data fim <span class="text-xs font-normal text-muted-foreground">(opcional)</span></FormLabel>
+                    <Input
+                        id="dnl_dt_fim"
+                        v-model="form.dnl_dt_fim"
+                        type="date"
+                        :min="form.dnl_dt_dia || undefined"
+                        :class="{ 'border-red-500 ring-1 ring-red-500': errors.dnl_dt_fim }"
+                    />
+                    <InputError :message="errors.dnl_dt_fim" />
+                </div>
+                <div class="grid gap-1.5 sm:col-span-6">
                     <FormLabel for="dnl_descricao" :required="true">Descrição</FormLabel>
                     <Input
                         id="dnl_descricao"
@@ -255,7 +269,9 @@ const onAnoChange = () => {
                         :key="d.dnl_id"
                         :class="idx % 2 === 0 ? 'bg-white dark:bg-transparent' : 'bg-slate-50 dark:bg-slate-900/40'"
                     >
-                        <td class="px-3 py-2 font-medium">{{ fmtDate(d.dnl_dt_dia) }}</td>
+                        <td class="px-3 py-2 font-medium">
+                            {{ fmtDate(d.dnl_dt_dia) }}<template v-if="d.dnl_dt_fim"> a {{ fmtDate(d.dnl_dt_fim) }}</template>
+                        </td>
                         <td class="px-3 py-2">{{ d.dnl_descricao }}</td>
                         <td class="px-3 py-2 text-right">
                             <div class="flex justify-end gap-1">

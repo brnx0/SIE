@@ -17,6 +17,7 @@ class DiaNaoLetivo extends Model
     protected $fillable = [
         'dnl_anl_id',
         'dnl_dt_dia',
+        'dnl_dt_fim',
         'dnl_descricao',
         'dnl_created_by_id',
         'dnl_updated_by_id',
@@ -24,6 +25,7 @@ class DiaNaoLetivo extends Model
 
     protected $casts = [
         'dnl_dt_dia' => 'date',
+        'dnl_dt_fim' => 'date',
     ];
 
     public function anoLetivo(): BelongsTo

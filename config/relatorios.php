@@ -2,6 +2,14 @@
 
 return [
     [
+        'slug'      => 'parecer-descritivo',
+        'titulo'    => 'Parecer Descritivo',
+        'descricao' => 'Pareceres descritivos dos alunos de uma turma por período (bimestre/trimestre).',
+        'categoria' => 'Diário',
+        'grupo'     => 'diario',
+        'icone'     => 'NotebookPen',
+    ],
+    [
         'slug'      => 'alunos-por-turma',
         'titulo'    => 'Alunos por Turma',
         'descricao' => 'Lista nominal com dados pessoais, situação e contato dos alunos por turma.',

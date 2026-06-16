@@ -47,14 +47,14 @@ class AvaliacaoDescritivaController extends Controller
             ]);
         }
 
-        $modo = $tipo === 'por_unidade' ? 'por_unidade' : 'por_disciplina';
+        $modo = $tipo === 'por_aluno' ? 'por_aluno' : 'por_disciplina';
 
         // Lançamentos já existentes para o contexto, conforme a granularidade da série.
         $existentesQuery = DiarioAvaliacaoDescritiva::query()
             ->where('dad_tur_id', $turId)
             ->where('dad_uni_id', $uniId);
 
-        $modo === 'por_unidade'
+        $modo === 'por_aluno'
             ? $existentesQuery->whereNull('dad_dis_id')
             : $existentesQuery->where('dad_dis_id', $disId);
 
@@ -109,8 +109,8 @@ class AvaliacaoDescritivaController extends Controller
             'Fora do período de lançamento. A edição só é permitida dentro do período selecionado (incluindo a extensão).'
         );
 
-        // "por_unidade" => 1 registro por período (disciplina nula); "por_disciplina" => usa a disciplina.
-        $disId = $tipo === 'por_unidade' ? null : (int) $data['dad_dis_id'];
+        // "por_aluno" => 1 registro por período (disciplina nula); "por_disciplina" => usa a disciplina.
+        $disId = $tipo === 'por_aluno' ? null : (int) $data['dad_dis_id'];
 
         $registro = DiarioAvaliacaoDescritiva::updateOrCreate(
             [
@@ -148,7 +148,7 @@ class AvaliacaoDescritivaController extends Controller
 
     /**
      * Tipo de avaliação descritiva configurado na série da turma
-     * ('por_unidade' | 'por_disciplina') ou null se não configurado.
+     * ('por_aluno' | 'por_disciplina') ou null se não configurado.
      */
     private function tipoDescritivaSerie(int $turId): ?string
     {

@@ -102,6 +102,7 @@ export interface DiaNaoLetivo {
     dnl_id: number;
     dnl_anl_id: number;
     dnl_dt_dia: string;
+    dnl_dt_fim?: string | null;
     dnl_descricao: string;
     dnl_created_at?: string | null;
     dnl_updated_at?: string | null;
@@ -110,6 +111,7 @@ export interface DiaNaoLetivo {
 export interface DiaNaoLetivoFormData {
     dnl_anl_id: number | null;
     dnl_dt_dia: string;
+    dnl_dt_fim: string;
     dnl_descricao: string;
     _method?: 'put';
 }
@@ -127,6 +129,33 @@ export interface MediaEscolaFormData {
     mde_esc_id: number | null;
     mde_media: number | '';
     _method?: 'put';
+}
+
+export interface Conceito {
+    cnc_id: number;
+    cnc_sigla: string;
+    cnc_descricao: string;
+    cnc_limite_inferior: number | string;
+    cnc_limite_superior: number | string;
+}
+
+export interface ConceitoFormData {
+    cnc_sigla: string;
+    cnc_descricao: string;
+    cnc_limite_inferior: number | '';
+    cnc_limite_superior: number | '';
+    _method?: 'put';
+}
+
+export interface TurmaAlunoSituacaoResumo {
+    tas_cod: number;
+    tas_descricao: string;
+}
+
+export interface SituacaoBloqueio {
+    sba_id: number;
+    sba_tas_cod: number;
+    situacao?: TurmaAlunoSituacaoResumo | null;
 }
 
 export interface AtendimentoAee {
