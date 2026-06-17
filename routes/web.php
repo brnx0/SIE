@@ -323,6 +323,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::get('quadro-horario/escolas', [\App\Http\Controllers\Diario\QuadroHorarioController::class, 'lookupEscolas'])->name('quadro-horario.escolas');
         Route::get('quadro-horario/turmas', [\App\Http\Controllers\Diario\QuadroHorarioController::class, 'lookupTurmas'])->name('quadro-horario.turmas');
+        Route::get('quadro-horario/grade', [\App\Http\Controllers\Diario\QuadroHorarioController::class, 'grade'])->name('quadro-horario.grade');
         Route::get('planos/escolas', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'lookupEscolas'])->name('planos.escolas');
         Route::get('planos/turmas', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'lookupTurmas'])->name('planos.turmas');
         Route::get('planos/disciplinas', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'lookupDisciplinas'])->name('planos.disciplinas');

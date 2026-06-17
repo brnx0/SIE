@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AvaliacaoDescritivaPanel from '@/components/diario/AvaliacaoDescritivaPanel.vue';
+import QuadroHorarioPanel from '@/components/diario/QuadroHorarioPanel.vue';
 import LocalCombobox from '@/components/common/LocalCombobox.vue';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,7 +14,7 @@ import type {
     ProfessorResumoDiario,
 } from '@/types/diario';
 import { Head } from '@inertiajs/vue3';
-import { BookOpenCheck, ClipboardList } from 'lucide-vue-next';
+import { BookOpenCheck, CalendarClock, ClipboardList } from 'lucide-vue-next';
 import { computed, onMounted, ref, watch } from 'vue';
 
 const props = defineProps<{
@@ -182,8 +183,20 @@ const contextoCompleto = computed(() => !!(anlId.value && escId.value && turId.v
 
 // Módulos do diário (compartilham os mesmos filtros). Carregam só quando o
 // usuário aciona o gatilho (clique no módulo) — nunca imediato.
+// req: 'turma' = basta a turma selecionada · 'completo' = exige contexto completo.
 const moduloAtivo = ref<string | null>(null);
-const modulos = [{ key: 'avaliacao-descritiva', label: 'Avaliação Descritiva', icon: ClipboardList }];
+const modulos = [
+    { key: 'quadro-horario', label: 'Quadro de Horário', icon: CalendarClock, req: 'turma' },
+    { key: 'avaliacao-descritiva', label: 'Avaliação Descritiva', icon: ClipboardList, req: 'completo' },
+];
+const moduloPronto = (req: string) => (req === 'turma' ? !!turId.value : contextoCompleto.value);
+
+// Painel renderizado de fato (módulo ativo + requisitos atendidos).
+const painelVisivel = computed(() => {
+    if (moduloAtivo.value === 'quadro-horario') return !!turId.value;
+    if (moduloAtivo.value === 'avaliacao-descritiva') return contextoCompleto.value;
+    return false;
+});
 
 // Trocar qualquer filtro descarta o módulo carregado (exige novo clique).
 watch(() => [anlId.value, escId.value, turId.value, disId.value, uniId.value], () => {
@@ -259,26 +272,37 @@ const semVinculo = computed(() => props.anosLetivos.length === 0);
             </section>
 
             <!-- Módulos do diário (mesmos filtros; carregam sob demanda) -->
-            <section v-if="!semVinculo && contextoCompleto" class="rounded-xl border bg-card p-4 shadow-sm">
-                <h2 class="mb-3 text-sm font-semibold text-muted-foreground">Diário</h2>
+            <section v-if="!semVinculo && turId" class="rounded-xl border bg-card p-4 shadow-sm">
+                <h2 class="mb-3 text-sm font-semibold text-muted-foreground">Módulos</h2>
                 <div class="flex flex-wrap gap-2">
                     <button
                         v-for="m in modulos"
                         :key="m.key"
                         type="button"
+                        :disabled="!moduloPronto(m.req)"
+                        :title="!moduloPronto(m.req) ? 'Selecione disciplina e período para este módulo.' : ''"
                         :class="[
                             'flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition',
                             moduloAtivo === m.key
                                 ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300'
-                                : 'border-input text-foreground hover:border-indigo-300 hover:bg-muted/50',
+                                : moduloPronto(m.req)
+                                    ? 'border-input text-foreground hover:border-indigo-300 hover:bg-muted/50'
+                                    : 'cursor-not-allowed border-dashed border-input text-muted-foreground/50',
                         ]"
-                        @click="moduloAtivo = m.key"
+                        @click="moduloPronto(m.req) && (moduloAtivo = m.key)"
                     >
                         <component :is="m.icon" class="size-4" />
                         {{ m.label }}
                     </button>
                 </div>
             </section>
+
+            <!-- Módulo ativo: Quadro de Horário (depende só da turma) -->
+            <QuadroHorarioPanel
+                v-if="!semVinculo && turId && moduloAtivo === 'quadro-horario'"
+                :key="`qh-${turId}`"
+                :tur-id="turId!"
+            />
 
             <!-- Módulo ativo: Avaliação Descritiva -->
             <AvaliacaoDescritivaPanel
@@ -291,17 +315,17 @@ const semVinculo = computed(() => props.anosLetivos.length === 0);
                 :uni-id="uniId!"
             />
 
-            <!-- Estados de espera (sem contexto ou nenhum módulo acionado) -->
+            <!-- Estados de espera (sem turma ou nenhum módulo acionado) -->
             <section
-                v-if="!semVinculo && !(contextoCompleto && moduloAtivo)"
+                v-if="!semVinculo && !painelVisivel"
                 class="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed bg-card/50 p-10 text-center"
             >
                 <BookOpenCheck class="size-8 text-muted-foreground" />
                 <p class="text-sm text-muted-foreground">
                     {{
-                        contextoCompleto
+                        turId
                             ? 'Selecione um módulo acima para carregar.'
-                            : 'Selecione escola, turma, disciplina e período para começar.'
+                            : 'Selecione escola e turma para começar.'
                     }}
                 </p>
             </section>

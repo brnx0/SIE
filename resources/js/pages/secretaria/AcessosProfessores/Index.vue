@@ -67,7 +67,8 @@ const todosMarcados = computed(() =>
 
 function toggle(id: number) {
     const s = new Set(selecionados.value);
-    s.has(id) ? s.delete(id) : s.add(id);
+    if (s.has(id)) s.delete(id);
+    else s.add(id);
     selecionados.value = s;
 }
 function toggleTodos() {
@@ -231,11 +232,10 @@ const motivoClass = (m: string) => {
                             <template v-else>Nenhum registro</template>
                         </span>
                         <div v-if="professores.last_page > 1" class="flex flex-wrap gap-1">
-                            <component
-                                :is="link.url ? 'a' : 'span'"
+                            <a
                                 v-for="(link, i) in professores.links"
                                 :key="i"
-                                :href="link.url ?? undefined"
+                                :href="link.url ?? '#'"
                                 v-html="link.label"
                                 :class="['rounded-md px-3 py-1 text-xs', link.active ? 'bg-indigo-600 text-white' : 'border bg-background hover:bg-muted', !link.url && 'pointer-events-none opacity-40']"
                                 @click.prevent="link.url && router.visit(link.url, { preserveState: true, preserveScroll: true })"

@@ -87,6 +87,68 @@ class QuadroHorarioController extends Controller
         ]);
     }
 
+    /**
+     * Retorna a grade horária de uma turma em JSON (visualização no Diário de Classe).
+     * Somente leitura — depende apenas da turma selecionada.
+     */
+    public function grade(Request $request): JsonResponse
+    {
+        $this->abortIfNotProfessor();
+
+        $funId = (int) $request->user()->fun_id;
+        $turId = (int) $request->input('tur_id');
+
+        if (! $turId) {
+            return response()->json(['turma' => null, 'horarios' => [], 'gradeHorarios' => []]);
+        }
+
+        $t = Turma::query()
+            ->where('tur_id', $turId)
+            ->with([
+                'escola:esc_id,esc_nome',
+                'serie:ser_id,ser_nome',
+                'horarios.funcionario:fun_id,fun_nome',
+                'horarios.disciplina:dis_id,dis_nome',
+            ])
+            ->first();
+
+        abort_unless($t, 404);
+        $this->assertTurmaDoProfessor($t, $funId, $request);
+
+        $gradeHorarios = GradeHorario::where('grh_seg_id', $t->tur_seg_id)
+            ->when($t->tur_turno !== 'INTEGRAL', fn ($q) => $q->where('grh_turno', self::TURNO_MAP[$t->tur_turno] ?? $t->tur_turno))
+            ->orderBy('grh_ordem')
+            ->get(['grh_id', 'grh_turno', 'grh_hora', 'grh_ordem']);
+
+        // Sábados letivos do ano letivo da turma: cada um espelha um dia da semana (1=Seg..5=Sex).
+        $sabadosLetivos = DB::table('cfg_sabado_letivo')
+            ->where('sbl_anl_id', $t->tur_anl_id)
+            ->orderBy('sbl_dt_sabado')
+            ->get(['sbl_id', 'sbl_dt_sabado', 'sbl_dia_semana']);
+
+        return response()->json([
+            'turma' => [
+                'tur_id'                 => $t->tur_id,
+                'tur_nome'               => $t->tur_nome,
+                'tur_turno'              => $t->tur_turno,
+                'tur_dias_funcionamento' => $t->tur_dias_funcionamento,
+                'serie'                  => $t->serie ? ['ser_id' => $t->serie->ser_id, 'ser_nome' => $t->serie->ser_nome] : null,
+                'escola'                 => $t->escola ? ['esc_id' => $t->escola->esc_id, 'esc_nome' => $t->escola->esc_nome] : null,
+            ],
+            'horarios' => $t->horarios->map(fn ($h) => [
+                'trh_id'      => $h->trh_id,
+                'trh_tempo'   => $h->trh_tempo,
+                'trh_dia'     => $h->trh_dia,
+                'trh_hora'    => $h->trh_hora,
+                'trh_fl_tc'   => (bool) $h->trh_fl_tc,
+                'funcionario' => $h->funcionario ? ['fun_id' => $h->funcionario->fun_id, 'fun_nome' => $h->funcionario->fun_nome] : null,
+                'disciplina'  => $h->disciplina ? ['dis_id' => $h->disciplina->dis_id, 'dis_nome' => $h->disciplina->dis_nome] : null,
+            ])->values(),
+            'gradeHorarios'  => $gradeHorarios,
+            'sabadosLetivos' => $sabadosLetivos,
+        ]);
+    }
+
     public function lookupEscolas(Request $request): JsonResponse
     {
         $this->abortIfNotProfessor();
