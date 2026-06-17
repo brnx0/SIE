@@ -184,6 +184,12 @@ class NotaController extends Controller
         $this->abortIfNotLeciona($request, (int) $avaliacao->ava_tur_id, (int) $avaliacao->ava_dis_id);
         $this->assertPeriodoAberto((int) $avaliacao->ava_uni_id);
 
+        abort_if(
+            $avaliacao->ava_dt && Carbon::parse($avaliacao->ava_dt)->startOfDay()->gt(now()->startOfDay()),
+            422,
+            'Não é possível lançar notas em uma avaliação com data futura.'
+        );
+
         $valor = $data['nta_valor'] === null || $data['nta_valor'] === '' ? null : (float) $data['nta_valor'];
         if ($valor !== null && $valor > (float) $avaliacao->ava_valor) {
             throw ValidationException::withMessages([

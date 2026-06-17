@@ -99,10 +99,19 @@ const colunas = computed(() => [...regulares.value, ...recuperacoes.value]);
 const somaValores = computed(() => regulares.value.reduce((s, a) => s + Number(a.ava_valor), 0));
 const valorDisponivel = computed(() => Math.max(0, Math.round((10 - somaValores.value) * 100) / 100));
 
+// Avaliação com data futura: não permite lançamento e fica fora da média.
+const hojeStr = () => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
+const isFutura = (a: Avaliacao) => (a.ava_dt?.substring(0, 10) ?? '') > hojeStr();
+
 const media = (row: AlunoRow): number | null => {
-    if (regulares.value.length === 0) return null;
-    const soma = regulares.value.reduce((s, a) => s + (Number(row.notas[a.ava_id]) || 0), 0);
-    return Math.round((soma / regulares.value.length) * 100) / 100;
+    const regs = regulares.value.filter((a) => !isFutura(a));
+    if (regs.length === 0) return null;
+    // Média = SOMA das notas das avaliações regulares (não divide).
+    const soma = regs.reduce((s, a) => s + (Number(row.notas[a.ava_id]) || 0), 0);
+    return Math.round(soma * 100) / 100;
 };
 
 const filtrados = computed(() => {
@@ -124,7 +133,7 @@ const salvarNota = async (row: AlunoRow, ava: Avaliacao) => {
     const key = ck(row.aln_id, ava.ava_id);
     const st = cell[key] ?? (cell[key] = { status: 'idle', timer: null });
     if (st.timer) { clearTimeout(st.timer); st.timer = null; }
-    if (!periodoAberto.value) return;
+    if (!periodoAberto.value || isFutura(ava)) return;
 
     const raw = row.notas[ava.ava_id];
     const valor = raw === null || (raw as any) === '' ? null : Number(raw);
@@ -149,7 +158,7 @@ const salvarNota = async (row: AlunoRow, ava: Avaliacao) => {
 };
 
 const aoDigitarNota = (row: AlunoRow, ava: Avaliacao) => {
-    if (!periodoAberto.value) return;
+    if (!periodoAberto.value || isFutura(ava)) return;
     const key = ck(row.aln_id, ava.ava_id);
     const st = cell[key] ?? (cell[key] = { status: 'idle', timer: null });
     st.status = 'dirty';
@@ -316,6 +325,7 @@ const podeSalvarAval = computed(() =>
                                     <div class="text-[10px] font-normal text-muted-foreground">
                                         {{ fmtDate(a.ava_dt) }} · /{{ Number(a.ava_valor).toFixed(2) }}
                                         <span v-if="a.ava_fl_recuperacao" class="font-semibold text-amber-700 dark:text-amber-300">· Rec</span>
+                                        <span v-if="isFutura(a)" class="font-semibold text-sky-600 dark:text-sky-400">· agendada</span>
                                     </div>
                                     <div class="mt-1 flex items-center justify-center gap-1">
                                         <button type="button" class="rounded p-0.5 hover:bg-muted" title="Editar" @click="abrirEdit(a)">
@@ -349,7 +359,8 @@ const podeSalvarAval = computed(() =>
                                             step="0.01"
                                             min="0"
                                             :max="a.ava_valor"
-                                            :disabled="!periodoAberto"
+                                            :disabled="!periodoAberto || isFutura(a)"
+                                            :title="isFutura(a) ? 'Avaliação agendada — lançamento liberado a partir da data.' : ''"
                                             :class="[
                                                 'h-8 w-16 rounded-md border bg-background px-1.5 text-center text-sm tabular-nums shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:opacity-60',
                                                 statusDe(row.aln_id, a.ava_id) === 'invalid' || statusDe(row.aln_id, a.ava_id) === 'error' ? 'border-rose-400' : 'border-input',
@@ -376,7 +387,7 @@ const podeSalvarAval = computed(() =>
                         </tbody>
                     </table>
                     <p class="mt-2 text-xs text-muted-foreground">
-                        Média = soma das notas das avaliações regulares ÷ quantidade de avaliações. Recuperação (âmbar) não entra na média.
+                        Média = soma das notas das avaliações regulares. Recuperação (âmbar) não entra na média.
                     </p>
                 </div>
             </template>
