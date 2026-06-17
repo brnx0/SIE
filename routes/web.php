@@ -324,6 +324,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('quadro-horario/escolas', [\App\Http\Controllers\Diario\QuadroHorarioController::class, 'lookupEscolas'])->name('quadro-horario.escolas');
         Route::get('quadro-horario/turmas', [\App\Http\Controllers\Diario\QuadroHorarioController::class, 'lookupTurmas'])->name('quadro-horario.turmas');
         Route::get('quadro-horario/grade', [\App\Http\Controllers\Diario\QuadroHorarioController::class, 'grade'])->name('quadro-horario.grade');
+
+        // Lançamento de notas (avaliação numérica / conceitual)
+        Route::get('notas/contexto', [\App\Http\Controllers\Diario\NotaController::class, 'contexto'])->name('notas.contexto');
+        Route::post('notas/avaliacoes', [\App\Http\Controllers\Diario\NotaController::class, 'storeAvaliacao'])->name('notas.avaliacoes.store');
+        Route::put('notas/avaliacoes/{avaliacao}', [\App\Http\Controllers\Diario\NotaController::class, 'updateAvaliacao'])->name('notas.avaliacoes.update');
+        Route::delete('notas/avaliacoes/{avaliacao}', [\App\Http\Controllers\Diario\NotaController::class, 'destroyAvaliacao'])->name('notas.avaliacoes.destroy');
+        Route::post('notas/salvar', [\App\Http\Controllers\Diario\NotaController::class, 'salvarNota'])->name('notas.salvar');
         Route::get('planos/escolas', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'lookupEscolas'])->name('planos.escolas');
         Route::get('planos/turmas', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'lookupTurmas'])->name('planos.turmas');
         Route::get('planos/disciplinas', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'lookupDisciplinas'])->name('planos.disciplinas');

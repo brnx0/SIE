@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import AvaliacaoDescritivaPanel from '@/components/diario/AvaliacaoDescritivaPanel.vue';
 import QuadroHorarioPanel from '@/components/diario/QuadroHorarioPanel.vue';
+import NotasNumericaPanel from '@/components/diario/NotasNumericaPanel.vue';
 import LocalCombobox from '@/components/common/LocalCombobox.vue';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,7 +15,7 @@ import type {
     ProfessorResumoDiario,
 } from '@/types/diario';
 import { Head } from '@inertiajs/vue3';
-import { BookOpenCheck, CalendarClock, ClipboardList } from 'lucide-vue-next';
+import { BookOpenCheck, CalendarClock, Calculator, ClipboardList, Pencil } from 'lucide-vue-next';
 import { computed, onMounted, ref, watch } from 'vue';
 
 const props = defineProps<{
@@ -181,19 +182,46 @@ watch(turId, () => {
 
 const contextoCompleto = computed(() => !!(anlId.value && escId.value && turId.value && disId.value && uniId.value));
 
+// Tipos de avaliação configurados na série da turma selecionada.
+const turmaSelecionada = computed(() => turmas.value.find((t) => Number(t.tur_id) === Number(turId.value)));
+const tiposAvaliacao = computed<string[]>(() => {
+    const v = turmaSelecionada.value?.ser_tipo_avaliacao as unknown;
+    if (Array.isArray(v)) return v as string[];
+    if (typeof v === 'string') {
+        try {
+            const p = JSON.parse(v);
+            return Array.isArray(p) ? p : [];
+        } catch {
+            return [];
+        }
+    }
+    return [];
+});
+
 // Módulos do diário (compartilham os mesmos filtros). Carregam só quando o
 // usuário aciona o gatilho (clique no módulo) — nunca imediato.
 // req: 'turma' = basta a turma selecionada · 'completo' = exige contexto completo.
 const moduloAtivo = ref<string | null>(null);
-const modulos = [
-    { key: 'quadro-horario', label: 'Quadro de Horário', icon: CalendarClock, req: 'turma' },
-    { key: 'avaliacao-descritiva', label: 'Avaliação Descritiva', icon: ClipboardList, req: 'completo' },
-];
+const modulos = computed(() => [
+    { key: 'quadro-horario', label: 'Quadro de Horário', icon: CalendarClock, req: 'turma', grupo: 'Consulta' },
+    ...(tiposAvaliacao.value.includes('numerica')
+        ? [{ key: 'notas-numerica', label: 'Avaliação Numérica', icon: Calculator, req: 'completo', grupo: 'Lançamentos' }]
+        : []),
+    { key: 'avaliacao-descritiva', label: 'Avaliação Descritiva', icon: ClipboardList, req: 'completo', grupo: 'Lançamentos' },
+]);
+
+// Seções de módulos, na ordem definida. Só grupos com itens aparecem.
+const grupos = computed(() =>
+    ['Consulta', 'Lançamentos']
+        .map((titulo) => ({ titulo, itens: modulos.value.filter((m) => m.grupo === titulo) }))
+        .filter((g) => g.itens.length > 0),
+);
 const moduloPronto = (req: string) => (req === 'turma' ? !!turId.value : contextoCompleto.value);
 
 // Painel renderizado de fato (módulo ativo + requisitos atendidos).
 const painelVisivel = computed(() => {
     if (moduloAtivo.value === 'quadro-horario') return !!turId.value;
+    if (moduloAtivo.value === 'notas-numerica') return contextoCompleto.value;
     if (moduloAtivo.value === 'avaliacao-descritiva') return contextoCompleto.value;
     return false;
 });
@@ -201,6 +229,19 @@ const painelVisivel = computed(() => {
 // Trocar qualquer filtro descarta o módulo carregado (exige novo clique).
 watch(() => [anlId.value, escId.value, turId.value, disId.value, uniId.value], () => {
     moduloAtivo.value = null;
+});
+
+// Recolhe o contexto quando um painel abre, dando destaque aos dados gerados.
+const contextoExpandido = ref(true);
+watch(painelVisivel, (v) => { if (v) contextoExpandido.value = false; });
+const contextoChips = computed(() => {
+    const c: { k: string; v: string }[] = [];
+    if (anlId.value) c.push({ k: 'Ano', v: labelDe(itemsAno.value, anlId.value) });
+    if (escId.value) c.push({ k: 'Escola', v: labelDe(itemsEscola.value, escId.value) });
+    if (turId.value) c.push({ k: 'Turma', v: labelDe(itemsTurma.value, turId.value) });
+    if (disId.value) c.push({ k: 'Disciplina', v: labelDe(itemsDisciplina.value, disId.value) });
+    if (uniId.value) c.push({ k: labelPeriodo.value, v: labelDe(itemsUnidade.value, uniId.value) });
+    return c;
 });
 
 onMounted(() => {
@@ -213,9 +254,9 @@ const semVinculo = computed(() => props.anosLetivos.length === 0);
 <template>
     <Head title="Diário de Classe" />
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="mx-auto flex w-[95%] flex-col gap-6 p-4 md:p-6">
+        <div class="mx-auto flex w-[95%] flex-col gap-4 p-4 md:p-6">
             <!-- Header -->
-            <div class="flex flex-wrap items-center justify-between gap-3">
+            <div v-if="!painelVisivel" class="flex flex-wrap items-center justify-between gap-3">
                 <div>
                     <h1 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">Diário de Classe</h1>
                     <p class="mt-1 text-sm text-muted-foreground">Selecione o contexto para lançamentos do diário.</p>
@@ -230,9 +271,43 @@ const semVinculo = computed(() => props.anosLetivos.length === 0);
                 Você não possui turmas vinculadas em nenhum ano letivo. Procure a coordenação para regularizar sua lotação.
             </div>
 
+            <!-- Barra de contexto compacta (quando recolhido) -->
+            <section
+                v-if="!semVinculo && !contextoExpandido"
+                class="flex flex-wrap items-center gap-2 rounded-xl border bg-card px-4 py-2.5 shadow-sm"
+            >
+                <span class="text-sm font-semibold text-slate-700 dark:text-slate-200">{{ professor.fun_nome }}</span>
+                <span class="text-muted-foreground/40">·</span>
+                <span
+                    v-for="chip in contextoChips"
+                    :key="chip.k"
+                    class="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-xs"
+                >
+                    <span class="text-muted-foreground">{{ chip.k }}:</span>
+                    <span class="font-medium">{{ chip.v }}</span>
+                </span>
+                <button
+                    type="button"
+                    class="ml-auto inline-flex items-center gap-1.5 rounded-md border border-input px-2.5 py-1.5 text-xs font-medium text-foreground transition hover:bg-muted"
+                    @click="contextoExpandido = true"
+                >
+                    <Pencil class="size-3.5" /> Alterar
+                </button>
+            </section>
+
             <!-- Seletor de contexto -->
-            <section v-else class="rounded-xl border bg-card p-4 shadow-sm">
-                <h2 class="mb-3 text-sm font-semibold text-muted-foreground">Contexto</h2>
+            <section v-if="!semVinculo && contextoExpandido" class="rounded-xl border bg-card p-4 shadow-sm">
+                <div class="mb-3 flex items-center justify-between">
+                    <h2 class="text-sm font-semibold text-muted-foreground">Contexto</h2>
+                    <button
+                        v-if="painelVisivel"
+                        type="button"
+                        class="text-xs font-medium text-indigo-600 hover:underline dark:text-indigo-400"
+                        @click="contextoExpandido = false"
+                    >
+                        Recolher
+                    </button>
+                </div>
                 <div class="grid grid-cols-1 gap-4 md:grid-cols-12">
                     <div class="md:col-span-12">
                         <Label>Professor</Label>
@@ -272,28 +347,30 @@ const semVinculo = computed(() => props.anosLetivos.length === 0);
             </section>
 
             <!-- Módulos do diário (mesmos filtros; carregam sob demanda) -->
-            <section v-if="!semVinculo && turId" class="rounded-xl border bg-card p-4 shadow-sm">
-                <h2 class="mb-3 text-sm font-semibold text-muted-foreground">Módulos</h2>
-                <div class="flex flex-wrap gap-2">
-                    <button
-                        v-for="m in modulos"
-                        :key="m.key"
-                        type="button"
-                        :disabled="!moduloPronto(m.req)"
-                        :title="!moduloPronto(m.req) ? 'Selecione disciplina e período para este módulo.' : ''"
-                        :class="[
-                            'flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition',
-                            moduloAtivo === m.key
-                                ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300'
-                                : moduloPronto(m.req)
-                                    ? 'border-input text-foreground hover:border-indigo-300 hover:bg-muted/50'
-                                    : 'cursor-not-allowed border-dashed border-input text-muted-foreground/50',
-                        ]"
-                        @click="moduloPronto(m.req) && (moduloAtivo = m.key)"
-                    >
-                        <component :is="m.icon" class="size-4" />
-                        {{ m.label }}
-                    </button>
+            <section v-if="!semVinculo && turId" class="flex flex-col gap-4 rounded-xl border bg-card p-4 shadow-sm">
+                <div v-for="grupo in grupos" :key="grupo.titulo">
+                    <h2 class="mb-2 text-sm font-semibold text-muted-foreground">{{ grupo.titulo }}</h2>
+                    <div class="flex flex-wrap gap-2">
+                        <button
+                            v-for="m in grupo.itens"
+                            :key="m.key"
+                            type="button"
+                            :disabled="!moduloPronto(m.req)"
+                            :title="!moduloPronto(m.req) ? 'Selecione disciplina e período para este módulo.' : ''"
+                            :class="[
+                                'flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition',
+                                moduloAtivo === m.key
+                                    ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300'
+                                    : moduloPronto(m.req)
+                                        ? 'border-input text-foreground hover:border-indigo-300 hover:bg-muted/50'
+                                        : 'cursor-not-allowed border-dashed border-input text-muted-foreground/50',
+                            ]"
+                            @click="moduloPronto(m.req) && (moduloAtivo = m.key)"
+                        >
+                            <component :is="m.icon" class="size-4" />
+                            {{ m.label }}
+                        </button>
+                    </div>
                 </div>
             </section>
 
@@ -302,6 +379,17 @@ const semVinculo = computed(() => props.anosLetivos.length === 0);
                 v-if="!semVinculo && turId && moduloAtivo === 'quadro-horario'"
                 :key="`qh-${turId}`"
                 :tur-id="turId!"
+            />
+
+            <!-- Módulo ativo: Avaliação Numérica -->
+            <NotasNumericaPanel
+                v-if="!semVinculo && contextoCompleto && moduloAtivo === 'notas-numerica'"
+                :key="`nn-${turId}-${disId}-${uniId}`"
+                :anl-id="anlId!"
+                :esc-id="escId!"
+                :tur-id="turId!"
+                :dis-id="disId!"
+                :uni-id="uniId!"
             />
 
             <!-- Módulo ativo: Avaliação Descritiva -->

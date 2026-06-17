@@ -93,11 +93,17 @@ class DiarioController extends Controller
             ->where('t.tur_modalidade', 'REGULAR')
             ->when($anlId, fn ($q) => $q->where('t.tur_anl_id', $anlId))
             ->when($escId, fn ($q) => $q->where('t.tur_esc_id', $escId))
-            ->select('t.tur_id', 't.tur_nome', 't.tur_esc_id', 't.tur_anl_id', 't.tur_ser_id', 'e.esc_nome', 's.ser_nome')
+            ->select('t.tur_id', 't.tur_nome', 't.tur_esc_id', 't.tur_anl_id', 't.tur_ser_id', 'e.esc_nome', 's.ser_nome', DB::raw('s.ser_tipo_avaliacao::text as ser_tipo_avaliacao'))
             ->distinct()
             ->orderBy('s.ser_nome')
             ->orderBy('t.tur_nome')
-            ->get();
+            ->get()
+            ->map(function ($t) {
+                $decoded = json_decode((string) $t->ser_tipo_avaliacao, true);
+                $t->ser_tipo_avaliacao = is_array($decoded) ? $decoded : [];
+
+                return $t;
+            });
 
         return response()->json($turmas);
     }

@@ -18,10 +18,12 @@ class InstrumentoAvaliativo extends Model
     protected $fillable = [
         'iav_nome',
         'iav_fl_ativo',
+        'iav_fl_recuperacao',
     ];
 
     protected $casts = [
-        'iav_fl_ativo' => 'boolean',
+        'iav_fl_ativo'       => 'boolean',
+        'iav_fl_recuperacao' => 'boolean',
     ];
 
     public function scopeSearch(Builder $query, string $q): Builder

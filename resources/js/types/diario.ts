@@ -15,6 +15,7 @@ export interface PlanoTurmaResumo {
     tur_ser_id: number;
     esc_nome?: string;
     ser_nome?: string;
+    ser_tipo_avaliacao?: string[];
 }
 
 export interface PlanoDisciplinaResumo {
