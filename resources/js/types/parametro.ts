@@ -139,6 +139,7 @@ export interface Conceito {
     cnc_descricao: string;
     cnc_limite_inferior: number | string;
     cnc_limite_superior: number | string;
+    cnc_peso: number;
 }
 
 export interface ConceitoFormData {
@@ -146,6 +147,7 @@ export interface ConceitoFormData {
     cnc_descricao: string;
     cnc_limite_inferior: number | '';
     cnc_limite_superior: number | '';
+    cnc_peso: number | '';
     _method?: 'put';
 }
 

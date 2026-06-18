@@ -14,6 +14,8 @@ use App\Http\Controllers\Relatorio\DeclaracaoMatriculaController;
 use App\Http\Controllers\Relatorio\FormacaoClassesAeeController;
 use App\Http\Controllers\Relatorio\FormacaoClassesController;
 use App\Http\Controllers\Relatorio\ParecerDescritivoController;
+use App\Http\Controllers\Relatorio\BoletimController;
+use App\Http\Controllers\Relatorio\MapaNotasController;
 use App\Http\Controllers\Relatorio\RelatorioCentralController;
 use App\Http\Controllers\Api\AlunoSearchController;
 use App\Http\Controllers\Api\BairroController;
@@ -186,6 +188,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('relatorios/parecer-descritivo/disciplinas', [ParecerDescritivoController::class, 'disciplinas'])->name('relatorios.parecer-descritivo.disciplinas');
     Route::get('relatorios/parecer-descritivo/alunos', [ParecerDescritivoController::class, 'alunos'])->name('relatorios.parecer-descritivo.alunos');
     Route::get('relatorios/parecer-descritivo/gerar', [ParecerDescritivoController::class, 'gerar'])->name('relatorios.parecer-descritivo.gerar');
+
+    // Boletim do aluno
+    Route::get('relatorios/boletim', [BoletimController::class, 'form'])->name('relatorios.boletim.form');
+    Route::get('relatorios/boletim/turmas', [BoletimController::class, 'turmas'])->name('relatorios.boletim.turmas');
+    Route::get('relatorios/boletim/unidades', [BoletimController::class, 'unidades'])->name('relatorios.boletim.unidades');
+    Route::get('relatorios/boletim/alunos', [BoletimController::class, 'alunos'])->name('relatorios.boletim.alunos');
+    Route::get('relatorios/boletim/gerar', [BoletimController::class, 'gerar'])->name('relatorios.boletim.gerar');
+
+    // Mapa de notas da turma
+    Route::get('relatorios/mapa-notas', [MapaNotasController::class, 'form'])->name('relatorios.mapa-notas.form');
+    Route::get('relatorios/mapa-notas/turmas', [MapaNotasController::class, 'turmas'])->name('relatorios.mapa-notas.turmas');
+    Route::get('relatorios/mapa-notas/unidades', [MapaNotasController::class, 'unidades'])->name('relatorios.mapa-notas.unidades');
+    Route::get('relatorios/mapa-notas/gerar', [MapaNotasController::class, 'gerar'])->name('relatorios.mapa-notas.gerar');
     Route::get('relatorios/alunos-por-turma', [AlunosPorTurmaRelatorioController::class, 'form'])->name('relatorios.alunos-por-turma.form');
     Route::get('relatorios/alunos-por-turma/gerar', [AlunosPorTurmaRelatorioController::class, 'gerar'])->name('relatorios.alunos-por-turma.gerar');
     Route::get('relatorios/dados-alunos-turma', [DadosAlunosTurmaController::class, 'form'])->name('relatorios.dados-alunos-turma.form');

@@ -40,6 +40,7 @@ interface AlunoRow {
 const carregando = ref(true);
 const erro = ref<string | null>(null);
 const periodoAberto = ref(true);
+const turmaAberta = ref(true);
 const tipoDisponivel = ref(true);
 const avaliacoes = ref<Avaliacao[]>([]);
 const instrumentos = ref<Instrumento[]>([]);
@@ -79,6 +80,7 @@ const carregar = async () => {
         const data = await r.json();
         tipoDisponivel.value = data.tipo_disponivel ?? false;
         periodoAberto.value = data.periodo_aberto ?? false;
+        turmaAberta.value = data.turma_aberta ?? true;
         avaliacoes.value = data.avaliacoes ?? [];
         instrumentos.value = data.instrumentos ?? [];
         rows.value = ((data.alunos ?? []) as any[]).map((a) => ({
@@ -143,7 +145,7 @@ const salvarNota = async (row: AlunoRow, ava: Avaliacao) => {
     const key = ck(row.aln_id, ava.ava_id);
     const st = ensureCell(key);
     if (st.timer) { clearTimeout(st.timer); st.timer = null; }
-    if (!periodoAberto.value || isFutura(ava) || row.bloqueado) return;
+    if (!periodoAberto.value || !turmaAberta.value || isFutura(ava) || row.bloqueado) return;
 
     const raw = row.notas[ava.ava_id];
     const valor = raw === null || (raw as any) === '' ? null : Number(raw);
@@ -168,7 +170,7 @@ const salvarNota = async (row: AlunoRow, ava: Avaliacao) => {
 };
 
 const aoDigitarNota = (row: AlunoRow, ava: Avaliacao) => {
-    if (!periodoAberto.value || isFutura(ava) || row.bloqueado) return;
+    if (!periodoAberto.value || !turmaAberta.value || isFutura(ava) || row.bloqueado) return;
     const key = ck(row.aln_id, ava.ava_id);
     const st = ensureCell(key);
     st.status = 'dirty';
@@ -285,7 +287,7 @@ const podeSalvarAval = computed(() =>
                 >
                     <RefreshCw :class="['size-3.5', carregando && 'animate-spin']" /> Atualizar
                 </button>
-                <Button type="button" size="sm" class="bg-indigo-600 hover:bg-indigo-700" :disabled="!periodoAberto" @click="abrirNovo">
+                <Button type="button" size="sm" class="bg-indigo-600 hover:bg-indigo-700" :disabled="!periodoAberto || !turmaAberta" @click="abrirNovo">
                     <Plus class="mr-1.5 size-4" /> Nova avaliação
                 </Button>
             </div>
@@ -302,8 +304,13 @@ const podeSalvarAval = computed(() =>
                 A série desta turma não possui avaliação numérica configurada.
             </div>
             <template v-else>
+                <!-- Aviso turma fechada -->
+                <div v-if="!turmaAberta" class="mb-3 flex items-center gap-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-800 dark:border-rose-900 dark:bg-rose-950/40 dark:text-rose-200">
+                    <TriangleAlert class="size-4 shrink-0" />
+                    A turma não está aberta. O lançamento só é permitido com a turma aberta — apenas consulta.
+                </div>
                 <!-- Aviso período -->
-                <div v-if="!periodoAberto" class="mb-3 flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
+                <div v-else-if="!periodoAberto" class="mb-3 flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
                     <TriangleAlert class="size-4 shrink-0" />
                     Período de lançamento fechado para esta unidade. As notas ficam apenas para consulta.
                 </div>
@@ -370,8 +377,8 @@ const podeSalvarAval = computed(() =>
                                             step="0.01"
                                             min="0"
                                             :max="a.ava_valor"
-                                            :disabled="!periodoAberto || isFutura(a) || row.bloqueado"
-                                            :title="row.bloqueado ? 'Aluno já possui notas conceituais nesta matéria.' : (isFutura(a) ? 'Avaliação agendada — lançamento liberado a partir da data.' : '')"
+                                            :disabled="!periodoAberto || !turmaAberta || isFutura(a) || row.bloqueado"
+                                            :title="!turmaAberta ? 'Turma não está aberta.' : (row.bloqueado ? 'Aluno já possui notas conceituais nesta matéria.' : (isFutura(a) ? 'Avaliação agendada — lançamento liberado a partir da data.' : ''))"
                                             :class="[
                                                 'h-8 w-16 rounded-md border bg-background px-1.5 text-center text-sm tabular-nums shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:opacity-60',
                                                 statusDe(row.aln_id, a.ava_id) === 'invalid' || statusDe(row.aln_id, a.ava_id) === 'error' ? 'border-rose-400' : 'border-input',

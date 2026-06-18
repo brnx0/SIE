@@ -45,6 +45,7 @@ interface AlunoRow {
 const carregando = ref(true);
 const erro = ref<string | null>(null);
 const periodoAberto = ref(true);
+const turmaAberta = ref(true);
 const tipoDisponivel = ref(true);
 const modo = ref<'faixa' | 'conceito'>('faixa');
 const avaliacoes = ref<Avaliacao[]>([]);
@@ -82,6 +83,7 @@ const carregar = async () => {
         const data = await r.json();
         tipoDisponivel.value = data.tipo_disponivel ?? false;
         periodoAberto.value = data.periodo_aberto ?? false;
+        turmaAberta.value = data.turma_aberta ?? true;
         modo.value = data.modo === 'conceito' ? 'conceito' : 'faixa';
         avaliacoes.value = data.avaliacoes ?? [];
         instrumentos.value = data.instrumentos ?? [];
@@ -128,8 +130,15 @@ const somaValores = computed(() => regulares.value.reduce((s, a) => s + (Number(
 const valorDisponivel = computed(() => Math.max(0, Math.round((10 - somaValores.value) * 100) / 100));
 
 // ── Cálculo do conceito ──────────────────────────────────────────────────────
-const faixaDe = (total: number): Conceito | null =>
-    conceitos.value.find((c) => total >= Number(c.cnc_limite_inferior) && total <= Number(c.cnc_limite_superior)) ?? null;
+// Faixa do total: maior conceito cujo limite inferior ≤ total (faixas contíguas, sem vãos).
+const faixaDe = (total: number): Conceito | null => {
+    const lista = [...conceitos.value].sort((a, b) => Number(a.cnc_limite_inferior) - Number(b.cnc_limite_inferior));
+    let res: Conceito | null = null;
+    for (const c of lista) {
+        if (total >= Number(c.cnc_limite_inferior)) res = c;
+    }
+    return res ?? lista[0] ?? null;
+};
 const conceitoPorId = (id: number | null): Conceito | null =>
     id ? conceitos.value.find((c) => c.cnc_id === id) ?? null : null;
 const pesoPorId = (id: number | null): number => conceitoPorId(id)?.cnc_peso ?? 0;
@@ -224,7 +233,7 @@ const salvarNota = async (row: AlunoRow, ava: Avaliacao) => {
     const key = ck(row.aln_id, ava.ava_id);
     const st = ensureCell(key);
     if (st.timer) { clearTimeout(st.timer); st.timer = null; }
-    if (!periodoAberto.value || isFutura(ava) || row.bloqueado || semValor(ava)) return;
+    if (!periodoAberto.value || !turmaAberta.value || isFutura(ava) || row.bloqueado || semValor(ava)) return;
 
     const body: Record<string, unknown> = { nta_ava_id: ava.ava_id, nta_aln_id: row.aln_id };
     if (modo.value === 'conceito') {
@@ -263,7 +272,7 @@ const salvarNota = async (row: AlunoRow, ava: Avaliacao) => {
 const erroLinha = ref<string | null>(null);
 
 const aoDigitarNota = (row: AlunoRow, ava: Avaliacao) => {
-    if (!periodoAberto.value || isFutura(ava) || row.bloqueado || semValor(ava)) return;
+    if (!periodoAberto.value || !turmaAberta.value || isFutura(ava) || row.bloqueado || semValor(ava)) return;
     const key = ck(row.aln_id, ava.ava_id);
     const st = ensureCell(key);
     st.status = 'dirty';
@@ -373,7 +382,7 @@ const podeSalvarAval = computed(() =>
                 <button type="button" class="inline-flex items-center gap-1.5 rounded-md border border-input px-2.5 py-1.5 text-xs font-medium text-muted-foreground transition hover:bg-muted" :disabled="carregando" @click="carregar">
                     <RefreshCw :class="['size-3.5', carregando && 'animate-spin']" /> Atualizar
                 </button>
-                <Button type="button" size="sm" class="bg-fuchsia-600 hover:bg-fuchsia-700" :disabled="!periodoAberto" @click="abrirNovo">
+                <Button type="button" size="sm" class="bg-fuchsia-600 hover:bg-fuchsia-700" :disabled="!periodoAberto || !turmaAberta" @click="abrirNovo">
                     <Plus class="mr-1.5 size-4" /> Nova avaliação
                 </Button>
             </div>
@@ -391,7 +400,10 @@ const podeSalvarAval = computed(() =>
                 <div v-if="erroLinha" class="mb-3 flex items-center gap-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">
                     <TriangleAlert class="size-4 shrink-0" /> {{ erroLinha }}
                 </div>
-                <div v-if="!periodoAberto" class="mb-3 flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
+                <div v-if="!turmaAberta" class="mb-3 flex items-center gap-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-800 dark:border-rose-900 dark:bg-rose-950/40 dark:text-rose-200">
+                    <TriangleAlert class="size-4 shrink-0" /> A turma não está aberta. O lançamento só é permitido com a turma aberta — apenas consulta.
+                </div>
+                <div v-else-if="!periodoAberto" class="mb-3 flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
                     <TriangleAlert class="size-4 shrink-0" /> Período de lançamento fechado para esta unidade. Apenas consulta.
                 </div>
 
@@ -441,8 +453,8 @@ const podeSalvarAval = computed(() =>
                                             v-if="modo === 'faixa'"
                                             v-model="row.notas[a.ava_id].valor"
                                             type="number" step="0.01" min="0" :max="a.ava_valor ?? undefined"
-                                            :disabled="!periodoAberto || isFutura(a) || row.bloqueado || semValor(a)"
-                                            :title="semValor(a) ? 'Defina o valor da avaliação antes de lançar notas.' : ''"
+                                            :disabled="!periodoAberto || !turmaAberta || isFutura(a) || row.bloqueado || semValor(a)"
+                                            :title="!turmaAberta ? 'Turma não está aberta.' : (semValor(a) ? 'Defina o valor da avaliação antes de lançar notas.' : '')"
                                             :class="['h-8 w-16 rounded-md border bg-background px-1.5 text-center text-sm tabular-nums shadow-sm focus:outline-none focus:ring-1 focus:ring-fuchsia-500 disabled:opacity-60', statusDe(row.aln_id, a.ava_id) === 'invalid' || statusDe(row.aln_id, a.ava_id) === 'error' ? 'border-rose-400' : 'border-input']"
                                             @input="aoDigitarNota(row, a)"
                                             @blur="salvarNota(row, a)"
@@ -451,7 +463,7 @@ const podeSalvarAval = computed(() =>
                                         <select
                                             v-else
                                             v-model.number="row.notas[a.ava_id].cnc_id"
-                                            :disabled="!periodoAberto || isFutura(a) || row.bloqueado"
+                                            :disabled="!periodoAberto || !turmaAberta || isFutura(a) || row.bloqueado"
                                             class="h-8 w-16 rounded-md border border-input bg-background px-1 text-center text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-fuchsia-500 disabled:opacity-60"
                                             @change="salvarNota(row, a)"
                                         >

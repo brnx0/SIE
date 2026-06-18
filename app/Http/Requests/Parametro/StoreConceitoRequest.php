@@ -24,6 +24,7 @@ class StoreConceitoRequest extends FormRequest
             'cnc_descricao'       => ['required', 'string', 'max:100'],
             'cnc_limite_inferior' => ['required', 'numeric', 'min:0'],
             'cnc_limite_superior' => ['required', 'numeric', 'gte:cnc_limite_inferior'],
+            'cnc_peso'            => ['required', 'integer', 'min:1', 'max:99'],
         ];
     }
 
@@ -42,6 +43,7 @@ class StoreConceitoRequest extends FormRequest
             'cnc_descricao'       => 'descrição',
             'cnc_limite_inferior' => 'limite inferior',
             'cnc_limite_superior' => 'limite superior',
+            'cnc_peso'            => 'peso',
         ];
     }
 }

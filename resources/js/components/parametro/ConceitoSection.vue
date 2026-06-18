@@ -23,6 +23,7 @@ const emptyForm = (): ConceitoFormData => ({
     cnc_descricao: '',
     cnc_limite_inferior: '',
     cnc_limite_superior: '',
+    cnc_peso: '',
 });
 
 const form = reactive<ConceitoFormData>(emptyForm());
@@ -40,6 +41,7 @@ const openEdit = (c: Conceito) => {
     form.cnc_descricao = c.cnc_descricao;
     form.cnc_limite_inferior = Number(c.cnc_limite_inferior);
     form.cnc_limite_superior = Number(c.cnc_limite_superior);
+    form.cnc_peso = Number(c.cnc_peso);
     errors.value = {};
     showForm.value = true;
 };
@@ -59,6 +61,7 @@ const save = () => {
         cnc_descricao: form.cnc_descricao,
         cnc_limite_inferior: form.cnc_limite_inferior,
         cnc_limite_superior: form.cnc_limite_superior,
+        cnc_peso: form.cnc_peso,
     };
 
     const opts = {
@@ -115,11 +118,18 @@ const fmtNum = (n: number | string) => Number(n).toFixed(2);
                         :class="{ 'border-red-500 ring-1 ring-red-500': errors.cnc_sigla }" />
                     <InputError :message="errors.cnc_sigla" />
                 </div>
-                <div class="grid gap-1.5 sm:col-span-6">
+                <div class="grid gap-1.5 sm:col-span-4">
                     <FormLabel for="cnc_descricao" :required="true">Descrição</FormLabel>
                     <Input id="cnc_descricao" v-model="form.cnc_descricao" maxlength="100" placeholder="Ex.: Excelente"
                         :class="{ 'border-red-500 ring-1 ring-red-500': errors.cnc_descricao }" />
                     <InputError :message="errors.cnc_descricao" />
+                </div>
+                <div class="grid gap-1.5 sm:col-span-2">
+                    <FormLabel for="cnc_peso" :required="true">Peso</FormLabel>
+                    <Input id="cnc_peso" v-model.number="form.cnc_peso" type="number" min="1" max="99" step="1"
+                        inputmode="numeric" placeholder="Ex.: 1"
+                        :class="{ 'border-red-500 ring-1 ring-red-500': errors.cnc_peso }" />
+                    <InputError :message="errors.cnc_peso" />
                 </div>
                 <div class="grid gap-1.5 sm:col-span-2">
                     <FormLabel for="cnc_limite_inferior" :required="true">Limite Inferior</FormLabel>
@@ -155,12 +165,13 @@ const fmtNum = (n: number | string) => Number(n).toFixed(2);
                         <th class="px-3 py-2 font-semibold">Descrição</th>
                         <th class="px-3 py-2 text-center font-semibold">Limite Inferior</th>
                         <th class="px-3 py-2 text-center font-semibold">Limite Superior</th>
+                        <th class="px-3 py-2 text-center font-semibold">Peso</th>
                         <th class="px-3 py-2 text-right font-semibold">Ações</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-if="conceitos.length === 0">
-                        <td colspan="5" class="px-3 py-6 text-center text-muted-foreground">Nenhum conceito cadastrado.</td>
+                        <td colspan="6" class="px-3 py-6 text-center text-muted-foreground">Nenhum conceito cadastrado.</td>
                     </tr>
                     <tr v-for="(c, idx) in conceitos" :key="c.cnc_id"
                         :class="idx % 2 === 0 ? 'bg-white dark:bg-transparent' : 'bg-slate-50 dark:bg-slate-900/40'">
@@ -168,6 +179,7 @@ const fmtNum = (n: number | string) => Number(n).toFixed(2);
                         <td class="px-3 py-2">{{ c.cnc_descricao }}</td>
                         <td class="px-3 py-2 text-center">{{ fmtNum(c.cnc_limite_inferior) }}</td>
                         <td class="px-3 py-2 text-center">{{ fmtNum(c.cnc_limite_superior) }}</td>
+                        <td class="px-3 py-2 text-center font-semibold">{{ c.cnc_peso }}</td>
                         <td class="px-3 py-2 text-right">
                             <div class="flex justify-end gap-1">
                                 <Button type="button" variant="ghost" size="sm" @click="openEdit(c)" aria-label="Editar">

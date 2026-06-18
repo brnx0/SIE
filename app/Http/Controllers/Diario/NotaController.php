@@ -126,6 +126,7 @@ class NotaController extends Controller
         return response()->json([
             'tipo_disponivel' => true,
             'periodo_aberto'  => $this->periodoAberto($uniId),
+            'turma_aberta'    => $this->turmaAberta($turId),
             'modo'            => $this->conceitoModo($uniId),
             'instrumentos'    => $instrumentos,
             'conceitos'       => $conceitos,
@@ -138,6 +139,7 @@ class NotaController extends Controller
     {
         $data = $request->validated();
         $this->abortIfNotLeciona($request, (int) $data['ava_tur_id'], (int) $data['ava_dis_id']);
+        $this->assertTurmaAberta((int) $data['ava_tur_id']);
         $this->assertTipoSerie((int) $data['ava_tur_id'], $data['ava_tipo']);
         $this->assertPeriodoAberto((int) $data['ava_uni_id']);
 
@@ -169,6 +171,7 @@ class NotaController extends Controller
     {
         $data = $request->validated();
         $this->abortIfNotLeciona($request, (int) $avaliacao->ava_tur_id, (int) $avaliacao->ava_dis_id);
+        $this->assertTurmaAberta((int) $avaliacao->ava_tur_id);
         $this->assertPeriodoAberto((int) $avaliacao->ava_uni_id);
 
         $recuperacao = $this->instrumentoRecuperacao((int) $data['ava_iav_id']);
@@ -196,6 +199,7 @@ class NotaController extends Controller
     public function destroyAvaliacao(\Illuminate\Http\Request $request, DiarioAvaliacao $avaliacao): JsonResponse
     {
         $this->abortIfNotLeciona($request, (int) $avaliacao->ava_tur_id, (int) $avaliacao->ava_dis_id);
+        $this->assertTurmaAberta((int) $avaliacao->ava_tur_id);
         $this->assertPeriodoAberto((int) $avaliacao->ava_uni_id);
 
         DB::transaction(function () use ($avaliacao) {
@@ -212,6 +216,7 @@ class NotaController extends Controller
 
         $avaliacao = DiarioAvaliacao::findOrFail($data['nta_ava_id']);
         $this->abortIfNotLeciona($request, (int) $avaliacao->ava_tur_id, (int) $avaliacao->ava_dis_id);
+        $this->assertTurmaAberta((int) $avaliacao->ava_tur_id);
         $this->assertPeriodoAberto((int) $avaliacao->ava_uni_id);
 
         abort_if(
@@ -316,6 +321,20 @@ class NotaController extends Controller
             in_array($tipo, $this->tiposSerie($turId), true),
             422,
             'Esta série não possui o tipo de avaliação selecionado configurado.'
+        );
+    }
+
+    private function turmaAberta(int $turId): bool
+    {
+        return DB::table('edu_turma')->where('tur_id', $turId)->value('tur_situacao') === 'ABERTA';
+    }
+
+    private function assertTurmaAberta(int $turId): void
+    {
+        abort_unless(
+            $this->turmaAberta($turId),
+            422,
+            'A turma não está aberta. O lançamento só é permitido com a turma aberta.'
         );
     }
 

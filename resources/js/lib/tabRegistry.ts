@@ -58,6 +58,8 @@ const PATH_LABELS: Record<string, string> = {
     '/relatorios-escola': 'Relatórios Gerais',
     '/relatorios-diario': 'Relatórios do Diário',
     '/relatorios/parecer-descritivo': 'Parecer Descritivo',
+    '/relatorios/boletim': 'Boletim do Aluno',
+    '/relatorios/mapa-notas': 'Mapa de Notas',
     '/relatorios/alunos-por-turma': 'Alunos por Turma',
     '/relatorios/declaracao-matricula': 'Declaração de Matrícula',
     '/relatorios/formacao-classes': 'Formação de Classes',

@@ -10,6 +10,22 @@ return [
         'icone'     => 'NotebookPen',
     ],
     [
+        'slug'      => 'boletim',
+        'titulo'    => 'Boletim do Aluno',
+        'descricao' => 'Notas e conceitos por disciplina e período (ou consolidado), por aluno ou turma inteira.',
+        'categoria' => 'Diário',
+        'grupo'     => 'diario',
+        'icone'     => 'GraduationCap',
+    ],
+    [
+        'slug'      => 'mapa-notas',
+        'titulo'    => 'Mapa de Notas',
+        'descricao' => 'Quadro da turma com a média/conceito de cada aluno por disciplina (unidade ou consolidado).',
+        'categoria' => 'Diário',
+        'grupo'     => 'diario',
+        'icone'     => 'Table',
+    ],
+    [
         'slug'      => 'alunos-por-turma',
         'titulo'    => 'Alunos por Turma',
         'descricao' => 'Lista nominal com dados pessoais, situação e contato dos alunos por turma.',
