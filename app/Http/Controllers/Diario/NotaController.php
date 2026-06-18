@@ -9,6 +9,7 @@ use App\Models\Diario\DiarioAvaliacao;
 use App\Models\Diario\DiarioNota;
 use App\Models\Diario\InstrumentoAvaliativo;
 use App\Models\Matricula\Matricula;
+use App\Models\Parametro\Conceito;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -59,15 +60,35 @@ class NotaController extends Controller
 
         $avaIds = $avaliacoes->pluck('ava_id')->all();
 
-        // Notas: [ava_id][aln_id] => valor
+        // Notas: [ava_id][aln_id] => ['valor'=>, 'cnc_id'=>]
         $notas = DiarioNota::query()
             ->whereIn('nta_ava_id', $avaIds ?: [0])
-            ->get(['nta_ava_id', 'nta_aln_id', 'nta_valor']);
+            ->get(['nta_ava_id', 'nta_aln_id', 'nta_valor', 'nta_cnc_id']);
 
         $notaMap = [];
         foreach ($notas as $n) {
-            $notaMap[$n->nta_ava_id][$n->nta_aln_id] = $n->nta_valor;
+            $notaMap[$n->nta_ava_id][$n->nta_aln_id] = [
+                'valor'  => $n->nta_valor === null ? null : (float) $n->nta_valor,
+                'cnc_id' => $n->nta_cnc_id,
+            ];
         }
+
+        // Alunos já com notas do OUTRO tipo nesta matéria (exclusão mútua) → bloqueados.
+        $outroTipo = $tipo === DiarioAvaliacao::TIPO_CONCEITUAL
+            ? DiarioAvaliacao::TIPO_NUMERICA
+            : DiarioAvaliacao::TIPO_CONCEITUAL;
+        $bloqueados = array_flip(
+            DiarioNota::query()
+                ->where(fn ($q) => $q->whereNotNull('nta_valor')->orWhereNotNull('nta_cnc_id'))
+                ->whereHas('avaliacao', fn ($q) => $q
+                    ->where('ava_tur_id', $turId)
+                    ->where('ava_dis_id', $disId)
+                    ->where('ava_tipo', $outroTipo))
+                ->pluck('nta_aln_id')
+                ->map(fn ($v) => (int) $v)
+                ->unique()
+                ->all()
+        );
 
         $alunos = Matricula::query()
             ->where('tma_tur_id', $turId)
@@ -78,10 +99,10 @@ class NotaController extends Controller
             ->filter(fn ($m) => $m->aluno)
             ->sortBy(fn ($m) => $m->aluno->aln_nome, SORT_FLAG_CASE | SORT_NATURAL)
             ->values()
-            ->map(function ($m) use ($avaliacoes, $notaMap) {
+            ->map(function ($m) use ($avaliacoes, $notaMap, $bloqueados) {
                 $notas = [];
                 foreach ($avaliacoes as $a) {
-                    $notas[$a->ava_id] = $notaMap[$a->ava_id][$m->aluno->aln_id] ?? null;
+                    $notas[$a->ava_id] = $notaMap[$a->ava_id][$m->aluno->aln_id] ?? ['valor' => null, 'cnc_id' => null];
                 }
 
                 return [
@@ -89,6 +110,7 @@ class NotaController extends Controller
                     'aln_nome'         => $m->aluno->aln_nome,
                     'aln_nr_matricula' => $m->aluno->aln_nr_matricula,
                     'notas'            => $notas,
+                    'bloqueado'        => isset($bloqueados[$m->aluno->aln_id]),
                 ];
             });
 
@@ -97,10 +119,16 @@ class NotaController extends Controller
             ->orderBy('iav_nome')
             ->get(['iav_id', 'iav_nome', 'iav_fl_recuperacao']);
 
+        $conceitos = Conceito::query()
+            ->orderBy('cnc_peso')
+            ->get(['cnc_id', 'cnc_sigla', 'cnc_descricao', 'cnc_limite_inferior', 'cnc_limite_superior', 'cnc_peso']);
+
         return response()->json([
             'tipo_disponivel' => true,
             'periodo_aberto'  => $this->periodoAberto($uniId),
+            'modo'            => $this->conceitoModo($uniId),
             'instrumentos'    => $instrumentos,
+            'conceitos'       => $conceitos,
             'avaliacoes'      => $avaliacoes->map(fn ($a) => $this->mapAvaliacao($a)),
             'alunos'          => $alunos,
         ]);
@@ -114,8 +142,9 @@ class NotaController extends Controller
         $this->assertPeriodoAberto((int) $data['ava_uni_id']);
 
         $recuperacao = $this->instrumentoRecuperacao((int) $data['ava_iav_id']);
-        if (! $recuperacao) {
-            $this->assertSomaValores($data, null, (float) $data['ava_valor']);
+        $valor = $this->resolverValor($data['ava_tipo'], (int) $data['ava_uni_id'], $data['ava_valor'] ?? null);
+        if ($valor !== null && ! $recuperacao) {
+            $this->assertSomaValores($data, null, (float) $valor);
         }
 
         $avaliacao = DiarioAvaliacao::create([
@@ -129,7 +158,7 @@ class NotaController extends Controller
             'ava_tipo'           => $data['ava_tipo'],
             'ava_descricao'      => $data['ava_descricao'] ?? null,
             'ava_dt'             => $data['ava_dt'],
-            'ava_valor'          => $data['ava_valor'],
+            'ava_valor'          => $valor,
             'ava_fl_recuperacao' => $recuperacao,
         ]);
 
@@ -143,20 +172,21 @@ class NotaController extends Controller
         $this->assertPeriodoAberto((int) $avaliacao->ava_uni_id);
 
         $recuperacao = $this->instrumentoRecuperacao((int) $data['ava_iav_id']);
-        if (! $recuperacao) {
+        $valor = $this->resolverValor($avaliacao->ava_tipo, (int) $avaliacao->ava_uni_id, $data['ava_valor'] ?? null);
+        if ($valor !== null && ! $recuperacao) {
             $this->assertSomaValores([
                 'ava_tur_id' => $avaliacao->ava_tur_id,
                 'ava_dis_id' => $avaliacao->ava_dis_id,
                 'ava_uni_id' => $avaliacao->ava_uni_id,
                 'ava_tipo'   => $avaliacao->ava_tipo,
-            ], (int) $avaliacao->ava_id, (float) $data['ava_valor']);
+            ], (int) $avaliacao->ava_id, (float) $valor);
         }
 
         $avaliacao->update([
             'ava_iav_id'         => $data['ava_iav_id'],
             'ava_descricao'      => $data['ava_descricao'] ?? null,
             'ava_dt'             => $data['ava_dt'],
-            'ava_valor'          => $data['ava_valor'],
+            'ava_valor'          => $valor,
             'ava_fl_recuperacao' => $recuperacao,
         ]);
 
@@ -190,11 +220,35 @@ class NotaController extends Controller
             'Não é possível lançar notas em uma avaliação com data futura.'
         );
 
-        $valor = $data['nta_valor'] === null || $data['nta_valor'] === '' ? null : (float) $data['nta_valor'];
-        if ($valor !== null && $valor > (float) $avaliacao->ava_valor) {
-            throw ValidationException::withMessages([
-                'nta_valor' => "A nota não pode ser maior que o valor da avaliação ({$avaliacao->ava_valor}).",
-            ]);
+        // Exclusão mútua: aluno não pode ter notas dos dois tipos na mesma matéria.
+        $this->assertSemOutroTipo(
+            (int) $avaliacao->ava_tur_id,
+            (int) $avaliacao->ava_dis_id,
+            (int) $data['nta_aln_id'],
+            $avaliacao->ava_tipo,
+        );
+
+        $modo = $this->conceitoModo((int) $avaliacao->ava_uni_id);
+        $conceitoDireto = $avaliacao->ava_tipo === DiarioAvaliacao::TIPO_CONCEITUAL && $modo === 'conceito';
+
+        if ($conceitoDireto) {
+            $payload = [
+                'nta_cnc_id'     => $data['nta_cnc_id'] ?? null,
+                'nta_valor'      => null,
+                'nta_deleted_at' => null,
+            ];
+        } else {
+            $valor = $data['nta_valor'] === null || $data['nta_valor'] === '' ? null : (float) $data['nta_valor'];
+            if ($valor !== null && $valor > (float) $avaliacao->ava_valor) {
+                throw ValidationException::withMessages([
+                    'nta_valor' => "A nota não pode ser maior que o valor da avaliação ({$avaliacao->ava_valor}).",
+                ]);
+            }
+            $payload = [
+                'nta_valor'      => $valor,
+                'nta_cnc_id'     => null,
+                'nta_deleted_at' => null,
+            ];
         }
 
         $registro = DiarioNota::withTrashed()->updateOrCreate(
@@ -202,10 +256,7 @@ class NotaController extends Controller
                 'nta_ava_id' => $avaliacao->ava_id,
                 'nta_aln_id' => $data['nta_aln_id'],
             ],
-            [
-                'nta_valor'      => $valor,
-                'nta_deleted_at' => null,
-            ],
+            $payload,
         );
 
         return response()->json(['ok' => true, 'nta_id' => $registro->nta_id, 'updated_at' => $registro->nta_updated_at]);
@@ -326,6 +377,60 @@ class NotaController extends Controller
         return (bool) $inst->iav_fl_recuperacao;
     }
 
+    /** Modo do conceito no ano letivo da unidade: 'faixa' (número) ou 'conceito' (direto). */
+    private function conceitoModo(int $uniId): string
+    {
+        $modo = DB::table('cfg_unidade as u')
+            ->join('cfg_ano_letivo as a', 'a.anl_id', '=', 'u.uni_anl_id')
+            ->where('u.uni_id', $uniId)
+            ->value('a.anl_conceito_modo');
+
+        return $modo === 'conceito' ? 'conceito' : 'faixa';
+    }
+
+    /**
+     * Define o valor da avaliação conforme o tipo/modo.
+     * Numérica e conceitual-faixa exigem valor; conceitual-conceito não usa valor.
+     */
+    private function resolverValor(string $tipo, int $uniId, $valorInput): ?float
+    {
+        $usaValor = $tipo === DiarioAvaliacao::TIPO_NUMERICA
+            || ($tipo === DiarioAvaliacao::TIPO_CONCEITUAL && $this->conceitoModo($uniId) === 'faixa');
+
+        if (! $usaValor) {
+            return null;
+        }
+
+        $valor = $valorInput === null || $valorInput === '' ? null : (float) $valorInput;
+        abort_if($valor === null || $valor <= 0, 422, 'Informe o valor da avaliação.');
+
+        return $valor;
+    }
+
+    /** Exclusão mútua numérica × conceitual por aluno na mesma turma+disciplina. */
+    private function assertSemOutroTipo(int $turId, int $disId, int $alnId, string $tipo): void
+    {
+        $outro = $tipo === DiarioAvaliacao::TIPO_CONCEITUAL
+            ? DiarioAvaliacao::TIPO_NUMERICA
+            : DiarioAvaliacao::TIPO_CONCEITUAL;
+
+        $existe = DiarioNota::query()
+            ->where('nta_aln_id', $alnId)
+            ->where(fn ($q) => $q->whereNotNull('nta_valor')->orWhereNotNull('nta_cnc_id'))
+            ->whereHas('avaliacao', fn ($q) => $q
+                ->where('ava_tur_id', $turId)
+                ->where('ava_dis_id', $disId)
+                ->where('ava_tipo', $outro))
+            ->exists();
+
+        if ($existe) {
+            $labels = ['numerica' => 'numérica', 'conceitual' => 'conceitual'];
+            throw ValidationException::withMessages([
+                'nta_valor' => "Aluno já possui notas como {$labels[$outro]} nesta matéria. Remova-as para lançar como {$labels[$tipo]}.",
+            ]);
+        }
+    }
+
     private function mapAvaliacao(DiarioAvaliacao $a): array
     {
         return [
@@ -334,7 +439,7 @@ class NotaController extends Controller
             'iav_nome'           => $a->instrumento?->iav_nome,
             'ava_descricao'      => $a->ava_descricao,
             'ava_dt'             => optional($a->ava_dt)->format('Y-m-d'),
-            'ava_valor'          => (float) $a->ava_valor,
+            'ava_valor'          => $a->ava_valor === null ? null : (float) $a->ava_valor,
             'ava_fl_recuperacao' => (bool) $a->ava_fl_recuperacao,
         ];
     }

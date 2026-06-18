@@ -19,6 +19,7 @@ class Conceito extends Model
         'cnc_descricao',
         'cnc_limite_inferior',
         'cnc_limite_superior',
+        'cnc_peso',
         'cnc_created_by_id',
         'cnc_updated_by_id',
     ];
@@ -26,6 +27,7 @@ class Conceito extends Model
     protected $casts = [
         'cnc_limite_inferior' => 'decimal:2',
         'cnc_limite_superior' => 'decimal:2',
+        'cnc_peso'            => 'integer',
     ];
 
     public function createdBy(): BelongsTo

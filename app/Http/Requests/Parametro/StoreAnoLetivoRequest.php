@@ -31,6 +31,7 @@ class StoreAnoLetivoRequest extends FormRequest
             'anl_fl_aprovacao_conselho_freq' => ['boolean'],
             'anl_frequencia_minima' => ['required', 'numeric', 'between:0,100'],
             'anl_media_geral' => ['required', 'numeric', 'between:0,10'],
+            'anl_conceito_modo' => ['required', 'in:faixa,conceito'],
         ];
     }
 
@@ -68,6 +69,7 @@ class StoreAnoLetivoRequest extends FormRequest
             'anl_fl_aprovacao_conselho_freq' => 'aprovação por conselho por frequência',
             'anl_frequencia_minima' => 'frequência mínima',
             'anl_media_geral' => 'média geral',
+            'anl_conceito_modo' => 'modo do conceito',
         ];
     }
 

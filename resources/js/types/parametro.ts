@@ -41,6 +41,7 @@ export interface AnoLetivo {
     anl_fl_aprovacao_conselho_freq: boolean;
     anl_frequencia_minima: number | string | null;
     anl_media_geral: number | string | null;
+    anl_conceito_modo: 'faixa' | 'conceito' | null;
     anl_created_at: string | null;
     anl_updated_at: string | null;
     created_by?: AnoLetivoUserRef | null;
@@ -58,6 +59,7 @@ export interface AnoLetivoFormData {
     anl_fl_aprovacao_conselho_freq: boolean;
     anl_frequencia_minima: number | '';
     anl_media_geral: number | '';
+    anl_conceito_modo: 'faixa' | 'conceito';
     [key: string]: any;
 }
 

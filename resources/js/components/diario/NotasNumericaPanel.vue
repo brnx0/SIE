@@ -34,6 +34,7 @@ interface AlunoRow {
     aln_nome: string;
     aln_nr_matricula: string | null;
     notas: Record<number, number | null>;
+    bloqueado: boolean;
 }
 
 const carregando = ref(true);
@@ -50,6 +51,11 @@ type Status = 'idle' | 'dirty' | 'saving' | 'saved' | 'error' | 'invalid';
 const cell = reactive<Record<string, { status: Status; timer: number | null }>>({});
 const ck = (aln: number, ava: number) => `${aln}:${ava}`;
 const statusDe = (aln: number, ava: number): Status => cell[ck(aln, ava)]?.status ?? 'idle';
+// Garante a entrada e devolve o proxy reativo (não o objeto cru).
+const ensureCell = (key: string) => {
+    if (!cell[key]) cell[key] = { status: 'idle', timer: null };
+    return cell[key];
+};
 
 const csrf = (): Record<string, string> => {
     const m = document.cookie.match(/XSRF-TOKEN=([^;]+)/);
@@ -79,7 +85,11 @@ const carregar = async () => {
             aln_id: a.aln_id,
             aln_nome: a.aln_nome,
             aln_nr_matricula: a.aln_nr_matricula,
-            notas: { ...(a.notas ?? {}) },
+            // contexto devolve { valor, cnc_id } por avaliação — numérica usa só o valor
+            notas: Object.fromEntries(
+                Object.entries(a.notas ?? {}).map(([k, v]) => [k, (v as any)?.valor ?? null]),
+            ),
+            bloqueado: a.bloqueado ?? false,
         }));
         for (const k of Object.keys(cell)) delete cell[k];
     } catch {
@@ -131,9 +141,9 @@ const fmtDate = (d: string) => {
 
 const salvarNota = async (row: AlunoRow, ava: Avaliacao) => {
     const key = ck(row.aln_id, ava.ava_id);
-    const st = cell[key] ?? (cell[key] = { status: 'idle', timer: null });
+    const st = ensureCell(key);
     if (st.timer) { clearTimeout(st.timer); st.timer = null; }
-    if (!periodoAberto.value || isFutura(ava)) return;
+    if (!periodoAberto.value || isFutura(ava) || row.bloqueado) return;
 
     const raw = row.notas[ava.ava_id];
     const valor = raw === null || (raw as any) === '' ? null : Number(raw);
@@ -158,9 +168,9 @@ const salvarNota = async (row: AlunoRow, ava: Avaliacao) => {
 };
 
 const aoDigitarNota = (row: AlunoRow, ava: Avaliacao) => {
-    if (!periodoAberto.value || isFutura(ava)) return;
+    if (!periodoAberto.value || isFutura(ava) || row.bloqueado) return;
     const key = ck(row.aln_id, ava.ava_id);
-    const st = cell[key] ?? (cell[key] = { status: 'idle', timer: null });
+    const st = ensureCell(key);
     st.status = 'dirty';
     if (st.timer) clearTimeout(st.timer);
     st.timer = window.setTimeout(() => salvarNota(row, ava), 1200);
@@ -319,7 +329,7 @@ const podeSalvarAval = computed(() =>
                                     <div class="text-xs font-semibold text-slate-700 dark:text-slate-200">
                                         <span class="mx-auto block w-24 break-words leading-tight" :title="a.iav_nome ?? a.ava_descricao ?? ''">{{ a.iav_nome ?? a.ava_descricao }}</span>
                                     </div>
-                                    <div v-if="a.ava_descricao" class="mx-auto w-24 break-words text-[10px] font-normal italic leading-tight text-muted-foreground" :title="a.ava_descricao">
+                                    <div v-if="a.ava_descricao" class="mx-auto line-clamp-2 w-24 cursor-help break-words text-[10px] font-normal italic leading-tight text-muted-foreground" :title="a.ava_descricao">
                                         {{ a.ava_descricao }}
                                     </div>
                                     <div class="text-[10px] font-normal text-muted-foreground">
@@ -342,10 +352,11 @@ const podeSalvarAval = computed(() =>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="row in filtrados" :key="row.aln_id" class="hover:bg-muted/20">
-                                <td class="sticky left-0 z-10 border-b border-r bg-card px-3 py-1.5">
+                            <tr v-for="row in filtrados" :key="row.aln_id" :class="[row.bloqueado ? 'bg-muted/40 opacity-60' : 'hover:bg-muted/20']">
+                                <td :class="['sticky left-0 z-10 border-b border-r px-3 py-1.5', row.bloqueado ? 'bg-muted/40' : 'bg-card']">
                                     <div class="font-medium leading-tight">{{ row.aln_nome }}</div>
                                     <div v-if="row.aln_nr_matricula" class="text-[10px] text-muted-foreground">Mat. {{ row.aln_nr_matricula }}</div>
+                                    <div v-if="row.bloqueado" class="mt-0.5 text-[10px] font-medium text-amber-700 dark:text-amber-400">Já lançado como conceitual</div>
                                 </td>
                                 <td
                                     v-for="a in colunas"
@@ -359,8 +370,8 @@ const podeSalvarAval = computed(() =>
                                             step="0.01"
                                             min="0"
                                             :max="a.ava_valor"
-                                            :disabled="!periodoAberto || isFutura(a)"
-                                            :title="isFutura(a) ? 'Avaliação agendada — lançamento liberado a partir da data.' : ''"
+                                            :disabled="!periodoAberto || isFutura(a) || row.bloqueado"
+                                            :title="row.bloqueado ? 'Aluno já possui notas conceituais nesta matéria.' : (isFutura(a) ? 'Avaliação agendada — lançamento liberado a partir da data.' : '')"
                                             :class="[
                                                 'h-8 w-16 rounded-md border bg-background px-1.5 text-center text-sm tabular-nums shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:opacity-60',
                                                 statusDe(row.aln_id, a.ava_id) === 'invalid' || statusDe(row.aln_id, a.ava_id) === 'error' ? 'border-rose-400' : 'border-input',

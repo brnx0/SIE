@@ -29,6 +29,7 @@ class AnoLetivo extends Model
         'anl_fl_aprovacao_conselho_freq',
         'anl_frequencia_minima',
         'anl_media_geral',
+        'anl_conceito_modo',
         'anl_created_by_id',
         'anl_updated_by_id',
     ];

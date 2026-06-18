@@ -34,6 +34,7 @@ const form = useForm<AnoLetivoFormData>({
     anl_fl_aprovacao_conselho_freq: false,
     anl_frequencia_minima: '',
     anl_media_geral: '',
+    anl_conceito_modo: 'faixa',
 });
 
 const reset = () => {
@@ -48,6 +49,7 @@ const reset = () => {
         form.anl_fl_aprovacao_conselho_freq = props.initial.anl_fl_aprovacao_conselho_freq;
         form.anl_frequencia_minima = props.initial.anl_frequencia_minima != null ? Number(props.initial.anl_frequencia_minima) : '';
         form.anl_media_geral = props.initial.anl_media_geral != null ? Number(props.initial.anl_media_geral) : '';
+        form.anl_conceito_modo = props.initial.anl_conceito_modo ?? 'faixa';
     } else {
         form.reset();
         form.clearErrors();
@@ -174,6 +176,20 @@ const clampAno4Digitos = (field: keyof AnoLetivoFormData) => (e: Event) => {
                         :required="true"
                     />
                     <InputError :message="form.errors.anl_media_geral" />
+                </div>
+
+                <div class="grid gap-2 sm:col-span-2">
+                    <FormLabel :for="'anl_conceito_modo'" :required="true">Lançamento do Conceito</FormLabel>
+                    <select
+                        id="anl_conceito_modo"
+                        v-model="form.anl_conceito_modo"
+                        class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    >
+                        <option value="faixa">Por nota numérica (converte pela faixa)</option>
+                        <option value="conceito">Por conceito direto (I/S/H)</option>
+                    </select>
+                    <p class="text-xs text-muted-foreground">Define como a avaliação conceitual é lançada neste ano letivo.</p>
+                    <InputError :message="form.errors.anl_conceito_modo" />
                 </div>
 
                 <div class="flex items-center gap-3 sm:col-span-2">

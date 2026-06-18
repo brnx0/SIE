@@ -2,6 +2,7 @@
 import AvaliacaoDescritivaPanel from '@/components/diario/AvaliacaoDescritivaPanel.vue';
 import QuadroHorarioPanel from '@/components/diario/QuadroHorarioPanel.vue';
 import NotasNumericaPanel from '@/components/diario/NotasNumericaPanel.vue';
+import NotasConceitualPanel from '@/components/diario/NotasConceitualPanel.vue';
 import LocalCombobox from '@/components/common/LocalCombobox.vue';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,7 +16,7 @@ import type {
     ProfessorResumoDiario,
 } from '@/types/diario';
 import { Head } from '@inertiajs/vue3';
-import { BookOpenCheck, CalendarClock, Calculator, ClipboardList, Pencil } from 'lucide-vue-next';
+import { BookOpenCheck, CalendarClock, Calculator, ClipboardList, ListChecks, Pencil } from 'lucide-vue-next';
 import { computed, onMounted, ref, watch } from 'vue';
 
 const props = defineProps<{
@@ -207,6 +208,9 @@ const modulos = computed(() => [
     ...(tiposAvaliacao.value.includes('numerica')
         ? [{ key: 'notas-numerica', label: 'Avaliação Numérica', icon: Calculator, req: 'completo', grupo: 'Lançamentos' }]
         : []),
+    ...(tiposAvaliacao.value.includes('conceitual')
+        ? [{ key: 'notas-conceitual', label: 'Avaliação Conceitual', icon: ListChecks, req: 'completo', grupo: 'Lançamentos' }]
+        : []),
     { key: 'avaliacao-descritiva', label: 'Avaliação Descritiva', icon: ClipboardList, req: 'completo', grupo: 'Lançamentos' },
 ]);
 
@@ -218,10 +222,19 @@ const grupos = computed(() =>
 );
 const moduloPronto = (req: string) => (req === 'turma' ? !!turId.value : contextoCompleto.value);
 
+// Reclicar no módulo ativo força recarregar o painel (ex.: trocou parâmetro do ano).
+const recarregarSeq = ref(0);
+const selecionarModulo = (m: { key: string; req: string }) => {
+    if (!moduloPronto(m.req)) return;
+    if (moduloAtivo.value === m.key) recarregarSeq.value++;
+    else moduloAtivo.value = m.key;
+};
+
 // Painel renderizado de fato (módulo ativo + requisitos atendidos).
 const painelVisivel = computed(() => {
     if (moduloAtivo.value === 'quadro-horario') return !!turId.value;
     if (moduloAtivo.value === 'notas-numerica') return contextoCompleto.value;
+    if (moduloAtivo.value === 'notas-conceitual') return contextoCompleto.value;
     if (moduloAtivo.value === 'avaliacao-descritiva') return contextoCompleto.value;
     return false;
 });
@@ -365,7 +378,7 @@ const semVinculo = computed(() => props.anosLetivos.length === 0);
                                         ? 'border-input text-foreground hover:border-indigo-300 hover:bg-muted/50'
                                         : 'cursor-not-allowed border-dashed border-input text-muted-foreground/50',
                             ]"
-                            @click="moduloPronto(m.req) && (moduloAtivo = m.key)"
+                            @click="selecionarModulo(m)"
                         >
                             <component :is="m.icon" class="size-4" />
                             {{ m.label }}
@@ -377,14 +390,25 @@ const semVinculo = computed(() => props.anosLetivos.length === 0);
             <!-- Módulo ativo: Quadro de Horário (depende só da turma) -->
             <QuadroHorarioPanel
                 v-if="!semVinculo && turId && moduloAtivo === 'quadro-horario'"
-                :key="`qh-${turId}`"
+                :key="`qh-${turId}-${recarregarSeq}`"
                 :tur-id="turId!"
             />
 
             <!-- Módulo ativo: Avaliação Numérica -->
             <NotasNumericaPanel
                 v-if="!semVinculo && contextoCompleto && moduloAtivo === 'notas-numerica'"
-                :key="`nn-${turId}-${disId}-${uniId}`"
+                :key="`nn-${turId}-${disId}-${uniId}-${recarregarSeq}`"
+                :anl-id="anlId!"
+                :esc-id="escId!"
+                :tur-id="turId!"
+                :dis-id="disId!"
+                :uni-id="uniId!"
+            />
+
+            <!-- Módulo ativo: Avaliação Conceitual -->
+            <NotasConceitualPanel
+                v-if="!semVinculo && contextoCompleto && moduloAtivo === 'notas-conceitual'"
+                :key="`nc-${turId}-${disId}-${uniId}-${recarregarSeq}`"
                 :anl-id="anlId!"
                 :esc-id="escId!"
                 :tur-id="turId!"
@@ -395,7 +419,7 @@ const semVinculo = computed(() => props.anosLetivos.length === 0);
             <!-- Módulo ativo: Avaliação Descritiva -->
             <AvaliacaoDescritivaPanel
                 v-if="!semVinculo && contextoCompleto && moduloAtivo === 'avaliacao-descritiva'"
-                :key="`${anlId}-${escId}-${turId}-${disId}-${uniId}`"
+                :key="`${anlId}-${escId}-${turId}-${disId}-${uniId}-${recarregarSeq}`"
                 :anl-id="anlId!"
                 :esc-id="escId!"
                 :tur-id="turId!"

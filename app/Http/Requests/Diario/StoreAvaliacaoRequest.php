@@ -25,7 +25,8 @@ class StoreAvaliacaoRequest extends FormRequest
             'ava_tipo'           => ['required', 'in:numerica,conceitual'],
             'ava_descricao'      => ['nullable', 'string', 'max:150'],
             'ava_dt'             => ['required', 'date'],
-            'ava_valor'          => ['required', 'numeric', 'min:0.01', 'max:10'],
+            // Obrigatório no modo número/numérica; ignorado no modo conceito direto (validado no controller).
+            'ava_valor'          => ['nullable', 'numeric', 'min:0.01', 'max:10'],
         ];
     }
 

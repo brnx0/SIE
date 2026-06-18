@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
         $this->call(SerieIndicadorSeeder::class);
         $this->call(TipoMovimentacaoSeeder::class);
         $this->call(InstrumentoAvaliativoSeeder::class);
+        $this->call(ConceitoSeeder::class);
 
         User::updateOrCreate(
             ['email' => 'admin@sie.local'],

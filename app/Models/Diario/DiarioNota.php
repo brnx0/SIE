@@ -20,6 +20,7 @@ class DiarioNota extends Model
     protected $fillable = [
         'nta_ava_id',
         'nta_aln_id',
+        'nta_cnc_id',
         'nta_valor',
     ];
 
@@ -30,5 +31,10 @@ class DiarioNota extends Model
     public function avaliacao(): BelongsTo
     {
         return $this->belongsTo(DiarioAvaliacao::class, 'nta_ava_id', 'ava_id');
+    }
+
+    public function conceito(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\Parametro\Conceito::class, 'nta_cnc_id', 'cnc_id');
     }
 }

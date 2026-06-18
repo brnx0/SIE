@@ -19,6 +19,7 @@ class SalvarNotaRequest extends FormRequest
             'nta_ava_id' => ['required', 'integer', 'exists:edu_diario_avaliacao,ava_id'],
             'nta_aln_id' => ['required', 'integer', 'exists:edu_aluno,aln_id'],
             'nta_valor'  => ['nullable', 'numeric', 'min:0'],
+            'nta_cnc_id' => ['nullable', 'integer', 'exists:cfg_conceito,cnc_id'],
         ];
     }
 
