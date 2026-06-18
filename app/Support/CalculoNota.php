@@ -84,10 +84,15 @@ class CalculoNota
             return ['tipo' => $tipo, 'valor' => null, 'conceito' => null];
         }
 
-        $media = round(array_sum($valores) / count($valores), 2);
-        $conceito = $tipo === 'conceitual' ? self::faixaDe($media, self::conceitos()) : null;
+        if ($tipo === 'conceitual') {
+            $media = round(array_sum($valores) / count($valores), 1);
 
-        return ['tipo' => $tipo, 'valor' => $media, 'conceito' => $conceito];
+            return ['tipo' => $tipo, 'valor' => $media, 'conceito' => self::faixaDe($media, self::conceitos())];
+        }
+
+        $media = self::round05(array_sum($valores) / count($valores));
+
+        return ['tipo' => $tipo, 'valor' => $media, 'conceito' => null];
     }
 
     // ───────────────────────────── internals ─────────────────────────────
@@ -119,7 +124,8 @@ class CalculoNota
             foreach ($regulares as $a) {
                 $soma += (float) ($notaMap[$a->ava_id][$alnId]['valor'] ?? 0);
             }
-            return ['tipo' => $tipo, 'valor' => round($soma / $regulares->count(), 2), 'conceito' => null];
+            // Média = soma das notas regulares, arredondada ao múltiplo de 0,05.
+            return ['tipo' => $tipo, 'valor' => self::round05($soma), 'conceito' => null];
         }
 
         // conceitual
@@ -149,7 +155,7 @@ class CalculoNota
         foreach ($regulares as $a) {
             $soma += (float) ($notaMap[$a->ava_id][$alnId]['valor'] ?? 0);
         }
-        $soma = round($soma, 2);
+        $soma = round($soma, 1);
 
         return ['valor' => $soma, 'conceito' => self::faixaDe($soma, $conceitos)];
     }
@@ -191,7 +197,7 @@ class CalculoNota
             if ($modo === 'faixa') {
                 $v = $notaMap[$a->ava_id][$alnId]['valor'] ?? null;
                 if ($v !== null) {
-                    $valor = (float) $v;
+                    $valor = round((float) $v, 1);
                     $conceito = self::faixaDe($valor, $conceitos);
                 }
             } else {
@@ -282,6 +288,12 @@ class CalculoNota
     private static function pesoPorId(int $id, $conceitos): int
     {
         return (int) ($conceitos->firstWhere('cnc_id', $id)?->cnc_peso ?? 0);
+    }
+
+    /** Arredonda ao múltiplo de 0,05 mais próximo (média final termina em 0 ou 5). */
+    private static function round05(float $v): float
+    {
+        return round($v * 20) / 20;
     }
 
     private static function conceitoArray($c): ?array

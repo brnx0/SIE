@@ -130,6 +130,9 @@ const somaValores = computed(() => regulares.value.reduce((s, a) => s + (Number(
 const valorDisponivel = computed(() => Math.max(0, Math.round((10 - somaValores.value) * 100) / 100));
 
 // ── Cálculo do conceito ──────────────────────────────────────────────────────
+// Arredonda meio-pra-cima para 1 casa decimal (granularidade das faixas).
+const round1 = (n: number) => Math.round(n * 10) / 10;
+
 // Faixa do total: maior conceito cujo limite inferior ≤ total (faixas contíguas, sem vãos).
 const faixaDe = (total: number): Conceito | null => {
     const lista = [...conceitos.value].sort((a, b) => Number(a.cnc_limite_inferior) - Number(b.cnc_limite_inferior));
@@ -153,7 +156,7 @@ const conceitoBase = (row: AlunoRow): Conceito | null => {
     const regs = regulares.value.filter((a) => !isFutura(a));
     if (!regs.length) return null;
     if (modo.value === 'faixa') {
-        const total = regs.reduce((s, a) => s + (Number(row.notas[a.ava_id]?.valor) || 0), 0);
+        const total = round1(regs.reduce((s, a) => s + (Number(row.notas[a.ava_id]?.valor) || 0), 0));
         return faixaDe(total);
     }
     // modo conceito: conta por conceito; moda única vence; empate → média dos pesos (arredondada).
@@ -184,7 +187,7 @@ const conceitoRecuperacao = (row: AlunoRow): Conceito | null => {
         let c: Conceito | null = null;
         if (modo.value === 'faixa') {
             const v = row.notas[a.ava_id]?.valor;
-            if (v !== null && v !== undefined) c = faixaDe(Number(v));
+            if (v !== null && v !== undefined) c = faixaDe(round1(Number(v)));
         } else {
             c = conceitoPorId(row.notas[a.ava_id]?.cnc_id ?? null);
         }
@@ -205,7 +208,7 @@ const resultado = (row: AlunoRow): Conceito | null => {
 const valorFaixa = (row: AlunoRow): number | null => {
     if (modo.value !== 'faixa') return null;
     const regs = regulares.value.filter((a) => !isFutura(a));
-    const base = regs.reduce((s, a) => s + (Number(row.notas[a.ava_id]?.valor) || 0), 0);
+    const base = round1(regs.reduce((s, a) => s + (Number(row.notas[a.ava_id]?.valor) || 0), 0));
     const baseConc = regs.length ? faixaDe(base) : null;
 
     let recConc: Conceito | null = null;
@@ -214,8 +217,9 @@ const valorFaixa = (row: AlunoRow): number | null => {
         if (isFutura(a)) continue;
         const v = row.notas[a.ava_id]?.valor;
         if (v !== null && v !== undefined) {
-            const c = faixaDe(Number(v));
-            if (c && (!recConc || c.cnc_peso > recConc.cnc_peso)) { recConc = c; recVal = Number(v); }
+            const valor = round1(Number(v));
+            const c = faixaDe(valor);
+            if (c && (!recConc || c.cnc_peso > recConc.cnc_peso)) { recConc = c; recVal = valor; }
         }
     }
     if (recConc && (!baseConc || recConc.cnc_peso > baseConc.cnc_peso)) return recVal;
@@ -479,7 +483,7 @@ const podeSalvarAval = computed(() =>
                                 </td>
                                 <td class="border-b border-l-2 border-fuchsia-200 bg-fuchsia-50/40 px-3 py-1.5 text-center dark:border-fuchsia-900 dark:bg-fuchsia-950/20">
                                     <template v-if="resultado(row)">
-                                        <div v-if="modo === 'faixa' && valorFaixa(row) !== null" class="text-sm font-bold tabular-nums text-slate-700 dark:text-slate-200">{{ valorFaixa(row)!.toFixed(2) }}</div>
+                                        <div v-if="modo === 'faixa' && valorFaixa(row) !== null" class="text-sm font-bold tabular-nums text-slate-700 dark:text-slate-200">{{ valorFaixa(row)!.toFixed(1) }}</div>
                                         <div class="font-bold text-fuchsia-700 dark:text-fuchsia-300">{{ resultado(row)!.cnc_sigla }}</div>
                                         <div class="text-[10px] text-muted-foreground">{{ resultado(row)!.cnc_descricao }}</div>
                                     </template>
