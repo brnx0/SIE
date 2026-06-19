@@ -51,7 +51,7 @@ const possuiDeficiencia = ref(false);
 
 // ── Turma Multi ──────────────────────────────────────────────────────────────
 const isMulti = computed(() => !!props.turma?.serie?.ser_fl_multi);
-const { loading: seriesLoading, items: seriesMulti, search: searchSeries, clear: clearSeries } = useSeriesBySegmento();
+const { items: seriesMulti, search: searchSeries, clear: clearSeries } = useSeriesBySegmento();
 const serieSelecionadaId = ref<number | null>(null);
 
 const serieSelecionada = computed<SerieSegmentoItem | undefined>(() =>
@@ -557,8 +557,8 @@ const selectClass = 'flex h-10 w-full rounded-md border border-input bg-backgrou
 
                     <!-- Possui Deficiência -->
                     <div class="flex items-center gap-3 rounded-lg border bg-muted/30 px-4 py-3">
-                        <input id="possui_deficiencia" type="checkbox" v-model="possuiDeficiencia" class="size-4 accent-indigo-600 cursor-pointer" />
-                        <label for="possui_deficiencia" class="cursor-pointer text-sm font-medium">Possui alguma deficiência</label>
+                        <Switch id="possui_deficiencia" v-model="possuiDeficiencia" />
+                        <Label for="possui_deficiencia" class="cursor-pointer text-sm font-medium">Possui alguma deficiência</Label>
                         <span v-if="possuiDeficiencia" class="ml-auto text-xs text-indigo-600">Preencha a aba "Quadro de Saúde"</span>
                     </div>
 
@@ -730,34 +730,34 @@ const selectClass = 'flex h-10 w-full rounded-md border border-input bg-backgrou
                     <p class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Documentos / Programas</p>
 
                     <div class="grid grid-cols-2 gap-x-6 gap-y-2 sm:grid-cols-3">
-                        <label class="flex cursor-pointer items-center gap-2 text-sm">
-                            <input type="checkbox" v-model="formAluno.aln_fl_trouxe_transferencia" class="size-4 accent-indigo-600" />
-                            Trouxe Transferência
-                        </label>
-                        <label class="flex cursor-pointer items-center gap-2 text-sm">
-                            <input type="checkbox" v-model="formAluno.aln_fl_bolsa_familia" class="size-4 accent-indigo-600" />
-                            Bolsa Família
-                        </label>
-                        <label class="flex cursor-pointer items-center gap-2 text-sm">
-                            <input type="checkbox" v-model="formAluno.aln_fl_trouxe_rg" class="size-4 accent-indigo-600" />
-                            Trouxe R.G.
-                        </label>
-                        <label class="flex cursor-pointer items-center gap-2 text-sm">
-                            <input type="checkbox" v-model="formAluno.aln_fl_recebe_merenda" class="size-4 accent-indigo-600" />
-                            Recebe Merenda
-                        </label>
-                        <label class="flex cursor-pointer items-center gap-2 text-sm">
-                            <input type="checkbox" v-model="formAluno.aln_fl_trouxe_reg_nascimento" class="size-4 accent-indigo-600" />
-                            Trouxe Reg. Nascimento
-                        </label>
-                        <label class="flex cursor-pointer items-center gap-2 text-sm">
-                            <input type="checkbox" v-model="formAluno.aln_fl_usa_transporte" class="size-4 accent-indigo-600" />
-                            Usa Transporte
-                        </label>
-                        <label class="flex cursor-pointer items-center gap-2 text-sm">
-                            <input type="checkbox" v-model="formAluno.aln_fl_usa_biblioteca" class="size-4 accent-indigo-600" />
-                            Usa Biblioteca
-                        </label>
+                        <div class="flex items-center gap-2">
+                            <Switch id="mat_fl_trouxe_transferencia" v-model="formAluno.aln_fl_trouxe_transferencia" />
+                            <Label for="mat_fl_trouxe_transferencia" class="text-sm font-normal">Trouxe Transferência</Label>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <Switch id="mat_fl_bolsa_familia" v-model="formAluno.aln_fl_bolsa_familia" />
+                            <Label for="mat_fl_bolsa_familia" class="text-sm font-normal">Bolsa Família</Label>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <Switch id="mat_fl_trouxe_rg" v-model="formAluno.aln_fl_trouxe_rg" />
+                            <Label for="mat_fl_trouxe_rg" class="text-sm font-normal">Trouxe R.G.</Label>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <Switch id="mat_fl_recebe_merenda" v-model="formAluno.aln_fl_recebe_merenda" />
+                            <Label for="mat_fl_recebe_merenda" class="text-sm font-normal">Recebe Merenda</Label>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <Switch id="mat_fl_trouxe_reg_nascimento" v-model="formAluno.aln_fl_trouxe_reg_nascimento" />
+                            <Label for="mat_fl_trouxe_reg_nascimento" class="text-sm font-normal">Trouxe Reg. Nascimento</Label>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <Switch id="mat_fl_usa_transporte" v-model="formAluno.aln_fl_usa_transporte" />
+                            <Label for="mat_fl_usa_transporte" class="text-sm font-normal">Usa Transporte</Label>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <Switch id="mat_fl_usa_biblioteca" v-model="formAluno.aln_fl_usa_biblioteca" />
+                            <Label for="mat_fl_usa_biblioteca" class="text-sm font-normal">Usa Biblioteca</Label>
+                        </div>
                     </div>
 
                     <!-- Observação -->

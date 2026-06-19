@@ -2,6 +2,7 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Button } from '@/components/ui/button';
 import FormLabel from '@/components/common/FormLabel.vue';
+import Switch from '@/components/common/Switch.vue';
 import type { BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
 import { FileBarChart, Loader2 } from 'lucide-vue-next';
@@ -105,10 +106,10 @@ function gerar() {
                     <p v-if="loadingTurmas" class="text-xs text-muted-foreground">Carregando turmas...</p>
                 </div>
 
-                <label class="flex items-center gap-2 text-sm sm:col-span-2">
-                    <input type="checkbox" v-model="incluirSaidas" class="size-4 accent-indigo-600" />
-                    Incluir alunos com saída (transferidos, evadidos, etc.)
-                </label>
+                <div class="flex items-center gap-2 sm:col-span-2">
+                    <Switch id="incluir_saidas" v-model="incluirSaidas" />
+                    <FormLabel for="incluir_saidas" class="font-normal">Incluir alunos com saída (transferidos, evadidos, etc.)</FormLabel>
+                </div>
 
                 <div class="sm:col-span-2 flex justify-end">
                     <Button :disabled="!escId || !anlId || gerando" class="bg-indigo-600 text-white hover:bg-indigo-700" @click="gerar">

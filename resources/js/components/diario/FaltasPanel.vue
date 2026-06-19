@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
+import Switch from '@/components/common/Switch.vue';
 import { ChevronLeft, ChevronRight, Loader2, RefreshCw, Search, TriangleAlert } from 'lucide-vue-next';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 
@@ -437,24 +438,11 @@ const statusInfo = (aln: number): { label: string; cls: string } => {
                                         :class="planoDoDia(d.dis_id) ? 'text-slate-700 dark:text-slate-200' : 'text-muted-foreground'"
                                         :title="planoDoDia(d.dis_id) ? 'Traz o conteúdo/metodologia do plano de aula' : 'Sem planejamento (pendente/aprovado) para esta data'"
                                     >
-                                        <button
-                                            type="button"
-                                            role="switch"
-                                            :aria-checked="infoOf(d.dis_id).executado"
+                                        <Switch
+                                            :model-value="infoOf(d.dis_id).executado"
                                             :disabled="!editavel || !planoDoDia(d.dis_id)"
-                                            :class="[
-                                                'relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50',
-                                                infoOf(d.dis_id).executado ? 'bg-indigo-600' : 'bg-slate-300 dark:bg-slate-700',
-                                            ]"
-                                            @click="toggleExecutado(d.dis_id, !infoOf(d.dis_id).executado)"
-                                        >
-                                            <span
-                                                :class="[
-                                                    'inline-block size-4 transform rounded-full bg-white shadow transition-transform',
-                                                    infoOf(d.dis_id).executado ? 'translate-x-[18px]' : 'translate-x-0.5',
-                                                ]"
-                                            />
-                                        </button>
+                                            @update:model-value="toggleExecutado(d.dis_id, $event)"
+                                        />
                                         <span>Planejamento executado</span>
                                     </div>
                                     <span class="text-xs">

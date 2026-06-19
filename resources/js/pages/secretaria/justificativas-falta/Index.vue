@@ -8,29 +8,32 @@ import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
-import { Loader2, Pencil, Plus, Search, Trash2, X } from 'lucide-vue-next';
-import { computed, reactive, ref, watch } from 'vue';
+import { CalendarClock, Loader2, Pencil, Plus, Search, Trash2, TriangleAlert, X } from 'lucide-vue-next';
+import { computed, onMounted, reactive, ref, watch } from 'vue';
 
 interface AnoLetivo { anl_id: number; anl_ano: number }
 interface Escola { esc_id: number; esc_nome: string }
 interface Motivo { mbf_id: number; mbf_descricao: string }
 interface Justificativa {
     jfa_id: number;
-    jfa_esc_id: number;
-    jfa_tur_id: number;
-    jfa_aln_id: number;
     jfa_mbf_id: number;
-    aluno: string | null;
-    aln_nr_matricula: string | null;
     motivo: string | null;
     dt_inicio: string;
     dt_fim: string;
     observacao: string | null;
 }
+interface Aluno {
+    aln_id: number;
+    aln_nome: string;
+    aln_nr_matricula: string | null;
+    justificativas: Justificativa[];
+}
+interface Vigente { label: string; dt_inicio: string; dt_fim: string }
 
 const props = defineProps<{
-    justificativas: Justificativa[];
-    filtros: { anl_id: number | null; esc_id: number | null; tur_id: number | null; aln_id: number | null };
+    alunos: Aluno[];
+    vigente: Vigente | null;
+    filtros: { anl_id: number | null; esc_id: number | null; tur_id: number | null };
     anosLetivos: AnoLetivo[];
     escolas: Escola[];
     userEscola: Escola | null;
@@ -45,128 +48,104 @@ const breadcrumbs: BreadcrumbItem[] = [
 // ── Filtros (recarrega via Inertia) ──────────────────────────────────────────
 const anlId = ref<number | null>(props.filtros.anl_id ?? props.anosLetivos[0]?.anl_id ?? null);
 const escId = ref<number | null>(props.filtros.esc_id ?? props.userEscola?.esc_id ?? null);
+const turId = ref<number | null>(props.filtros.tur_id ?? null);
 const busca = ref('');
+
+const turmas = ref<{ tur_id: number; tur_nome: string; ser_nome: string | null }[]>([]);
 
 const itemsAno = computed(() => props.anosLetivos.map((a) => ({ id: a.anl_id, label: String(a.anl_ano) })));
 const itemsEscola = computed(() => props.escolas.map((e) => ({ id: e.esc_id, label: e.esc_nome })));
 const itemsMotivo = computed(() => props.motivos.map((m) => ({ id: m.mbf_id, label: m.mbf_descricao })));
+const itemsTurma = computed(() => turmas.value.map((t) => ({ id: t.tur_id, label: (t.ser_nome ? t.ser_nome + ' - ' : '') + t.tur_nome })));
+
+const getJson = async (url: string) => {
+    const r = await fetch(url, { headers: { Accept: 'application/json' } });
+    return r.ok ? await r.json() : [];
+};
+const loadTurmas = async () => {
+    turmas.value = [];
+    if (!anlId.value || !escId.value) return;
+    turmas.value = await getJson(`/secretaria/justificativas-falta/turmas?anl_id=${anlId.value}&esc_id=${escId.value}`);
+};
 
 const aplicar = () => {
-    router.get('/secretaria/justificativas-falta', { anl_id: anlId.value, esc_id: escId.value }, {
+    router.get('/secretaria/justificativas-falta', { anl_id: anlId.value, esc_id: escId.value, tur_id: turId.value }, {
         preserveState: true,
         preserveScroll: true,
         replace: true,
     });
 };
-watch([anlId, escId], aplicar);
+
+onMounted(loadTurmas);
+watch([anlId, escId], () => { turId.value = null; loadTurmas(); aplicar(); });
+watch(turId, () => aplicar());
 
 const lista = computed(() => {
     const q = busca.value.trim().toLowerCase();
-    const l = props.justificativas ?? [];
+    const l = props.alunos ?? [];
     if (!q) return l;
-    return l.filter((j) => (j.aluno ?? '').toLowerCase().includes(q) || String(j.aln_nr_matricula ?? '').includes(q));
+    return l.filter((a) => a.aln_nome.toLowerCase().includes(q) || String(a.aln_nr_matricula ?? '').includes(q));
 });
+const totalJustificativas = computed(() => (props.alunos ?? []).reduce((s, a) => s + a.justificativas.length, 0));
 
-const fmtData = (s: string) => {
+const fmt = (s: string) => {
     if (!s) return '—';
     const [y, m, d] = s.substring(0, 10).split('-');
     return `${d}/${m}/${y}`;
 };
 
-// ── Modal (criar/editar) ─────────────────────────────────────────────────────
+// ── Modal (justifica por aluno) ──────────────────────────────────────────────
 const showModal = ref(false);
 const editId = ref<number | null>(null);
+const alunoSel = ref<{ id: number; nome: string } | null>(null);
 const processing = ref(false);
 const errors = ref<Record<string, string>>({});
-const turmas = ref<{ tur_id: number; tur_nome: string; ser_nome: string | null }[]>([]);
-const alunos = ref<{ aln_id: number; aln_nome: string }[]>([]);
 
 const form = reactive({
-    jfa_esc_id: null as number | null,
-    jfa_tur_id: null as number | null,
-    jfa_aln_id: null as number | null,
     jfa_mbf_id: null as number | null,
     jfa_dt_inicio: '',
     jfa_dt_fim: '',
     jfa_observacao: '',
 });
 
-const itemsTurma = computed(() => turmas.value.map((t) => ({ id: t.tur_id, label: (t.ser_nome ? t.ser_nome + ' - ' : '') + t.tur_nome })));
-const itemsAluno = computed(() => alunos.value.map((a) => ({ id: a.aln_id, label: a.aln_nome })));
+const podeJustificar = computed(() => !!props.vigente);
 
-const getJson = async (url: string) => {
-    const r = await fetch(url, { headers: { Accept: 'application/json' } });
-    return r.ok ? await r.json() : [];
-};
-
-let ignoreTurmaWatch = false;
-const loadTurmas = async () => {
-    turmas.value = [];
-    if (!anlId.value || !form.jfa_esc_id) return;
-    turmas.value = await getJson(`/secretaria/justificativas-falta/turmas?anl_id=${anlId.value}&esc_id=${form.jfa_esc_id}`);
-};
-const loadAlunos = async () => {
-    alunos.value = [];
-    if (!form.jfa_tur_id) return;
-    alunos.value = await getJson(`/secretaria/justificativas-falta/alunos?tur_id=${form.jfa_tur_id}`);
-};
-watch(() => form.jfa_esc_id, () => {
-    if (ignoreTurmaWatch) return;
-    form.jfa_tur_id = null;
-    form.jfa_aln_id = null;
-    turmas.value = [];
-    alunos.value = [];
-    loadTurmas();
-});
-watch(() => form.jfa_tur_id, () => {
-    if (ignoreTurmaWatch) return;
-    form.jfa_aln_id = null;
-    loadAlunos();
-});
-
-const abrirNovo = async () => {
-    editId.value = null;
-    errors.value = {};
-    ignoreTurmaWatch = true;
-    form.jfa_esc_id = escId.value;
-    form.jfa_tur_id = null;
-    form.jfa_aln_id = null;
+const reset = () => {
     form.jfa_mbf_id = null;
-    form.jfa_dt_inicio = '';
-    form.jfa_dt_fim = '';
+    form.jfa_dt_inicio = props.vigente?.dt_inicio ?? '';
+    form.jfa_dt_fim = props.vigente?.dt_inicio ?? '';
     form.jfa_observacao = '';
-    alunos.value = [];
-    showModal.value = true;
-    await loadTurmas();
-    ignoreTurmaWatch = false;
+    errors.value = {};
 };
 
-const abrirEdit = async (j: Justificativa) => {
+const abrirNovo = (a: Aluno) => {
+    if (!podeJustificar.value) return;
+    editId.value = null;
+    alunoSel.value = { id: a.aln_id, nome: a.aln_nome };
+    reset();
+    showModal.value = true;
+};
+const abrirEdit = (a: Aluno, j: Justificativa) => {
     editId.value = j.jfa_id;
+    alunoSel.value = { id: a.aln_id, nome: a.aln_nome };
     errors.value = {};
-    ignoreTurmaWatch = true;
-    form.jfa_esc_id = j.jfa_esc_id;
-    form.jfa_tur_id = j.jfa_tur_id;
-    form.jfa_aln_id = j.jfa_aln_id;
     form.jfa_mbf_id = j.jfa_mbf_id;
     form.jfa_dt_inicio = j.dt_inicio?.substring(0, 10) ?? '';
     form.jfa_dt_fim = j.dt_fim?.substring(0, 10) ?? '';
     form.jfa_observacao = j.observacao ?? '';
     showModal.value = true;
-    await Promise.all([loadTurmas(), loadAlunos()]);
-    ignoreTurmaWatch = false;
 };
-
-const fechar = () => { showModal.value = false; editId.value = null; errors.value = {}; };
+const fechar = () => { showModal.value = false; editId.value = null; alunoSel.value = null; errors.value = {}; };
 
 const salvar = () => {
+    if (!alunoSel.value) return;
     processing.value = true;
     errors.value = {};
     const payload = {
         jfa_anl_id: anlId.value,
-        jfa_esc_id: form.jfa_esc_id,
-        jfa_tur_id: form.jfa_tur_id,
-        jfa_aln_id: form.jfa_aln_id,
+        jfa_esc_id: escId.value,
+        jfa_tur_id: turId.value,
+        jfa_aln_id: alunoSel.value.id,
         jfa_mbf_id: form.jfa_mbf_id,
         jfa_dt_inicio: form.jfa_dt_inicio,
         jfa_dt_fim: form.jfa_dt_fim,
@@ -186,8 +165,8 @@ const salvar = () => {
     }
 };
 
-const remover = (j: Justificativa) => {
-    if (!confirm(`Remover a justificativa de ${j.aluno} (${fmtData(j.dt_inicio)} a ${fmtData(j.dt_fim)})?`)) return;
+const remover = (a: Aluno, j: Justificativa) => {
+    if (!confirm(`Remover a justificativa de ${a.aln_nome} (${fmt(j.dt_inicio)} a ${fmt(j.dt_fim)})?`)) return;
     router.delete(`/secretaria/justificativas-falta/${j.jfa_id}`, { preserveScroll: true, preserveState: true });
 };
 </script>
@@ -199,18 +178,13 @@ const remover = (j: Justificativa) => {
             <div class="flex items-end justify-between gap-2">
                 <div>
                     <h1 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">Justificativa de Falta</h1>
-                    <p class="text-sm text-slate-500 dark:text-slate-400">Registre o abono de faltas do aluno por período.</p>
+                    <p class="text-sm text-slate-500 dark:text-slate-400">Selecione a turma e justifique as faltas dos alunos, um a um.</p>
                 </div>
-                <div class="flex items-center gap-2">
-                    <RefreshButton />
-                    <Button type="button" class="bg-indigo-600 hover:bg-indigo-700" :disabled="!anlId || !escId" @click="abrirNovo">
-                        <Plus class="mr-2 size-4" /> Nova Justificativa
-                    </Button>
-                </div>
+                <RefreshButton />
             </div>
 
             <!-- Filtros -->
-            <div class="grid gap-3 rounded-xl border bg-card p-4 shadow-sm sm:grid-cols-3">
+            <div class="grid gap-3 rounded-xl border bg-card p-4 shadow-sm sm:grid-cols-4">
                 <div class="grid gap-1.5">
                     <FormLabel>Ano Letivo</FormLabel>
                     <LocalCombobox v-model="anlId" :items="itemsAno" placeholder="Ano..." />
@@ -218,6 +192,10 @@ const remover = (j: Justificativa) => {
                 <div class="grid gap-1.5">
                     <FormLabel>Escola</FormLabel>
                     <LocalCombobox v-model="escId" :items="itemsEscola" placeholder="Escola..." />
+                </div>
+                <div class="grid gap-1.5">
+                    <FormLabel>Turma</FormLabel>
+                    <LocalCombobox v-model="turId" :items="itemsTurma" placeholder="Selecione a turma..." />
                 </div>
                 <div class="grid gap-1.5">
                     <FormLabel>Buscar aluno</FormLabel>
@@ -228,64 +206,98 @@ const remover = (j: Justificativa) => {
                 </div>
             </div>
 
-            <!-- Listagem -->
-            <div class="overflow-x-auto rounded-xl border bg-card shadow-sm">
+            <!-- Trimestre vigente -->
+            <div
+                v-if="vigente"
+                class="flex flex-wrap items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-200"
+            >
+                <CalendarClock class="size-4 shrink-0" />
+                <span><strong>Trimestre vigente:</strong> {{ vigente.label }} — só é possível justificar entre <strong>{{ fmt(vigente.dt_inicio) }}</strong> e <strong>{{ fmt(vigente.dt_fim) }}</strong> (inclui extensão).</span>
+            </div>
+            <div
+                v-else
+                class="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200"
+            >
+                <TriangleAlert class="mt-0.5 size-4 shrink-0" />
+                <span>Nenhum trimestre vigente nesta data. Não é possível registrar justificativas (períodos encerrados são bloqueados).</span>
+            </div>
+
+            <!-- Sem turma -->
+            <div v-if="!turId" class="rounded-xl border bg-card py-12 text-center text-sm text-muted-foreground">
+                Selecione uma turma para listar os alunos.
+            </div>
+
+            <!-- Lista de alunos -->
+            <div v-else class="overflow-x-auto rounded-xl border bg-card shadow-sm">
                 <table class="w-full text-left text-sm">
                     <thead class="bg-indigo-600 text-white">
                         <tr>
+                            <th class="w-12 px-3 py-2 text-center font-semibold">#</th>
                             <th class="px-3 py-2 font-semibold">Aluno</th>
-                            <th class="w-44 px-3 py-2 font-semibold">Período</th>
-                            <th class="px-3 py-2 font-semibold">Motivo</th>
-                            <th class="px-3 py-2 font-semibold">Observação</th>
-                            <th class="w-28 px-3 py-2 text-right font-semibold">Ações</th>
+                            <th class="px-3 py-2 font-semibold">Justificativas</th>
+                            <th class="w-40 px-3 py-2 text-right font-semibold">Ação</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr v-if="!lista.length">
-                            <td colspan="5" class="px-3 py-6 text-center text-muted-foreground">Nenhuma justificativa encontrada.</td>
+                            <td colspan="4" class="px-3 py-6 text-center text-muted-foreground">Nenhum aluno ativo nesta turma.</td>
                         </tr>
-                        <tr v-for="(j, idx) in lista" :key="j.jfa_id" :class="idx % 2 === 0 ? 'bg-white dark:bg-transparent' : 'bg-slate-50 dark:bg-slate-900/40'">
-                            <td class="px-3 py-2">
-                                <div class="font-medium">{{ j.aluno }}</div>
-                                <div v-if="j.aln_nr_matricula" class="text-xs text-muted-foreground">Mat. {{ j.aln_nr_matricula }}</div>
+                        <tr v-for="(a, idx) in lista" :key="a.aln_id" :class="idx % 2 === 0 ? 'bg-white dark:bg-transparent' : 'bg-slate-50 dark:bg-slate-900/40'">
+                            <td class="px-3 py-2 text-center text-muted-foreground tabular-nums">{{ idx + 1 }}</td>
+                            <td class="px-3 py-2 align-top">
+                                <div class="font-medium">{{ a.aln_nome }}</div>
+                                <div v-if="a.aln_nr_matricula" class="text-xs text-muted-foreground">Mat. {{ a.aln_nr_matricula }}</div>
                             </td>
-                            <td class="px-3 py-2 tabular-nums">{{ fmtData(j.dt_inicio) }} – {{ fmtData(j.dt_fim) }}</td>
-                            <td class="px-3 py-2">{{ j.motivo }}</td>
-                            <td class="px-3 py-2 text-muted-foreground">{{ j.observacao || '—' }}</td>
-                            <td class="px-3 py-2 text-right">
-                                <div class="flex justify-end gap-1">
-                                    <Button type="button" variant="ghost" size="sm" @click="abrirEdit(j)" aria-label="Editar"><Pencil class="size-4" /></Button>
-                                    <Button type="button" variant="ghost" size="sm" class="text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:hover:bg-rose-900/30" @click="remover(j)" aria-label="Remover"><Trash2 class="size-4" /></Button>
+                            <td class="px-3 py-2 align-top">
+                                <div v-if="!a.justificativas.length" class="text-xs text-muted-foreground">Sem justificativas.</div>
+                                <div v-else class="flex flex-wrap gap-1.5">
+                                    <span
+                                        v-for="j in a.justificativas"
+                                        :key="j.jfa_id"
+                                        class="group inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-indigo-50 py-1 pl-2.5 pr-1 text-xs text-indigo-800 dark:border-indigo-900 dark:bg-indigo-950/40 dark:text-indigo-200"
+                                        :title="j.observacao || ''"
+                                    >
+                                        <span class="tabular-nums">{{ fmt(j.dt_inicio) }}–{{ fmt(j.dt_fim) }}</span>
+                                        <span class="opacity-70">· {{ j.motivo }}</span>
+                                        <button type="button" class="rounded p-0.5 hover:bg-indigo-200/70 dark:hover:bg-indigo-800/60" title="Editar" @click="abrirEdit(a, j)"><Pencil class="size-3" /></button>
+                                        <button type="button" class="rounded p-0.5 text-rose-600 hover:bg-rose-100 dark:hover:bg-rose-900/40" title="Remover" @click="remover(a, j)"><Trash2 class="size-3" /></button>
+                                    </span>
                                 </div>
+                            </td>
+                            <td class="px-3 py-2 text-right align-top">
+                                <Button
+                                    type="button"
+                                    size="sm"
+                                    class="bg-indigo-600 hover:bg-indigo-700"
+                                    :disabled="!podeJustificar"
+                                    :title="podeJustificar ? 'Adicionar justificativa' : 'Nenhum trimestre vigente'"
+                                    @click="abrirNovo(a)"
+                                >
+                                    <Plus class="mr-1 size-4" /> Justificar
+                                </Button>
                             </td>
                         </tr>
                     </tbody>
                 </table>
+                <div v-if="lista.length" class="border-t px-3 py-2 text-xs text-muted-foreground">
+                    {{ lista.length }} aluno(s) · {{ totalJustificativas }} justificativa(s) lançada(s).
+                </div>
             </div>
         </div>
 
         <!-- Modal -->
         <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" @click.self="fechar">
-            <div class="w-full max-w-xl rounded-2xl bg-card shadow-2xl">
+            <div class="w-full max-w-lg rounded-2xl bg-card shadow-2xl">
                 <div class="flex items-center justify-between border-b px-5 py-3">
-                    <h2 class="text-base font-semibold">{{ editId ? 'Editar' : 'Nova' }} Justificativa</h2>
+                    <div>
+                        <h2 class="text-base font-semibold">{{ editId ? 'Editar' : 'Nova' }} Justificativa</h2>
+                        <p class="text-xs text-muted-foreground">{{ alunoSel?.nome }}</p>
+                    </div>
                     <Button variant="ghost" size="sm" @click="fechar"><X class="size-5" /></Button>
                 </div>
                 <div class="grid gap-4 p-5">
-                    <div class="grid gap-1.5">
-                        <FormLabel :required="true">Escola</FormLabel>
-                        <LocalCombobox v-model="form.jfa_esc_id" :items="itemsEscola" placeholder="Selecione a escola..." :invalid="!!errors.jfa_esc_id" />
-                        <InputError :message="errors.jfa_esc_id" />
-                    </div>
-                    <div class="grid gap-1.5">
-                        <FormLabel :required="true">Turma</FormLabel>
-                        <LocalCombobox v-model="form.jfa_tur_id" :items="itemsTurma" placeholder="Selecione a turma..." :invalid="!!errors.jfa_tur_id" />
-                        <InputError :message="errors.jfa_tur_id" />
-                    </div>
-                    <div class="grid gap-1.5">
-                        <FormLabel :required="true">Aluno</FormLabel>
-                        <LocalCombobox v-model="form.jfa_aln_id" :items="itemsAluno" placeholder="Selecione o aluno..." :invalid="!!errors.jfa_aln_id" />
-                        <InputError :message="errors.jfa_aln_id" />
+                    <div v-if="vigente" class="rounded-md bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
+                        Período permitido: <strong>{{ fmt(vigente.dt_inicio) }}</strong> a <strong>{{ fmt(vigente.dt_fim) }}</strong> ({{ vigente.label }}).
                     </div>
                     <div class="grid gap-1.5">
                         <FormLabel :required="true">Motivo</FormLabel>
@@ -295,12 +307,24 @@ const remover = (j: Justificativa) => {
                     <div class="grid gap-4 sm:grid-cols-2">
                         <div class="grid gap-1.5">
                             <FormLabel :required="true">Data início</FormLabel>
-                            <Input v-model="form.jfa_dt_inicio" type="date" :class="{ 'border-red-500': errors.jfa_dt_inicio }" />
+                            <Input
+                                v-model="form.jfa_dt_inicio"
+                                type="date"
+                                :min="vigente?.dt_inicio"
+                                :max="vigente?.dt_fim"
+                                :class="{ 'border-red-500': errors.jfa_dt_inicio }"
+                            />
                             <InputError :message="errors.jfa_dt_inicio" />
                         </div>
                         <div class="grid gap-1.5">
                             <FormLabel :required="true">Data fim</FormLabel>
-                            <Input v-model="form.jfa_dt_fim" type="date" :min="form.jfa_dt_inicio || undefined" :class="{ 'border-red-500': errors.jfa_dt_fim }" />
+                            <Input
+                                v-model="form.jfa_dt_fim"
+                                type="date"
+                                :min="form.jfa_dt_inicio || vigente?.dt_inicio"
+                                :max="vigente?.dt_fim"
+                                :class="{ 'border-red-500': errors.jfa_dt_fim }"
+                            />
                             <InputError :message="errors.jfa_dt_fim" />
                         </div>
                     </div>

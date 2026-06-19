@@ -676,38 +676,38 @@ const initials = computed(() => {
                 <div class="mt-6 grid gap-4 rounded-xl border bg-card p-6 shadow-sm">
                     <h3 class="text-sm font-semibold">Documentos Apresentados</h3>
                     <div class="grid gap-3 sm:grid-cols-3">
-                        <label class="flex items-center gap-2 text-sm">
-                            <input type="checkbox" v-model="form.aln_fl_trouxe_transferencia" class="size-4 accent-indigo-600" />
-                            Trouxe declaração de transferência
-                        </label>
-                        <label class="flex items-center gap-2 text-sm">
-                            <input type="checkbox" v-model="form.aln_fl_trouxe_rg" class="size-4 accent-indigo-600" />
-                            Trouxe RG
-                        </label>
-                        <label class="flex items-center gap-2 text-sm">
-                            <input type="checkbox" v-model="form.aln_fl_trouxe_reg_nascimento" class="size-4 accent-indigo-600" />
-                            Trouxe registro de nascimento
-                        </label>
+                        <div class="flex items-center gap-3">
+                            <Switch id="aln_fl_trouxe_transferencia" v-model="form.aln_fl_trouxe_transferencia" />
+                            <Label for="aln_fl_trouxe_transferencia" class="text-sm font-normal">Trouxe declaração de transferência</Label>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <Switch id="aln_fl_trouxe_rg" v-model="form.aln_fl_trouxe_rg" />
+                            <Label for="aln_fl_trouxe_rg" class="text-sm font-normal">Trouxe RG</Label>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <Switch id="aln_fl_trouxe_reg_nascimento" v-model="form.aln_fl_trouxe_reg_nascimento" />
+                            <Label for="aln_fl_trouxe_reg_nascimento" class="text-sm font-normal">Trouxe registro de nascimento</Label>
+                        </div>
                     </div>
 
                     <h3 class="mt-4 text-sm font-semibold">Programas e Serviços</h3>
                     <div class="grid gap-3 sm:grid-cols-2">
-                        <label class="flex items-center gap-2 text-sm">
-                            <input type="checkbox" v-model="form.aln_fl_bolsa_familia" class="size-4 accent-indigo-600" />
-                            Bolsa Família
-                        </label>
-                        <label class="flex items-center gap-2 text-sm">
-                            <input type="checkbox" v-model="form.aln_fl_recebe_merenda" class="size-4 accent-indigo-600" />
-                            Recebe merenda escolar
-                        </label>
-                        <label class="flex items-center gap-2 text-sm">
-                            <input type="checkbox" v-model="form.aln_fl_usa_transporte" class="size-4 accent-indigo-600" />
-                            Utiliza transporte escolar
-                        </label>
-                        <label class="flex items-center gap-2 text-sm">
-                            <input type="checkbox" v-model="form.aln_fl_usa_biblioteca" class="size-4 accent-indigo-600" />
-                            Utiliza biblioteca
-                        </label>
+                        <div class="flex items-center gap-3">
+                            <Switch id="aln_fl_bolsa_familia" v-model="form.aln_fl_bolsa_familia" />
+                            <Label for="aln_fl_bolsa_familia" class="text-sm font-normal">Bolsa Família</Label>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <Switch id="aln_fl_recebe_merenda" v-model="form.aln_fl_recebe_merenda" />
+                            <Label for="aln_fl_recebe_merenda" class="text-sm font-normal">Recebe merenda escolar</Label>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <Switch id="aln_fl_usa_transporte" v-model="form.aln_fl_usa_transporte" />
+                            <Label for="aln_fl_usa_transporte" class="text-sm font-normal">Utiliza transporte escolar</Label>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <Switch id="aln_fl_usa_biblioteca" v-model="form.aln_fl_usa_biblioteca" />
+                            <Label for="aln_fl_usa_biblioteca" class="text-sm font-normal">Utiliza biblioteca</Label>
+                        </div>
                     </div>
                 </div>
             </TabsContent>

@@ -7,6 +7,7 @@ import RefreshButton from '@/components/common/RefreshButton.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import Switch from '@/components/common/Switch.vue';
 import {
     ESCOLARIDADES,
     VINCULOS,
@@ -588,15 +589,10 @@ const toggleFuncaoSala = (funcao: string) => {
                             <InputError :message="lotErrors.lot_dt_fim" />
                         </div>
                         <div class="flex items-end gap-2 pb-1">
-                            <label class="flex items-center gap-2 text-sm">
-                                <input
-                                    type="checkbox"
-                                    :checked="lotForm.lot_fl_ativo"
-                                    @change="lotForm.lot_fl_ativo = ($event.target as HTMLInputElement).checked"
-                                    class="size-4 rounded border-gray-300 text-sky-600 focus:ring-sky-500"
-                                />
-                                Funcionário Ativo no Cargo
-                            </label>
+                            <div class="flex items-center gap-2">
+                                <Switch id="lot_fl_ativo" :model-value="lotForm.lot_fl_ativo" @update:model-value="lotForm.lot_fl_ativo = $event" />
+                                <Label for="lot_fl_ativo" class="text-sm font-normal">Funcionário Ativo no Cargo</Label>
+                            </div>
                         </div>
                     </div>
 

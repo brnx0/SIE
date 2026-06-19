@@ -9,6 +9,7 @@ import { AlertCircle, CheckCircle2, Loader2, RefreshCw, Search, UserPlus, X } fr
 import { computed, ref, watch } from 'vue';
 import { Button } from '@/components/ui/button';
 import FormLabel from '@/components/common/FormLabel.vue';
+import Switch from '@/components/common/Switch.vue';
 
 const props = defineProps<{
     anosLetivos: Pick<AnoLetivo, 'anl_id' | 'anl_ano' | 'anl_dt_corte'>[];
@@ -407,12 +408,7 @@ const formatarNomeAluno = (a: AlunoResumo) => {
 
                     <!-- Checkbox não cadastrado -->
                     <div class="flex items-center gap-2 self-end pb-1">
-                        <input
-                            id="nao_cadastrado"
-                            type="checkbox"
-                            v-model="alunoNaoCadastrado"
-                            class="size-4 rounded border-input accent-indigo-600"
-                        />
+                        <Switch id="nao_cadastrado" v-model="alunoNaoCadastrado" />
                         <label for="nao_cadastrado" class="cursor-pointer text-sm">
                             Aluno não cadastrado na base
                         </label>
