@@ -60,27 +60,45 @@ class ConteudoMinistradoController extends Controller
             $labelUni[(int) $u->uni_id] = $this->unidadeLabel((int) $u->uni_numero, (string) $u->uni_tipo);
         }
 
-        // Dias com aula lançada (frequência) por disciplina; conteúdo/metodologia/plano
-        // vêm do registro do dia (pode estar vazio se só a presença foi marcada).
-        $linhas = DB::table('edu_diario_aula as a')
-            ->join('edu_disciplina as d', 'd.dis_id', '=', 'a.aul_dis_id')
-            ->leftJoin('edu_diario_conteudo as c', function ($j) {
-                $j->on('c.dco_tur_id', '=', 'a.aul_tur_id')
-                    ->on('c.dco_dis_id', '=', 'a.aul_dis_id')
-                    ->on('c.dco_dt', '=', 'a.aul_dt')
-                    ->whereNull('c.dco_deleted_at');
-            })
+        // Dias de aula lançados na frequência — por (disciplina + data).
+        $dias = DB::table('edu_diario_aula as a')
             ->where('a.aul_tur_id', $turma->tur_id)
             ->whereNull('a.aul_deleted_at')
+            ->whereNotNull('a.aul_dis_id')
             ->when($uniIdFiltro, fn ($q) => $q->where('a.aul_uni_id', $uniIdFiltro))
-            ->groupBy('d.dis_id', 'd.dis_nome', 'a.aul_dt', 'a.aul_uni_id', 'c.dco_conteudo', 'c.dco_metodologia', 'c.dco_fl_plano_executado')
-            ->orderBy('d.dis_nome')
-            ->orderBy('a.aul_dt')
-            ->get(['d.dis_id', 'd.dis_nome', 'a.aul_dt', 'a.aul_uni_id', 'c.dco_conteudo', 'c.dco_metodologia', 'c.dco_fl_plano_executado']);
+            ->distinct()
+            ->get(['a.aul_dis_id as dis_id', 'a.aul_dt as dt', 'a.aul_uni_id as uni_id']);
 
-        $diasPorDisc = $linhas->groupBy('dis_id');
+        // Registros do dia (conteúdo / metodologia / planejamento executado).
+        $conteudos = DB::table('edu_diario_conteudo as c')
+            ->where('c.dco_tur_id', $turma->tur_id)
+            ->whereNull('c.dco_deleted_at')
+            ->whereNotNull('c.dco_dis_id')
+            ->when($uniIdFiltro, fn ($q) => $q->where('c.dco_uni_id', $uniIdFiltro))
+            ->get(['c.dco_dis_id as dis_id', 'c.dco_dt as dt', 'c.dco_uni_id as uni_id', 'c.dco_conteudo', 'c.dco_metodologia', 'c.dco_fl_plano_executado']);
 
-        // Todas as disciplinas da grade da série devem aparecer, mesmo sem aula registrada.
+        // União por (disciplina + data): o dia entra se tem frequência lançada OU registro
+        // do dia. Conteúdo/planejamento vêm direto do registro (sem depender de casar com a aula).
+        $linhasMap = [];
+        $chave = fn (int $dis, string $dt) => $dis . '|' . $dt;
+        foreach ($dias as $a) {
+            $dt = Carbon::parse($a->dt)->toDateString();
+            $linhasMap[$chave((int) $a->dis_id, $dt)] = [
+                'dis_id' => (int) $a->dis_id, 'dt' => $dt, 'uni_id' => (int) $a->uni_id,
+                'conteudo' => null, 'metodologia' => null, 'plano' => false,
+            ];
+        }
+        foreach ($conteudos as $c) {
+            $dt = Carbon::parse($c->dt)->toDateString();
+            $k  = $chave((int) $c->dis_id, $dt);
+            $linhasMap[$k] ??= ['dis_id' => (int) $c->dis_id, 'dt' => $dt, 'uni_id' => (int) $c->uni_id, 'conteudo' => null, 'metodologia' => null, 'plano' => false];
+            $linhasMap[$k]['conteudo']    = $c->dco_conteudo;
+            $linhasMap[$k]['metodologia'] = $c->dco_metodologia;
+            $linhasMap[$k]['plano']       = (bool) $c->dco_fl_plano_executado;
+        }
+        $diasPorDisc = collect($linhasMap)->groupBy('dis_id');
+
+        // Todas as disciplinas da grade da série devem aparecer, mesmo sem registro.
         $nomes = DB::table('edu_grade_disciplinar as gd')
             ->join('edu_disciplina as d', 'd.dis_id', '=', 'gd.grd_dis_id')
             ->where('gd.grd_ser_id', $turma->tur_ser_id)
@@ -88,10 +106,10 @@ class ConteudoMinistradoController extends Controller
             ->distinct()
             ->pluck('d.dis_nome', 'd.dis_id');
 
-        // Inclui também disciplinas com aula que não estejam na grade atual (grade alterada).
+        // Inclui também disciplinas com registro fora da grade atual (grade alterada).
         foreach ($diasPorDisc as $disId => $rows) {
             if (! $nomes->has((int) $disId)) {
-                $nomes->put((int) $disId, $rows->first()->dis_nome);
+                $nomes->put((int) $disId, DB::table('edu_disciplina')->where('dis_id', $disId)->value('dis_nome') ?? ('Disciplina ' . $disId));
             }
         }
 
@@ -100,17 +118,17 @@ class ConteudoMinistradoController extends Controller
             ->sortBy('nome', SORT_FLAG_CASE | SORT_NATURAL)
             ->values()
             ->map(function ($d) use ($diasPorDisc, $labelUni) {
-                $rows = $diasPorDisc->get($d->id, collect());
+                $rows = collect($diasPorDisc->get($d->id, []))->sortBy('dt')->values();
 
                 return [
                     'dis_nome' => $d->nome,
                     'total'    => $rows->count(),
                     'dias'     => $rows->map(fn ($r) => [
-                        'dt'              => Carbon::parse($r->aul_dt)->format('d/m/Y'),
-                        'periodo'         => $labelUni[(int) $r->aul_uni_id] ?? '—',
-                        'plano_executado' => (bool) $r->dco_fl_plano_executado,
-                        'conteudo'        => $r->dco_conteudo,
-                        'metodologia'     => $r->dco_metodologia,
+                        'dt'              => Carbon::parse($r['dt'])->format('d/m/Y'),
+                        'periodo'         => $labelUni[(int) $r['uni_id']] ?? '—',
+                        'plano_executado' => (bool) $r['plano'],
+                        'conteudo'        => $r['conteudo'],
+                        'metodologia'     => $r['metodologia'],
                     ])->values(),
                 ];
             });
