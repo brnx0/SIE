@@ -85,12 +85,12 @@ class CalculoNota
         }
 
         if ($tipo === 'conceitual') {
-            $media = round(array_sum($valores) / count($valores), 1);
+            $media = self::round05(array_sum($valores) / count($valores));
 
             return ['tipo' => $tipo, 'valor' => $media, 'conceito' => self::faixaDe($media, self::conceitos())];
         }
 
-        $media = self::round05(array_sum($valores) / count($valores));
+        $media = round(array_sum($valores) / count($valores), 2);
 
         return ['tipo' => $tipo, 'valor' => $media, 'conceito' => null];
     }
@@ -124,8 +124,8 @@ class CalculoNota
             foreach ($regulares as $a) {
                 $soma += (float) ($notaMap[$a->ava_id][$alnId]['valor'] ?? 0);
             }
-            // Média = soma das notas regulares, arredondada ao múltiplo de 0,05.
-            return ['tipo' => $tipo, 'valor' => self::round05($soma), 'conceito' => null];
+            // Numérica: soma das notas regulares, sem arredondamento (2 casas).
+            return ['tipo' => $tipo, 'valor' => round($soma, 2), 'conceito' => null];
         }
 
         // conceitual
@@ -155,7 +155,7 @@ class CalculoNota
         foreach ($regulares as $a) {
             $soma += (float) ($notaMap[$a->ava_id][$alnId]['valor'] ?? 0);
         }
-        $soma = round($soma, 1);
+        $soma = self::round05($soma);
 
         return ['valor' => $soma, 'conceito' => self::faixaDe($soma, $conceitos)];
     }
@@ -197,7 +197,7 @@ class CalculoNota
             if ($modo === 'faixa') {
                 $v = $notaMap[$a->ava_id][$alnId]['valor'] ?? null;
                 if ($v !== null) {
-                    $valor = round((float) $v, 1);
+                    $valor = self::round05((float) $v);
                     $conceito = self::faixaDe($valor, $conceitos);
                 }
             } else {

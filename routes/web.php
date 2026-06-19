@@ -346,6 +346,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('notas/avaliacoes/{avaliacao}', [\App\Http\Controllers\Diario\NotaController::class, 'updateAvaliacao'])->name('notas.avaliacoes.update');
         Route::delete('notas/avaliacoes/{avaliacao}', [\App\Http\Controllers\Diario\NotaController::class, 'destroyAvaliacao'])->name('notas.avaliacoes.destroy');
         Route::post('notas/salvar', [\App\Http\Controllers\Diario\NotaController::class, 'salvarNota'])->name('notas.salvar');
+
+        // Lançamento de frequência (faltas/presenças por tempo do quadro de horário)
+        Route::get('faltas/contexto', [\App\Http\Controllers\Diario\FaltaController::class, 'contexto'])->name('faltas.contexto');
+        Route::post('faltas/salvar', [\App\Http\Controllers\Diario\FaltaController::class, 'salvarPresenca'])->name('faltas.salvar');
+        Route::post('faltas/lote', [\App\Http\Controllers\Diario\FaltaController::class, 'salvarLote'])->name('faltas.lote');
+        Route::post('faltas/conteudo', [\App\Http\Controllers\Diario\FaltaController::class, 'salvarConteudo'])->name('faltas.conteudo');
         Route::get('planos/escolas', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'lookupEscolas'])->name('planos.escolas');
         Route::get('planos/turmas', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'lookupTurmas'])->name('planos.turmas');
         Route::get('planos/disciplinas', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'lookupDisciplinas'])->name('planos.disciplinas');

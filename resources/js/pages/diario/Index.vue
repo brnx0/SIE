@@ -3,6 +3,7 @@ import AvaliacaoDescritivaPanel from '@/components/diario/AvaliacaoDescritivaPan
 import QuadroHorarioPanel from '@/components/diario/QuadroHorarioPanel.vue';
 import NotasNumericaPanel from '@/components/diario/NotasNumericaPanel.vue';
 import NotasConceitualPanel from '@/components/diario/NotasConceitualPanel.vue';
+import FaltasPanel from '@/components/diario/FaltasPanel.vue';
 import LocalCombobox from '@/components/common/LocalCombobox.vue';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,7 +17,7 @@ import type {
     ProfessorResumoDiario,
 } from '@/types/diario';
 import { Head } from '@inertiajs/vue3';
-import { BookOpenCheck, CalendarClock, Calculator, ClipboardList, ListChecks, Pencil } from 'lucide-vue-next';
+import { BookOpenCheck, CalendarCheck, CalendarClock, Calculator, ClipboardList, ListChecks, Pencil } from 'lucide-vue-next';
 import { computed, onMounted, ref, watch } from 'vue';
 
 const props = defineProps<{
@@ -212,6 +213,7 @@ const modulos = computed(() => [
         ? [{ key: 'notas-conceitual', label: 'Avaliação Conceitual', icon: ListChecks, req: 'completo', grupo: 'Lançamentos' }]
         : []),
     { key: 'avaliacao-descritiva', label: 'Avaliação Descritiva', icon: ClipboardList, req: 'completo', grupo: 'Lançamentos' },
+    { key: 'faltas', label: 'Frequência', icon: CalendarCheck, req: 'periodo', grupo: 'Lançamentos' },
 ]);
 
 // Seções de módulos, na ordem definida. Só grupos com itens aparecem.
@@ -220,7 +222,12 @@ const grupos = computed(() =>
         .map((titulo) => ({ titulo, itens: modulos.value.filter((m) => m.grupo === titulo) }))
         .filter((g) => g.itens.length > 0),
 );
-const moduloPronto = (req: string) => (req === 'turma' ? !!turId.value : contextoCompleto.value);
+const moduloPronto = (req: string) =>
+    req === 'turma'
+        ? !!turId.value
+        : req === 'periodo'
+          ? !!(turId.value && uniId.value)
+          : contextoCompleto.value;
 
 // Reclicar no módulo ativo força recarregar o painel (ex.: trocou parâmetro do ano).
 const recarregarSeq = ref(0);
@@ -236,6 +243,7 @@ const painelVisivel = computed(() => {
     if (moduloAtivo.value === 'notas-numerica') return contextoCompleto.value;
     if (moduloAtivo.value === 'notas-conceitual') return contextoCompleto.value;
     if (moduloAtivo.value === 'avaliacao-descritiva') return contextoCompleto.value;
+    if (moduloAtivo.value === 'faltas') return !!(turId.value && uniId.value);
     return false;
 });
 
@@ -424,6 +432,16 @@ const semVinculo = computed(() => props.anosLetivos.length === 0);
                 :esc-id="escId!"
                 :tur-id="turId!"
                 :dis-id="disId!"
+                :uni-id="uniId!"
+            />
+
+            <!-- Módulo ativo: Frequência (faltas) — turma + período, sem disciplina -->
+            <FaltasPanel
+                v-if="!semVinculo && turId && uniId && moduloAtivo === 'faltas'"
+                :key="`fal-${turId}-${uniId}-${recarregarSeq}`"
+                :anl-id="anlId!"
+                :esc-id="escId!"
+                :tur-id="turId!"
                 :uni-id="uniId!"
             />
 

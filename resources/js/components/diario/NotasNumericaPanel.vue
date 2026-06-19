@@ -118,14 +118,12 @@ const hojeStr = () => {
 };
 const isFutura = (a: Avaliacao) => (a.ava_dt?.substring(0, 10) ?? '') > hojeStr();
 
-// Média final arredondada ao múltiplo de 0,05 mais próximo (termina em 0 ou 5, 2 casas).
-const round05 = (n: number) => Math.round(n * 20) / 20;
 const media = (row: AlunoRow): number | null => {
     const regs = regulares.value.filter((a) => !isFutura(a));
     if (regs.length === 0) return null;
-    // Média = SOMA das notas das avaliações regulares (não divide).
+    // Média = SOMA das notas das avaliações regulares (não divide). Sem arredondamento.
     const soma = regs.reduce((s, a) => s + (Number(row.notas[a.ava_id]) || 0), 0);
-    return round05(soma);
+    return Math.round(soma * 100) / 100;
 };
 
 const filtrados = computed(() => {

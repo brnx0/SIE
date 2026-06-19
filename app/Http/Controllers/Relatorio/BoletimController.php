@@ -60,13 +60,16 @@ class BoletimController extends Controller
             ->map(fn ($u) => ['uni_id' => (int) $u->uni_id, 'label' => $this->unidadeLabel((int) $u->uni_numero, (string) $u->uni_tipo)])
             ->values();
 
+        // Disciplinas pela grade disciplinar da série (na ordem da grade).
+        // Aparecem todas, mesmo sem nota lançada (células ficam "—").
         $disciplinas = DB::table('edu_grade_disciplinar as gd')
             ->join('edu_disciplina as d', 'd.dis_id', '=', 'gd.grd_dis_id')
             ->where('gd.grd_ser_id', $turma->tur_ser_id)
+            ->where('gd.grd_anl_id', $data['anl_id'])
             ->where('gd.grd_fl_ativo', true)
-            ->distinct()
+            ->orderBy('gd.grd_ordem')
             ->orderBy('d.dis_nome')
-            ->get(['d.dis_id', 'd.dis_nome']);
+            ->get(['d.dis_id', 'd.dis_nome', 'gd.grd_ordem']);
 
         // Pré-calcula resultados [dis_id][uni_id] => [aln_id => result].
         $res = [];
