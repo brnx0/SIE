@@ -38,6 +38,16 @@ class RelatorioCentralController extends Controller
         ]);
     }
 
+    public function secretaria(): Response
+    {
+        return Inertia::render('relatorios/Index', [
+            'relatorios' => $this->filtrar('secretaria'),
+            'titulo'     => 'Relatórios da Secretaria',
+            'subtitulo'  => 'Relatórios acadêmicos da secretaria escolar.',
+            'grupo'      => 'secretaria',
+        ]);
+    }
+
     private function filtrar(string $grupo): array
     {
         return array_values(array_filter(

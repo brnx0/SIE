@@ -23,7 +23,7 @@ defineProps<{
     disciplinas: Disciplina[];
 }>();
 
-const breadcrumbs: BreadcrumbItem[] = [{ title: 'Conteúdo Ministrado', href: '/relatorios/conteudo-ministrado' }];
+const breadcrumbs: BreadcrumbItem[] = [{ title: 'Conteúdo Ministrado', href: '/secretaria/conteudo-ministrado' }];
 
 const dataEmissao = computed(() => {
     const d = new Date();
@@ -88,7 +88,7 @@ const imprimir = () => window.print();
             <div class="mb-4 flex items-center justify-between print:hidden">
                 <h1 class="text-xl font-semibold">Resultado: Conteúdo Ministrado</h1>
                 <div class="flex gap-2">
-                    <Link href="/relatorios/conteudo-ministrado"><Button variant="outline"><ArrowLeft class="mr-1 size-4" /> Voltar</Button></Link>
+                    <Link href="/secretaria/conteudo-ministrado"><Button variant="outline"><ArrowLeft class="mr-1 size-4" /> Voltar</Button></Link>
                     <Button variant="outline" @click="imprimir"><Printer class="mr-1 size-4" /> Imprimir / PDF</Button>
                 </div>
             </div>

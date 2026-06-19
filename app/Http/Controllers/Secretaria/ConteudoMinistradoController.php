@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Http\Controllers\Relatorio;
+namespace App\Http\Controllers\Secretaria;
 
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Relatorio\Concerns\NotaLookups;
 use App\Models\Escola\Escola;
 use App\Models\Parametro\AnoLetivo;
 use App\Models\Parametro\ParametroEntidade;
 use App\Models\Turma\Turma;
 use App\Support\UserAccess;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -16,25 +16,65 @@ use Inertia\Inertia;
 use Inertia\Response;
 
 /**
- * Relatório de Conteúdo Ministrado.
- * Por disciplina da turma, lista os dias com aula registrada na frequência,
- * indicando se o planejamento foi executado e o conteúdo/metodologia do dia.
- * Sem período (unidade) selecionado, lista todos os períodos do ano.
+ * Relatório de Conteúdo Ministrado — Secretaria Acadêmica.
+ * Mesmo conteúdo do relatório do diário, mas com acesso por escola:
+ * admin vê tudo; secretário vê apenas as escolas onde tem lotação ativa,
+ * listando TODAS as turmas da escola (sem filtro de professor).
  */
 class ConteudoMinistradoController extends Controller
 {
-    use NotaLookups;
-
     public function form(): Response
     {
         $user = auth()->user();
 
-        return Inertia::render('relatorios/ConteudoMinistrado/Form', [
+        return Inertia::render('secretaria/conteudo-ministrado/Form', [
             'anosLetivos' => AnoLetivo::orderByDesc('anl_ano')->get(['anl_id', 'anl_ano']),
             'escolas'     => UserAccess::escolasVisiveis($user),
             'userEscola'  => UserAccess::escolaDefault($user),
             'isAdmin'     => $user->isAdmin(),
         ]);
+    }
+
+    public function unidades(Request $request): JsonResponse
+    {
+        $anlId = (int) $request->input('anl_id');
+        if (! $anlId) {
+            return response()->json([]);
+        }
+
+        return response()->json(
+            DB::table('cfg_unidade')->where('uni_anl_id', $anlId)->orderBy('uni_numero')->get(['uni_id', 'uni_numero', 'uni_tipo'])
+        );
+    }
+
+    /** Todas as turmas REGULAR da escola/ano — sem filtro de professor. */
+    public function turmas(Request $request): JsonResponse
+    {
+        $anlId = (int) $request->input('anl_id');
+        $escId = (int) $request->input('esc_id');
+        if (! $anlId || ! $escId) {
+            return response()->json([]);
+        }
+
+        // Secretário só enxerga turmas de escolas onde tem lotação.
+        $ids = UserAccess::escolasIds(auth()->user());
+        if ($ids !== null && ! in_array($escId, $ids, true)) {
+            return response()->json([]);
+        }
+
+        return response()->json(
+            DB::table('edu_turma as t')
+                ->leftJoin('edu_serie as s', 's.ser_id', '=', 't.tur_ser_id')
+                ->whereNull('t.tur_deleted_at')
+                ->where('t.tur_modalidade', 'REGULAR')
+                ->where('t.tur_anl_id', $anlId)
+                ->where('t.tur_esc_id', $escId)
+                ->select('t.tur_id', 't.tur_nome', 's.ser_nome')
+                ->distinct()
+                ->orderBy('s.ser_nome')
+                ->orderBy('t.tur_nome')
+                ->get()
+        );
     }
 
     public function gerar(Request $request): Response
@@ -46,15 +86,18 @@ class ConteudoMinistradoController extends Controller
             'uni_id' => ['nullable', 'integer', 'exists:cfg_unidade,uni_id'],
         ]);
 
-        $this->autorizarTurma((int) $data['tur_id']);
+        $this->autorizarEscola((int) $data['esc_id']);
 
         $ano    = AnoLetivo::findOrFail($data['anl_id']);
         $escola = Escola::findOrFail($data['esc_id']);
         $turma  = Turma::with('serie:ser_id,ser_nome')->findOrFail($data['tur_id']);
 
+        // A turma precisa pertencer à escola informada (impede cruzar escola/turma).
+        abort_unless((int) $turma->tur_esc_id === (int) $data['esc_id'], 404, 'Turma não pertence à escola.');
+
         $uniIdFiltro = ! empty($data['uni_id']) ? (int) $data['uni_id'] : null;
 
-        // Rótulos das unidades do ano (para a coluna de período no modo "todos").
+        // Rótulos das unidades do ano (coluna de período no modo "todos").
         $labelUni = [];
         foreach (DB::table('cfg_unidade')->where('uni_anl_id', $data['anl_id'])->orderBy('uni_numero')->get(['uni_id', 'uni_numero', 'uni_tipo']) as $u) {
             $labelUni[(int) $u->uni_id] = $this->unidadeLabel((int) $u->uni_numero, (string) $u->uni_tipo);
@@ -117,7 +160,7 @@ class ConteudoMinistradoController extends Controller
 
         $p = ParametroEntidade::first();
 
-        return Inertia::render('relatorios/ConteudoMinistrado/Resultado', [
+        return Inertia::render('secretaria/conteudo-ministrado/Resultado', [
             'parametros'  => $p ? [
                 'nome_entidade' => $p->par_nome_entidade,
                 'logomarca_url' => $p->par_logomarca_url,
@@ -132,5 +175,21 @@ class ConteudoMinistradoController extends Controller
             'consolidado' => $uniIdFiltro === null,
             'disciplinas' => $disciplinas,
         ]);
+    }
+
+    /** Rótulo da unidade: "1º Bimestre". */
+    private function unidadeLabel(int $numero, string $tipo): string
+    {
+        return $numero . 'º ' . ucfirst($tipo);
+    }
+
+    /** Garante que o usuário pode ver a escola (admin ou lotação ativa). */
+    private function autorizarEscola(int $escId): void
+    {
+        $ids = UserAccess::escolasIds(auth()->user());
+        if ($ids === null) {
+            return; // admin
+        }
+        abort_unless(in_array($escId, $ids, true), 403, 'Você não tem lotação nesta escola.');
     }
 }

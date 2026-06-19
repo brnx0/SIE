@@ -34,6 +34,15 @@ return [
         'icone'     => 'BookOpenText',
     ],
     [
+        'slug'      => 'conteudo-ministrado',
+        'href'      => '/secretaria/conteudo-ministrado',
+        'titulo'    => 'Conteúdo Ministrado',
+        'descricao' => 'Por disciplina e dia, com planejamento executado e conteúdo/metodologia — todas as turmas da escola.',
+        'categoria' => 'Diário',
+        'grupo'     => 'secretaria',
+        'icone'     => 'BookOpenText',
+    ],
+    [
         'slug'      => 'alunos-por-turma',
         'titulo'    => 'Alunos por Turma',
         'descricao' => 'Lista nominal com dados pessoais, situação e contato dos alunos por turma.',

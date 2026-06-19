@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Relatorio\Concerns;
 
 use App\Models\Matricula\Matricula;
+use App\Support\UserAccess;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -30,7 +31,6 @@ trait NotaLookups
     public function turmas(Request $request): JsonResponse
     {
         $user  = auth()->user();
-        $funId = (int) $user->fun_id;
         $anlId = (int) $request->input('anl_id');
         $escId = (int) $request->input('esc_id');
 
@@ -38,12 +38,26 @@ trait NotaLookups
             return response()->json([]);
         }
 
-        $base = ($funId && ! $user->isAdmin())
-            ? DB::table('edu_turma_professor as tp')
+        // Acesso por escola → admin (qualquer escola) ou secretaria (só lotação):
+        // TODAS as turmas da escola. Demais (professor) → só as que leciona.
+        if ($user->isAdmin() || UserAccess::acessoPorEscola($user)) {
+            if (! $user->isAdmin()) {
+                $ids = UserAccess::escolasIds($user);
+                if ($ids !== null && ! in_array($escId, $ids, true)) {
+                    return response()->json([]);
+                }
+            }
+            $base = DB::table('edu_turma as t');
+        } else {
+            $funId = (int) $user->fun_id;
+            if (! $funId) {
+                return response()->json([]);
+            }
+            $base = DB::table('edu_turma_professor as tp')
                 ->join('edu_turma as t', 't.tur_id', '=', 'tp.tup_tur_id')
                 ->where('tp.tup_fun_id', $funId)
-                ->whereNull('tp.tup_deleted_at')
-            : DB::table('edu_turma as t');
+                ->whereNull('tp.tup_deleted_at');
+        }
 
         return response()->json(
             $base
@@ -106,13 +120,23 @@ trait NotaLookups
         );
     }
 
-    /** Garante que o usuário pode ver a turma (admin ou professor que leciona). */
+    /** Garante que o usuário pode ver a turma (admin; secretaria por lotação; professor que leciona). */
     protected function autorizarTurma(int $turId): void
     {
         $user = auth()->user();
         if ($user->isAdmin()) {
             return;
         }
+
+        // Secretaria: autoriza se a escola da turma está na sua lotação.
+        if (UserAccess::acessoPorEscola($user)) {
+            $escId = (int) DB::table('edu_turma')->where('tur_id', $turId)->value('tur_esc_id');
+            $ids = UserAccess::escolasIds($user);
+            abort_unless(is_array($ids) && in_array($escId, $ids, true), 403, 'Você não tem lotação na escola desta turma.');
+
+            return;
+        }
+
         $funId = (int) $user->fun_id;
         $ensina = $funId && DB::table('edu_turma_professor')
             ->where('tup_fun_id', $funId)

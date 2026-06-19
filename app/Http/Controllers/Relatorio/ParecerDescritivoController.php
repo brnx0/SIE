@@ -46,8 +46,8 @@ class ParecerDescritivoController extends Controller
     }
 
     /**
-     * Turmas escopadas por perfil: admin vê todas da escola; professor
-     * (com fun_id) vê só as turmas onde leciona (edu_turma_professor).
+     * Turmas escopadas por perfil: admin vê todas da escola; secretaria vê todas
+     * da(s) escola(s) onde tem lotação; professor (com fun_id) vê só as que leciona.
      */
     public function turmas(Request $request): JsonResponse
     {
@@ -60,12 +60,26 @@ class ParecerDescritivoController extends Controller
             return response()->json([]);
         }
 
-        $base = ($funId && ! $user->isAdmin())
-            ? DB::table('edu_turma_professor as tp')
+        $porEscola = $user->isAdmin() || UserAccess::acessoPorEscola($user);
+
+        // Secretaria só enxerga turmas de escolas onde tem lotação.
+        if (UserAccess::acessoPorEscola($user)) {
+            $ids = UserAccess::escolasIds($user);
+            if ($ids !== null && ! in_array($escId, $ids, true)) {
+                return response()->json([]);
+            }
+        }
+
+        if ($porEscola) {
+            $base = DB::table('edu_turma as t');
+        } elseif ($funId) {
+            $base = DB::table('edu_turma_professor as tp')
                 ->join('edu_turma as t', 't.tur_id', '=', 'tp.tup_tur_id')
                 ->where('tp.tup_fun_id', $funId)
-                ->whereNull('tp.tup_deleted_at')
-            : DB::table('edu_turma as t');
+                ->whereNull('tp.tup_deleted_at');
+        } else {
+            return response()->json([]);
+        }
 
         return response()->json(
             $base
@@ -150,16 +164,21 @@ class ParecerDescritivoController extends Controller
         $escola = Escola::findOrFail($data['esc_id']);
         $turma  = Turma::with('serie:ser_id,ser_nome,ser_tipo_avaliacao_descritiva')->findOrFail($data['tur_id']);
 
-        // Professor só gera relatório de turma onde leciona; admin sem restrição.
+        // Admin sem restrição; secretaria pela lotação; professor só onde leciona.
         $user = auth()->user();
         if (! $user->isAdmin()) {
-            $funId = (int) $user->fun_id;
-            $ensina = $funId && DB::table('edu_turma_professor')
-                ->where('tup_fun_id', $funId)
-                ->where('tup_tur_id', $turma->tur_id)
-                ->whereNull('tup_deleted_at')
-                ->exists();
-            abort_unless($ensina, 403, 'Você não leciona nesta turma.');
+            if (UserAccess::acessoPorEscola($user)) {
+                $ids = UserAccess::escolasIds($user);
+                abort_unless(is_array($ids) && in_array((int) $turma->tur_esc_id, $ids, true), 403, 'Você não tem lotação na escola desta turma.');
+            } else {
+                $funId = (int) $user->fun_id;
+                $ensina = $funId && DB::table('edu_turma_professor')
+                    ->where('tup_fun_id', $funId)
+                    ->where('tup_tur_id', $turma->tur_id)
+                    ->whereNull('tup_deleted_at')
+                    ->exists();
+                abort_unless($ensina, 403, 'Você não leciona nesta turma.');
+            }
         }
 
         $tipo  = $turma->serie?->ser_tipo_avaliacao_descritiva; // 'por_aluno' | 'por_disciplina' | null

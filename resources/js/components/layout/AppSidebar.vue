@@ -109,6 +109,7 @@ const secretariaMenu = computed<any[]>(() => {
             { title: 'Acessos de Professores', href: '/secretaria/acessos-professores' },
             { title: 'Motivo Baixa Frequência', href: '/secretaria/motivos-baixa-frequencia' },
             { title: 'Justificativa de Falta', href: '/secretaria/justificativas-falta' },
+            { title: 'Relatórios', href: '/relatorios-secretaria' },
         ],
     }];
 });

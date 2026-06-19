@@ -77,6 +77,17 @@ class UserAccess
     }
 
     /**
+     * Usuário cujo acesso (a relatórios do diário) é por ESCOLA de lotação,
+     * e não por turma de professor. Ex.: secretaria escolar.
+     *
+     * Admin → false (admin é tratado à parte: enxerga tudo, sem filtro).
+     */
+    public static function acessoPorEscola(?User $user): bool
+    {
+        return $user && ! $user->isAdmin() && $user->hasAnyRole(['secretaria_escola']);
+    }
+
+    /**
      * Escola "padrão" do usuário — primeira lotação ativa. Útil para
      * pré-selecionar combos. Admin → null (sem default).
      */

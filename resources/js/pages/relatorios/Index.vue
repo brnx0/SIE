@@ -7,6 +7,7 @@ import { computed } from 'vue';
 
 interface Relatorio {
     slug: string;
+    href?: string;
     titulo: string;
     descricao: string;
     categoria: string;
@@ -27,6 +28,7 @@ const props = withDefaults(defineProps<{
 const breadcrumbs = computed<BreadcrumbItem[]>(() => {
     if (props.grupo === 'escola') return [{ title: 'Relatórios Gerais', href: '/relatorios-escola' }];
     if (props.grupo === 'diario') return [{ title: 'Relatórios do Diário', href: '/relatorios-diario' }];
+    if (props.grupo === 'secretaria') return [{ title: 'Relatórios da Secretaria', href: '/relatorios-secretaria' }];
     return [{ title: 'Relatórios', href: '/relatorios' }];
 });
 
@@ -54,7 +56,7 @@ const iconMap: Record<string, any> = { Users, FileBarChart, FileText, LayoutGrid
                     <Link
                         v-for="rel in lista"
                         :key="rel.slug"
-                        :href="`/relatorios/${rel.slug}`"
+                        :href="rel.href ?? `/relatorios/${rel.slug}`"
                         class="group rounded-xl border bg-card p-5 shadow-sm transition hover:border-indigo-500 hover:shadow-md"
                     >
                         <div class="flex items-start gap-3">
