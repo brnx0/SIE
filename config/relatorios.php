@@ -26,6 +26,14 @@ return [
         'icone'     => 'Table',
     ],
     [
+        'slug'      => 'conteudo-ministrado',
+        'titulo'    => 'Conteúdo Ministrado',
+        'descricao' => 'Por disciplina, lista os dias com aula registrada, planejamento executado e o conteúdo/metodologia do dia.',
+        'categoria' => 'Diário',
+        'grupo'     => 'diario',
+        'icone'     => 'BookOpenText',
+    ],
+    [
         'slug'      => 'alunos-por-turma',
         'titulo'    => 'Alunos por Turma',
         'descricao' => 'Lista nominal com dados pessoais, situação e contato dos alunos por turma.',

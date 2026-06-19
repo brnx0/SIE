@@ -168,6 +168,13 @@ export interface AtendimentoAee {
     ate_fl_ativo: boolean;
 }
 
+export interface MotivoBaixaFrequencia {
+    mbf_id: number;
+    mbf_descricao: string;
+    mbf_fl_abona: boolean;
+    mbf_fl_ativo: boolean;
+}
+
 export interface Atividade {
     atv_id: number;
     atv_descricao: string;

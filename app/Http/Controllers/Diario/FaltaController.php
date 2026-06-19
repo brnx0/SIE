@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Diario\DiarioAula;
 use App\Models\Diario\DiarioConteudo;
 use App\Models\Diario\DiarioFalta;
+use App\Models\Diario\DiarioPlanoAula;
 use App\Models\Matricula\Matricula;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -96,17 +97,55 @@ class FaltaController extends Controller
                 ]);
         }
 
-        // Conteúdo/metodologia por dia (do próprio professor).
+        // Justificativas de falta (intervalo por aluno) da turma — sinaliza no diário
+        // que a falta foi justificada, com o motivo e se ele abona a falta.
+        $justificativas = DB::table('edu_justificativa_falta as j')
+            ->leftJoin('cfg_motivo_baixa_frequencia as m', 'm.mbf_id', '=', 'j.jfa_mbf_id')
+            ->where('j.jfa_tur_id', $turId)
+            ->whereNull('j.jfa_deleted_at')
+            ->get(['j.jfa_aln_id', 'j.jfa_dt_inicio', 'j.jfa_dt_fim', 'm.mbf_descricao', 'm.mbf_fl_abona'])
+            ->map(fn ($r) => [
+                'aln_id'    => (int) $r->jfa_aln_id,
+                'dt_inicio' => Carbon::parse($r->jfa_dt_inicio)->toDateString(),
+                'dt_fim'    => Carbon::parse($r->jfa_dt_fim)->toDateString(),
+                'motivo'    => $r->mbf_descricao,
+                'abona'     => (bool) $r->mbf_fl_abona,
+            ]);
+
+        // Conteúdo/metodologia por (data, disciplina).
         $conteudos = DB::table('edu_diario_conteudo')
             ->where('dco_tur_id', $turId)
             ->where('dco_uni_id', $uniId)
-            ->where('dco_user_id', (int) $user->id)
             ->whereNull('dco_deleted_at')
-            ->get(['dco_dt', 'dco_conteudo', 'dco_metodologia'])
+            ->get(['dco_dt', 'dco_dis_id', 'dco_conteudo', 'dco_metodologia', 'dco_fl_plano_executado', 'dco_dpa_id'])
             ->map(fn ($r) => [
-                'dt'          => Carbon::parse($r->dco_dt)->toDateString(),
-                'conteudo'    => $r->dco_conteudo,
-                'metodologia' => $r->dco_metodologia,
+                'dt'              => Carbon::parse($r->dco_dt)->toDateString(),
+                'dis_id'          => $r->dco_dis_id !== null ? (int) $r->dco_dis_id : null,
+                'conteudo'        => $r->dco_conteudo,
+                'metodologia'     => $r->dco_metodologia,
+                'plano_executado' => (bool) $r->dco_fl_plano_executado,
+                'dpa_id'          => $r->dco_dpa_id !== null ? (int) $r->dco_dpa_id : null,
+            ]);
+
+        // Planos de aula elegíveis (pendente/aprovado) da turma — base do "planejamento executado".
+        // Frontend casa por disciplina + data dentro do período do plano.
+        $planosQ = DB::table('edu_diario_plano_aula')
+            ->where('dpa_tur_id', $turId)
+            ->whereIn('dpa_status', [DiarioPlanoAula::STATUS_PENDENTE, DiarioPlanoAula::STATUS_APROVADO])
+            ->whereNull('dpa_deleted_at');
+        if (! $user->isAdmin()) {
+            $planosQ->where('dpa_user_id', (int) $user->id);
+        }
+        $planos = $planosQ
+            ->orderBy('dpa_dt_inicio')
+            ->get(['dpa_id', 'dpa_dis_id', 'dpa_dt_inicio', 'dpa_dt_fim', 'dpa_objeto_conhecimento', 'dpa_estrategias'])
+            ->map(fn ($p) => [
+                'dpa_id'      => (int) $p->dpa_id,
+                'dis_id'      => (int) $p->dpa_dis_id,
+                'dt_inicio'   => Carbon::parse($p->dpa_dt_inicio)->toDateString(),
+                'dt_fim'      => Carbon::parse($p->dpa_dt_fim)->toDateString(),
+                'conteudo'    => $p->dpa_objeto_conhecimento,
+                'metodologia' => $p->dpa_estrategias,
             ]);
 
         return response()->json([
@@ -117,32 +156,68 @@ class FaltaController extends Controller
             'turma_aberta'   => $this->turmaAberta($turId),
             'presencas'      => $presencas,
             'conteudos'      => $conteudos,
+            'planos'         => $planos,
+            'justificativas' => $justificativas,
         ]);
     }
 
-    /** Salva conteúdo/metodologia do dia (turma + data + professor). 1 por dia, não por tempo. */
+    /**
+     * Salva conteúdo/metodologia por (turma + data + disciplina).
+     * Se "planejamento executado", espelha (snapshot) o conteúdo do plano de aula
+     * elegível (pendente/aprovado) que cobre a data — campos travados no cliente.
+     */
     public function salvarConteudo(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'tur_id'      => ['required', 'integer', 'exists:edu_turma,tur_id'],
-            'uni_id'      => ['required', 'integer', 'exists:cfg_unidade,uni_id'],
-            'dt'          => ['required', 'date'],
-            'conteudo'    => ['nullable', 'string', 'max:255'],
-            'metodologia' => ['nullable', 'string', 'max:255'],
+            'tur_id'          => ['required', 'integer', 'exists:edu_turma,tur_id'],
+            'uni_id'          => ['required', 'integer', 'exists:cfg_unidade,uni_id'],
+            'dis_id'          => ['required', 'integer', 'exists:edu_disciplina,dis_id'],
+            'dt'              => ['required', 'date'],
+            'conteudo'        => ['nullable', 'string', 'max:5000'],
+            'metodologia'     => ['nullable', 'string', 'max:5000'],
+            'plano_executado' => ['boolean'],
+            'dpa_id'          => ['nullable', 'integer'],
         ]);
 
         $this->abortIfNotProfessor();
         $this->assertLotadoNaTurma($request, (int) $data['tur_id']);
+        $this->assertDisciplinaDoProfessor($request, (int) $data['tur_id'], (int) $data['dis_id']);
         $this->assertTurmaAberta((int) $data['tur_id']);
         $this->assertPeriodoAberto((int) $data['uni_id']);
         $this->assertDataNoPeriodo((int) $data['uni_id'], $data['dt']);
 
+        $executado   = (bool) ($data['plano_executado'] ?? false);
+        $conteudo    = $data['conteudo'] ?? null;
+        $metodologia = $data['metodologia'] ?? null;
+        $dpaId       = null;
+
+        if ($executado) {
+            // Travado: conteúdo/metodologia vêm do plano (snapshot), não do cliente.
+            $plano       = $this->planoExecutavel($request, (int) $data['tur_id'], (int) $data['dis_id'], $data['dt'], $data['dpa_id'] ?? null);
+            $dpaId       = (int) $plano->dpa_id;
+            $conteudo    = $plano->dpa_objeto_conhecimento;
+            $metodologia = $plano->dpa_estrategias;
+        }
+
         DiarioConteudo::updateOrCreate(
-            ['dco_tur_id' => $data['tur_id'], 'dco_dt' => $data['dt'], 'dco_user_id' => (int) $request->user()->id],
-            ['dco_uni_id' => $data['uni_id'], 'dco_conteudo' => $data['conteudo'] ?? null, 'dco_metodologia' => $data['metodologia'] ?? null],
+            ['dco_tur_id' => $data['tur_id'], 'dco_dt' => $data['dt'], 'dco_dis_id' => $data['dis_id']],
+            [
+                'dco_user_id'            => (int) $request->user()->id,
+                'dco_uni_id'             => $data['uni_id'],
+                'dco_conteudo'           => $conteudo,
+                'dco_metodologia'        => $metodologia,
+                'dco_fl_plano_executado' => $executado,
+                'dco_dpa_id'             => $dpaId,
+            ],
         );
 
-        return response()->json(['ok' => true]);
+        return response()->json([
+            'ok'              => true,
+            'plano_executado' => $executado,
+            'dpa_id'          => $dpaId,
+            'conteudo'        => $conteudo,
+            'metodologia'     => $metodologia,
+        ]);
     }
 
     /** Marca presença/ausência de 1 aluno em 1 tempo/data (autosave). */
@@ -247,6 +322,46 @@ class FaltaController extends Controller
             ->whereNull('trh_deleted_at')
             ->exists();
         abort_unless($tem, 403, 'Você não está lotado nesta turma.');
+    }
+
+    /** Garante que o professor leciona a disciplina nesta turma (tem slot) — admin passa. */
+    private function assertDisciplinaDoProfessor(Request $request, int $turId, int $disId): void
+    {
+        $user = $request->user();
+        if ($user->isAdmin()) {
+            return;
+        }
+        $funId = (int) $user->fun_id;
+        $tem = $funId && DB::table('edu_turma_horario')
+            ->where('trh_tur_id', $turId)
+            ->where('trh_dis_id', $disId)
+            ->where('trh_fun_id', $funId)
+            ->whereNull('trh_deleted_at')
+            ->exists();
+        abort_unless($tem, 403, 'Você não leciona esta disciplina nesta turma.');
+    }
+
+    /** Localiza/valida o plano elegível (pendente/aprovado) que cobre a data p/ a disciplina. */
+    private function planoExecutavel(Request $request, int $turId, int $disId, string $dt, ?int $dpaId): object
+    {
+        $user = $request->user();
+        $d = Carbon::parse($dt)->toDateString();
+
+        $plano = DB::table('edu_diario_plano_aula')
+            ->where('dpa_tur_id', $turId)
+            ->where('dpa_dis_id', $disId)
+            ->whereIn('dpa_status', [DiarioPlanoAula::STATUS_PENDENTE, DiarioPlanoAula::STATUS_APROVADO])
+            ->whereDate('dpa_dt_inicio', '<=', $d)
+            ->whereDate('dpa_dt_fim', '>=', $d)
+            ->whereNull('dpa_deleted_at')
+            ->when(! $user->isAdmin(), fn ($q) => $q->where('dpa_user_id', (int) $user->id))
+            ->when($dpaId, fn ($q) => $q->where('dpa_id', $dpaId))
+            ->orderBy('dpa_dt_inicio')
+            ->first(['dpa_id', 'dpa_objeto_conhecimento', 'dpa_estrategias']);
+
+        abort_unless($plano, 422, 'Não há planejamento (pendente/aprovado) para esta disciplina nesta data.');
+
+        return $plano;
     }
 
     /** Garante que o tempo pertence ao professor (ou admin) e à turma. */

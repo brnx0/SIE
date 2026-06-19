@@ -45,6 +45,7 @@ const imprimir = () => window.print();
 <template>
     <Head title="Resultado — Boletim" />
 
+    <Teleport to="body">
     <div id="print-area">
         <section v-for="aluno in alunos" :key="`pb-${aluno.aln_id}`" class="bol-pagina">
             <!-- Cabeçalho institucional -->
@@ -58,7 +59,8 @@ const imprimir = () => window.print();
                     <div v-if="escola.endereco">{{ escola.endereco }}</div>
                     <div v-if="escola.telefone || escola.email">
                         <span v-if="escola.telefone">Telefone: {{ escola.telefone }}</span>
-                        <span v-if="escola.email">&nbsp;&nbsp;&nbsp;Email: {{ escola.email }}</span>
+                        <span v-if="escola.telefone && escola.email">&nbsp;&nbsp;&nbsp;</span>
+                        <span v-if="escola.email">Email: {{ escola.email }}</span>
                     </div>
                 </div>
                 <div class="bol-cab-data">
@@ -71,14 +73,16 @@ const imprimir = () => window.print();
 
             <!-- Identificação do aluno -->
             <div class="bol-ident">
-                <div class="bol-ident-linha"><span class="lbl">Nome:</span> {{ aluno.aln_nome }}</div>
-                <div class="bol-ident-grid">
-                    <div><span class="lbl">Nascimento:</span> {{ aluno.aln_nascimento ?? '—' }}</div>
-                    <div><span class="lbl">Tipo de ensino:</span> {{ cabecalho.tipo_ensino ?? '—' }}</div>
-                    <div><span class="lbl">Turma:</span> {{ cabecalho.turma ?? '—' }}</div>
-                    <div><span class="lbl">Matrícula:</span> {{ aluno.aln_nr_matricula ?? '—' }}</div>
-                    <div><span class="lbl">Série:</span> {{ cabecalho.serie ?? '—' }}</div>
-                    <div><span class="lbl">Turno:</span> {{ cabecalho.turno ?? '—' }}</div>
+                <div class="bol-ident-row">
+                    <span class="campo nome"><span class="lbl">Nome:</span> {{ aluno.aln_nome }}</span>
+                    <span class="campo"><span class="lbl">Matrícula:</span> {{ aluno.aln_nr_matricula ?? '—' }}</span>
+                </div>
+                <div class="bol-ident-row">
+                    <span class="campo"><span class="lbl">Nascimento:</span> {{ aluno.aln_nascimento ?? '—' }}</span>
+                    <span class="campo"><span class="lbl">Tipo de ensino:</span> {{ cabecalho.tipo_ensino ?? '—' }}</span>
+                    <span class="campo"><span class="lbl">Série:</span> {{ cabecalho.serie ?? '—' }}</span>
+                    <span class="campo"><span class="lbl">Turma:</span> {{ cabecalho.turma ?? '—' }}</span>
+                    <span class="campo"><span class="lbl">Turno:</span> {{ cabecalho.turno ?? '—' }}</span>
                 </div>
             </div>
 
@@ -140,7 +144,9 @@ const imprimir = () => window.print();
             <div class="bol-situacao">Situação do aluno:</div>
         </section>
     </div>
+    </Teleport>
 
+    <div class="tela-impressao">
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="mx-auto w-[95%] py-6 print:py-2">
             <div class="mb-4 flex items-center justify-between print:hidden">
@@ -214,17 +220,17 @@ const imprimir = () => window.print();
             </div>
         </div>
     </AppLayout>
+    </div>
 </template>
 
 <style>
 #print-area { display: none; }
 @media print {
-    @page { size: A4 portrait; margin: 8mm 8mm; }
-    body * { visibility: hidden !important; }
-    #print-area, #print-area * { visibility: visible !important; }
-    #print-area { display: block !important; position: absolute; left: 0; top: 0; width: 100%; font-family: Arial, Helvetica, sans-serif; color: #000; font-size: 9pt; }
-    .bol-pagina { page-break-after: always; padding: 2mm; }
-    .bol-pagina:last-child { page-break-after: auto; }
+    @page { size: A4 portrait; margin: 4mm 8mm 8mm 8mm; }
+    body > *:not(#print-area) { display: none !important; }
+    #print-area { display: block !important; width: 100%; font-family: Arial, Helvetica, sans-serif; color: #000; font-size: 9pt; }
+    .bol-pagina { page-break-after: always; break-after: page; }
+    .bol-pagina:last-child { page-break-after: auto; break-after: auto; }
 
     .bol-cab { display: grid; grid-template-columns: 90px 1fr 150px; align-items: center; gap: 8px; border: 1px solid #000; padding: 6px 8px; }
     .bol-logo img { max-width: 85px; max-height: 70px; object-fit: contain; }
@@ -234,9 +240,10 @@ const imprimir = () => window.print();
 
     .bol-titulo { border: 1px solid #000; border-top: none; text-align: center; font-weight: 700; font-size: 11pt; padding: 8px; }
 
-    .bol-ident { border: 1px solid #000; border-top: none; padding: 8px 10px; font-size: 9pt; }
-    .bol-ident-linha { margin-bottom: 6px; }
-    .bol-ident-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px 12px; }
+    .bol-ident { border: 1px solid #000; border-top: none; padding: 6px 10px; font-size: 9pt; }
+    .bol-ident-row { display: flex; flex-wrap: wrap; gap: 2px 18px; }
+    .bol-ident-row + .bol-ident-row { margin-top: 4px; }
+    .bol-ident .nome { flex: 1 1 60%; }
     .bol-ident .lbl { font-weight: 700; }
 
     .bol-tbl { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 8pt; }

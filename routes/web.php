@@ -15,6 +15,7 @@ use App\Http\Controllers\Relatorio\FormacaoClassesAeeController;
 use App\Http\Controllers\Relatorio\FormacaoClassesController;
 use App\Http\Controllers\Relatorio\ParecerDescritivoController;
 use App\Http\Controllers\Relatorio\BoletimController;
+use App\Http\Controllers\Relatorio\ConteudoMinistradoController;
 use App\Http\Controllers\Relatorio\MapaNotasController;
 use App\Http\Controllers\Relatorio\RelatorioCentralController;
 use App\Http\Controllers\Api\AlunoSearchController;
@@ -62,6 +63,8 @@ use App\Http\Controllers\Parametro\SabadoLetivoController;
 use App\Http\Controllers\Parametro\ConceitoController;
 use App\Http\Controllers\Parametro\DiaNaoLetivoController;
 use App\Http\Controllers\Parametro\MediaEscolaController;
+use App\Http\Controllers\Parametro\MotivoBaixaFrequenciaController;
+use App\Http\Controllers\Diario\JustificativaFaltaController;
 use App\Http\Controllers\Parametro\SituacaoBloqueioController;
 use App\Http\Controllers\Parametro\UnidadeController;
 use App\Http\Controllers\UsersController;
@@ -201,6 +204,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('relatorios/mapa-notas/turmas', [MapaNotasController::class, 'turmas'])->name('relatorios.mapa-notas.turmas');
     Route::get('relatorios/mapa-notas/unidades', [MapaNotasController::class, 'unidades'])->name('relatorios.mapa-notas.unidades');
     Route::get('relatorios/mapa-notas/gerar', [MapaNotasController::class, 'gerar'])->name('relatorios.mapa-notas.gerar');
+
+    // Conteúdo ministrado por disciplina/dia
+    Route::get('relatorios/conteudo-ministrado', [ConteudoMinistradoController::class, 'form'])->name('relatorios.conteudo-ministrado.form');
+    Route::get('relatorios/conteudo-ministrado/turmas', [ConteudoMinistradoController::class, 'turmas'])->name('relatorios.conteudo-ministrado.turmas');
+    Route::get('relatorios/conteudo-ministrado/unidades', [ConteudoMinistradoController::class, 'unidades'])->name('relatorios.conteudo-ministrado.unidades');
+    Route::get('relatorios/conteudo-ministrado/gerar', [ConteudoMinistradoController::class, 'gerar'])->name('relatorios.conteudo-ministrado.gerar');
     Route::get('relatorios/alunos-por-turma', [AlunosPorTurmaRelatorioController::class, 'form'])->name('relatorios.alunos-por-turma.form');
     Route::get('relatorios/alunos-por-turma/gerar', [AlunosPorTurmaRelatorioController::class, 'gerar'])->name('relatorios.alunos-por-turma.gerar');
     Route::get('relatorios/dados-alunos-turma', [DadosAlunosTurmaController::class, 'form'])->name('relatorios.dados-alunos-turma.form');
@@ -396,6 +405,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('acessos-professores/export', [AcessoProfessorController::class, 'export'])->name('acessos-professores.export');
         Route::get('acessos-professores', [AcessoProfessorController::class, 'index'])->name('acessos-professores.index');
         Route::post('acessos-professores/gerar', [AcessoProfessorController::class, 'gerar'])->name('acessos-professores.gerar');
+
+        // Cadastro: Motivos de baixa frequência (justificativa de falta)
+        Route::get('motivos-baixa-frequencia', [MotivoBaixaFrequenciaController::class, 'index'])->name('motivos-baixa-frequencia.index');
+        Route::post('motivos-baixa-frequencia', [MotivoBaixaFrequenciaController::class, 'store'])->name('motivos-baixa-frequencia.store');
+        Route::put('motivos-baixa-frequencia/{motivo}', [MotivoBaixaFrequenciaController::class, 'update'])->name('motivos-baixa-frequencia.update');
+        Route::delete('motivos-baixa-frequencia/{motivo}', [MotivoBaixaFrequenciaController::class, 'destroy'])->name('motivos-baixa-frequencia.destroy');
+
+        // Justificativa de falta (por período)
+        Route::get('justificativas-falta', [JustificativaFaltaController::class, 'index'])->name('justificativas-falta.index');
+        Route::get('justificativas-falta/turmas', [JustificativaFaltaController::class, 'turmas'])->name('justificativas-falta.turmas');
+        Route::get('justificativas-falta/alunos', [JustificativaFaltaController::class, 'alunos'])->name('justificativas-falta.alunos');
+        Route::post('justificativas-falta', [JustificativaFaltaController::class, 'store'])->name('justificativas-falta.store');
+        Route::put('justificativas-falta/{justificativa}', [JustificativaFaltaController::class, 'update'])->name('justificativas-falta.update');
+        Route::delete('justificativas-falta/{justificativa}', [JustificativaFaltaController::class, 'destroy'])->name('justificativas-falta.destroy');
     });
 
     Route::middleware('can:admin')->group(function () {

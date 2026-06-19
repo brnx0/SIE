@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, Loader2, Search, TriangleAlert } from 'lucide-vue-next';
+import { ChevronLeft, ChevronRight, Loader2, RefreshCw, Search, TriangleAlert } from 'lucide-vue-next';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 
 const props = defineProps<{
@@ -25,11 +25,33 @@ interface Aluno {
     aln_nome: string;
     aln_nr_matricula: string | null;
 }
+interface Justificativa {
+    aln_id: number;
+    dt_inicio: string;
+    dt_fim: string;
+    motivo: string | null;
+    abona: boolean;
+}
+interface Plano {
+    dpa_id: number;
+    dis_id: number;
+    dt_inicio: string;
+    dt_fim: string;
+    conteudo: string | null;
+    metodologia: string | null;
+}
+interface ConteudoInfo {
+    conteudo: string;
+    metodologia: string;
+    executado: boolean;
+    dpa_id: number | null;
+}
 
 const DIA_DOW: Record<string, number> = { dom: 0, seg: 1, ter: 2, qua: 3, qui: 4, sex: 5, sab: 6 };
 const DIA_LABEL: Record<string, string> = { dom: 'Dom', seg: 'Seg', ter: 'Ter', qua: 'Qua', qui: 'Qui', sex: 'Sex', sab: 'Sáb' };
 
 const carregando = ref(true);
+const recarregando = ref(false);
 const erro = ref<string | null>(null);
 const tempos = ref<Tempo[]>([]);
 const alunos = ref<Aluno[]>([]);
@@ -43,10 +65,12 @@ const busca = ref('');
 const presencaMap = reactive<Record<string, boolean>>({});
 const status = reactive<Record<string, 'idle' | 'saving' | 'saved' | 'error'>>({});
 
-// Conteúdo/metodologia por DIA (1 por dia, não por tempo): chave = dt
-const conteudoDia = reactive<Record<string, { conteudo: string; metodologia: string }>>({});
+// Conteúdo/metodologia por (dia, disciplina): chave = `${dt}|${dis}`
+const conteudoMap = reactive<Record<string, ConteudoInfo>>({});
 const conteudoStatus = reactive<Record<string, 'idle' | 'saving' | 'saved' | 'error'>>({});
 const conteudoTimer: Record<string, number> = {};
+const planos = ref<Plano[]>([]);
+const justificativas = ref<Justificativa[]>([]);
 
 const csrf = (): Record<string, string> => {
     const m = document.cookie.match(/XSRF-TOKEN=([^;]+)/);
@@ -54,13 +78,12 @@ const csrf = (): Record<string, string> => {
 };
 const k = (trh: number, dt: string, aln: number) => `${trh}|${dt}|${aln}`;
 
-const carregar = async () => {
-    carregando.value = true;
+// silent = refresh manual: mantém a tabela visível (gira só o botão) em vez de
+// trocar tudo por "Carregando...". Usado quando novos tempos são cadastrados.
+const carregar = async (silent = false) => {
+    if (silent) recarregando.value = true;
+    else carregando.value = true;
     erro.value = null;
-    Object.keys(presencaMap).forEach((key) => delete presencaMap[key]);
-    Object.keys(status).forEach((key) => delete status[key]);
-    Object.keys(conteudoDia).forEach((key) => delete conteudoDia[key]);
-    Object.keys(conteudoStatus).forEach((key) => delete conteudoStatus[key]);
     try {
         const url = new URL('/api/diario/faltas/contexto', window.location.origin);
         url.searchParams.set('tur_id', String(props.turId));
@@ -71,6 +94,12 @@ const carregar = async () => {
             return;
         }
         const data = await r.json();
+        // Só limpa/repopula após resposta OK — evita piscar a tabela no refresh
+        // e preserva os dados atuais caso a recarga falhe.
+        Object.keys(presencaMap).forEach((key) => delete presencaMap[key]);
+        Object.keys(status).forEach((key) => delete status[key]);
+        Object.keys(conteudoMap).forEach((key) => delete conteudoMap[key]);
+        Object.keys(conteudoStatus).forEach((key) => delete conteudoStatus[key]);
         tempos.value = data.tempos ?? [];
         alunos.value = data.alunos ?? [];
         periodo.value = data.periodo ?? null;
@@ -79,17 +108,29 @@ const carregar = async () => {
         for (const p of data.presencas ?? []) {
             presencaMap[k(p.trh_id, p.dt, p.aln_id)] = p.presente;
         }
+        planos.value = data.planos ?? [];
+        justificativas.value = data.justificativas ?? [];
         for (const c of data.conteudos ?? []) {
-            conteudoDia[c.dt] = { conteudo: c.conteudo ?? '', metodologia: c.metodologia ?? '' };
+            if (c.dis_id == null) continue;
+            conteudoMap[`${c.dt}|${c.dis_id}`] = {
+                conteudo: c.conteudo ?? '',
+                metodologia: c.metodologia ?? '',
+                executado: !!c.plano_executado,
+                dpa_id: c.dpa_id ?? null,
+            };
         }
-        escolherDataInicial();
+        // Mantém o dia selecionado se ainda existir após a recarga; senão escolhe inicial.
+        if (!dataSel.value || !diasComAula.value.some((d) => d.dt === dataSel.value)) {
+            escolherDataInicial();
+        }
     } finally {
         carregando.value = false;
+        recarregando.value = false;
     }
 };
 
-onMounted(carregar);
-watch(() => [props.turId, props.uniId], carregar);
+onMounted(() => carregar());
+watch(() => [props.turId, props.uniId], () => carregar());
 
 // ── Datas com aula (dia-da-semana de algum tempo do professor) ───────────────
 const diasComAula = computed<{ dt: string; label: string }[]>(() => {
@@ -187,32 +228,100 @@ const alunosFiltrados = computed(() => {
 
 const toggle = (trh: number, aln: number) => marcar(trh, aln, !presente(trh, aln));
 
-// ── Conteúdo / metodologia do dia (1 por dia) ────────────────────────────────
-const getDia = (campo: 'conteudo' | 'metodologia') => conteudoDia[dataSel.value]?.[campo] ?? '';
-const salvarConteudo = async () => {
-    if (!editavel.value || !dataSel.value) return;
+// ── Conteúdo / metodologia por disciplina ────────────────────────────────────
+const ck = (dis: number) => `${dataSel.value}|${dis}`;
+const SEM_INFO: ConteudoInfo = { conteudo: '', metodologia: '', executado: false, dpa_id: null };
+
+// Disciplinas que o professor leciona no dia (1 bloco de registro cada).
+const disciplinasDoDia = computed<{ dis_id: number; dis_nome: string }[]>(() => {
+    const seen = new Map<number, string>();
+    for (const t of temposDoDia.value) {
+        if (t.pode_editar && t.trh_dis_id != null && !seen.has(t.trh_dis_id)) {
+            seen.set(t.trh_dis_id, t.dis_nome ?? `Disciplina ${t.trh_dis_id}`);
+        }
+    }
+    return [...seen].map(([dis_id, dis_nome]) => ({ dis_id, dis_nome }));
+});
+
+// Plano elegível (pendente/aprovado) que cobre a data selecionada p/ a disciplina.
+const planoDoDia = (dis: number): Plano | null => {
     const dt = dataSel.value;
-    const info = conteudoDia[dt] ?? { conteudo: '', metodologia: '' };
-    conteudoStatus[dt] = 'saving';
+    return planos.value.find((p) => p.dis_id === dis && dt >= p.dt_inicio && dt <= p.dt_fim) ?? null;
+};
+
+// Leitura sem mutar (template); ensure() cria a entrada ao gravar.
+const infoOf = (dis: number): ConteudoInfo => conteudoMap[ck(dis)] ?? SEM_INFO;
+const ensure = (dis: number): ConteudoInfo => {
+    const key = ck(dis);
+    if (!conteudoMap[key]) conteudoMap[key] = { conteudo: '', metodologia: '', executado: false, dpa_id: null };
+    return conteudoMap[key];
+};
+
+const getConteudo = (dis: number, campo: 'conteudo' | 'metodologia') => {
+    const i = infoOf(dis);
+    if (i.executado) return planoDoDia(dis)?.[campo] ?? i[campo] ?? '';
+    return i[campo] ?? '';
+};
+
+const salvarConteudo = async (dis: number) => {
+    if (!editavel.value || !dataSel.value) return;
+    const key = ck(dis);
+    const i = ensure(dis);
+    conteudoStatus[key] = 'saving';
     try {
         const r = await fetch('/api/diario/faltas/conteudo', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', Accept: 'application/json', ...csrf() },
             credentials: 'same-origin',
-            body: JSON.stringify({ tur_id: props.turId, uni_id: props.uniId, dt, conteudo: info.conteudo, metodologia: info.metodologia }),
+            body: JSON.stringify({
+                tur_id: props.turId,
+                uni_id: props.uniId,
+                dis_id: dis,
+                dt: dataSel.value,
+                conteudo: i.conteudo,
+                metodologia: i.metodologia,
+                plano_executado: i.executado,
+                dpa_id: i.dpa_id,
+            }),
         });
-        conteudoStatus[dt] = r.ok ? 'saved' : 'error';
+        if (r.ok) {
+            const j = await r.json();
+            // espelha o snapshot devolvido (relevante quando executado)
+            i.conteudo = j.conteudo ?? i.conteudo;
+            i.metodologia = j.metodologia ?? i.metodologia;
+            i.dpa_id = j.dpa_id ?? null;
+            conteudoStatus[key] = 'saved';
+        } else {
+            conteudoStatus[key] = 'error';
+        }
     } catch {
-        conteudoStatus[dt] = 'error';
+        conteudoStatus[key] = 'error';
     }
 };
-const setDia = (campo: 'conteudo' | 'metodologia', val: string) => {
-    const dt = dataSel.value;
-    if (!conteudoDia[dt]) conteudoDia[dt] = { conteudo: '', metodologia: '' };
-    conteudoDia[dt][campo] = val;
-    conteudoStatus[dt] = 'idle';
-    if (conteudoTimer[dt]) clearTimeout(conteudoTimer[dt]);
-    conteudoTimer[dt] = window.setTimeout(salvarConteudo, 1200);
+
+const setConteudo = (dis: number, campo: 'conteudo' | 'metodologia', val: string) => {
+    const i = ensure(dis);
+    if (i.executado) return; // travado quando planejamento executado
+    i[campo] = val;
+    conteudoStatus[ck(dis)] = 'idle';
+    if (conteudoTimer[ck(dis)]) clearTimeout(conteudoTimer[ck(dis)]);
+    conteudoTimer[ck(dis)] = window.setTimeout(() => salvarConteudo(dis), 1200);
+};
+
+const toggleExecutado = (dis: number, val: boolean) => {
+    const i = ensure(dis);
+    if (val) {
+        const p = planoDoDia(dis);
+        if (!p) return; // sem plano: toggle desabilitado
+        i.executado = true;
+        i.dpa_id = p.dpa_id;
+        i.conteudo = p.conteudo ?? '';
+        i.metodologia = p.metodologia ?? '';
+    } else {
+        i.executado = false;
+        i.dpa_id = null;
+    }
+    salvarConteudo(dis);
 };
 const tempoLabel = (t: Tempo) => `${t.trh_tempo}º tempo${t.dis_nome ? ' · ' + t.dis_nome : ''}${t.trh_hora ? ' · ' + t.trh_hora.substring(0, 5) : ''}`;
 // Primeiro + último nome do professor (ex.: "BRENO JESUS").
@@ -228,13 +337,38 @@ const reg = (trh: number, aln: number): boolean | null => {
 };
 // Tempo editável: sem registro assume presente. Tempo de outro professor: só o que foi lançado.
 const mostrarFalta = (t: Tempo, aln: number) => (t.pode_editar ? !presente(t.trh_id, aln) : reg(t.trh_id, aln) === false);
+
+// ── Justificativa de falta (intervalo por aluno cobre o dia) ─────────────────
+const justificativaDe = (aln: number, dt: string): Justificativa | null => {
+    if (!dt) return null;
+    return justificativas.value.find((j) => j.aln_id === aln && dt >= j.dt_inicio && dt <= j.dt_fim) ?? null;
+};
+const diaJustificado = (aln: number) => !!justificativaDe(aln, dataSel.value);
+// Célula é falta E está coberta por justificativa → exibe "FJ".
+const cellJustificada = (t: Tempo, aln: number) => mostrarFalta(t, aln) && diaJustificado(aln);
+const motivoCell = (aln: number) => justificativaDe(aln, dataSel.value)?.motivo ?? null;
+
 const faltasDia = (aln: number) => temposDoDia.value.filter((t) => mostrarFalta(t, aln)).length;
-const statusDia = (aln: number): 'presente' | 'parcial' | 'ausente' => {
+const statusDia = (aln: number): 'presente' | 'parcial' | 'ausente' | 'justificada' => {
     const total = temposDoDia.value.length;
     const f = faltasDia(aln);
     if (f === 0) return 'presente';
+    if (diaJustificado(aln)) return 'justificada'; // toda falta do dia está coberta pela justificativa
     if (f >= total) return 'ausente';
     return 'parcial';
+};
+// Rótulo + classe do badge de situação.
+const statusInfo = (aln: number): { label: string; cls: string } => {
+    switch (statusDia(aln)) {
+        case 'presente':
+            return { label: 'Presente', cls: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300' };
+        case 'justificada':
+            return { label: 'Justificada', cls: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300' };
+        case 'parcial':
+            return { label: 'Parcial', cls: 'bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300' };
+        default:
+            return { label: 'Ausente', cls: 'bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300' };
+    }
 };
 </script>
 
@@ -260,6 +394,17 @@ const statusDia = (aln: number): 'presente' | 'parcial' | 'ausente' => {
                     </select>
                     <Button variant="outline" size="sm" :disabled="idxData >= diasComAula.length - 1" @click="irData(1)"><ChevronRight class="size-4" /></Button>
                 </template>
+                <Button
+                    variant="outline"
+                    size="sm"
+                    class="gap-1.5"
+                    :disabled="carregando || recarregando"
+                    title="Atualizar — recarrega tempos, alunos e lançamentos"
+                    @click="carregar(true)"
+                >
+                    <RefreshCw :class="['size-4', recarregando && 'animate-spin']" />
+                    Atualizar
+                </Button>
             </div>
         </div>
 
@@ -281,42 +426,61 @@ const statusDia = (aln: number): 'presente' | 'parcial' | 'ausente' => {
                 <div v-if="!temposDoDia.length" class="py-10 text-center text-sm text-muted-foreground">Sem aula sua neste dia.</div>
 
                 <template v-else>
-                    <!-- Registro do dia (conteúdo / metodologia) — 1 por dia -->
-                    <div class="mb-4 rounded-lg border bg-background p-3">
-                        <div class="mb-2 flex items-center justify-between gap-2">
-                            <span class="text-sm font-semibold">Registro do dia</span>
-                            <span class="text-xs">
-                                <span v-if="conteudoStatus[dataSel] === 'saving'" class="inline-flex items-center gap-1 text-amber-600"><Loader2 class="size-3.5 animate-spin" /> Salvando</span>
-                                <span v-else-if="conteudoStatus[dataSel] === 'saved'" class="text-emerald-600">Salvo</span>
-                                <span v-else-if="conteudoStatus[dataSel] === 'error'" class="text-rose-600">Erro ao salvar</span>
-                            </span>
-                        </div>
-                        <div class="grid gap-3 sm:grid-cols-2">
-                            <div>
-                                <label class="text-xs font-medium text-muted-foreground">Conteúdo</label>
-                                <textarea
-                                    :value="getDia('conteudo')"
-                                    :disabled="!editavel"
-                                    maxlength="255"
-                                    rows="2"
-                                    placeholder="O que foi dado em aula..."
-                                    class="mt-1 w-full resize-y rounded-md border bg-background px-2.5 py-1.5 text-sm leading-relaxed outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 disabled:cursor-not-allowed disabled:opacity-60 dark:focus:ring-indigo-950"
-                                    @input="setDia('conteudo', ($event.target as HTMLTextAreaElement).value)"
-                                ></textarea>
-                                <div class="mt-0.5 text-right text-[10px] text-muted-foreground">{{ getDia('conteudo').length }}/255</div>
+                    <!-- Registro do dia por disciplina (conteúdo / metodologia) -->
+                    <div v-if="disciplinasDoDia.length" class="mb-4 space-y-3">
+                        <div v-for="d in disciplinasDoDia" :key="d.dis_id" class="rounded-lg border bg-background p-3">
+                            <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
+                                <span class="text-sm font-semibold">{{ d.dis_nome }}</span>
+                                <div class="flex items-center gap-3">
+                                    <label
+                                        class="flex items-center gap-1.5 text-xs"
+                                        :class="planoDoDia(d.dis_id) ? 'cursor-pointer text-slate-700 dark:text-slate-200' : 'cursor-not-allowed text-muted-foreground'"
+                                        :title="planoDoDia(d.dis_id) ? 'Traz o conteúdo/metodologia do plano de aula' : 'Sem planejamento (pendente/aprovado) para esta data'"
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            class="size-3.5 rounded border-input accent-indigo-600"
+                                            :checked="infoOf(d.dis_id).executado"
+                                            :disabled="!editavel || !planoDoDia(d.dis_id)"
+                                            @change="toggleExecutado(d.dis_id, ($event.target as HTMLInputElement).checked)"
+                                        />
+                                        Planejamento executado
+                                    </label>
+                                    <span class="text-xs">
+                                        <span v-if="conteudoStatus[`${dataSel}|${d.dis_id}`] === 'saving'" class="inline-flex items-center gap-1 text-amber-600"><Loader2 class="size-3.5 animate-spin" /> Salvando</span>
+                                        <span v-else-if="conteudoStatus[`${dataSel}|${d.dis_id}`] === 'saved'" class="text-emerald-600">Salvo</span>
+                                        <span v-else-if="conteudoStatus[`${dataSel}|${d.dis_id}`] === 'error'" class="text-rose-600">Erro ao salvar</span>
+                                    </span>
+                                </div>
                             </div>
-                            <div>
-                                <label class="text-xs font-medium text-muted-foreground">Metodologia</label>
-                                <textarea
-                                    :value="getDia('metodologia')"
-                                    :disabled="!editavel"
-                                    maxlength="255"
-                                    rows="2"
-                                    placeholder="Como foi trabalhado..."
-                                    class="mt-1 w-full resize-y rounded-md border bg-background px-2.5 py-1.5 text-sm leading-relaxed outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 disabled:cursor-not-allowed disabled:opacity-60 dark:focus:ring-indigo-950"
-                                    @input="setDia('metodologia', ($event.target as HTMLTextAreaElement).value)"
-                                ></textarea>
-                                <div class="mt-0.5 text-right text-[10px] text-muted-foreground">{{ getDia('metodologia').length }}/255</div>
+                            <div v-if="infoOf(d.dis_id).executado" class="mb-2 inline-flex items-center gap-1 rounded bg-indigo-50 px-2 py-0.5 text-[11px] font-medium text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300">
+                                Conteúdo do plano de aula (somente leitura)
+                            </div>
+                            <div class="grid gap-3 sm:grid-cols-2">
+                                <div>
+                                    <label class="text-xs font-medium text-muted-foreground">Conteúdo</label>
+                                    <textarea
+                                        :value="getConteudo(d.dis_id, 'conteudo')"
+                                        :readonly="infoOf(d.dis_id).executado"
+                                        :disabled="!editavel"
+                                        rows="2"
+                                        placeholder="O que foi dado em aula..."
+                                        class="mt-1 w-full resize-y rounded-md border bg-background px-2.5 py-1.5 text-sm leading-relaxed outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 read-only:cursor-default read-only:bg-muted/40 disabled:cursor-not-allowed disabled:opacity-60 dark:focus:ring-indigo-950"
+                                        @input="setConteudo(d.dis_id, 'conteudo', ($event.target as HTMLTextAreaElement).value)"
+                                    ></textarea>
+                                </div>
+                                <div>
+                                    <label class="text-xs font-medium text-muted-foreground">Metodologia</label>
+                                    <textarea
+                                        :value="getConteudo(d.dis_id, 'metodologia')"
+                                        :readonly="infoOf(d.dis_id).executado"
+                                        :disabled="!editavel"
+                                        rows="2"
+                                        placeholder="Como foi trabalhado..."
+                                        class="mt-1 w-full resize-y rounded-md border bg-background px-2.5 py-1.5 text-sm leading-relaxed outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 read-only:cursor-default read-only:bg-muted/40 disabled:cursor-not-allowed disabled:opacity-60 dark:focus:ring-indigo-950"
+                                        @input="setConteudo(d.dis_id, 'metodologia', ($event.target as HTMLTextAreaElement).value)"
+                                    ></textarea>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -363,46 +527,51 @@ const statusDia = (aln: number): 'presente' | 'parcial' | 'ausente' => {
                                             v-if="t.pode_editar"
                                             type="button"
                                             :disabled="!editavel"
-                                            :title="presente(t.trh_id, a.aln_id) ? 'Presente — clique p/ falta' : 'Falta — clique p/ presença'"
+                                            :title="
+                                                presente(t.trh_id, a.aln_id)
+                                                    ? 'Presente — clique p/ falta'
+                                                    : cellJustificada(t, a.aln_id)
+                                                      ? 'Falta justificada' + (motivoCell(a.aln_id) ? ' — ' + motivoCell(a.aln_id) : '') + ' · clique p/ presença'
+                                                      : 'Falta — clique p/ presença'
+                                            "
                                             :class="[
                                                 'inline-flex size-8 items-center justify-center rounded-md text-xs font-bold transition disabled:opacity-50',
                                                 status[k(t.trh_id, dataSel, a.aln_id)] === 'error' ? 'ring-2 ring-rose-400' : '',
                                                 presente(t.trh_id, a.aln_id)
                                                     ? 'bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-200 hover:bg-emerald-100 dark:bg-emerald-950/30 dark:text-emerald-300 dark:ring-emerald-900'
-                                                    : 'bg-rose-600 text-white shadow-sm hover:bg-rose-700',
+                                                    : cellJustificada(t, a.aln_id)
+                                                      ? 'bg-indigo-100 text-indigo-700 ring-1 ring-inset ring-indigo-300 hover:bg-indigo-200 dark:bg-indigo-950/40 dark:text-indigo-300 dark:ring-indigo-900'
+                                                      : 'bg-rose-600 text-white shadow-sm hover:bg-rose-700',
                                             ]"
                                             @click="toggle(t.trh_id, a.aln_id)"
                                         >
                                             <Loader2 v-if="status[k(t.trh_id, dataSel, a.aln_id)] === 'saving'" class="size-3.5 animate-spin" />
-                                            <template v-else>{{ presente(t.trh_id, a.aln_id) ? 'P' : 'F' }}</template>
+                                            <template v-else>{{ presente(t.trh_id, a.aln_id) ? 'P' : cellJustificada(t, a.aln_id) ? 'FJ' : 'F' }}</template>
                                         </button>
                                         <span
                                             v-else
-                                            :title="`Tempo de ${t.fun_nome ?? 'outro professor'} (somente leitura)`"
+                                            :title="
+                                                cellJustificada(t, a.aln_id)
+                                                    ? 'Falta justificada' + (motivoCell(a.aln_id) ? ' — ' + motivoCell(a.aln_id) : '')
+                                                    : `Tempo de ${t.fun_nome ?? 'outro professor'} (somente leitura)`
+                                            "
                                             :class="[
                                                 'inline-flex size-8 items-center justify-center rounded-md text-xs font-semibold',
                                                 reg(t.trh_id, a.aln_id) === false
-                                                    ? 'bg-rose-100 text-rose-700 ring-1 ring-inset ring-rose-200 dark:bg-rose-950/30 dark:text-rose-300'
+                                                    ? cellJustificada(t, a.aln_id)
+                                                        ? 'bg-indigo-100 text-indigo-700 ring-1 ring-inset ring-indigo-300 dark:bg-indigo-950/40 dark:text-indigo-300'
+                                                        : 'bg-rose-100 text-rose-700 ring-1 ring-inset ring-rose-200 dark:bg-rose-950/30 dark:text-rose-300'
                                                     : reg(t.trh_id, a.aln_id) === true
                                                       ? 'bg-emerald-50 text-emerald-600 ring-1 ring-inset ring-emerald-200 dark:bg-emerald-950/20'
                                                       : 'text-muted-foreground/60',
                                             ]"
                                         >
-                                            {{ reg(t.trh_id, a.aln_id) === false ? 'F' : reg(t.trh_id, a.aln_id) === true ? 'P' : '—' }}
+                                            {{ reg(t.trh_id, a.aln_id) === false ? (cellJustificada(t, a.aln_id) ? 'FJ' : 'F') : reg(t.trh_id, a.aln_id) === true ? 'P' : '—' }}
                                         </span>
                                     </td>
                                     <td :class="['border-b border-l px-2 py-2 text-center transition-colors', i % 2 ? 'bg-muted/20' : '', 'group-hover:bg-indigo-50/40 dark:group-hover:bg-indigo-950/20']">
-                                        <span
-                                            :class="[
-                                                'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold',
-                                                statusDia(a.aln_id) === 'presente'
-                                                    ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300'
-                                                    : statusDia(a.aln_id) === 'parcial'
-                                                      ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300'
-                                                      : 'bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300',
-                                            ]"
-                                        >
-                                            {{ statusDia(a.aln_id) === 'presente' ? 'Presente' : statusDia(a.aln_id) === 'parcial' ? 'Parcial' : 'Ausente' }}
+                                        <span :class="['inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold', statusInfo(a.aln_id).cls]">
+                                            {{ statusInfo(a.aln_id).label }}
                                             <span v-if="faltasDia(a.aln_id)" class="tabular-nums">· {{ faltasDia(a.aln_id) }}</span>
                                         </span>
                                     </td>
@@ -410,11 +579,13 @@ const statusDia = (aln: number): 'presente' | 'parcial' | 'ausente' => {
                             </tbody>
                         </table>
                     </div>
-                    <p class="mt-2 text-xs text-muted-foreground">
+                    <p class="mt-2 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs text-muted-foreground">
                         <span class="inline-flex items-center gap-1"><span class="inline-block size-3 rounded bg-emerald-50 ring-1 ring-inset ring-emerald-200"></span> Presente</span>
-                        ·
+                        <span>·</span>
                         <span class="inline-flex items-center gap-1"><span class="inline-block size-3 rounded bg-rose-600"></span> Falta</span>
-                        · clique alterna · ✓/✕ no topo marca a coluna inteira.
+                        <span>·</span>
+                        <span class="inline-flex items-center gap-1"><span class="inline-flex size-3.5 items-center justify-center rounded bg-indigo-100 text-[7px] font-bold leading-none text-indigo-700 ring-1 ring-inset ring-indigo-300 dark:bg-indigo-950/40 dark:text-indigo-300">FJ</span> Falta justificada</span>
+                        <span>· clique alterna · ✓/✕ no topo marca a coluna inteira.</span>
                     </p>
                 </template>
             </template>

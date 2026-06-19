@@ -107,6 +107,8 @@ const secretariaMenu = computed<any[]>(() => {
         icon: KeyRound,
         children: [
             { title: 'Acessos de Professores', href: '/secretaria/acessos-professores' },
+            { title: 'Motivo Baixa Frequência', href: '/secretaria/motivos-baixa-frequencia' },
+            { title: 'Justificativa de Falta', href: '/secretaria/justificativas-falta' },
         ],
     }];
 });

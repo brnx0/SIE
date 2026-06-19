@@ -19,13 +19,17 @@ class DiarioConteudo extends Model
     protected $fillable = [
         'dco_user_id',
         'dco_tur_id',
+        'dco_dis_id',
         'dco_uni_id',
         'dco_dt',
         'dco_conteudo',
         'dco_metodologia',
+        'dco_fl_plano_executado',
+        'dco_dpa_id',
     ];
 
     protected $casts = [
-        'dco_dt' => 'date',
+        'dco_dt'                 => 'date',
+        'dco_fl_plano_executado' => 'boolean',
     ];
 }
