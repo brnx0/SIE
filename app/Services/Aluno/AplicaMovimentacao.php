@@ -6,6 +6,7 @@ use App\Models\Aluno\AlunoMovimentacao;
 use App\Models\Aluno\TipoMovimentacao;
 use App\Models\Matricula\Matricula;
 use App\Models\Turma\Turma;
+use App\Services\Aluno\MigrarDiario;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -77,6 +78,21 @@ class AplicaMovimentacao
             'tma_dt_matricula'    => $dados['dt_movimentacao'],
             'tma_created_by_id'   => Auth::id(),
         ]);
+
+        // Leva o histórico do diário só no REMANEJAMENTO (tmv_cod 5), turma REGULAR,
+        // e conforme o usuário escolheu (notas e/ou faltas). Reclassificação (7) não migra.
+        if ($tipo->tmv_cod === 5 && $turmaDestino->tur_modalidade === 'REGULAR') {
+            $svc = app(MigrarDiario::class);
+            $alnId = (int) $origem->tma_aln_id;
+            $turOrigem = (int) $origem->tma_tur_id;
+
+            if (! empty($dados['migrar_notas'])) {
+                $svc->migrarNotas($alnId, $turOrigem, $turmaDestino);
+            }
+            if (! empty($dados['migrar_faltas'])) {
+                $svc->migrarFaltas($alnId, $turOrigem, $turmaDestino);
+            }
+        }
 
         return AlunoMovimentacao::create([
             'mva_aln_id'          => $origem->tma_aln_id,

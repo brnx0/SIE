@@ -23,6 +23,8 @@ class StoreSabadoLetivoRequest extends FormRequest
                     ->where('sbl_anl_id', $this->input('sbl_anl_id')),
             ],
             'sbl_dia_semana' => ['required', 'integer', 'between:1,5'],
+            'escolas_excluidas'   => ['array'],
+            'escolas_excluidas.*' => ['integer', 'exists:edu_escola,esc_id'],
         ];
     }
 

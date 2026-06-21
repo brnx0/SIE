@@ -63,19 +63,51 @@ class FaltaController extends Controller
             'dt_fim'    => Carbon::parse($uni->uni_dt_fim)->addDays((int) $uni->uni_dias_extensao)->toDateString(),
         ] : null;
 
+        // Sábados letivos do período que valem para a escola desta turma (fora os em exceção).
+        // Cada um espelha um dia útil (1=Seg..5=Sex) → frontend usa os tempos daquele dia.
+        $turmaInfo = DB::table('edu_turma')->where('tur_id', $turId)->first(['tur_esc_id', 'tur_anl_id']);
+        $sabadosLetivos = [];
+        if ($periodo && $turmaInfo) {
+            $diaRef = [1 => 'seg', 2 => 'ter', 3 => 'qua', 4 => 'qui', 5 => 'sex'];
+            $sabadosLetivos = DB::table('cfg_sabado_letivo as s')
+                ->where('s.sbl_anl_id', $turmaInfo->tur_anl_id)
+                ->whereBetween('s.sbl_dt_sabado', [$periodo['dt_inicio'], $periodo['dt_fim']])
+                ->whereNotExists(function ($q) use ($turmaInfo) {
+                    $q->select(DB::raw(1))
+                      ->from('cfg_sabado_letivo_excecao as e')
+                      ->whereColumn('e.sle_sbl_id', 's.sbl_id')
+                      ->where('e.sle_esc_id', $turmaInfo->tur_esc_id);
+                })
+                ->orderBy('s.sbl_dt_sabado')
+                ->get(['s.sbl_dt_sabado', 's.sbl_dia_semana'])
+                ->map(fn ($r) => [
+                    'dt'      => Carbon::parse($r->sbl_dt_sabado)->toDateString(),
+                    'dia_ref' => $diaRef[(int) $r->sbl_dia_semana] ?? null,
+                ])
+                ->filter(fn ($x) => $x['dia_ref'] !== null)
+                ->values();
+        }
+
+        // Ativos + alunos que saíram (tma_tas_cod_saida) — estes aparecem para
+        // lançar o que é anterior à saída; o frontend bloqueia após tma_dt_saida.
         $alunos = Matricula::query()
             ->where('tma_tur_id', $turId)
-            ->where('tma_situacao', Matricula::SITUACAO_ATIVA)
+            ->where(function ($q) {
+                $q->where('tma_situacao', Matricula::SITUACAO_ATIVA)
+                  ->orWhereNotNull('tma_tas_cod_saida');
+            })
             ->whereNull('tma_deleted_at')
             ->with('aluno:aln_id,aln_nome,aln_nr_matricula')
             ->get()
             ->filter(fn ($m) => $m->aluno)
+            ->unique(fn ($m) => $m->aluno->aln_id)
             ->sortBy(fn ($m) => Str::ascii(mb_strtolower((string) $m->aluno->aln_nome)))
             ->values()
             ->map(fn ($m) => [
                 'aln_id'           => $m->aluno->aln_id,
                 'aln_nome'         => $m->aluno->aln_nome,
                 'aln_nr_matricula' => $m->aluno->aln_nr_matricula,
+                'dt_saida'         => $m->tma_dt_saida?->toDateString(),
             ]);
 
         // Presenças já lançadas no período, p/ os tempos visíveis.
@@ -157,6 +189,7 @@ class FaltaController extends Controller
             'presencas'      => $presencas,
             'conteudos'      => $conteudos,
             'planos'         => $planos,
+            'sabados_letivos' => $sabadosLetivos,
             'justificativas' => $justificativas,
         ]);
     }
@@ -237,6 +270,7 @@ class FaltaController extends Controller
         $this->assertTurmaAberta((int) $data['tur_id']);
         $this->assertPeriodoAberto((int) $data['uni_id']);
         $this->assertDataNoPeriodo((int) $data['uni_id'], $data['dt']);
+        $this->assertSemSaidaNaData((int) $data['tur_id'], (int) $data['aln_id'], $data['dt']);
 
         $aula = $this->resolverAula($request, $data, $slot);
 
@@ -267,10 +301,17 @@ class FaltaController extends Controller
 
         $aula = $this->resolverAula($request, $data, $slot);
 
+        // Ativos + alunos que ainda não tinham saído na data do lote.
         $alnIds = Matricula::query()
             ->where('tma_tur_id', $data['tur_id'])
-            ->where('tma_situacao', Matricula::SITUACAO_ATIVA)
             ->whereNull('tma_deleted_at')
+            ->where(function ($q) use ($data) {
+                $q->where('tma_situacao', Matricula::SITUACAO_ATIVA)
+                  ->orWhere(function ($w) use ($data) {
+                      $w->whereNotNull('tma_tas_cod_saida')
+                        ->whereDate('tma_dt_saida', '>=', $data['dt']);
+                  });
+            })
             ->pluck('tma_aln_id');
 
         DB::transaction(function () use ($alnIds, $aula, $data) {

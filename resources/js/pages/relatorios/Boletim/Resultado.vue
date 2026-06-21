@@ -2,9 +2,11 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Button } from '@/components/ui/button';
 import type { BreadcrumbItem } from '@/types';
+import { TAB_ID } from '@/lib/tabRegistry';
+import { useTabStore } from '@/stores/tabs';
 import { Head, Link } from '@inertiajs/vue3';
 import { ArrowLeft, Printer } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { computed, inject } from 'vue';
 
 interface Cell { texto: string; tipo: string | null }
 interface DisciplinaLinha {
@@ -40,13 +42,18 @@ const breadcrumbs: BreadcrumbItem[] = [{ title: 'Boletim do Aluno', href: '/rela
 
 const hoje = computed(() => new Date().toLocaleDateString('pt-BR'));
 const imprimir = () => window.print();
+
+// Só a aba ativa imprime (abas em cache via v-show no TabShell).
+const tabId = inject(TAB_ID, null);
+const tabStore = useTabStore();
+const isActiveTab = computed(() => !tabId || tabId === tabStore.activeId);
 </script>
 
 <template>
     <Head title="Resultado — Boletim" />
 
     <Teleport to="body">
-    <div id="print-area">
+    <div class="report-print" :class="{ 'is-active': isActiveTab }">
         <section v-for="aluno in alunos" :key="`pb-${aluno.aln_id}`" class="bol-pagina">
             <!-- Cabeçalho institucional -->
             <div class="bol-cab">
@@ -224,12 +231,10 @@ const imprimir = () => window.print();
 </template>
 
 <style>
-#print-area { display: none; }
 @media print {
-    @page { size: A4 portrait; margin: 4mm 8mm 8mm 8mm; }
-    body > *:not(#print-area) { display: none !important; }
-    #print-area { display: block !important; width: 100%; font-family: Arial, Helvetica, sans-serif; color: #000; font-size: 9pt; }
-    .bol-pagina { page-break-after: always; break-after: page; }
+    @page boletim-pg { size: A4 portrait; margin: 4mm 8mm 8mm 8mm; }
+    .report-print { width: 100%; font-family: Arial, Helvetica, sans-serif; color: #000; font-size: 9pt; }
+    .bol-pagina { page: boletim-pg; page-break-after: always; break-after: page; }
     .bol-pagina:last-child { page-break-after: auto; break-after: auto; }
 
     .bol-cab { display: grid; grid-template-columns: 90px 1fr 150px; align-items: center; gap: 8px; border: 1px solid #000; padding: 6px 8px; }

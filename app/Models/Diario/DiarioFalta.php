@@ -3,6 +3,7 @@
 namespace App\Models\Diario;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class DiarioFalta extends Model
@@ -25,4 +26,9 @@ class DiarioFalta extends Model
     protected $casts = [
         'fal_fl_presente' => 'boolean',
     ];
+
+    public function aula(): BelongsTo
+    {
+        return $this->belongsTo(DiarioAula::class, 'fal_aul_id', 'aul_id');
+    }
 }

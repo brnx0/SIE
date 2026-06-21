@@ -19,11 +19,19 @@ return [
     ],
     [
         'slug'      => 'mapa-notas',
-        'titulo'    => 'Mapa de Notas',
-        'descricao' => 'Quadro da turma com a média/conceito de cada aluno por disciplina (unidade ou consolidado).',
+        'titulo'    => 'Notas por Unidade',
+        'descricao' => 'Quadro da turma com a média/conceito de cada aluno em todas as disciplinas, na unidade selecionada (ou consolidado).',
         'categoria' => 'Diário',
         'grupo'     => 'diario',
         'icone'     => 'Table',
+    ],
+    [
+        'slug'      => 'boletim-avaliativo',
+        'titulo'    => 'Boletim Avaliativo',
+        'descricao' => 'Por disciplina da grade (1 página cada): todos os alunos com médias por bimestre, faltas na matéria, média final e resultado.',
+        'categoria' => 'Diário',
+        'grupo'     => 'diario',
+        'icone'     => 'ClipboardList',
     ],
     [
         'slug'      => 'conteudo-ministrado',

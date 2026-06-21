@@ -9,6 +9,7 @@ use App\Models\Parametro\AnoLetivo;
 use App\Models\Parametro\ParametroEntidade;
 use App\Models\Turma\Turma;
 use App\Support\CalculoNota;
+use App\Support\FaltasAluno;
 use App\Support\UserAccess;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -89,23 +90,12 @@ class BoletimController extends Controller
             }
         }
 
-        // Faltas [dis][uni][aln] => qtd.
+        // Faltas [dis][uni][aln] => qtd (manual tem precedência sobre o diário).
         $faltas = [];
-        $rowsFalta = DB::table('edu_diario_falta as f')
-            ->join('edu_diario_aula as a', 'a.aul_id', '=', 'f.fal_aul_id')
-            ->where('a.aul_tur_id', $turma->tur_id)
-            ->where('f.fal_fl_presente', false)
-            ->whereNull('a.aul_deleted_at')
-            ->whereNull('f.fal_deleted_at')
-            ->groupBy('a.aul_dis_id', 'a.aul_uni_id', 'f.fal_aln_id')
-            ->get([
-                'a.aul_dis_id',
-                'a.aul_uni_id',
-                'f.fal_aln_id',
-                DB::raw('count(*) as q'),
-            ]);
-        foreach ($rowsFalta as $r) {
-            $faltas[(int) $r->aul_dis_id][(int) $r->aul_uni_id][(int) $r->fal_aln_id] = (int) $r->q;
+        foreach ($disciplinas as $d) {
+            foreach ($unidades as $u) {
+                $faltas[$d->dis_id][$u['uni_id']] = FaltasAluno::porUnidade((int) $turma->tur_id, (int) $d->dis_id, (int) $u['uni_id']);
+            }
         }
 
         $alunos = Matricula::query()

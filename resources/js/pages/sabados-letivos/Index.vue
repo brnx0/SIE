@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import EscolasExclusaoPicker from '@/components/sabado/EscolasExclusaoPicker.vue';
 import FormLabel from '@/components/common/FormLabel.vue';
 import InputError from '@/components/common/InputError.vue';
 import RefreshButton from '@/components/common/RefreshButton.vue';
@@ -6,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
-import { CalendarDays, Loader2, Plus, Trash2 } from 'lucide-vue-next';
+import { CalendarDays, Loader2, Pencil, Plus, Trash2 } from 'lucide-vue-next';
 import { computed, reactive, ref, watch } from 'vue';
 
 interface AnoLetivoResumo {
@@ -21,6 +22,12 @@ interface SabadoLetivo {
     sbl_id: number;
     sbl_dt_sabado: string; // 'YYYY-MM-DD'
     sbl_dia_semana: number; // 1–5
+    escolas_excluidas: number[]; // esc_id das escolas SEM este sábado
+}
+
+interface EscolaResumo {
+    esc_id: number;
+    esc_nome: string;
 }
 
 const props = defineProps<{
@@ -28,6 +35,7 @@ const props = defineProps<{
     anoLetivoId: number | null;
     sabados: SabadoLetivo[];
     sabadosDisponiveis: string[]; // datas 'YYYY-MM-DD' de sábados livres no período letivo
+    escolas: EscolaResumo[];
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -105,6 +113,7 @@ const form = reactive({
     sbl_anl_id:    props.anoLetivoId ?? null as number | null,
     sbl_dt_sabado: '',
     sbl_dia_semana: '' as number | '',
+    escolas_excluidas: [] as number[],
 });
 
 watch(() => props.anoLetivoId, (v) => { form.sbl_anl_id = v ?? null; });
@@ -117,6 +126,7 @@ const opcoesSabado = computed(() =>
 function openForm() {
     form.sbl_dt_sabado = '';
     form.sbl_dia_semana = '';
+    form.escolas_excluidas = [];
     errors.value = {};
     showForm.value = true;
 }
@@ -136,6 +146,7 @@ function submit() {
         onSuccess: () => {
             form.sbl_dt_sabado = '';
             form.sbl_dia_semana = '';
+            form.escolas_excluidas = [];
             errors.value = {};
             showForm.value = false;
         },
@@ -152,6 +163,31 @@ function remove(s: SabadoLetivo) {
         preserveState: true,
     });
 }
+
+// ── Edição de exceções por escola ───────────────────────────────────────────
+const editId = ref<number | null>(null);
+const editProcessing = ref(false);
+const editForm = reactive({ sbl_dia_semana: 0 as number, escolas_excluidas: [] as number[] });
+
+function startEdit(s: SabadoLetivo) {
+    editId.value = s.sbl_id;
+    editForm.sbl_dia_semana = s.sbl_dia_semana;
+    editForm.escolas_excluidas = [...(s.escolas_excluidas ?? [])];
+}
+function cancelEdit() {
+    editId.value = null;
+}
+function saveEdit(s: SabadoLetivo) {
+    editProcessing.value = true;
+    router.put(`/sabados-letivos/${s.sbl_id}`, { ...editForm }, {
+        preserveScroll: true,
+        preserveState: true,
+        onSuccess: () => { editId.value = null; },
+        onFinish: () => { editProcessing.value = false; },
+    });
+}
+
+const totalEscolas = computed(() => props.escolas.length);
 
 // ── Helpers de formatação ───────────────────────────────────────────────────
 function formatDate(iso: string): string {
@@ -250,7 +286,7 @@ const selectedAno = computed(() =>
                     </button>
                 </div>
 
-                <div class="grid gap-4 sm:grid-cols-[1fr_1fr_auto]">
+                <div class="grid gap-4 sm:grid-cols-2">
                     <!-- Data do sábado: dropdown só com sábados livres do período -->
                     <div class="grid gap-1.5">
                         <FormLabel :required="true">Data (sábado)</FormLabel>
@@ -286,22 +322,30 @@ const selectedAno = computed(() =>
                         <InputError :message="errors.sbl_dia_semana" />
                     </div>
 
-                    <!-- Botões -->
-                    <div class="flex items-end gap-2 pb-1">
-                        <Button type="button" variant="outline" size="sm" @click="cancelForm">
-                            Cancelar
-                        </Button>
-                        <Button
-                            type="button"
-                            size="sm"
-                            class="bg-indigo-600 hover:bg-indigo-700"
-                            :disabled="processing || !form.sbl_dt_sabado || !form.sbl_dia_semana"
-                            @click="submit"
-                        >
-                            <Loader2 v-if="processing" class="mr-2 size-4 animate-spin" />
-                            Adicionar
-                        </Button>
-                    </div>
+                </div>
+
+                <!-- Escolas que NÃO terão este sábado (opcional) -->
+                <div class="mt-4 grid gap-1.5">
+                    <FormLabel>Escolas que NÃO terão este sábado (opcional)</FormLabel>
+                    <EscolasExclusaoPicker v-model="form.escolas_excluidas" :escolas="escolas" />
+                    <p class="text-[11px] text-muted-foreground">Deixe vazio para valer em todas as escolas.</p>
+                </div>
+
+                <!-- Botões -->
+                <div class="mt-4 flex justify-end gap-2">
+                    <Button type="button" variant="outline" size="sm" @click="cancelForm">
+                        Cancelar
+                    </Button>
+                    <Button
+                        type="button"
+                        size="sm"
+                        class="bg-indigo-600 hover:bg-indigo-700"
+                        :disabled="processing || !form.sbl_dt_sabado || !form.sbl_dia_semana"
+                        @click="submit"
+                    >
+                        <Loader2 v-if="processing" class="mr-2 size-4 animate-spin" />
+                        Adicionar
+                    </Button>
                 </div>
 
                 <InputError :message="errors.sbl_anl_id" class="mt-2" />
@@ -344,14 +388,16 @@ const selectedAno = computed(() =>
                     <!-- Tabela do mês (table-fixed p/ alinhar colunas entre meses) -->
                     <table class="w-full table-fixed text-left text-sm">
                         <colgroup>
-                            <col class="w-1/3" />
+                            <col class="w-36" />
+                            <col class="w-40" />
                             <col />
-                            <col class="w-20" />
+                            <col class="w-24" />
                         </colgroup>
                         <thead class="bg-slate-50 dark:bg-slate-800/50">
                             <tr>
                                 <th class="px-4 py-2 font-medium text-slate-600 dark:text-slate-300">Data (Sábado)</th>
                                 <th class="px-4 py-2 font-medium text-slate-600 dark:text-slate-300">Referente ao dia</th>
+                                <th class="px-4 py-2 font-medium text-slate-600 dark:text-slate-300">Escolas</th>
                                 <th class="px-4 py-2 text-right font-medium text-slate-600 dark:text-slate-300">
                                     Ação
                                 </th>
@@ -359,36 +405,83 @@ const selectedAno = computed(() =>
                         </thead>
                         <tbody>
                             <tr v-if="grupo.items.length === 0">
-                                <td colspan="3" class="px-4 py-3 text-center text-xs text-muted-foreground">
+                                <td colspan="4" class="px-4 py-3 text-center text-xs text-muted-foreground">
                                     Nenhum sábado cadastrado neste mês.
                                 </td>
                             </tr>
-                            <tr
-                                v-for="(s, idx) in grupo.items"
-                                :key="s.sbl_id"
-                                :class="idx % 2 === 0 ? 'bg-white dark:bg-transparent' : 'bg-slate-50 dark:bg-slate-900/40'"
-                            >
-                                <td class="px-4 py-2 font-mono tabular-nums">
-                                    {{ formatDate(s.sbl_dt_sabado) }}
-                                </td>
-                                <td class="px-4 py-2">
-                                    <span class="inline-flex items-center rounded-full bg-fuchsia-100 px-2.5 py-0.5 text-xs font-medium text-fuchsia-800 dark:bg-fuchsia-900/40 dark:text-fuchsia-300">
-                                        {{ DIAS_SEMANA[s.sbl_dia_semana] }}
-                                    </span>
-                                </td>
-                                <td class="px-4 py-2 text-right">
-                                    <Button
-                                        type="button"
-                                        variant="ghost"
-                                        size="sm"
-                                        class="text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:hover:bg-rose-900/30"
-                                        aria-label="Remover"
-                                        @click="remove(s)"
-                                    >
-                                        <Trash2 class="size-4" />
-                                    </Button>
-                                </td>
-                            </tr>
+                            <template v-for="(s, idx) in grupo.items" :key="s.sbl_id">
+                                <tr :class="idx % 2 === 0 ? 'bg-white dark:bg-transparent' : 'bg-slate-50 dark:bg-slate-900/40'">
+                                    <td class="px-4 py-2 font-mono tabular-nums">
+                                        {{ formatDate(s.sbl_dt_sabado) }}
+                                    </td>
+                                    <td class="px-4 py-2">
+                                        <span class="inline-flex items-center rounded-full bg-fuchsia-100 px-2.5 py-0.5 text-xs font-medium text-fuchsia-800 dark:bg-fuchsia-900/40 dark:text-fuchsia-300">
+                                            {{ DIAS_SEMANA[s.sbl_dia_semana] }}
+                                        </span>
+                                    </td>
+                                    <td class="px-4 py-2">
+                                        <span v-if="!s.escolas_excluidas?.length" class="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">
+                                            Todas as escolas
+                                        </span>
+                                        <span
+                                            v-else
+                                            class="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-900/40 dark:text-amber-300"
+                                            :title="`${s.escolas_excluidas.length} escola(s) sem este sábado`"
+                                        >
+                                            {{ s.escolas_excluidas.length }} sem · {{ totalEscolas - s.escolas_excluidas.length }} com
+                                        </span>
+                                    </td>
+                                    <td class="px-4 py-2 text-right">
+                                        <div class="flex items-center justify-end gap-1">
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="sm"
+                                                class="text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+                                                aria-label="Editar exceções"
+                                                @click="editId === s.sbl_id ? cancelEdit() : startEdit(s)"
+                                            >
+                                                <Pencil class="size-4" />
+                                            </Button>
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="sm"
+                                                class="text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:hover:bg-rose-900/30"
+                                                aria-label="Remover"
+                                                @click="remove(s)"
+                                            >
+                                                <Trash2 class="size-4" />
+                                            </Button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr v-if="editId === s.sbl_id" class="bg-indigo-50/40 dark:bg-indigo-950/20">
+                                    <td colspan="4" class="px-4 py-3">
+                                        <div class="grid gap-3 md:grid-cols-[14rem_1fr]">
+                                            <div class="grid gap-1.5">
+                                                <FormLabel>Referente ao dia</FormLabel>
+                                                <select
+                                                    v-model.number="editForm.sbl_dia_semana"
+                                                    class="h-9 rounded-md border border-input bg-background px-3 py-1.5 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                                >
+                                                    <option v-for="(label, num) in DIAS_SEMANA" :key="num" :value="Number(num)">{{ label }}</option>
+                                                </select>
+                                            </div>
+                                            <div class="grid gap-1.5">
+                                                <FormLabel>Escolas que NÃO terão este sábado</FormLabel>
+                                                <EscolasExclusaoPicker v-model="editForm.escolas_excluidas" :escolas="escolas" />
+                                            </div>
+                                        </div>
+                                        <div class="mt-3 flex justify-end gap-2">
+                                            <Button type="button" variant="outline" size="sm" @click="cancelEdit">Cancelar</Button>
+                                            <Button type="button" size="sm" class="bg-indigo-600 hover:bg-indigo-700" :disabled="editProcessing" @click="saveEdit(s)">
+                                                <Loader2 v-if="editProcessing" class="mr-2 size-4 animate-spin" /> Salvar
+                                            </Button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </template>
                         </tbody>
                     </table>
                 </div>

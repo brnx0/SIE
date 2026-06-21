@@ -89,3 +89,24 @@ html {
         @apply bg-background text-foreground;
     }
 }
+
+/*
+ * Impressão de relatórios. A área imprimível é teleportada para o <body>
+ * (escapa do clipping/overflow do shell de abas). Como as abas ficam em cache
+ * (v-show), só a área da ABA ATIVA recebe `.is-active` e imprime — evita uma aba
+ * de relatório vazar na impressão de outra.
+ */
+.report-print {
+    display: none;
+}
+@media print {
+    #app {
+        display: none !important;
+    }
+    .report-print {
+        display: none !important;
+    }
+    .report-print.is-active {
+        display: block !important;
+    }
+}

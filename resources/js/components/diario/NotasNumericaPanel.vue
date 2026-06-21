@@ -28,6 +28,7 @@ interface Avaliacao {
     ava_dt: string;
     ava_valor: number;
     ava_fl_recuperacao: boolean;
+    ava_fl_migrada?: boolean;
 }
 interface AlunoRow {
     aln_id: number;
@@ -35,6 +36,7 @@ interface AlunoRow {
     aln_nr_matricula: string | null;
     notas: Record<number, number | null>;
     bloqueado: boolean;
+    dt_saida: string | null;
 }
 
 const carregando = ref(true);
@@ -92,6 +94,7 @@ const carregar = async () => {
                 Object.entries(a.notas ?? {}).map(([k, v]) => [k, (v as any)?.valor ?? null]),
             ),
             bloqueado: a.bloqueado ?? false,
+            dt_saida: a.dt_saida ?? null,
         }));
         for (const k of Object.keys(cell)) delete cell[k];
     } catch {
@@ -105,9 +108,11 @@ onMounted(carregar);
 watch(() => [props.turId, props.disId, props.uniId], carregar);
 
 // ── Colunas / agregados ──────────────────────────────────────────────────────
-const regulares = computed(() => avaliacoes.value.filter((a) => !a.ava_fl_recuperacao));
-const recuperacoes = computed(() => avaliacoes.value.filter((a) => a.ava_fl_recuperacao));
-const colunas = computed(() => [...regulares.value, ...recuperacoes.value]);
+// Migradas (histórico de outra turma) ficam fora do cálculo de soma e média.
+const regulares = computed(() => avaliacoes.value.filter((a) => !a.ava_fl_recuperacao && !a.ava_fl_migrada));
+const recuperacoes = computed(() => avaliacoes.value.filter((a) => a.ava_fl_recuperacao && !a.ava_fl_migrada));
+const migradas = computed(() => avaliacoes.value.filter((a) => a.ava_fl_migrada));
+const colunas = computed(() => [...regulares.value, ...recuperacoes.value, ...migradas.value]);
 const somaValores = computed(() => regulares.value.reduce((s, a) => s + Number(a.ava_valor), 0));
 const valorDisponivel = computed(() => Math.max(0, Math.round((10 - somaValores.value) * 100) / 100));
 
@@ -117,6 +122,13 @@ const hojeStr = () => {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 };
 const isFutura = (a: Avaliacao) => (a.ava_dt?.substring(0, 10) ?? '') > hojeStr();
+const fmtSaida = (dt: string | null) => {
+    if (!dt) return '';
+    const [y, m, d] = dt.split('-');
+    return `${d}/${m}/${y}`;
+};
+// Aluno saiu antes da data da avaliação → lançamento bloqueado nessa coluna.
+const saiuAntes = (row: AlunoRow, a: Avaliacao) => !!row.dt_saida && (a.ava_dt?.substring(0, 10) ?? '') > row.dt_saida;
 
 const media = (row: AlunoRow): number | null => {
     const regs = regulares.value.filter((a) => !isFutura(a));
@@ -145,7 +157,7 @@ const salvarNota = async (row: AlunoRow, ava: Avaliacao) => {
     const key = ck(row.aln_id, ava.ava_id);
     const st = ensureCell(key);
     if (st.timer) { clearTimeout(st.timer); st.timer = null; }
-    if (!periodoAberto.value || !turmaAberta.value || isFutura(ava) || row.bloqueado) return;
+    if (!periodoAberto.value || !turmaAberta.value || isFutura(ava) || row.bloqueado || saiuAntes(row, ava)) return;
 
     const raw = row.notas[ava.ava_id];
     const valor = raw === null || (raw as any) === '' ? null : Number(raw);
@@ -170,7 +182,7 @@ const salvarNota = async (row: AlunoRow, ava: Avaliacao) => {
 };
 
 const aoDigitarNota = (row: AlunoRow, ava: Avaliacao) => {
-    if (!periodoAberto.value || !turmaAberta.value || isFutura(ava) || row.bloqueado) return;
+    if (!periodoAberto.value || !turmaAberta.value || isFutura(ava) || row.bloqueado || saiuAntes(row, ava)) return;
     const key = ck(row.aln_id, ava.ava_id);
     const st = ensureCell(key);
     st.status = 'dirty';
@@ -331,7 +343,7 @@ const podeSalvarAval = computed(() =>
                                 <th
                                     v-for="a in colunas"
                                     :key="a.ava_id"
-                                    :class="['w-28 border-b border-r px-2 py-2 text-center align-top', a.ava_fl_recuperacao ? 'bg-amber-100/70 dark:bg-amber-950/40' : 'bg-muted/60']"
+                                    :class="['w-28 border-b border-r px-2 py-2 text-center align-top', a.ava_fl_migrada ? 'bg-violet-100/70 dark:bg-violet-950/40' : (a.ava_fl_recuperacao ? 'bg-amber-100/70 dark:bg-amber-950/40' : 'bg-muted/60')]"
                                 >
                                     <div class="text-xs font-semibold text-slate-700 dark:text-slate-200">
                                         <span class="mx-auto block w-24 break-words leading-tight" :title="a.iav_nome ?? a.ava_descricao ?? ''">{{ a.iav_nome ?? a.ava_descricao }}</span>
@@ -342,6 +354,7 @@ const podeSalvarAval = computed(() =>
                                     <div class="text-[10px] font-normal text-muted-foreground">
                                         {{ fmtDate(a.ava_dt) }} · /{{ Number(a.ava_valor).toFixed(2) }}
                                         <span v-if="a.ava_fl_recuperacao" class="font-semibold text-amber-700 dark:text-amber-300">· Rec</span>
+                                        <span v-if="a.ava_fl_migrada" class="font-semibold text-violet-700 dark:text-violet-300">· Migrada</span>
                                         <span v-if="isFutura(a)" class="font-semibold text-sky-600 dark:text-sky-400">· agendada</span>
                                     </div>
                                     <div class="mt-1 flex items-center justify-center gap-1">
@@ -364,11 +377,12 @@ const podeSalvarAval = computed(() =>
                                     <div class="font-medium leading-tight">{{ row.aln_nome }}</div>
                                     <div v-if="row.aln_nr_matricula" class="text-[10px] text-muted-foreground">Mat. {{ row.aln_nr_matricula }}</div>
                                     <div v-if="row.bloqueado" class="mt-0.5 text-[10px] font-medium text-amber-700 dark:text-amber-400">Já lançado como conceitual</div>
+                                    <div v-if="row.dt_saida" class="mt-0.5 inline-flex items-center gap-1 rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">Saída {{ fmtSaida(row.dt_saida) }}</div>
                                 </td>
                                 <td
                                     v-for="a in colunas"
                                     :key="a.ava_id"
-                                    :class="['border-b border-r px-1.5 py-1 text-center', a.ava_fl_recuperacao ? 'bg-amber-50/40 dark:bg-amber-950/10' : '']"
+                                    :class="['border-b border-r px-1.5 py-1 text-center', a.ava_fl_migrada ? 'bg-violet-50/40 dark:bg-violet-950/10' : (a.ava_fl_recuperacao ? 'bg-amber-50/40 dark:bg-amber-950/10' : '')]"
                                 >
                                     <div class="relative flex items-center justify-center">
                                         <input
@@ -377,8 +391,8 @@ const podeSalvarAval = computed(() =>
                                             step="0.01"
                                             min="0"
                                             :max="a.ava_valor"
-                                            :disabled="!periodoAberto || !turmaAberta || isFutura(a) || row.bloqueado"
-                                            :title="!turmaAberta ? 'Turma não está aberta.' : (row.bloqueado ? 'Aluno já possui notas conceituais nesta matéria.' : (isFutura(a) ? 'Avaliação agendada — lançamento liberado a partir da data.' : ''))"
+                                            :disabled="!periodoAberto || !turmaAberta || isFutura(a) || row.bloqueado || saiuAntes(row, a)"
+                                            :title="!turmaAberta ? 'Turma não está aberta.' : saiuAntes(row, a) ? `Aluno saiu em ${fmtSaida(row.dt_saida)} — bloqueado.` : (row.bloqueado ? 'Aluno já possui notas conceituais nesta matéria.' : (isFutura(a) ? 'Avaliação agendada — lançamento liberado a partir da data.' : ''))"
                                             :class="[
                                                 'h-8 w-16 rounded-md border bg-background px-1.5 text-center text-sm tabular-nums shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:opacity-60',
                                                 statusDe(row.aln_id, a.ava_id) === 'invalid' || statusDe(row.aln_id, a.ava_id) === 'error' ? 'border-rose-400' : 'border-input',

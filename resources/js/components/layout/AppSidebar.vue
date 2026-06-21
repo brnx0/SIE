@@ -17,7 +17,16 @@ const isAdmin = computed(() => userRoles.value.includes('admin'));
 const isCoordenador = computed(() => userRoles.value.includes('coordenador') || isAdmin.value);
 const isCoordenadorInterno = computed(() => userRoles.value.includes('coordenador_interno') || isAdmin.value);
 const isProfessor = computed(() => userRoles.value.includes('professor') || isAdmin.value);
+const isProfessorAee = computed(() => userRoles.value.includes('professor_aee') || isAdmin.value);
 const isSecretariaEscolar = computed(() => userRoles.value.includes('secretaria_escola') || isAdmin.value);
+// Secretaria (sem outro perfil de diário): no Diário Online só enxerga Relatórios.
+const apenasSecretaria = computed(() =>
+    userRoles.value.includes('secretaria_escola')
+    && !isAdmin.value
+    && !userRoles.value.includes('professor')
+    && !userRoles.value.includes('coordenador')
+    && !userRoles.value.includes('coordenador_interno'),
+);
 
 const overview = [
     { title: 'Painel', href: '/dashboard', icon: LayoutDashboard },
@@ -66,15 +75,20 @@ const diarioMenu = computed<any[]>(() => [
         icon: BookOpen,
         children: [
             ...(isProfessor.value ? [{ title: 'Diário de Classe', href: '/diario' }] : []),
-            {
-                title: 'Cadastro',
-                children: [
-                    { title: 'Instrumentos Avaliativos', href: '/diario/instrumentos-avaliativos' },
-                    ...(isAdmin.value ? [{ title: 'Sábados Letivos', href: '/sabados-letivos' }] : []),
-                ],
-            },
-            { title: 'Planos de Aula', href: '/diario/planos' },
-            { title: 'Planos de Aula AEE', href: '/diario/planos-aee' },
+            ...(isProfessorAee.value ? [{ title: 'Diário AEE', href: '/diario-aee' }] : []),
+            ...(!apenasSecretaria.value
+                ? [
+                      {
+                          title: 'Cadastro',
+                          children: [
+                              { title: 'Instrumentos Avaliativos', href: '/diario/instrumentos-avaliativos' },
+                              ...(isAdmin.value ? [{ title: 'Sábados Letivos', href: '/sabados-letivos' }] : []),
+                          ],
+                      },
+                      { title: 'Planos de Aula', href: '/diario/planos' },
+                      { title: 'Planos de Aula AEE', href: '/diario/planos-aee' },
+                  ]
+                : []),
             { title: 'Relatórios', href: '/relatorios-diario' },
         ],
     },
@@ -107,8 +121,14 @@ const secretariaMenu = computed<any[]>(() => {
         icon: KeyRound,
         children: [
             { title: 'Acessos de Professores', href: '/secretaria/acessos-professores' },
+            {
+                title: 'Lançamentos',
+                children: [
+                    { title: 'Notas e Faltas', href: '/secretaria/lancamento-manual' },
+                    { title: 'Justificativa de Falta', href: '/secretaria/justificativas-falta' },
+                ],
+            },
             { title: 'Motivo Baixa Frequência', href: '/secretaria/motivos-baixa-frequencia' },
-            { title: 'Justificativa de Falta', href: '/secretaria/justificativas-falta' },
             { title: 'Relatórios', href: '/relatorios-secretaria' },
         ],
     }];

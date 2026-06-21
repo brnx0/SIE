@@ -16,6 +16,7 @@ use App\Http\Controllers\Relatorio\FormacaoClassesController;
 use App\Http\Controllers\Relatorio\ParecerDescritivoController;
 use App\Http\Controllers\Relatorio\BoletimController;
 use App\Http\Controllers\Relatorio\ConteudoMinistradoController;
+use App\Http\Controllers\Relatorio\BoletimAvaliativoController;
 use App\Http\Controllers\Relatorio\MapaNotasController;
 use App\Http\Controllers\Relatorio\RelatorioCentralController;
 use App\Http\Controllers\Api\AlunoSearchController;
@@ -70,6 +71,7 @@ use App\Http\Controllers\Parametro\UnidadeController;
 use App\Http\Controllers\UsersController;
 use App\Http\Controllers\Secretaria\AcessoProfessorController;
 use App\Http\Controllers\Secretaria\ConteudoMinistradoController as SecretariaConteudoMinistradoController;
+use App\Http\Controllers\Secretaria\LancamentoManualController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -207,6 +209,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('relatorios/mapa-notas/unidades', [MapaNotasController::class, 'unidades'])->name('relatorios.mapa-notas.unidades');
     Route::get('relatorios/mapa-notas/gerar', [MapaNotasController::class, 'gerar'])->name('relatorios.mapa-notas.gerar');
 
+    // Boletim Avaliativo (por disciplina da grade, 1 página cada)
+    Route::get('relatorios/boletim-avaliativo', [BoletimAvaliativoController::class, 'form'])->name('relatorios.boletim-avaliativo.form');
+    Route::get('relatorios/boletim-avaliativo/turmas', [BoletimAvaliativoController::class, 'turmas'])->name('relatorios.boletim-avaliativo.turmas');
+    Route::get('relatorios/boletim-avaliativo/disciplinas', [BoletimAvaliativoController::class, 'disciplinas'])->name('relatorios.boletim-avaliativo.disciplinas');
+    Route::get('relatorios/boletim-avaliativo/gerar', [BoletimAvaliativoController::class, 'gerar'])->name('relatorios.boletim-avaliativo.gerar');
+
     // Conteúdo ministrado por disciplina/dia
     Route::get('relatorios/conteudo-ministrado', [ConteudoMinistradoController::class, 'form'])->name('relatorios.conteudo-ministrado.form');
     Route::get('relatorios/conteudo-ministrado/turmas', [ConteudoMinistradoController::class, 'turmas'])->name('relatorios.conteudo-ministrado.turmas');
@@ -304,8 +312,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('api/disciplinas/search', [DisciplinaApiController::class, 'search'])->name('api.disciplinas.search');
     Route::get('api/grade-disciplinar', [GradeDisciplinarController::class, 'index'])->name('api.grade-disciplinar.index');
 
-    // Diário — Plano de Aula (turmas regulares)
-    Route::prefix('diario')->name('diario.')->group(function () {
+    // Diário — Plano de Aula (turmas regulares). Secretaria não acessa o Diário
+    // (só os Relatórios, que ficam fora deste grupo). Admin passa sempre.
+    Route::prefix('diario')->name('diario.')->middleware('role:professor,coordenador,coordenador_interno')->group(function () {
         // Diário de Classe — seletor de contexto do professor
         Route::get('/', [\App\Http\Controllers\Diario\DiarioController::class, 'index'])->name('index');
 
@@ -336,7 +345,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('quadro-horario/{turma}/horarios', [\App\Http\Controllers\Diario\QuadroHorarioController::class, 'store'])->name('quadro-horario.store');
         Route::delete('quadro-horario/{turma}/horarios/{turmaHorario}', [\App\Http\Controllers\Diario\QuadroHorarioController::class, 'destroy'])->name('quadro-horario.destroy');
     });
-    Route::prefix('api/diario')->name('api.diario.')->group(function () {
+    Route::prefix('api/diario')->name('api.diario.')->middleware('role:professor,coordenador,coordenador_interno')->group(function () {
         // Diário de Classe — lookups de contexto
         Route::get('contexto/escolas', [\App\Http\Controllers\Diario\DiarioController::class, 'lookupEscolas'])->name('contexto.escolas');
         Route::get('contexto/turmas', [\App\Http\Controllers\Diario\DiarioController::class, 'lookupTurmas'])->name('contexto.turmas');
@@ -373,6 +382,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('planos-aee/turmas', [\App\Http\Controllers\Diario\PlanoAeeController::class, 'lookupTurmas'])->name('planos-aee.turmas');
     });
 
+    // Diário AEE — admin + professor AEE. Turmas AEE do professor.
+    Route::prefix('diario-aee')->name('diario-aee.')->middleware('role:professor_aee')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Diario\DiarioAeeController::class, 'index'])->name('index');
+    });
+    Route::prefix('api/diario-aee')->name('api.diario-aee.')->middleware('role:professor_aee')->group(function () {
+        Route::get('contexto/escolas', [\App\Http\Controllers\Diario\DiarioAeeController::class, 'lookupEscolas'])->name('contexto.escolas');
+        Route::get('contexto/turmas', [\App\Http\Controllers\Diario\DiarioAeeController::class, 'lookupTurmas'])->name('contexto.turmas');
+        Route::get('contexto/unidades', [\App\Http\Controllers\Diario\DiarioAeeController::class, 'lookupUnidades'])->name('contexto.unidades');
+
+        // Frequência AEE (chamada por dia de atendimento)
+        Route::get('frequencia/contexto', [\App\Http\Controllers\Diario\AeeFrequenciaController::class, 'contexto'])->name('frequencia.contexto');
+        Route::post('frequencia/salvar', [\App\Http\Controllers\Diario\AeeFrequenciaController::class, 'salvarPresenca'])->name('frequencia.salvar');
+        Route::post('frequencia/lote', [\App\Http\Controllers\Diario\AeeFrequenciaController::class, 'salvarLote'])->name('frequencia.lote');
+    });
+
     // Coordenador Pedagógico — Validação de Planos
     Route::prefix('coordenador')->name('coordenador.')->middleware('role:coordenador')->group(function () {
         Route::get('planos/export', [\App\Http\Controllers\Coordenador\PlanoValidacaoController::class, 'export'])->name('planos.export-lista');
@@ -407,6 +431,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('acessos-professores/export', [AcessoProfessorController::class, 'export'])->name('acessos-professores.export');
         Route::get('acessos-professores', [AcessoProfessorController::class, 'index'])->name('acessos-professores.index');
         Route::post('acessos-professores/gerar', [AcessoProfessorController::class, 'gerar'])->name('acessos-professores.gerar');
+
+        // Lançamento manual de notas e faltas (escolas de controle manual)
+        Route::get('lancamento-manual', [LancamentoManualController::class, 'form'])->name('lancamento-manual.form');
+        Route::get('lancamento-manual/turmas', [LancamentoManualController::class, 'turmas'])->name('lancamento-manual.turmas');
+        Route::get('lancamento-manual/disciplinas', [LancamentoManualController::class, 'disciplinas'])->name('lancamento-manual.disciplinas');
+        Route::get('lancamento-manual/contexto', [LancamentoManualController::class, 'contexto'])->name('lancamento-manual.contexto');
+        Route::post('lancamento-manual/salvar', [LancamentoManualController::class, 'salvar'])->name('lancamento-manual.salvar');
 
         // Cadastro: Motivos de baixa frequência (justificativa de falta)
         Route::get('motivos-baixa-frequencia', [MotivoBaixaFrequenciaController::class, 'index'])->name('motivos-baixa-frequencia.index');
@@ -475,6 +506,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::get('sabados-letivos', [SabadoLetivoController::class, 'index'])->name('sabados-letivos.index');
         Route::post('sabados-letivos', [SabadoLetivoController::class, 'store'])->name('sabados-letivos.store');
+        Route::put('sabados-letivos/{sabadoLetivo}', [SabadoLetivoController::class, 'update'])->name('sabados-letivos.update');
         Route::delete('sabados-letivos/{sabadoLetivo}', [SabadoLetivoController::class, 'destroy'])->name('sabados-letivos.destroy');
 
         Route::get('grade-disciplinar', [GradeDisciplinarController::class, 'page'])->name('grade-disciplinar.index');

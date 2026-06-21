@@ -81,6 +81,8 @@ class MovimentacaoController extends Controller
             'dt_movimentacao' => ['required', 'date'],
             'protocolo'       => ['nullable', 'string', 'max:50'],
             'observacao'      => ['nullable', 'string', 'max:1000'],
+            'migrar_notas'    => ['boolean'],
+            'migrar_faltas'   => ['boolean'],
         ];
 
         if ($tipo->exigeDestino()) {

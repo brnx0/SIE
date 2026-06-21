@@ -5,7 +5,7 @@ import FormLabel from '@/components/common/FormLabel.vue';
 import LocalCombobox from '@/components/common/LocalCombobox.vue';
 import type { BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
-import { Table, Loader2 } from 'lucide-vue-next';
+import { ClipboardList, Loader2 } from 'lucide-vue-next';
 import { computed, onMounted, ref, watch } from 'vue';
 
 interface AnoLetivo { anl_id: number; anl_ano: number }
@@ -18,59 +18,64 @@ const props = defineProps<{
     isAdmin: boolean;
 }>();
 
-const breadcrumbs: BreadcrumbItem[] = [{ title: 'Notas por Unidade', href: '/relatorios/mapa-notas' }];
+const breadcrumbs: BreadcrumbItem[] = [{ title: 'Boletim Avaliativo', href: '/relatorios/boletim-avaliativo' }];
 
 const anlId = ref<number | null>(props.anosLetivos[0]?.anl_id ?? null);
 const escId = ref<number | null>(props.userEscola?.esc_id ?? null);
 const turId = ref<number | null>(null);
-const uniId = ref<number | null>(null);
+const disId = ref<number | null>(null);
 
 const turmas = ref<{ tur_id: number; tur_nome: string; ser_nome: string | null }[]>([]);
-const unidades = ref<{ uni_id: number; uni_numero: number; uni_tipo: string }[]>([]);
+const disciplinas = ref<{ dis_id: number; dis_nome: string }[]>([]);
 const gerando = ref(false);
 
-const capitalize = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
 const getJson = async (url: string) => {
     const r = await fetch(url, { headers: { Accept: 'application/json' } });
     return r.ok ? await r.json() : [];
 };
 
 async function loadTurmas() {
-    turmas.value = []; turId.value = null;
+    turmas.value = [];
+    turId.value = null;
+    disId.value = null;
+    disciplinas.value = [];
     if (!escId.value || !anlId.value) return;
-    turmas.value = await getJson(`/relatorios/mapa-notas/turmas?esc_id=${escId.value}&anl_id=${anlId.value}`);
-}
-async function loadUnidades() {
-    unidades.value = []; uniId.value = null;
-    if (!anlId.value) return;
-    unidades.value = await getJson(`/relatorios/mapa-notas/unidades?anl_id=${anlId.value}`);
+    turmas.value = await getJson(`/relatorios/boletim-avaliativo/turmas?esc_id=${escId.value}&anl_id=${anlId.value}`);
 }
 
-onMounted(() => { loadTurmas(); loadUnidades(); });
+async function loadDisciplinas() {
+    disId.value = null;
+    disciplinas.value = [];
+    if (!turId.value) return;
+    disciplinas.value = await getJson(`/relatorios/boletim-avaliativo/disciplinas?tur_id=${turId.value}`);
+}
+
+onMounted(loadTurmas);
 watch([escId, anlId], loadTurmas);
-watch(anlId, loadUnidades);
+watch(turId, loadDisciplinas);
 
 const itemsAno = computed(() => props.anosLetivos.map((a) => ({ id: a.anl_id, label: String(a.anl_ano) })));
 const itemsEscola = computed(() => props.escolas.map((e) => ({ id: e.esc_id, label: e.esc_nome })));
 const itemsTurma = computed(() => turmas.value.map((t) => ({ id: t.tur_id, label: (t.ser_nome ? t.ser_nome + ' - ' : '') + t.tur_nome })));
-const itemsPeriodo = computed(() => unidades.value.map((u) => ({ id: u.uni_id, label: `${u.uni_numero}º ${capitalize(u.uni_tipo)}` })));
+const itemsDisciplina = computed(() => disciplinas.value.map((d) => ({ id: d.dis_id, label: d.dis_nome })));
 
 function gerar() {
-    if (!escId.value || !anlId.value || !turId.value || !uniId.value) return;
+    if (!escId.value || !anlId.value || !turId.value) return;
     gerando.value = true;
-    const payload: Record<string, any> = { anl_id: anlId.value, esc_id: escId.value, tur_id: turId.value, uni_id: uniId.value };
-    router.get('/relatorios/mapa-notas/gerar', payload, { preserveScroll: true, onFinish: () => { gerando.value = false; } });
+    const payload: Record<string, any> = { anl_id: anlId.value, esc_id: escId.value, tur_id: turId.value };
+    if (disId.value) payload.dis_id = disId.value;
+    router.get('/relatorios/boletim-avaliativo/gerar', payload, { preserveScroll: true, onFinish: () => { gerando.value = false; } });
 }
 </script>
 
 <template>
-    <Head title="Notas por Unidade" />
+    <Head title="Boletim Avaliativo" />
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="mx-auto w-[95%] py-6">
             <h1 class="mb-1 flex items-center gap-2 text-xl font-semibold">
-                <Table class="size-5 text-indigo-600" /> Notas por Unidade
+                <ClipboardList class="size-5 text-indigo-600" /> Boletim Avaliativo
             </h1>
-            <p class="mb-6 text-sm text-muted-foreground">Médias da turma por disciplina na unidade selecionada.</p>
+            <p class="mb-6 text-sm text-muted-foreground">Por disciplina da grade (uma página cada): alunos, médias por bimestre, faltas, média final e resultado.</p>
 
             <div class="grid gap-4 rounded-xl border bg-card p-6 shadow-sm sm:grid-cols-2 lg:grid-cols-4">
                 <div class="grid gap-1.5">
@@ -85,12 +90,12 @@ function gerar() {
                     <FormLabel :required="true">Turma</FormLabel>
                     <LocalCombobox v-model="turId" :items="itemsTurma" placeholder="Selecione a turma..." />
                 </div>
-                <div class="grid gap-1.5">
-                    <FormLabel :required="true">Período</FormLabel>
-                    <LocalCombobox v-model="uniId" :items="itemsPeriodo" placeholder="Selecione a unidade..." />
+                <div v-if="itemsDisciplina.length" class="grid gap-1.5">
+                    <FormLabel>Disciplina <span class="text-xs font-normal text-muted-foreground">(opcional)</span></FormLabel>
+                    <LocalCombobox v-model="disId" :items="itemsDisciplina" placeholder="Todas as disciplinas" />
                 </div>
                 <div class="flex items-end justify-end sm:col-span-2 lg:col-span-4">
-                    <Button :disabled="!escId || !anlId || !turId || !uniId || gerando" class="bg-indigo-600 text-white hover:bg-indigo-700" @click="gerar">
+                    <Button :disabled="!escId || !anlId || !turId || gerando" class="bg-indigo-600 text-white hover:bg-indigo-700" @click="gerar">
                         <Loader2 v-if="gerando" class="mr-1 size-4 animate-spin" /> Gerar Relatório
                     </Button>
                 </div>

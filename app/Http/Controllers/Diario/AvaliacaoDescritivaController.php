@@ -60,21 +60,36 @@ class AvaliacaoDescritivaController extends Controller
 
         $existentes = $existentesQuery->pluck('dad_descricao', 'dad_aln_id');
 
+        // Início do período: aluno que saiu antes dele fica bloqueado para a descritiva.
+        $uniInicio = DB::table('cfg_unidade')->where('uni_id', $uniId)->value('uni_dt_inicio');
+        $uniInicio = $uniInicio ? Carbon::parse($uniInicio)->toDateString() : null;
+
+        // Ativos + alunos que saíram (tma_tas_cod_saida).
         $alunos = Matricula::query()
             ->where('tma_tur_id', $turId)
-            ->where('tma_situacao', Matricula::SITUACAO_ATIVA)
+            ->where(function ($q) {
+                $q->where('tma_situacao', Matricula::SITUACAO_ATIVA)
+                  ->orWhereNotNull('tma_tas_cod_saida');
+            })
             ->whereNull('tma_deleted_at')
             ->with('aluno:aln_id,aln_nome,aln_nr_matricula')
             ->get()
             ->filter(fn ($m) => $m->aluno)
+            ->unique(fn ($m) => $m->aluno->aln_id)
             ->sortBy(fn ($m) => $m->aluno->aln_nome, SORT_FLAG_CASE | SORT_NATURAL)
             ->values()
-            ->map(fn ($m) => [
-                'aln_id'           => $m->aluno->aln_id,
-                'aln_nome'         => $m->aluno->aln_nome,
-                'aln_nr_matricula' => $m->aluno->aln_nr_matricula,
-                'descricao'        => (string) ($existentes[$m->aluno->aln_id] ?? ''),
-            ]);
+            ->map(function ($m) use ($existentes, $uniInicio) {
+                $saida = $m->tma_dt_saida?->toDateString();
+
+                return [
+                    'aln_id'           => $m->aluno->aln_id,
+                    'aln_nome'         => $m->aluno->aln_nome,
+                    'aln_nr_matricula' => $m->aluno->aln_nr_matricula,
+                    'descricao'        => (string) ($existentes[$m->aluno->aln_id] ?? ''),
+                    'dt_saida'         => $saida,
+                    'bloqueado_saida'  => $saida !== null && $uniInicio !== null && $uniInicio > $saida,
+                ];
+            });
 
         return response()->json([
             'tipo_configurado' => true,
@@ -108,6 +123,12 @@ class AvaliacaoDescritivaController extends Controller
             422,
             'Fora do período de lançamento. A edição só é permitida dentro do período selecionado (incluindo a extensão).'
         );
+
+        // Bloqueia se o aluno saiu antes do início do período.
+        $uniInicio = DB::table('cfg_unidade')->where('uni_id', (int) $data['dad_uni_id'])->value('uni_dt_inicio');
+        if ($uniInicio) {
+            $this->assertSemSaidaNaData((int) $data['dad_tur_id'], (int) $data['dad_aln_id'], Carbon::parse($uniInicio)->toDateString());
+        }
 
         // "por_aluno" => 1 registro por período (disciplina nula); "por_disciplina" => usa a disciplina.
         $disId = $tipo === 'por_aluno' ? null : (int) $data['dad_dis_id'];

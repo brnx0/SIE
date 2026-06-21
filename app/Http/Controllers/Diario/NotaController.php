@@ -90,13 +90,19 @@ class NotaController extends Controller
                 ->all()
         );
 
+        // Ativos + alunos que saíram (tma_tas_cod_saida); frontend bloqueia as
+        // avaliações com data posterior à saída (dt_saida).
         $alunos = Matricula::query()
             ->where('tma_tur_id', $turId)
-            ->where('tma_situacao', Matricula::SITUACAO_ATIVA)
+            ->where(function ($q) {
+                $q->where('tma_situacao', Matricula::SITUACAO_ATIVA)
+                  ->orWhereNotNull('tma_tas_cod_saida');
+            })
             ->whereNull('tma_deleted_at')
             ->with('aluno:aln_id,aln_nome,aln_nr_matricula')
             ->get()
             ->filter(fn ($m) => $m->aluno)
+            ->unique(fn ($m) => $m->aluno->aln_id)
             ->sortBy(fn ($m) => $m->aluno->aln_nome, SORT_FLAG_CASE | SORT_NATURAL)
             ->values()
             ->map(function ($m) use ($avaliacoes, $notaMap, $bloqueados) {
@@ -111,6 +117,7 @@ class NotaController extends Controller
                     'aln_nr_matricula' => $m->aluno->aln_nr_matricula,
                     'notas'            => $notas,
                     'bloqueado'        => isset($bloqueados[$m->aluno->aln_id]),
+                    'dt_saida'         => $m->tma_dt_saida?->toDateString(),
                 ];
             });
 
@@ -224,6 +231,15 @@ class NotaController extends Controller
             422,
             'Não é possível lançar notas em uma avaliação com data futura.'
         );
+
+        // Bloqueia nota para aluno que saiu antes da data da avaliação.
+        if ($avaliacao->ava_dt) {
+            $this->assertSemSaidaNaData(
+                (int) $avaliacao->ava_tur_id,
+                (int) $data['nta_aln_id'],
+                Carbon::parse($avaliacao->ava_dt)->toDateString(),
+            );
+        }
 
         // Exclusão mútua: aluno não pode ter notas dos dois tipos na mesma matéria.
         $this->assertSemOutroTipo(
@@ -376,6 +392,7 @@ class NotaController extends Controller
             ->where('ava_uni_id', $ctx['ava_uni_id'])
             ->where('ava_tipo', $ctx['ava_tipo'])
             ->where('ava_fl_recuperacao', false)
+            ->where('ava_fl_migrada', false)
             ->when($exceptId, fn ($q) => $q->where('ava_id', '!=', $exceptId))
             ->sum('ava_valor');
 
@@ -460,6 +477,7 @@ class NotaController extends Controller
             'ava_dt'             => optional($a->ava_dt)->format('Y-m-d'),
             'ava_valor'          => $a->ava_valor === null ? null : (float) $a->ava_valor,
             'ava_fl_recuperacao' => (bool) $a->ava_fl_recuperacao,
+            'ava_fl_migrada'     => (bool) $a->ava_fl_migrada,
         ];
     }
 }

@@ -18,6 +18,8 @@ interface AlunoRow {
     aln_nome: string;
     aln_nr_matricula: string | null;
     descricao: string;
+    dt_saida: string | null;
+    bloqueado: boolean;
     _original: string;
     _status: Status;
     _timer: number | null;
@@ -70,6 +72,8 @@ const carregar = async () => {
             aln_nome: a.aln_nome,
             aln_nr_matricula: a.aln_nr_matricula,
             descricao: a.descricao ?? '',
+            dt_saida: a.dt_saida ?? null,
+            bloqueado: !!a.bloqueado_saida,
             _original: a.descricao ?? '',
             _status: (a.descricao ?? '').trim() ? 'saved' : 'idle',
             _timer: null,
@@ -89,6 +93,7 @@ const salvar = async (row: AlunoRow) => {
     }
     if (!tipoConfigurado.value) return; // série sem tipo de avaliação descritiva configurado
     if (!periodoAberto.value) return; // fora da janela de lançamento
+    if (row.bloqueado) return; // aluno saiu antes do período
     if (row.descricao === row._original) return; // nada mudou
     row._status = 'saving';
     try {
@@ -126,6 +131,12 @@ const aoDigitar = (e: Event, row: AlunoRow) => {
     row._status = row.descricao === row._original ? 'saved' : 'dirty';
     if (row._timer) clearTimeout(row._timer);
     row._timer = window.setTimeout(() => salvar(row), 1500);
+};
+
+const fmtData = (dt: string | null) => {
+    if (!dt) return '';
+    const [y, m, d] = dt.split('-');
+    return `${d}/${m}/${y}`;
 };
 
 // ref do textarea aberto (só 1 por vez) — função-ref evita array do v-for.
@@ -263,11 +274,13 @@ const avaliados = computed(() => alunos.value.filter((a) => a.descricao.trim().l
                                 <div v-if="row.aln_nr_matricula" class="text-xs text-muted-foreground">
                                     Matrícula {{ row.aln_nr_matricula }}
                                 </div>
+                                <div v-if="row.dt_saida" class="mt-0.5 inline-flex items-center gap-1 rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">Saída {{ fmtData(row.dt_saida) }}</div>
                             </div>
                         </div>
 
                         <div class="flex shrink-0 items-center gap-3 text-xs">
-                            <span v-if="row._status === 'saving'" class="inline-flex items-center gap-1 text-amber-600">
+                            <span v-if="row.bloqueado" :title="row.dt_saida ? `Saiu em ${fmtData(row.dt_saida)}` : 'Aluno saiu da turma'" class="inline-flex items-center gap-1 rounded-full bg-slate-200 px-2 py-0.5 font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">Saiu</span>
+                            <span v-else-if="row._status === 'saving'" class="inline-flex items-center gap-1 text-amber-600">
                                 <Loader2 class="size-3.5 animate-spin" /> Salvando
                             </span>
                             <span v-else-if="row._status === 'error'" class="inline-flex items-center gap-1 text-rose-600">
@@ -292,8 +305,8 @@ const avaliados = computed(() => alunos.value.filter((a) => a.descricao.trim().l
                             :ref="bindTextarea"
                             v-model="row.descricao"
                             rows="3"
-                            :disabled="!periodoAberto"
-                            placeholder="Descreva o desenvolvimento do aluno neste período..."
+                            :disabled="!periodoAberto || row.bloqueado"
+                            :placeholder="row.bloqueado ? 'Aluno saiu antes deste período — lançamento bloqueado.' : 'Descreva o desenvolvimento do aluno neste período...'"
                             class="w-full resize-none overflow-hidden rounded-md border bg-background p-2.5 text-sm leading-relaxed outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 disabled:cursor-not-allowed disabled:opacity-60 dark:focus:ring-indigo-950"
                             @input="(e) => aoDigitar(e, row)"
                             @blur="salvar(row)"

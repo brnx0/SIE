@@ -25,9 +25,13 @@ class DiarioAula extends Model
         'aul_trh_id',
         'aul_dis_id',
         'aul_dt',
+        'aul_fl_migrada',
+        'aul_origem_tur_id',
+        'aul_origem_aul_id',
     ];
 
     protected $casts = [
-        'aul_dt' => 'date',
+        'aul_dt'         => 'date',
+        'aul_fl_migrada' => 'boolean',
     ];
 }

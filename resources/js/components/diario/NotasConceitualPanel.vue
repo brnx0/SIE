@@ -32,6 +32,7 @@ interface Avaliacao {
     ava_dt: string;
     ava_valor: number | null;
     ava_fl_recuperacao: boolean;
+    ava_fl_migrada?: boolean;
 }
 interface NotaCell { valor: number | null; cnc_id: number | null }
 interface AlunoRow {
@@ -123,9 +124,11 @@ const fmtDate = (d: string) => {
 // Modo faixa exige valor na avaliação; sem valor não dá pra lançar nota.
 const semValor = (a: Avaliacao) => modo.value === 'faixa' && (a.ava_valor === null || Number(a.ava_valor) <= 0);
 
-const regulares = computed(() => avaliacoes.value.filter((a) => !a.ava_fl_recuperacao));
-const recuperacoes = computed(() => avaliacoes.value.filter((a) => a.ava_fl_recuperacao));
-const colunas = computed(() => [...regulares.value, ...recuperacoes.value]);
+// Migradas (histórico de outra turma) ficam fora do cálculo.
+const regulares = computed(() => avaliacoes.value.filter((a) => !a.ava_fl_recuperacao && !a.ava_fl_migrada));
+const recuperacoes = computed(() => avaliacoes.value.filter((a) => a.ava_fl_recuperacao && !a.ava_fl_migrada));
+const migradas = computed(() => avaliacoes.value.filter((a) => a.ava_fl_migrada));
+const colunas = computed(() => [...regulares.value, ...recuperacoes.value, ...migradas.value]);
 const somaValores = computed(() => regulares.value.reduce((s, a) => s + (Number(a.ava_valor) || 0), 0));
 const valorDisponivel = computed(() => Math.max(0, Math.round((10 - somaValores.value) * 100) / 100));
 
@@ -420,7 +423,7 @@ const podeSalvarAval = computed(() =>
                         <thead>
                             <tr>
                                 <th class="sticky left-0 z-10 min-w-[220px] border-b border-r bg-muted/60 px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">Aluno</th>
-                                <th v-for="a in colunas" :key="a.ava_id" :class="['w-28 border-b border-r px-2 py-2 text-center align-top', a.ava_fl_recuperacao ? 'bg-amber-100/70 dark:bg-amber-950/40' : 'bg-muted/60']">
+                                <th v-for="a in colunas" :key="a.ava_id" :class="['w-28 border-b border-r px-2 py-2 text-center align-top', a.ava_fl_migrada ? 'bg-violet-100/70 dark:bg-violet-950/40' : (a.ava_fl_recuperacao ? 'bg-amber-100/70 dark:bg-amber-950/40' : 'bg-muted/60')]">
                                     <div class="text-xs font-semibold text-slate-700 dark:text-slate-200">
                                         <span class="mx-auto block w-24 break-words leading-tight" :title="a.iav_nome ?? a.ava_descricao ?? ''">{{ a.iav_nome ?? a.ava_descricao }}</span>
                                     </div>
@@ -428,6 +431,7 @@ const podeSalvarAval = computed(() =>
                                     <div class="text-[10px] font-normal text-muted-foreground">
                                         {{ fmtDate(a.ava_dt) }}<span v-if="modo === 'faixa' && a.ava_valor"> · /{{ Number(a.ava_valor).toFixed(2) }}</span>
                                         <span v-if="a.ava_fl_recuperacao" class="font-semibold text-amber-700 dark:text-amber-300"> · Rec</span>
+                                        <span v-if="a.ava_fl_migrada" class="font-semibold text-violet-700 dark:text-violet-300"> · Migrada</span>
                                         <span v-if="isFutura(a)" class="font-semibold text-sky-600 dark:text-sky-400"> · agendada</span>
                                     </div>
                                     <button v-if="semValor(a)" type="button" class="mt-0.5 inline-block rounded bg-amber-100 px-1 py-0.5 text-[10px] font-semibold text-amber-800 hover:bg-amber-200 dark:bg-amber-950/50 dark:text-amber-300" title="Defina o valor da avaliação para liberar o lançamento" @click="abrirEdit(a)">
@@ -450,7 +454,7 @@ const podeSalvarAval = computed(() =>
                                     <div v-if="row.aln_nr_matricula" class="text-[10px] text-muted-foreground">Mat. {{ row.aln_nr_matricula }}</div>
                                     <div v-if="row.bloqueado" class="mt-0.5 text-[10px] font-medium text-amber-700 dark:text-amber-400">Já lançado como numérica</div>
                                 </td>
-                                <td v-for="a in colunas" :key="a.ava_id" :class="['border-b border-r px-1.5 py-1 text-center', a.ava_fl_recuperacao ? 'bg-amber-50/40 dark:bg-amber-950/10' : '']">
+                                <td v-for="a in colunas" :key="a.ava_id" :class="['border-b border-r px-1.5 py-1 text-center', a.ava_fl_migrada ? 'bg-violet-50/40 dark:bg-violet-950/10' : (a.ava_fl_recuperacao ? 'bg-amber-50/40 dark:bg-amber-950/10' : '')]">
                                     <div class="flex items-center justify-center gap-1">
                                         <!-- Modo numérico (faixa) -->
                                         <input

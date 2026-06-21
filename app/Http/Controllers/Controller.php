@@ -7,9 +7,38 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 abstract class Controller
 {
+    /**
+     * Data de saída (tma_dt_saida) do aluno na turma — string Y-m-d — ou null
+     * se o aluno está ativo / sem saída registrada. Saída = tma_tas_cod_saida preenchido.
+     */
+    protected function dataSaidaAluno(int $turId, int $alnId): ?string
+    {
+        $dt = DB::table('edu_turma_aluno')
+            ->where('tma_tur_id', $turId)
+            ->where('tma_aln_id', $alnId)
+            ->whereNull('tma_deleted_at')
+            ->whereNotNull('tma_tas_cod_saida')
+            ->value('tma_dt_saida');
+
+        return $dt ? Carbon::parse($dt)->toDateString() : null;
+    }
+
+    /**
+     * Bloqueia lançamento no diário quando a data de referência (dia da aula,
+     * data da avaliação ou início do período) for posterior à saída do aluno.
+     */
+    protected function assertSemSaidaNaData(int $turId, int $alnId, string $dtReferencia): void
+    {
+        $saida = $this->dataSaidaAluno($turId, $alnId);
+        if ($saida && Carbon::parse($dtReferencia)->toDateString() > $saida) {
+            abort(422, 'Aluno saiu da turma em '.Carbon::parse($saida)->format('d/m/Y').'. Lançamentos após a saída estão bloqueados.');
+        }
+    }
     /**
      * Tenta forceDelete no modelo. Se houver violação de FK (constraint),
      * retorna redirect com erro orientando inativação. Relança demais exceções.

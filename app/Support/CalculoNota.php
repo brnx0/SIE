@@ -24,14 +24,17 @@ class CalculoNota
      */
     public static function resultado(int $turId, int $disId, int $uniId): array
     {
+        // Lançamento manual da secretaria tem precedência sobre o cálculo.
+        $manual = self::manual($turId, $disId, $uniId);
+
         $avaliacoes = DiarioAvaliacao::query()
             ->where('ava_tur_id', $turId)
             ->where('ava_dis_id', $disId)
             ->where('ava_uni_id', $uniId)
-            ->get(['ava_id', 'ava_tipo', 'ava_valor', 'ava_fl_recuperacao', 'ava_dt']);
+            ->get(['ava_id', 'ava_tipo', 'ava_valor', 'ava_fl_recuperacao', 'ava_fl_migrada', 'ava_dt']);
 
         if ($avaliacoes->isEmpty()) {
-            return [];
+            return $manual; // pode ser [] ou só os manuais
         }
 
         $modo      = self::conceitoModo($uniId);
@@ -44,6 +47,49 @@ class CalculoNota
         $out = [];
         foreach (self::alunos($turId) as $alnId) {
             $out[$alnId] = self::resultadoAluno($avaliacoes, $notaMap, $alnId, $modo, $conceitos, $futura);
+        }
+
+        // Sobrepõe o manual onde houver.
+        foreach ($manual as $alnId => $r) {
+            $out[$alnId] = $r;
+        }
+
+        return $out;
+    }
+
+    /**
+     * Médias lançadas manualmente (secretaria) para (turma, disciplina, unidade).
+     *
+     * @return array<int, array{tipo:?string, valor:?float, conceito:?array}>
+     */
+    private static function manual(int $turId, int $disId, int $uniId): array
+    {
+        $rows = DB::table('edu_nota_manual')
+            ->where('nmn_tur_id', $turId)
+            ->where('nmn_dis_id', $disId)
+            ->where('nmn_uni_id', $uniId)
+            ->whereNull('nmn_deleted_at')
+            ->get(['nmn_aln_id', 'nmn_tipo', 'nmn_media', 'nmn_cnc_id']);
+
+        if ($rows->isEmpty()) {
+            return [];
+        }
+
+        $conceitos = self::conceitos();
+        $out = [];
+        foreach ($rows as $r) {
+            $aln = (int) $r->nmn_aln_id;
+            if ($r->nmn_cnc_id !== null) {
+                // Conceitual direto.
+                $out[$aln] = ['tipo' => 'conceitual', 'valor' => null, 'conceito' => self::conceitoArray(self::conceitoPorIdModel((int) $r->nmn_cnc_id, $conceitos))];
+            } elseif ($r->nmn_media !== null && $r->nmn_tipo === 'conceitual') {
+                // Conceitual por faixa (valor numérico → conceito).
+                $v = self::round05((float) $r->nmn_media);
+                $out[$aln] = ['tipo' => 'conceitual', 'valor' => $v, 'conceito' => self::faixaDe($v, $conceitos)];
+            } elseif ($r->nmn_media !== null) {
+                // Numérica.
+                $out[$aln] = ['tipo' => 'numerica', 'valor' => (float) $r->nmn_media, 'conceito' => null];
+            }
         }
 
         return $out;
@@ -112,9 +158,20 @@ class CalculoNota
             return ['tipo' => null, 'valor' => null, 'conceito' => null];
         }
 
-        $doTipo      = $avaliacoes->where('ava_tipo', $tipo);
-        $regulares   = $doTipo->where('ava_fl_recuperacao', false)->reject($futura);
-        $recuperacao = $doTipo->where('ava_fl_recuperacao', true)->reject($futura);
+        // Fonte: notas lançadas na PRÓPRIA turma têm prioridade; se o aluno não tem
+        // nota regular aqui (ex.: recém-migrado), exibe a partir das MIGRADAS (consulta).
+        // Nunca soma as duas.
+        $naoMigrada = $avaliacoes->where('ava_tipo', $tipo)->where('ava_fl_migrada', false);
+        $migrada    = $avaliacoes->where('ava_tipo', $tipo)->where('ava_fl_migrada', true);
+
+        $temNotaPropria = $naoMigrada->where('ava_fl_recuperacao', false)->reject($futura)
+            ->contains(fn ($a) => (($notaMap[$a->ava_id][$alnId]['valor'] ?? null) !== null)
+                || (($notaMap[$a->ava_id][$alnId]['cnc_id'] ?? null) !== null));
+
+        $fonte = $temNotaPropria ? $naoMigrada : ($migrada->isNotEmpty() ? $migrada : $naoMigrada);
+
+        $regulares   = $fonte->where('ava_fl_recuperacao', false)->reject($futura);
+        $recuperacao = $fonte->where('ava_fl_recuperacao', true)->reject($futura);
 
         if ($tipo === DiarioAvaliacao::TIPO_NUMERICA) {
             if ($regulares->isEmpty()) {

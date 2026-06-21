@@ -10,6 +10,7 @@ use App\Models\Parametro\AnoLetivo;
 use App\Models\Parametro\ParametroEntidade;
 use App\Models\Turma\Turma;
 use App\Support\CalculoNota;
+use App\Support\FaltasAluno;
 use App\Support\UserAccess;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -38,7 +39,7 @@ class MapaNotasController extends Controller
             'anl_id' => ['required', 'integer', 'exists:cfg_ano_letivo,anl_id'],
             'esc_id' => ['required', 'integer', 'exists:edu_escola,esc_id'],
             'tur_id' => ['required', 'integer', 'exists:edu_turma,tur_id'],
-            'uni_id' => ['nullable', 'integer', 'exists:cfg_unidade,uni_id'],
+            'uni_id' => ['required', 'integer', 'exists:cfg_unidade,uni_id'],
         ]);
 
         $this->autorizarTurma((int) $data['tur_id']);
@@ -53,7 +54,7 @@ class MapaNotasController extends Controller
         $unidades = DB::table('cfg_unidade')
             ->where('uni_anl_id', $data['anl_id'])
             ->orderBy('uni_numero')
-            ->get(['uni_id', 'uni_numero', 'uni_tipo']);
+            ->get(['uni_id', 'uni_numero', 'uni_tipo', 'uni_dt_inicio', 'uni_dt_fim']);
 
         $uniIds = $consolidado
             ? $unidades->pluck('uni_id')->map(fn ($v) => (int) $v)->all()
@@ -75,6 +76,12 @@ class MapaNotasController extends Controller
             }
         }
 
+        // Faltas por disciplina na(s) unidade(s): [dis_id][aln_id] => qtd (manual tem precedência).
+        $faltas = [];
+        foreach ($disciplinas as $d) {
+            $faltas[$d->dis_id] = FaltasAluno::totaisDisciplina((int) $turma->tur_id, (int) $d->dis_id, $uniIds);
+        }
+
         $alunos = Matricula::query()
             ->where('tma_tur_id', $turma->tur_id)
             ->where('tma_situacao', Matricula::SITUACAO_ATIVA)
@@ -84,20 +91,24 @@ class MapaNotasController extends Controller
             ->filter(fn ($m) => $m->aluno)
             ->sortBy(fn ($m) => $m->aluno->aln_nome, SORT_FLAG_CASE | SORT_NATURAL)
             ->values()
-            ->map(function (Matricula $m) use ($disciplinas, $uniIds, $res, $consolidado) {
+            ->map(function (Matricula $m) use ($disciplinas, $uniIds, $res, $consolidado, $faltas) {
                 $alnId = (int) $m->aluno->aln_id;
 
-                $celulas = $disciplinas->map(function ($d) use ($alnId, $uniIds, $res, $consolidado) {
+                $celulas = $disciplinas->map(function ($d) use ($alnId, $uniIds, $res, $consolidado, $faltas) {
                     if ($consolidado) {
                         $porUnidade = [];
                         foreach ($uniIds as $uniId) {
                             $porUnidade[$uniId] = $res[$d->dis_id][$uniId][$alnId] ?? ['tipo' => null, 'valor' => null, 'conceito' => null];
                         }
-                        return $this->celula(CalculoNota::consolidar($porUnidade));
+                        $cell = $this->celula(CalculoNota::consolidar($porUnidade));
+                    } else {
+                        $r = $res[$d->dis_id][$uniIds[0]][$alnId] ?? ['tipo' => null, 'valor' => null, 'conceito' => null];
+                        $cell = $this->celula($r);
                     }
-                    $r = $res[$d->dis_id][$uniIds[0]][$alnId] ?? ['tipo' => null, 'valor' => null, 'conceito' => null];
 
-                    return $this->celula($r);
+                    $cell['faltas'] = $faltas[$d->dis_id][$alnId] ?? 0;
+
+                    return $cell;
                 });
 
                 return [
@@ -110,19 +121,30 @@ class MapaNotasController extends Controller
 
         $p = ParametroEntidade::first();
 
+        // Rótulo do período (maiúsculo, ex.: "1º TRIMESTRE") + intervalo de datas.
+        $uniSel = $uniIdFiltro ? $unidades->firstWhere('uni_id', $uniIdFiltro) : null;
+        $fmt = fn ($d) => $d ? \Illuminate\Support\Carbon::parse($d)->format('d/m/Y') : null;
+        $periodoLabel = $uniSel
+            ? $uniSel->uni_numero . 'º ' . mb_strtoupper((string) $uniSel->uni_tipo, 'UTF-8')
+            : 'CONSOLIDADO';
+        $periodoDatas = $uniSel
+            ? trim(($fmt($uniSel->uni_dt_inicio) ?? '') . ($uniSel->uni_dt_fim ? ' até ' . $fmt($uniSel->uni_dt_fim) : ''))
+            : null;
+
         return Inertia::render('relatorios/MapaNotas/Resultado', [
             'parametros'  => $p ? [
-                'nome_entidade' => $p->par_nome_entidade,
-                'logomarca_url' => $p->par_logomarca_url,
-                'brasao_url'    => $p->par_brasao_url,
+                'nome_entidade'      => $p->par_nome_entidade,
+                'msg_cab_secretaria' => $p->par_msg_cab_secretaria,
+                'msg_cab_estado'     => $p->par_msg_cab_estado,
+                'logomarca_url'      => $p->par_logomarca_url,
+                'brasao_url'         => $p->par_brasao_url,
             ] : null,
             'filtros'     => [
-                'anl_ano'  => $ano->anl_ano,
-                'esc_nome' => $escola->esc_nome,
-                'turma'    => trim(($turma->serie?->ser_nome ? $turma->serie->ser_nome . ' - ' : '') . $turma->tur_nome),
-                'periodo'  => $uniIdFiltro
-                    ? ($this->unidadeLabel((int) $unidades->firstWhere('uni_id', $uniIdFiltro)->uni_numero, (string) $unidades->firstWhere('uni_id', $uniIdFiltro)->uni_tipo))
-                    : 'Consolidado',
+                'anl_ano'       => $ano->anl_ano,
+                'esc_nome'      => $escola->esc_nome,
+                'turma'         => trim(($turma->serie?->ser_nome ? $turma->serie->ser_nome . ' - ' : '') . $turma->tur_nome),
+                'periodo'       => $periodoLabel,
+                'periodo_datas' => $periodoDatas,
             ],
             'disciplinas' => $disciplinas->pluck('dis_nome')->values(),
             'alunos'      => $alunos,

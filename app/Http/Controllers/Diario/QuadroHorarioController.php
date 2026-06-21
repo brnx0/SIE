@@ -121,10 +121,17 @@ class QuadroHorarioController extends Controller
             ->get(['grh_id', 'grh_turno', 'grh_hora', 'grh_ordem']);
 
         // Sábados letivos do ano letivo da turma: cada um espelha um dia da semana (1=Seg..5=Sex).
-        $sabadosLetivos = DB::table('cfg_sabado_letivo')
-            ->where('sbl_anl_id', $t->tur_anl_id)
-            ->orderBy('sbl_dt_sabado')
-            ->get(['sbl_id', 'sbl_dt_sabado', 'sbl_dia_semana']);
+        // Exclui os que estão em exceção para a escola desta turma.
+        $sabadosLetivos = DB::table('cfg_sabado_letivo as s')
+            ->where('s.sbl_anl_id', $t->tur_anl_id)
+            ->whereNotExists(function ($q) use ($t) {
+                $q->select(DB::raw(1))
+                  ->from('cfg_sabado_letivo_excecao as e')
+                  ->whereColumn('e.sle_sbl_id', 's.sbl_id')
+                  ->where('e.sle_esc_id', $t->tur_esc_id);
+            })
+            ->orderBy('s.sbl_dt_sabado')
+            ->get(['s.sbl_id', 's.sbl_dt_sabado', 's.sbl_dia_semana']);
 
         return response()->json([
             'turma' => [

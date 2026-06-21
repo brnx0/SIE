@@ -49,6 +49,8 @@ const form = useForm({
     dt_movimentacao: new Date().toISOString().slice(0, 10),
     protocolo: '',
     observacao: '',
+    migrar_notas: true,
+    migrar_faltas: true,
 });
 
 const tipoSelecionado = computed(() => props.tipos.find(t => t.tmv_cod === form.tmv_cod) ?? null);
@@ -374,6 +376,20 @@ function submit() {
                             <InputError :message="form.errors.tur_id_destino" />
                         </div>
                     </div>
+                </div>
+
+                <!-- Transferência de diário (só remanejamento) -->
+                <div v-if="isRemanejamento && exigeDestino" class="grid gap-2 rounded-lg border border-amber-200 bg-amber-50/40 p-4 dark:bg-amber-900/10">
+                    <h3 class="text-sm font-semibold text-amber-900 dark:text-amber-200">Transferir diário para a turma de destino</h3>
+                    <p class="text-xs text-muted-foreground">O histórico continua na turma de origem e é levado como consulta para a turma nova (fora do cálculo da média).</p>
+                    <label class="flex items-center gap-2 text-sm">
+                        <input type="checkbox" v-model="form.migrar_notas" class="size-4" />
+                        Transferir notas
+                    </label>
+                    <label class="flex items-center gap-2 text-sm">
+                        <input type="checkbox" v-model="form.migrar_faltas" class="size-4" />
+                        Transferir faltas
+                    </label>
                 </div>
 
                 <!-- Resumo -->

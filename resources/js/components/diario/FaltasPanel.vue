@@ -25,6 +25,7 @@ interface Aluno {
     aln_id: number;
     aln_nome: string;
     aln_nr_matricula: string | null;
+    dt_saida: string | null;
 }
 interface Justificativa {
     aln_id: number;
@@ -72,6 +73,8 @@ const conteudoStatus = reactive<Record<string, 'idle' | 'saving' | 'saved' | 'er
 const conteudoTimer: Record<string, number> = {};
 const planos = ref<Plano[]>([]);
 const justificativas = ref<Justificativa[]>([]);
+// Sábados letivos do período (já filtrados pela escola da turma): cada um espelha um dia útil.
+const sabadosLetivos = ref<{ dt: string; dia_ref: string }[]>([]);
 
 const csrf = (): Record<string, string> => {
     const m = document.cookie.match(/XSRF-TOKEN=([^;]+)/);
@@ -111,6 +114,7 @@ const carregar = async (silent = false) => {
         }
         planos.value = data.planos ?? [];
         justificativas.value = data.justificativas ?? [];
+        sabadosLetivos.value = data.sabados_letivos ?? [];
         for (const c of data.conteudos ?? []) {
             if (c.dis_id == null) continue;
             conteudoMap[`${c.dt}|${c.dis_id}`] = {
@@ -133,11 +137,20 @@ const carregar = async (silent = false) => {
 onMounted(() => carregar());
 watch(() => [props.turId, props.uniId], () => carregar());
 
-// ── Datas com aula (dia-da-semana de algum tempo do professor) ───────────────
-const diasComAula = computed<{ dt: string; label: string }[]>(() => {
+// ── Datas com aula (dia-da-semana de algum tempo do professor) + sábados letivos ─
+// diaCode = dia útil cujos tempos valem naquela data ('seg'..). No sábado letivo
+// usa-se o dia que ele espelha.
+interface DiaAula {
+    dt: string;
+    label: string;
+    diaCode: string;
+    sabado: boolean;
+}
+const diasComAula = computed<DiaAula[]>(() => {
     if (!periodo.value || !tempos.value.length) return [];
     const dows = new Set(tempos.value.map((t) => DIA_DOW[t.trh_dia]));
-    const out: { dt: string; label: string }[] = [];
+    const codes = new Set(tempos.value.map((t) => t.trh_dia));
+    const out: DiaAula[] = [];
     const [yi, mi, di] = periodo.value.dt_inicio.split('-').map(Number);
     const [yf, mf, df] = periodo.value.dt_fim.split('-').map(Number);
     const cur = new Date(yi, mi - 1, di);
@@ -146,12 +159,21 @@ const diasComAula = computed<{ dt: string; label: string }[]>(() => {
         if (dows.has(cur.getDay())) {
             const dt = `${cur.getFullYear()}-${String(cur.getMonth() + 1).padStart(2, '0')}-${String(cur.getDate()).padStart(2, '0')}`;
             const dia = Object.keys(DIA_DOW).find((key) => DIA_DOW[key] === cur.getDay())!;
-            out.push({ dt, label: `${String(cur.getDate()).padStart(2, '0')}/${String(cur.getMonth() + 1).padStart(2, '0')} · ${DIA_LABEL[dia]}` });
+            out.push({ dt, diaCode: dia, sabado: false, label: `${String(cur.getDate()).padStart(2, '0')}/${String(cur.getMonth() + 1).padStart(2, '0')} · ${DIA_LABEL[dia]}` });
         }
         cur.setDate(cur.getDate() + 1);
     }
-    return out;
+    // Sábados letivos: só entram se a turma tem tempos no dia espelhado.
+    for (const sl of sabadosLetivos.value) {
+        if (!codes.has(sl.dia_ref)) continue;
+        if (sl.dt < periodo.value.dt_inicio || sl.dt > periodo.value.dt_fim) continue;
+        const [, mm, dd] = sl.dt.split('-');
+        out.push({ dt: sl.dt, diaCode: sl.dia_ref, sabado: true, label: `${dd}/${mm} · Sáb (${DIA_LABEL[sl.dia_ref]})` });
+    }
+    return out.sort((a, b) => a.dt.localeCompare(b.dt));
 });
+
+const diaCodeDe = (dt: string): string | null => diasComAula.value.find((d) => d.dt === dt)?.diaCode ?? null;
 
 const hojeStr = () => {
     const d = new Date();
@@ -169,11 +191,10 @@ const escolherDataInicial = () => {
     dataSel.value = (passados.length ? passados[passados.length - 1] : dias[0]).dt;
 };
 
-const dowDe = (dt: string) => {
-    const [y, m, d] = dt.split('-').map(Number);
-    return new Date(y, m - 1, d).getDay();
-};
-const temposDoDia = computed(() => (dataSel.value ? tempos.value.filter((t) => DIA_DOW[t.trh_dia] === dowDe(dataSel.value)) : []));
+const temposDoDia = computed(() => {
+    const code = dataSel.value ? diaCodeDe(dataSel.value) : null;
+    return code ? tempos.value.filter((t) => t.trh_dia === code) : [];
+});
 
 const idxData = computed(() => diasComAula.value.findIndex((d) => d.dt === dataSel.value));
 const irData = (delta: number) => {
@@ -358,6 +379,13 @@ const statusDia = (aln: number): 'presente' | 'parcial' | 'ausente' | 'justifica
     if (f >= total) return 'ausente';
     return 'parcial';
 };
+const fmtData = (dt: string | null) => {
+    if (!dt) return '';
+    const [y, m, d] = dt.split('-');
+    return `${d}/${m}/${y}`;
+};
+// Aluno saiu da turma antes do dia selecionado → lançamento bloqueado.
+const saiuNoDia = (a: Aluno) => !!a.dt_saida && dataSel.value > a.dt_saida;
 // Rótulo + classe do badge de situação.
 const statusInfo = (aln: number): { label: string; cls: string } => {
     switch (statusDia(aln)) {
@@ -518,10 +546,13 @@ const statusInfo = (aln: number): { label: string; cls: string } => {
                                             <div class="min-w-0">
                                                 <div class="truncate text-sm font-medium text-slate-900 dark:text-slate-50">{{ a.aln_nome }}</div>
                                                 <div v-if="a.aln_nr_matricula" class="text-[10px] text-muted-foreground">Mat. {{ a.aln_nr_matricula }}</div>
+                                                <div v-if="a.dt_saida" class="mt-0.5 inline-flex items-center gap-1 rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">Saída {{ fmtData(a.dt_saida) }}</div>
                                             </div>
                                         </div>
                                     </td>
                                     <td v-for="t in temposDoDia" :key="t.trh_id" :class="['border-b border-l px-2 py-2 text-center transition-colors', i % 2 ? 'bg-muted/20' : '', 'group-hover:bg-indigo-50/40 dark:group-hover:bg-indigo-950/20']">
+                                        <span v-if="saiuNoDia(a)" :title="`Aluno saiu em ${fmtData(a.dt_saida)} — bloqueado`" class="inline-flex size-8 items-center justify-center rounded-md text-xs text-muted-foreground/40">·</span>
+                                        <template v-else>
                                         <button
                                             v-if="t.pode_editar"
                                             type="button"
@@ -567,9 +598,11 @@ const statusInfo = (aln: number): { label: string; cls: string } => {
                                         >
                                             {{ reg(t.trh_id, a.aln_id) === false ? (cellJustificada(t, a.aln_id) ? 'FJ' : 'F') : reg(t.trh_id, a.aln_id) === true ? 'P' : '—' }}
                                         </span>
+                                        </template>
                                     </td>
                                     <td :class="['border-b border-l px-2 py-2 text-center transition-colors', i % 2 ? 'bg-muted/20' : '', 'group-hover:bg-indigo-50/40 dark:group-hover:bg-indigo-950/20']">
-                                        <span :class="['inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold', statusInfo(a.aln_id).cls]">
+                                        <span v-if="saiuNoDia(a)" :title="`Saiu em ${fmtData(a.dt_saida)}`" class="inline-flex items-center gap-1 rounded-full bg-slate-200 px-2 py-0.5 text-[11px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">Saiu</span>
+                                        <span v-else :class="['inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold', statusInfo(a.aln_id).cls]">
                                             {{ statusInfo(a.aln_id).label }}
                                             <span v-if="faltasDia(a.aln_id)" class="tabular-nums">· {{ faltasDia(a.aln_id) }}</span>
                                         </span>

@@ -34,12 +34,16 @@ class DiarioAvaliacao extends Model
         'ava_dt',
         'ava_valor',
         'ava_fl_recuperacao',
+        'ava_fl_migrada',
+        'ava_origem_tur_id',
+        'ava_origem_ava_id',
     ];
 
     protected $casts = [
         'ava_dt'             => 'date',
         'ava_valor'          => 'decimal:2',
         'ava_fl_recuperacao' => 'boolean',
+        'ava_fl_migrada'     => 'boolean',
     ];
 
     public function notas(): HasMany

@@ -2,9 +2,11 @@
 
 namespace App\Models\Parametro;
 
+use App\Models\Escola\Escola;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class SabadoLetivo extends Model
 {
@@ -38,6 +40,12 @@ class SabadoLetivo extends Model
     public function anoLetivo(): BelongsTo
     {
         return $this->belongsTo(AnoLetivo::class, 'sbl_anl_id', 'anl_id');
+    }
+
+    /** Escolas que NÃO terão este sábado letivo. */
+    public function escolasExcluidas(): BelongsToMany
+    {
+        return $this->belongsToMany(Escola::class, 'cfg_sabado_letivo_excecao', 'sle_sbl_id', 'sle_esc_id');
     }
 
     public function createdBy(): BelongsTo
