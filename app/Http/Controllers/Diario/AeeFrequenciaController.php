@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Diario;
 
 use App\Http\Controllers\Controller;
+use App\Models\Diario\AeeConteudo;
 use App\Models\Diario\AeeFrequencia;
+use App\Models\Diario\DiarioPlanoAee;
 use App\Models\Matricula\Matricula;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -73,6 +75,39 @@ class AeeFrequenciaController extends Controller
                 'presente' => (bool) $r->afr_fl_presente,
             ]);
 
+        // Conteúdo/metodologia por dia (AEE não tem disciplina → 1 por dia).
+        $conteudos = AeeConteudo::query()
+            ->where('dac_tur_id', $turId)
+            ->where('dac_uni_id', $uniId)
+            ->get(['dac_dt', 'dac_conteudo', 'dac_metodologia', 'dac_fl_plano_executado', 'dac_dae_id'])
+            ->map(fn ($r) => [
+                'dt'              => Carbon::parse($r->dac_dt)->toDateString(),
+                'conteudo'        => $r->dac_conteudo,
+                'metodologia'     => $r->dac_metodologia,
+                'plano_executado' => (bool) $r->dac_fl_plano_executado,
+                'dae_id'          => $r->dac_dae_id !== null ? (int) $r->dac_dae_id : null,
+            ]);
+
+        // Planos AEE elegíveis (pendente/aprovado) da turma — base do "planejamento executado".
+        // Frontend casa por data dentro do período do plano. Snapshot: objetivo→conteúdo, estrategias→metodologia.
+        $user = $request->user();
+        $planosQ = DiarioPlanoAee::query()
+            ->where('dae_tur_id', $turId)
+            ->whereIn('dae_status', [DiarioPlanoAee::STATUS_PENDENTE, DiarioPlanoAee::STATUS_APROVADO]);
+        if (! $user->isAdmin()) {
+            $planosQ->where('dae_user_id', (int) $user->id);
+        }
+        $planos = $planosQ
+            ->orderBy('dae_dt_inicio')
+            ->get(['dae_id', 'dae_dt_inicio', 'dae_dt_fim', 'dae_objetivo', 'dae_estrategias'])
+            ->map(fn ($p) => [
+                'dae_id'      => (int) $p->dae_id,
+                'dt_inicio'   => Carbon::parse($p->dae_dt_inicio)->toDateString(),
+                'dt_fim'      => Carbon::parse($p->dae_dt_fim)->toDateString(),
+                'conteudo'    => $p->dae_objetivo,
+                'metodologia' => $p->dae_estrategias,
+            ]);
+
         return response()->json([
             'dias'           => array_values($dias),
             'periodo'        => $periodo,
@@ -80,7 +115,86 @@ class AeeFrequenciaController extends Controller
             'turma_aberta'   => $this->turmaAberta($turId),
             'alunos'         => $alunos,
             'presencas'      => $presencas,
+            'conteudos'      => $conteudos,
+            'planos'         => $planos,
         ]);
+    }
+
+    /**
+     * Salva conteúdo/metodologia do dia (turma + data). Se "planejamento executado",
+     * espelha (snapshot) o plano AEE elegível (pendente/aprovado) que cobre a data.
+     */
+    public function salvarConteudo(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'tur_id'          => ['required', 'integer', 'exists:edu_turma,tur_id'],
+            'uni_id'          => ['required', 'integer', 'exists:cfg_unidade,uni_id'],
+            'dt'              => ['required', 'date'],
+            'conteudo'        => ['nullable', 'string', 'max:5000'],
+            'metodologia'     => ['nullable', 'string', 'max:5000'],
+            'plano_executado' => ['boolean'],
+            'dae_id'          => ['nullable', 'integer'],
+        ]);
+
+        $this->abortIfNotProfessorAee();
+        $this->assertProfessorDaTurmaAee($request, (int) $data['tur_id']);
+        $this->assertTurmaAberta((int) $data['tur_id']);
+        $this->assertPeriodoAberto((int) $data['uni_id']);
+        $this->assertDataNoPeriodo((int) $data['uni_id'], $data['dt']);
+        $this->assertDiaDeAtendimento((int) $data['tur_id'], $data['dt']);
+
+        $executado   = (bool) ($data['plano_executado'] ?? false);
+        $conteudo    = $data['conteudo'] ?? null;
+        $metodologia = $data['metodologia'] ?? null;
+        $daeId       = null;
+
+        if ($executado) {
+            $plano       = $this->planoExecutavel($request, (int) $data['tur_id'], $data['dt'], $data['dae_id'] ?? null);
+            $daeId       = (int) $plano->dae_id;
+            $conteudo    = $plano->dae_objetivo;
+            $metodologia = $plano->dae_estrategias;
+        }
+
+        AeeConteudo::updateOrCreate(
+            ['dac_tur_id' => $data['tur_id'], 'dac_dt' => $data['dt']],
+            [
+                'dac_user_id'            => (int) $request->user()->id,
+                'dac_uni_id'             => $data['uni_id'],
+                'dac_conteudo'           => $conteudo,
+                'dac_metodologia'        => $metodologia,
+                'dac_fl_plano_executado' => $executado,
+                'dac_dae_id'             => $daeId,
+            ],
+        );
+
+        return response()->json([
+            'ok'              => true,
+            'plano_executado' => $executado,
+            'dae_id'          => $daeId,
+            'conteudo'        => $conteudo,
+            'metodologia'     => $metodologia,
+        ]);
+    }
+
+    /** Localiza/valida o plano AEE elegível (pendente/aprovado) que cobre a data. */
+    private function planoExecutavel(Request $request, int $turId, string $dt, ?int $daeId): object
+    {
+        $user = $request->user();
+        $d = Carbon::parse($dt)->toDateString();
+
+        $plano = DiarioPlanoAee::query()
+            ->where('dae_tur_id', $turId)
+            ->whereIn('dae_status', [DiarioPlanoAee::STATUS_PENDENTE, DiarioPlanoAee::STATUS_APROVADO])
+            ->whereDate('dae_dt_inicio', '<=', $d)
+            ->whereDate('dae_dt_fim', '>=', $d)
+            ->when(! $user->isAdmin(), fn ($q) => $q->where('dae_user_id', (int) $user->id))
+            ->when($daeId, fn ($q) => $q->where('dae_id', $daeId))
+            ->orderBy('dae_dt_inicio')
+            ->first(['dae_id', 'dae_objetivo', 'dae_estrategias']);
+
+        abort_unless($plano, 422, 'Não há planejamento AEE (pendente/aprovado) para esta data.');
+
+        return $plano;
     }
 
     /** Marca presença/ausência de 1 aluno em 1 dia (autosave). */

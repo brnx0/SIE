@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
+import Switch from '@/components/common/Switch.vue';
 import { ChevronLeft, ChevronRight, Loader2, RefreshCw, Search, TriangleAlert } from 'lucide-vue-next';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 
 const props = defineProps<{ anlId: number; escId: number; turId: number; uniId: number }>();
 
 interface Aluno { aln_id: number; aln_nome: string; aln_nr_matricula: string | null; dt_saida: string | null }
+interface Plano { dae_id: number; dt_inicio: string; dt_fim: string; conteudo: string | null; metodologia: string | null }
+interface ConteudoInfo { conteudo: string; metodologia: string; executado: boolean; dae_id: number | null }
 
 const DIA_DOW: Record<string, number> = { dom: 0, seg: 1, ter: 2, qua: 3, qui: 4, sex: 5, sab: 6 };
 const DIA_LABEL: Record<string, string> = { dom: 'Dom', seg: 'Seg', ter: 'Ter', qua: 'Qua', qui: 'Qui', sex: 'Sex', sab: 'Sáb' };
@@ -23,6 +26,12 @@ const busca = ref('');
 
 const presencaMap = reactive<Record<string, boolean>>({});
 const status = reactive<Record<string, 'idle' | 'saving' | 'saved' | 'error'>>({});
+
+// Conteúdo/metodologia + planejamento executado: 1 por dia (AEE não tem disciplina).
+const planos = ref<Plano[]>([]);
+const conteudoMap = reactive<Record<string, ConteudoInfo>>({});
+const conteudoStatus = reactive<Record<string, 'idle' | 'saving' | 'saved' | 'error'>>({});
+const conteudoTimer: Record<string, number> = {};
 
 const csrf = (): Record<string, string> => {
     const m = document.cookie.match(/XSRF-TOKEN=([^;]+)/);
@@ -43,12 +52,18 @@ const carregar = async (silent = false) => {
         const data = await r.json();
         Object.keys(presencaMap).forEach((key) => delete presencaMap[key]);
         Object.keys(status).forEach((key) => delete status[key]);
+        Object.keys(conteudoMap).forEach((key) => delete conteudoMap[key]);
+        Object.keys(conteudoStatus).forEach((key) => delete conteudoStatus[key]);
         dias.value = data.dias ?? [];
         alunos.value = data.alunos ?? [];
         periodo.value = data.periodo ?? null;
         periodoAberto.value = data.periodo_aberto ?? false;
         turmaAberta.value = data.turma_aberta ?? false;
+        planos.value = data.planos ?? [];
         for (const p of data.presencas ?? []) presencaMap[k(p.dt, p.aln_id)] = p.presente;
+        for (const c of data.conteudos ?? []) {
+            conteudoMap[c.dt] = { conteudo: c.conteudo ?? '', metodologia: c.metodologia ?? '', executado: !!c.plano_executado, dae_id: c.dae_id ?? null };
+        }
         if (!dataSel.value || !diasComAtendimento.value.some((d) => d.dt === dataSel.value)) escolherDataInicial();
     } finally {
         carregando.value = false;
@@ -153,6 +168,84 @@ const marcarLote = async (val: boolean) => {
 
 const totalPresentes = computed(() => alunosFiltrados.value.filter((a) => !saiuNoDia(a) && presente(a.aln_id)).length);
 const totalAusentes = computed(() => alunosFiltrados.value.filter((a) => !saiuNoDia(a) && !presente(a.aln_id)).length);
+
+// ── Conteúdo / metodologia + planejamento executado (1 por dia) ──────────────
+const SEM_INFO: ConteudoInfo = { conteudo: '', metodologia: '', executado: false, dae_id: null };
+const planoDoDia = (): Plano | null => {
+    const dt = dataSel.value;
+    return planos.value.find((p) => dt >= p.dt_inicio && dt <= p.dt_fim) ?? null;
+};
+const infoDia = (): ConteudoInfo => conteudoMap[dataSel.value] ?? SEM_INFO;
+const ensureDia = (): ConteudoInfo => {
+    const key = dataSel.value;
+    if (!conteudoMap[key]) conteudoMap[key] = { conteudo: '', metodologia: '', executado: false, dae_id: null };
+    return conteudoMap[key];
+};
+const getConteudo = (campo: 'conteudo' | 'metodologia') => {
+    const i = infoDia();
+    if (i.executado) return planoDoDia()?.[campo] ?? i[campo] ?? '';
+    return i[campo] ?? '';
+};
+
+const salvarConteudo = async () => {
+    if (!editavel.value || !dataSel.value) return;
+    const key = dataSel.value;
+    const i = ensureDia();
+    conteudoStatus[key] = 'saving';
+    try {
+        const r = await fetch('/api/diario-aee/frequencia/conteudo', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json', ...csrf() },
+            credentials: 'same-origin',
+            body: JSON.stringify({
+                tur_id: props.turId,
+                uni_id: props.uniId,
+                dt: dataSel.value,
+                conteudo: i.conteudo,
+                metodologia: i.metodologia,
+                plano_executado: i.executado,
+                dae_id: i.dae_id,
+            }),
+        });
+        if (r.ok) {
+            const j = await r.json();
+            i.conteudo = j.conteudo ?? i.conteudo;
+            i.metodologia = j.metodologia ?? i.metodologia;
+            i.dae_id = j.dae_id ?? null;
+            conteudoStatus[key] = 'saved';
+        } else {
+            conteudoStatus[key] = 'error';
+        }
+    } catch {
+        conteudoStatus[key] = 'error';
+    }
+};
+
+const setConteudo = (campo: 'conteudo' | 'metodologia', val: string) => {
+    const i = ensureDia();
+    if (i.executado) return; // travado quando planejamento executado
+    i[campo] = val;
+    const key = dataSel.value;
+    conteudoStatus[key] = 'idle';
+    if (conteudoTimer[key]) clearTimeout(conteudoTimer[key]);
+    conteudoTimer[key] = window.setTimeout(salvarConteudo, 1200);
+};
+
+const toggleExecutado = (val: boolean) => {
+    const i = ensureDia();
+    if (val) {
+        const p = planoDoDia();
+        if (!p) return;
+        i.executado = true;
+        i.dae_id = p.dae_id;
+        i.conteudo = p.conteudo ?? '';
+        i.metodologia = p.metodologia ?? '';
+    } else {
+        i.executado = false;
+        i.dae_id = null;
+    }
+    salvarConteudo();
+};
 </script>
 
 <template>
@@ -191,6 +284,61 @@ const totalAusentes = computed(() => alunosFiltrados.value.filter((a) => !saiuNo
                 <div v-if="!editavel" class="mb-4 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
                     <TriangleAlert class="mt-0.5 size-4 shrink-0" />
                     <span>{{ !turmaAberta ? 'Turma não está aberta.' : 'Fora do período de lançamento.' }} Frequência em modo leitura.</span>
+                </div>
+
+                <!-- Registro do dia: conteúdo / metodologia + planejamento executado (do plano AEE) -->
+                <div class="mb-4 rounded-lg border bg-background p-3">
+                    <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
+                        <span class="text-sm font-semibold">Registro do dia</span>
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="flex items-center gap-2 text-xs"
+                                :class="planoDoDia() ? 'text-slate-700 dark:text-slate-200' : 'text-muted-foreground'"
+                                :title="planoDoDia() ? 'Traz o conteúdo/metodologia do plano AEE' : 'Sem planejamento AEE (pendente/aprovado) para esta data'"
+                            >
+                                <Switch
+                                    :model-value="infoDia().executado"
+                                    :disabled="!editavel || !planoDoDia()"
+                                    @update:model-value="toggleExecutado($event)"
+                                />
+                                <span>Planejamento executado</span>
+                            </div>
+                            <span class="text-xs">
+                                <span v-if="conteudoStatus[dataSel] === 'saving'" class="inline-flex items-center gap-1 text-amber-600"><Loader2 class="size-3.5 animate-spin" /> Salvando</span>
+                                <span v-else-if="conteudoStatus[dataSel] === 'saved'" class="text-emerald-600">Salvo</span>
+                                <span v-else-if="conteudoStatus[dataSel] === 'error'" class="text-rose-600">Erro ao salvar</span>
+                            </span>
+                        </div>
+                    </div>
+                    <div v-if="infoDia().executado" class="mb-2 inline-flex items-center gap-1 rounded bg-indigo-50 px-2 py-0.5 text-[11px] font-medium text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300">
+                        Conteúdo do plano AEE (somente leitura)
+                    </div>
+                    <div class="grid gap-3 sm:grid-cols-2">
+                        <div>
+                            <label class="text-xs font-medium text-muted-foreground">Conteúdo</label>
+                            <textarea
+                                :value="getConteudo('conteudo')"
+                                :readonly="infoDia().executado"
+                                :disabled="!editavel"
+                                rows="2"
+                                placeholder="O que foi trabalhado no atendimento..."
+                                class="mt-1 w-full resize-y rounded-md border bg-background px-2.5 py-1.5 text-sm leading-relaxed outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 read-only:cursor-default read-only:bg-muted/40 disabled:cursor-not-allowed disabled:opacity-60 dark:focus:ring-indigo-950"
+                                @input="setConteudo('conteudo', ($event.target as HTMLTextAreaElement).value)"
+                            ></textarea>
+                        </div>
+                        <div>
+                            <label class="text-xs font-medium text-muted-foreground">Metodologia</label>
+                            <textarea
+                                :value="getConteudo('metodologia')"
+                                :readonly="infoDia().executado"
+                                :disabled="!editavel"
+                                rows="2"
+                                placeholder="Como foi trabalhado..."
+                                class="mt-1 w-full resize-y rounded-md border bg-background px-2.5 py-1.5 text-sm leading-relaxed outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 read-only:cursor-default read-only:bg-muted/40 disabled:cursor-not-allowed disabled:opacity-60 dark:focus:ring-indigo-950"
+                                @input="setConteudo('metodologia', ($event.target as HTMLTextAreaElement).value)"
+                            ></textarea>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Matriz alunos × presença do dia (clique alterna P/F) -->

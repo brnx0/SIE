@@ -191,6 +191,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('relatorios-diario', [RelatorioCentralController::class, 'diario'])->name('relatorios.diario');
     Route::get('relatorios-secretaria', [RelatorioCentralController::class, 'secretaria'])->name('relatorios.secretaria')->middleware('role:secretaria_escola');
     Route::get('relatorios-pedagogico', [RelatorioCentralController::class, 'pedagogico'])->name('relatorios.pedagogico')->middleware('role:coordenador');
+
+    // Encerramento do Ano Letivo — somente consulta por enquanto.
+    Route::middleware('role:secretaria_escola')->group(function () {
+        Route::get('encerramento-turmas', [\App\Http\Controllers\Encerramento\EncerramentoTurmaController::class, 'index'])->name('encerramento.turmas.index');
+        Route::get('encerramento-turmas/dados', [\App\Http\Controllers\Encerramento\EncerramentoTurmaController::class, 'dados'])->name('encerramento.turmas.dados');
+    });
     Route::get('relatorios/parecer-descritivo', [ParecerDescritivoController::class, 'form'])->name('relatorios.parecer-descritivo.form');
     Route::get('relatorios/parecer-descritivo/unidades', [ParecerDescritivoController::class, 'unidades'])->name('relatorios.parecer-descritivo.unidades');
     Route::get('relatorios/parecer-descritivo/turmas', [ParecerDescritivoController::class, 'turmas'])->name('relatorios.parecer-descritivo.turmas');
@@ -402,6 +408,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('frequencia/contexto', [\App\Http\Controllers\Diario\AeeFrequenciaController::class, 'contexto'])->name('frequencia.contexto');
         Route::post('frequencia/salvar', [\App\Http\Controllers\Diario\AeeFrequenciaController::class, 'salvarPresenca'])->name('frequencia.salvar');
         Route::post('frequencia/lote', [\App\Http\Controllers\Diario\AeeFrequenciaController::class, 'salvarLote'])->name('frequencia.lote');
+        Route::post('frequencia/conteudo', [\App\Http\Controllers\Diario\AeeFrequenciaController::class, 'salvarConteudo'])->name('frequencia.conteudo');
 
         // Avaliações descritivas AEE (aluno + data + texto rico)
         Route::get('avaliacoes/contexto', [\App\Http\Controllers\Diario\AeeAvaliacaoController::class, 'contexto'])->name('avaliacoes.contexto');

@@ -5,7 +5,7 @@ import NavSearch, { type FlatNavLeaf } from '@/components/layout/NavSearch.vue';
 import NavUser from '@/components/layout/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { Link } from '@inertiajs/vue3';
-import { LayoutDashboard, LifeBuoy, UserPlus, Cog, ClipboardList, FileBarChart, BookOpen, ClipboardCheck, KeyRound } from 'lucide-vue-next';
+import { LayoutDashboard, LifeBuoy, UserPlus, Cog, ClipboardList, FileBarChart, BookOpen, ClipboardCheck, KeyRound, Archive } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import type { SharedData } from '@/types';
@@ -135,6 +135,18 @@ const secretariaMenu = computed<any[]>(() => {
     }];
 });
 
+const encerramentoMenu = computed<any[]>(() => {
+    if (!isSecretariaEscolar.value) return [];
+
+    return [{
+        title: 'Ano Letivo',
+        icon: Archive,
+        children: [
+            { title: 'Encerramento de Turmas', href: '/encerramento-turmas' },
+        ],
+    }];
+});
+
 const administracao = computed<any[]>(() => [
     {
         title: 'Sistema',
@@ -173,6 +185,7 @@ const flatLeaves = computed<FlatNavLeaf[]>(() => [
     ...flattenItems(diarioMenu.value),
     ...flattenItems(coordenadorMenu.value),
     ...flattenItems(secretariaMenu.value),
+    ...flattenItems(encerramentoMenu.value),
     ...flattenItems(relatoriosMenu),
     ...flattenItems(administracao.value),
 ]);
@@ -204,6 +217,7 @@ const searching = computed(() => search.value.trim().length > 0);
                 <NavMain label="Diário" :items="diarioMenu" />
                 <NavMain v-if="isCoordenador || isCoordenadorInterno" label="Pedagógico" :items="coordenadorMenu" />
                 <NavMain v-if="isSecretariaEscolar" label="Secretaria Escolar" :items="secretariaMenu" />
+                <NavMain v-if="isSecretariaEscolar" label="Encerramento" :items="encerramentoMenu" />
                 <NavMain label="Relatórios" :items="relatoriosMenu" />
                 <NavMain label="Administração" :items="administracao" />
             </template>
