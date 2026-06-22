@@ -162,6 +162,14 @@ export interface SituacaoBloqueio {
     situacao?: TurmaAlunoSituacaoResumo | null;
 }
 
+export interface DiasLetivos {
+    dlt_id: number;
+    dlt_anl_id: number;
+    dlt_seg_id: number;
+    dlt_meses: Record<string, number> | null;
+    dlt_periodos: Record<string, number> | null;
+}
+
 export interface AtendimentoAee {
     ate_id: number;
     ate_descricao: string;

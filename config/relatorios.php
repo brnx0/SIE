@@ -42,6 +42,14 @@ return [
         'icone'     => 'BookOpenText',
     ],
     [
+        'slug'      => 'frequencia-mensal',
+        'titulo'    => 'Diário de Frequência Mensal',
+        'descricao' => 'Frequência da turma em um mês: % e situação por aluno. F2/EJA por dias letivos; demais por aulas da turma.',
+        'categoria' => 'Diário',
+        'grupo'     => 'diario',
+        'icone'     => 'CalendarCheck',
+    ],
+    [
         'slug'      => 'conteudo-ministrado-pedagogico',
         'titulo'    => 'Conteúdo Ministrado',
         'descricao' => 'Por disciplina, lista os dias com aula registrada, planejamento executado e o conteúdo/metodologia do dia.',

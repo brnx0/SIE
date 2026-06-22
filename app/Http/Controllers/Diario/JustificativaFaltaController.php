@@ -76,7 +76,7 @@ class JustificativaFaltaController extends Controller
 
         return Inertia::render('secretaria/justificativas-falta/Index', [
             'alunos'  => $alunos,
-            'vigente' => $anlId ? $this->unidadeVigente($anlId) : null,
+            'vigentes' => $anlId ? $this->unidadesVigentes($anlId) : [],
             'filtros' => [
                 'anl_id' => $anlId ?: null,
                 'esc_id' => $escId ?: null,
@@ -119,12 +119,16 @@ class JustificativaFaltaController extends Controller
     }
 
     /**
-     * Unidade (trimestre/bimestre) vigente do ano: aquela cuja janela
-     * [início, fim + extensão] contém a data de hoje. Null se nenhuma.
+     * Trimestres/bimestres EM ANDAMENTO: todos cuja janela [início, fim + extensão]
+     * contém a data de hoje. Durante a extensão pode haver mais de um (o que está em
+     * extensão e o seguinte que já começou) — em qualquer um é possível justificar.
+     *
+     * @return array<array{label:string, dt_inicio:string, dt_fim:string}>
      */
-    private function unidadeVigente(int $anlId): ?array
+    private function unidadesVigentes(int $anlId): array
     {
         $hoje = now()->toDateString();
+        $out  = [];
 
         foreach (DB::table('cfg_unidade')
             ->where('uni_anl_id', $anlId)
@@ -135,7 +139,7 @@ class JustificativaFaltaController extends Controller
             $ini    = Carbon::parse($u->uni_dt_inicio)->toDateString();
             $fimExt = Carbon::parse($u->uni_dt_fim)->addDays((int) $u->uni_dias_extensao)->toDateString();
             if ($hoje >= $ini && $hoje <= $fimExt) {
-                return [
+                $out[] = [
                     'label'     => $u->uni_numero . 'º ' . ucfirst((string) $u->uni_tipo),
                     'dt_inicio' => $ini,
                     'dt_fim'    => $fimExt, // janela já inclui a extensão
@@ -143,27 +147,34 @@ class JustificativaFaltaController extends Controller
             }
         }
 
-        return null;
+        return $out;
     }
 
-    /** Bloqueia justificativa fora do trimestre vigente (não permite período encerrado). */
+    /** Bloqueia justificativa fora de QUALQUER trimestre em andamento (período encerrado é vedado). */
     private function assertDentroVigente(int $anlId, string $dtInicio, string $dtFim): void
     {
-        $vig = $this->unidadeVigente($anlId);
-        if (! $vig) {
+        $vigs = $this->unidadesVigentes($anlId);
+        if (empty($vigs)) {
             throw ValidationException::withMessages([
-                'jfa_dt_inicio' => 'Não há trimestre vigente nesta data — não é possível justificar faltas.',
+                'jfa_dt_inicio' => 'Não há trimestre em andamento nesta data — não é possível justificar faltas.',
             ]);
         }
 
         $ini = Carbon::parse($dtInicio)->toDateString();
         $fim = Carbon::parse($dtFim)->toDateString();
-        if ($ini < $vig['dt_inicio'] || $fim > $vig['dt_fim']) {
-            $br = fn (string $d) => Carbon::parse($d)->format('d/m/Y');
-            throw ValidationException::withMessages([
-                'jfa_dt_fim' => "O período deve estar dentro do trimestre vigente ({$br($vig['dt_inicio'])} a {$br($vig['dt_fim'])}).",
-            ]);
+
+        // O período precisa caber dentro de UM trimestre em andamento.
+        foreach ($vigs as $v) {
+            if ($ini >= $v['dt_inicio'] && $fim <= $v['dt_fim']) {
+                return;
+            }
         }
+
+        $br    = fn (string $d) => Carbon::parse($d)->format('d/m/Y');
+        $lista = implode(' ou ', array_map(fn ($v) => "{$v['label']}: {$br($v['dt_inicio'])} a {$br($v['dt_fim'])}", $vigs));
+        throw ValidationException::withMessages([
+            'jfa_dt_fim' => "O período deve estar dentro de um trimestre em andamento ({$lista}).",
+        ]);
     }
 
     /** Bloqueia justificativas com período sobreposto para o mesmo aluno (não justificar o mesmo dia 2x). */

@@ -8,6 +8,7 @@ use App\Models\Matricula\TurmaAlunoSituacao;
 use App\Models\Parametro\AnoLetivo;
 use App\Models\Parametro\Conceito;
 use App\Models\Parametro\DiaNaoLetivo;
+use App\Models\Parametro\DiasLetivos;
 use App\Models\Parametro\GradeHorario;
 use App\Models\Parametro\MediaEscola;
 use App\Models\Parametro\SituacaoBloqueio;
@@ -49,6 +50,8 @@ class ParametroController extends Controller
 
         $situacoesAluno = TurmaAlunoSituacao::orderBy('tas_descricao')->get(['tas_cod', 'tas_descricao']);
 
+        $diasLetivos = DiasLetivos::get(['dlt_id', 'dlt_anl_id', 'dlt_seg_id', 'dlt_meses', 'dlt_periodos']);
+
         $mediasEscola = MediaEscola::with('escola:esc_id,esc_nome')
             ->join('edu_escola', 'edu_escola.esc_id', '=', 'cfg_media_escola.mde_esc_id')
             ->orderBy('edu_escola.esc_nome')
@@ -70,6 +73,7 @@ class ParametroController extends Controller
             'conceitos'        => $conceitos,
             'situacoesBloqueio' => $situacoesBloqueio,
             'situacoesAluno'   => $situacoesAluno,
+            'diasLetivos'      => $diasLetivos,
             'mediasEscola'   => $mediasEscola,
             'segmentos'      => $segmentos,
             'gradeHorarios'  => $gradeHorarios,

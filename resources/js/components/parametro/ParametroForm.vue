@@ -11,6 +11,7 @@ import AnoLetivoDialog from '@/components/parametro/AnoLetivoDialog.vue';
 import DiasNaoLetivosTab from '@/components/parametro/DiasNaoLetivosTab.vue';
 import ConceitoSection from '@/components/parametro/ConceitoSection.vue';
 import SituacaoBloqueioSection from '@/components/parametro/SituacaoBloqueioSection.vue';
+import DiasLetivosSection from '@/components/parametro/DiasLetivosSection.vue';
 import MediaEscolaTab from '@/components/parametro/MediaEscolaTab.vue';
 import GradeHorariosTab from '@/components/parametro/GradeHorariosTab.vue';
 import UnidadeTab from '@/components/parametro/UnidadeTab.vue';
@@ -19,7 +20,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import type { Municipio } from '@/types/aluno';
-import type { AnoLetivo, Conceito, DiaNaoLetivo, GradeHorario, MediaEscola, ParametroEntidade, ParametroEntidadeFormData, SegmentoResumo, SituacaoBloqueio, TurmaAlunoSituacaoResumo, Unidade } from '@/types/parametro';
+import type { AnoLetivo, Conceito, DiaNaoLetivo, DiasLetivos, GradeHorario, MediaEscola, ParametroEntidade, ParametroEntidadeFormData, SegmentoResumo, SituacaoBloqueio, TurmaAlunoSituacaoResumo, Unidade } from '@/types/parametro';
 import { router, useForm } from '@inertiajs/vue3';
 import { Building2, Camera, CheckCircle2, LoaderCircle, Pencil, Plus, Save, Shield, Trash2, Upload } from 'lucide-vue-next';
 import { computed, onBeforeUnmount, ref } from 'vue';
@@ -32,6 +33,7 @@ const props = defineProps<{
     conceitos: Conceito[];
     situacoesBloqueio: SituacaoBloqueio[];
     situacoesAluno: TurmaAlunoSituacaoResumo[];
+    diasLetivos: DiasLetivos[];
     mediasEscola: MediaEscola[];
     segmentos: SegmentoResumo[];
     gradeHorarios: GradeHorario[];
@@ -398,6 +400,7 @@ const fmtDateTime = (s?: string | null) => {
                 <div class="grid gap-6">
                     <ConceitoSection :conceitos="conceitos" />
                     <SituacaoBloqueioSection :situacoes-bloqueio="situacoesBloqueio" :situacoes="situacoesAluno" />
+                    <DiasLetivosSection :dias-letivos="diasLetivos" :anos-letivos="anosLetivos" :segmentos="segmentos" :unidades="unidades" />
                     <MediaEscolaTab :medias-escola="mediasEscola" :anos-letivos="anosLetivos" />
                 </div>
             </TabsContent>

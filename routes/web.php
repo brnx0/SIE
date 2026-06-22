@@ -19,6 +19,7 @@ use App\Http\Controllers\Relatorio\BoletimController;
 use App\Http\Controllers\Relatorio\ConteudoMinistradoController;
 use App\Http\Controllers\Relatorio\BoletimAvaliativoController;
 use App\Http\Controllers\Relatorio\MapaNotasController;
+use App\Http\Controllers\Relatorio\FrequenciaMensalController;
 use App\Http\Controllers\Relatorio\RelatorioCentralController;
 use App\Http\Controllers\Api\AlunoSearchController;
 use App\Http\Controllers\Api\BairroController;
@@ -64,6 +65,7 @@ use App\Http\Controllers\Parametro\ParametroController;
 use App\Http\Controllers\Parametro\SabadoLetivoController;
 use App\Http\Controllers\Parametro\ConceitoController;
 use App\Http\Controllers\Parametro\DiaNaoLetivoController;
+use App\Http\Controllers\Parametro\DiasLetivosController;
 use App\Http\Controllers\Parametro\MediaEscolaController;
 use App\Http\Controllers\Parametro\MotivoBaixaFrequenciaController;
 use App\Http\Controllers\Diario\JustificativaFaltaController;
@@ -216,6 +218,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('relatorios/mapa-notas/turmas', [MapaNotasController::class, 'turmas'])->name('relatorios.mapa-notas.turmas');
     Route::get('relatorios/mapa-notas/unidades', [MapaNotasController::class, 'unidades'])->name('relatorios.mapa-notas.unidades');
     Route::get('relatorios/mapa-notas/gerar', [MapaNotasController::class, 'gerar'])->name('relatorios.mapa-notas.gerar');
+
+    // Diário de Frequência Mensal
+    Route::get('relatorios/frequencia-mensal', [FrequenciaMensalController::class, 'form'])->name('relatorios.frequencia-mensal.form');
+    Route::get('relatorios/frequencia-mensal/turmas', [FrequenciaMensalController::class, 'turmas'])->name('relatorios.frequencia-mensal.turmas');
+    Route::get('relatorios/frequencia-mensal/gerar', [FrequenciaMensalController::class, 'gerar'])->name('relatorios.frequencia-mensal.gerar');
 
     // Boletim Avaliativo (por disciplina da grade, 1 página cada)
     Route::get('relatorios/boletim-avaliativo', [BoletimAvaliativoController::class, 'form'])->name('relatorios.boletim-avaliativo.form');
@@ -535,6 +542,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::post('parametros/situacoes-bloqueio', [SituacaoBloqueioController::class, 'store'])->name('parametros.situacoes-bloqueio.store');
         Route::delete('parametros/situacoes-bloqueio/{situacaoBloqueio}', [SituacaoBloqueioController::class, 'destroy'])->name('parametros.situacoes-bloqueio.destroy');
+
+        Route::post('parametros/dias-letivos', [DiasLetivosController::class, 'salvar'])->name('parametros.dias-letivos.salvar');
+        Route::post('parametros/dias-letivos/migrar', [DiasLetivosController::class, 'migrar'])->name('parametros.dias-letivos.migrar');
 
         Route::post('parametros/grade-horarios', [GradeHorarioController::class, 'store'])->name('parametros.grade-horarios.store');
         Route::put('parametros/grade-horarios/{gradeHorario}', [GradeHorarioController::class, 'update'])->name('parametros.grade-horarios.update');

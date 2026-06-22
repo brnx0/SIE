@@ -57,6 +57,33 @@ const isChildActive = (child: NavChild): boolean =>
 
 const isGroupActive = (item: NavItem) =>
     item.children?.some((c) => isChildActive(c)) ?? false;
+
+// Acha o ancestral rolável (a área de conteúdo da sidebar).
+const getScroller = (el: HTMLElement): HTMLElement | null => {
+    let p = el.parentElement;
+    while (p) {
+        const oy = getComputedStyle(p).overflowY;
+        if ((oy === 'auto' || oy === 'scroll') && p.scrollHeight > p.clientHeight) return p;
+        p = p.parentElement;
+    }
+    return null;
+};
+
+// Ao expandir um menu, garante que seus itens fiquem visíveis (sem precisar rolar à mão).
+const scrollExpandToView = (e: MouseEvent) => {
+    const el = e.currentTarget as HTMLElement;
+    window.setTimeout(() => {
+        if (el.getAttribute('data-state') !== 'open') return; // só ao abrir
+        const item = (el.closest('[data-sidebar="menu-item"], [data-sidebar="menu-sub-item"]') as HTMLElement | null) ?? el;
+        item.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        const scroller = getScroller(el);
+        if (scroller) {
+            const r = item.getBoundingClientRect();
+            const cr = scroller.getBoundingClientRect();
+            if (r.bottom > cr.bottom + 1) item.scrollIntoView({ block: 'start', behavior: 'smooth' });
+        }
+    }, 230); // após a animação do collapsible
+};
 </script>
 
 <template>
@@ -83,7 +110,7 @@ const isGroupActive = (item: NavItem) =>
                 >
                     <SidebarMenuItem>
                         <CollapsibleTrigger as-child>
-                            <SidebarMenuButton :is-active="isGroupActive(item)">
+                            <SidebarMenuButton :is-active="isGroupActive(item)" @click="scrollExpandToView">
                                 <component :is="item.icon" />
                                 <span>{{ item.title }}</span>
                                 <ChevronRight class="ml-auto size-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
@@ -110,7 +137,7 @@ const isGroupActive = (item: NavItem) =>
                                     >
                                         <SidebarMenuSubItem>
                                             <CollapsibleTrigger as-child>
-                                                <SidebarMenuSubButton :is-active="isChildActive(child)" class="font-medium">
+                                                <SidebarMenuSubButton :is-active="isChildActive(child)" class="font-medium" @click="scrollExpandToView">
                                                     <span>{{ child.title }}</span>
                                                     <ChevronRight class="ml-auto size-3.5 transition-transform duration-200 group-data-[state=open]/subcollapsible:rotate-90" />
                                                 </SidebarMenuSubButton>

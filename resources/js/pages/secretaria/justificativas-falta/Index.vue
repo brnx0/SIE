@@ -32,7 +32,7 @@ interface Vigente { label: string; dt_inicio: string; dt_fim: string }
 
 const props = defineProps<{
     alunos: Aluno[];
-    vigente: Vigente | null;
+    vigentes: Vigente[];
     filtros: { anl_id: number | null; esc_id: number | null; tur_id: number | null };
     anosLetivos: AnoLetivo[];
     escolas: Escola[];
@@ -108,12 +108,16 @@ const form = reactive({
     jfa_observacao: '',
 });
 
-const podeJustificar = computed(() => !!props.vigente);
+const vigentes = computed<Vigente[]>(() => props.vigentes ?? []);
+const podeJustificar = computed(() => vigentes.value.length > 0);
+// Janela total (união) p/ os limites dos campos de data; a validação garante caber em 1 trimestre.
+const minInicio = computed(() => (vigentes.value.length ? [...vigentes.value].map((v) => v.dt_inicio).sort()[0] : ''));
+const maxFim = computed(() => (vigentes.value.length ? [...vigentes.value].map((v) => v.dt_fim).sort().at(-1) ?? '' : ''));
 
 const reset = () => {
     form.jfa_mbf_id = null;
-    form.jfa_dt_inicio = props.vigente?.dt_inicio ?? '';
-    form.jfa_dt_fim = props.vigente?.dt_inicio ?? '';
+    form.jfa_dt_inicio = vigentes.value[0]?.dt_inicio ?? '';
+    form.jfa_dt_fim = vigentes.value[0]?.dt_inicio ?? '';
     form.jfa_observacao = '';
     errors.value = {};
 };
@@ -206,20 +210,26 @@ const remover = (a: Aluno, j: Justificativa) => {
                 </div>
             </div>
 
-            <!-- Trimestre vigente -->
+            <!-- Trimestres em andamento -->
             <div
-                v-if="vigente"
+                v-if="vigentes.length"
                 class="flex flex-wrap items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-200"
             >
                 <CalendarClock class="size-4 shrink-0" />
-                <span><strong>Trimestre vigente:</strong> {{ vigente.label }} — só é possível justificar entre <strong>{{ fmt(vigente.dt_inicio) }}</strong> e <strong>{{ fmt(vigente.dt_fim) }}</strong> (inclui extensão).</span>
+                <span>
+                    <strong>{{ vigentes.length > 1 ? 'Trimestres em andamento' : 'Trimestre em andamento' }}:</strong>
+                    <template v-for="(v, i) in vigentes" :key="i">
+                        {{ i ? ' · ' : ' ' }}<strong>{{ v.label }}</strong> ({{ fmt(v.dt_inicio) }} a {{ fmt(v.dt_fim) }})
+                    </template>
+                    — é possível justificar em <strong>qualquer um</strong>, dentro da janela dele (inclui extensão).
+                </span>
             </div>
             <div
                 v-else
                 class="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200"
             >
                 <TriangleAlert class="mt-0.5 size-4 shrink-0" />
-                <span>Nenhum trimestre vigente nesta data. Não é possível registrar justificativas (períodos encerrados são bloqueados).</span>
+                <span>Nenhum trimestre em andamento nesta data. Não é possível registrar justificativas (períodos encerrados são bloqueados).</span>
             </div>
 
             <!-- Sem turma -->
@@ -296,8 +306,9 @@ const remover = (a: Aluno, j: Justificativa) => {
                     <Button variant="ghost" size="sm" @click="fechar"><X class="size-5" /></Button>
                 </div>
                 <div class="grid gap-4 p-5">
-                    <div v-if="vigente" class="rounded-md bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
-                        Período permitido: <strong>{{ fmt(vigente.dt_inicio) }}</strong> a <strong>{{ fmt(vigente.dt_fim) }}</strong> ({{ vigente.label }}).
+                    <div v-if="vigentes.length" class="rounded-md bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
+                        Justifique dentro de um trimestre em andamento:
+                        <template v-for="(v, i) in vigentes" :key="i"><strong>{{ i ? ' · ' : ' ' }}{{ v.label }}</strong> ({{ fmt(v.dt_inicio) }} a {{ fmt(v.dt_fim) }})</template>.
                     </div>
                     <div class="grid gap-1.5">
                         <FormLabel :required="true">Motivo</FormLabel>
@@ -310,8 +321,8 @@ const remover = (a: Aluno, j: Justificativa) => {
                             <Input
                                 v-model="form.jfa_dt_inicio"
                                 type="date"
-                                :min="vigente?.dt_inicio"
-                                :max="vigente?.dt_fim"
+                                :min="minInicio"
+                                :max="maxFim"
                                 :class="{ 'border-red-500': errors.jfa_dt_inicio }"
                             />
                             <InputError :message="errors.jfa_dt_inicio" />
@@ -321,8 +332,8 @@ const remover = (a: Aluno, j: Justificativa) => {
                             <Input
                                 v-model="form.jfa_dt_fim"
                                 type="date"
-                                :min="form.jfa_dt_inicio || vigente?.dt_inicio"
-                                :max="vigente?.dt_fim"
+                                :min="form.jfa_dt_inicio || minInicio"
+                                :max="maxFim"
                                 :class="{ 'border-red-500': errors.jfa_dt_fim }"
                             />
                             <InputError :message="errors.jfa_dt_fim" />
