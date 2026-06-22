@@ -13,8 +13,15 @@ interface Escola { esc_id: number; esc_nome: string }
 interface Unidade { uni_id: number; label: string }
 interface Aluno { aln_id: number; aln_nome: string; aln_nr_matricula: string | null }
 interface Conceito { cnc_id: number; cnc_sigla: string; cnc_descricao: string }
-interface DisciplinaBloco { dis_id: number; dis_nome: string; valores: Record<string, Record<string, { media: number | null; cnc_id: number | null; faltas: number | null; tipo: string | null }>> }
-interface CelVal { media: number | string | null; cnc_id: number | null; faltas: number | string | null; tipo: string | null }
+interface CalcCel { media: number | null; cnc_id: number | null; tipo: string | null; completo: boolean }
+interface DisciplinaBloco {
+    dis_id: number;
+    dis_nome: string;
+    valores: Record<string, Record<string, { media: number | null; cnc_id: number | null; faltas: number | null; tipo: string | null }>>;
+    calc: Record<string, Record<string, CalcCel>>;
+}
+// auto = média/conceito vindo do cálculo do diário (não é override salvo); vira override ao editar.
+interface CelVal { media: number | string | null; cnc_id: number | null; faltas: number | string | null; tipo: string | null; auto: boolean }
 
 const props = defineProps<{
     anosLetivos: AnoLetivo[];
@@ -52,6 +59,8 @@ const busca = ref('');
 
 // vals[`${dis}|${aln}|${uni}`] = CelVal ; status idem
 const vals = reactive<Record<string, CelVal>>({});
+// calc[`${dis}|${aln}|${uni}`] = média calculada do diário (só células completas)
+const calc = reactive<Record<string, CalcCel>>({});
 const status = reactive<Record<string, 'idle' | 'saving' | 'saved' | 'error'>>({});
 const timers: Record<string, number> = {};
 
@@ -90,7 +99,39 @@ function resetGrade() {
     conceitos.value = [];
     disciplinas.value = [];
     Object.keys(vals).forEach((k) => delete vals[k]);
+    Object.keys(calc).forEach((k) => delete calc[k]);
     Object.keys(status).forEach((k) => delete status[k]);
+}
+
+// Cálculo aplicável à célula: completo E do mesmo tipo selecionado (numérica × conceitual).
+const calcAtivo = (key: string): CalcCel | null => {
+    const c = calc[key];
+    return c && c.completo && c.tipo === tipoSel.value ? c : null;
+};
+
+// (Re)constrói as células a partir dos overrides manuais (+ faltas) e das médias calculadas.
+// Sem override e com cálculo aplicável → exibe a média calculada como "auto" (não salva até editar).
+// Depende de tipoSel, por isso roda também ao alternar numérica/conceitual.
+function montarCelulas() {
+    Object.keys(vals).forEach((k) => delete vals[k]);
+    for (const d of disciplinas.value) {
+        const v = d.valores ?? {};
+        for (const aln of Object.keys(v)) {
+            for (const uni of Object.keys(v[aln])) {
+                const key = ck(d.dis_id, Number(aln), Number(uni));
+                const m = v[aln][uni];
+                const c = calcAtivo(key);
+                const temOverride = m.media != null || m.cnc_id != null;
+                vals[key] = {
+                    media: temOverride ? m.media : (c ? c.media : null),
+                    cnc_id: temOverride ? m.cnc_id : (c ? c.cnc_id : null),
+                    faltas: m.faltas,
+                    tipo: m.tipo ?? null,
+                    auto: !temOverride && !!c,
+                };
+            }
+        }
+    }
 }
 
 async function carregar() {
@@ -112,19 +153,17 @@ async function carregar() {
         alunos.value = data.alunos ?? [];
         conceitos.value = data.conceitos ?? [];
         disciplinas.value = data.disciplinas ?? [];
+        // Médias calculadas do diário (apenas células completas). Independem do tipo selecionado.
         for (const d of disciplinas.value) {
-            const v = d.valores ?? {};
-            for (const aln of Object.keys(v)) {
-                for (const uni of Object.keys(v[aln])) {
-                    vals[ck(d.dis_id, Number(aln), Number(uni))] = {
-                        media: v[aln][uni].media,
-                        cnc_id: v[aln][uni].cnc_id,
-                        faltas: v[aln][uni].faltas,
-                        tipo: v[aln][uni].tipo ?? null,
-                    };
+            const cmap = d.calc ?? {};
+            for (const aln of Object.keys(cmap)) {
+                for (const uni of Object.keys(cmap[aln])) {
+                    const c = cmap[aln][uni];
+                    calc[ck(d.dis_id, Number(aln), Number(uni))] = { media: c.media, cnc_id: c.cnc_id, tipo: c.tipo ?? null, completo: !!c.completo };
                 }
             }
         }
+        montarCelulas();
     } finally {
         carregando.value = false;
     }
@@ -134,6 +173,8 @@ onMounted(loadTurmas);
 watch([escId, anlId], loadTurmas);
 watch(turId, loadDisciplinas);
 watch([turId, disId], carregar);
+// Alternar numérica/conceitual re-deriva o auto (gate por tipo) sem refazer a busca.
+watch(tipoSel, montarCelulas);
 
 const itemsAno = computed(() => props.anosLetivos.map((a) => ({ id: a.anl_id, label: String(a.anl_ano) })));
 const itemsEscola = computed(() => props.escolas.map((e) => ({ id: e.esc_id, label: e.esc_nome })));
@@ -148,15 +189,21 @@ const alunosFiltrados = computed(() => {
 
 const cel = (dis: number, aln: number, uni: number): CelVal => {
     const key = ck(dis, aln, uni);
-    if (!vals[key]) vals[key] = { media: null, cnc_id: null, faltas: null, tipo: null };
+    if (!vals[key]) {
+        const c = calcAtivo(key);
+        vals[key] = c
+            ? { media: c.media, cnc_id: c.cnc_id, faltas: null, tipo: null, auto: true }
+            : { media: null, cnc_id: null, faltas: null, tipo: null, auto: false };
+    }
     return vals[key];
 };
 
-// Tipo já lançado para o aluno nesta disciplina (qualquer unidade com valor).
+// Tipo já lançado (override manual) para o aluno nesta disciplina. Células "auto"
+// (média calculada) não contam — não disparam exclusão numérica × conceitual.
 const alunoTipoLancado = (dis: number, aln: number): string | null => {
     for (const u of unidades.value) {
         const c = vals[ck(dis, aln, u.uni_id)];
-        if (c && (c.cnc_id != null || (c.media !== null && c.media !== ''))) return c.tipo ?? null;
+        if (c && !c.auto && (c.cnc_id != null || (c.media !== null && c.media !== ''))) return c.tipo ?? null;
     }
     return null;
 };
@@ -166,11 +213,25 @@ const bloqueado = (dis: number, aln: number): boolean => {
     return t !== null && t !== tipoSel.value;
 };
 
+const tituloCel = (dis: number, aln: number, uni: number, msgBloqueio: string): string => {
+    if (bloqueado(dis, aln)) return msgBloqueio;
+    return cel(dis, aln, uni).auto ? 'Média calculada das notas do diário. Edite para sobrescrever.' : '';
+};
+
 async function salvar(dis: number, aln: number, uni: number) {
     const key = ck(dis, aln, uni);
     const c = cel(dis, aln, uni);
     status[key] = 'saving';
     const norm = (v: number | string | null) => (v === '' || v === null || v === undefined ? null : v);
+    // Célula "auto" (média calculada não editada) NÃO vira override: envia média/conceito nulos,
+    // preservando só as faltas. A secretaria editar a média/conceito desmarca o auto.
+    let media = c.auto || entrada.value === 'conceito' ? null : norm(c.media);
+    // Média final arredondada ao 0,5 (mesma regra do diário).
+    if (media !== null && media !== '') {
+        media = Math.round(Number(media) * 2) / 2;
+        c.media = media;
+    }
+    const cncId = !c.auto && entrada.value === 'conceito' ? norm(c.cnc_id) : null;
     try {
         const r = await fetch('/secretaria/lancamento-manual/salvar', {
             method: 'POST',
@@ -182,13 +243,20 @@ async function salvar(dis: number, aln: number, uni: number) {
                 uni_id: uni,
                 aln_id: aln,
                 tipo: tipoSel.value,
-                media: entrada.value === 'conceito' ? null : norm(c.media),
-                cnc_id: entrada.value === 'conceito' ? norm(c.cnc_id) : null,
+                media,
+                cnc_id: cncId,
                 faltas: norm(c.faltas),
             }),
         });
         if (r.ok) {
-            c.tipo = tipoSel.value;
+            if (media === null && cncId === null) {
+                // Override removido (ou só faltas) → se há cálculo aplicável, volta a exibir a média auto.
+                const cc = calcAtivo(key);
+                if (cc) { c.auto = true; c.media = cc.media; c.cnc_id = cc.cnc_id; c.tipo = null; }
+            } else {
+                c.auto = false;
+                c.tipo = tipoSel.value;
+            }
             status[key] = 'saved';
         } else {
             status[key] = 'error';
@@ -203,6 +271,12 @@ function onInput(dis: number, aln: number, uni: number) {
     status[key] = 'idle';
     if (timers[key]) clearTimeout(timers[key]);
     timers[key] = window.setTimeout(() => salvar(dis, aln, uni), 1000);
+}
+
+// Edição da média/conceito desmarca o auto (passa a ser override salvo).
+function onInputMedia(dis: number, aln: number, uni: number) {
+    cel(dis, aln, uni).auto = false;
+    onInput(dis, aln, uni);
 }
 
 const pronto = computed(() => !!turId.value);
@@ -225,7 +299,13 @@ const toggleTodas = () => {
             <h1 class="mb-1 flex items-center gap-2 text-xl font-semibold">
                 <ClipboardList class="size-5 text-indigo-600" /> Notas e Faltas
             </h1>
-            <p class="mb-6 text-sm text-muted-foreground">Para escolas que controlam fora do sistema: lance a média e as faltas por aluno em cada período. Tem precedência sobre a nota calculada.</p>
+            <p class="mb-3 text-sm text-muted-foreground">Lance a média e as faltas por aluno em cada período. A média é arredondada ao 0,5 mais próximo. Se o professor alterar as notas depois, o ajuste é descartado e a média volta a ser recalculada.</p>
+
+            <!-- Legenda do destaque -->
+            <div class="mb-6 flex items-center gap-2 rounded-lg border border-indigo-200 bg-indigo-50/40 px-3 py-2 text-xs text-indigo-800 dark:border-indigo-800 dark:bg-indigo-950/30 dark:text-indigo-200">
+                <span class="grid h-7 w-12 place-items-center rounded-md border border-dashed border-indigo-300 italic text-indigo-500/80 dark:border-indigo-800">8,5</span>
+                <span><strong>Nota lançada pelo professor</strong> — média calculada do diário (em itálico/tracejado). Edite o campo para sobrescrever.</span>
+            </div>
 
             <!-- Filtros -->
             <div class="grid gap-4 rounded-xl border bg-card p-6 shadow-sm sm:grid-cols-2 lg:grid-cols-4">
@@ -325,9 +405,10 @@ const toggleTodas = () => {
                                                 v-if="entrada === 'conceito'"
                                                 v-model="cel(bloco.dis_id, a.aln_id, u.uni_id).cnc_id"
                                                 :disabled="bloqueado(bloco.dis_id, a.aln_id)"
-                                                :title="bloqueado(bloco.dis_id, a.aln_id) ? 'Aluno já tem lançamento numérico nesta disciplina.' : ''"
-                                                class="h-8 w-20 rounded-md border border-input bg-background px-1 text-center text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
-                                                @change="onInput(bloco.dis_id, a.aln_id, u.uni_id)"
+                                                :title="tituloCel(bloco.dis_id, a.aln_id, u.uni_id, 'Aluno já tem lançamento numérico nesta disciplina.')"
+                                                class="h-8 w-20 rounded-md border bg-background px-1 text-center text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
+                                                :class="cel(bloco.dis_id, a.aln_id, u.uni_id).auto ? 'border-dashed border-indigo-300 italic text-indigo-500/80 dark:border-indigo-800' : 'border-input'"
+                                                @change="onInputMedia(bloco.dis_id, a.aln_id, u.uni_id)"
                                             >
                                                 <option :value="null">—</option>
                                                 <option v-for="c in conceitos" :key="c.cnc_id" :value="c.cnc_id">{{ c.cnc_sigla }}</option>
@@ -337,9 +418,10 @@ const toggleTodas = () => {
                                                 v-model="cel(bloco.dis_id, a.aln_id, u.uni_id).media"
                                                 type="number" step="0.01" min="0" max="10"
                                                 :disabled="bloqueado(bloco.dis_id, a.aln_id)"
-                                                :title="bloqueado(bloco.dis_id, a.aln_id) ? 'Aluno já tem lançamento conceitual nesta disciplina.' : ''"
-                                                class="h-8 w-16 rounded-md border border-input bg-background px-1.5 text-center text-sm tabular-nums focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
-                                                @input="onInput(bloco.dis_id, a.aln_id, u.uni_id)"
+                                                :title="tituloCel(bloco.dis_id, a.aln_id, u.uni_id, 'Aluno já tem lançamento conceitual nesta disciplina.')"
+                                                class="h-8 w-16 rounded-md border bg-background px-1.5 text-center text-sm tabular-nums focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
+                                                :class="cel(bloco.dis_id, a.aln_id, u.uni_id).auto ? 'border-dashed border-indigo-300 italic text-indigo-500/80 dark:border-indigo-800' : 'border-input'"
+                                                @input="onInputMedia(bloco.dis_id, a.aln_id, u.uni_id)"
                                             />
                                             <span v-if="status[stKey(bloco.dis_id, a.aln_id, u.uni_id)] === 'saving'" class="absolute right-0.5 top-0.5"><Loader2 class="size-3 animate-spin text-amber-500" /></span>
                                         </td>

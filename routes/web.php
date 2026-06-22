@@ -427,6 +427,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // Secretaria Escolar — geração de acessos de professores
+    // Relatório Conteúdo Ministrado — área Pedagógica (coordenação). URL/nome mantidos.
+    Route::prefix('secretaria')->name('secretaria.')->middleware('role:coordenador')->group(function () {
+        Route::get('conteudo-ministrado', [SecretariaConteudoMinistradoController::class, 'form'])->name('conteudo-ministrado.form');
+        Route::get('conteudo-ministrado/turmas', [SecretariaConteudoMinistradoController::class, 'turmas'])->name('conteudo-ministrado.turmas');
+        Route::get('conteudo-ministrado/unidades', [SecretariaConteudoMinistradoController::class, 'unidades'])->name('conteudo-ministrado.unidades');
+        Route::get('conteudo-ministrado/gerar', [SecretariaConteudoMinistradoController::class, 'gerar'])->name('conteudo-ministrado.gerar');
+    });
+
     Route::prefix('secretaria')->name('secretaria.')->middleware('role:secretaria_escola')->group(function () {
         Route::get('acessos-professores/export', [AcessoProfessorController::class, 'export'])->name('acessos-professores.export');
         Route::get('acessos-professores', [AcessoProfessorController::class, 'index'])->name('acessos-professores.index');
@@ -444,12 +452,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('motivos-baixa-frequencia', [MotivoBaixaFrequenciaController::class, 'store'])->name('motivos-baixa-frequencia.store');
         Route::put('motivos-baixa-frequencia/{motivo}', [MotivoBaixaFrequenciaController::class, 'update'])->name('motivos-baixa-frequencia.update');
         Route::delete('motivos-baixa-frequencia/{motivo}', [MotivoBaixaFrequenciaController::class, 'destroy'])->name('motivos-baixa-frequencia.destroy');
-
-        // Relatório: Conteúdo Ministrado (todas as turmas da escola)
-        Route::get('conteudo-ministrado', [SecretariaConteudoMinistradoController::class, 'form'])->name('conteudo-ministrado.form');
-        Route::get('conteudo-ministrado/turmas', [SecretariaConteudoMinistradoController::class, 'turmas'])->name('conteudo-ministrado.turmas');
-        Route::get('conteudo-ministrado/unidades', [SecretariaConteudoMinistradoController::class, 'unidades'])->name('conteudo-ministrado.unidades');
-        Route::get('conteudo-ministrado/gerar', [SecretariaConteudoMinistradoController::class, 'gerar'])->name('conteudo-ministrado.gerar');
 
         // Justificativa de falta (por período)
         Route::get('justificativas-falta', [JustificativaFaltaController::class, 'index'])->name('justificativas-falta.index');

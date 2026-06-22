@@ -133,8 +133,8 @@ const somaValores = computed(() => regulares.value.reduce((s, a) => s + (Number(
 const valorDisponivel = computed(() => Math.max(0, Math.round((10 - somaValores.value) * 100) / 100));
 
 // ── Cálculo do conceito ──────────────────────────────────────────────────────
-// Arredonda ao múltiplo de 0,05 mais próximo (termina em 0 ou 5, 2 casas).
-const round05 = (n: number) => Math.round(n * 20) / 20;
+// Arredonda ao múltiplo de 0,5 mais próximo (1 casa, termina em 0 ou 5): 1,2→1,0 · 1,3→1,5.
+const roundMeio = (n: number) => Math.round(n * 2) / 2;
 
 // Faixa do total: maior conceito cujo limite inferior ≤ total (faixas contíguas, sem vãos).
 const faixaDe = (total: number): Conceito | null => {
@@ -159,7 +159,7 @@ const conceitoBase = (row: AlunoRow): Conceito | null => {
     const regs = regulares.value.filter((a) => !isFutura(a));
     if (!regs.length) return null;
     if (modo.value === 'faixa') {
-        const total = round05(regs.reduce((s, a) => s + (Number(row.notas[a.ava_id]?.valor) || 0), 0));
+        const total = roundMeio(regs.reduce((s, a) => s + (Number(row.notas[a.ava_id]?.valor) || 0), 0));
         return faixaDe(total);
     }
     // modo conceito: conta por conceito; moda única vence; empate → média dos pesos (arredondada).
@@ -190,7 +190,7 @@ const conceitoRecuperacao = (row: AlunoRow): Conceito | null => {
         let c: Conceito | null = null;
         if (modo.value === 'faixa') {
             const v = row.notas[a.ava_id]?.valor;
-            if (v !== null && v !== undefined) c = faixaDe(round05(Number(v)));
+            if (v !== null && v !== undefined) c = faixaDe(roundMeio(Number(v)));
         } else {
             c = conceitoPorId(row.notas[a.ava_id]?.cnc_id ?? null);
         }
@@ -211,7 +211,7 @@ const resultado = (row: AlunoRow): Conceito | null => {
 const valorFaixa = (row: AlunoRow): number | null => {
     if (modo.value !== 'faixa') return null;
     const regs = regulares.value.filter((a) => !isFutura(a));
-    const base = round05(regs.reduce((s, a) => s + (Number(row.notas[a.ava_id]?.valor) || 0), 0));
+    const base = roundMeio(regs.reduce((s, a) => s + (Number(row.notas[a.ava_id]?.valor) || 0), 0));
     const baseConc = regs.length ? faixaDe(base) : null;
 
     let recConc: Conceito | null = null;
@@ -220,7 +220,7 @@ const valorFaixa = (row: AlunoRow): number | null => {
         if (isFutura(a)) continue;
         const v = row.notas[a.ava_id]?.valor;
         if (v !== null && v !== undefined) {
-            const valor = round05(Number(v));
+            const valor = roundMeio(Number(v));
             const c = faixaDe(valor);
             if (c && (!recConc || c.cnc_peso > recConc.cnc_peso)) { recConc = c; recVal = valor; }
         }
@@ -247,11 +247,14 @@ const salvarNota = async (row: AlunoRow, ava: Avaliacao) => {
         body.nta_cnc_id = row.notas[ava.ava_id]?.cnc_id || null;
     } else {
         const raw = row.notas[ava.ava_id]?.valor;
-        const valor = raw === null || (raw as any) === '' ? null : Number(raw);
-        if (valor !== null && (Number.isNaN(valor) || valor < 0 || valor > Number(ava.ava_valor))) {
+        const bruto = raw === null || (raw as any) === '' ? null : Number(raw);
+        if (bruto !== null && (Number.isNaN(bruto) || bruto < 0 || bruto > Number(ava.ava_valor))) {
             st.status = 'invalid';
             return;
         }
+        // Arredonda a nota ao 0,5 no próprio instrumento (1,2→1,0 · 1,3→1,5).
+        const valor = bruto === null ? null : roundMeio(bruto);
+        if (valor !== null) row.notas[ava.ava_id].valor = valor; // reflete na célula
         body.nta_valor = valor;
     }
 
@@ -278,8 +281,23 @@ const salvarNota = async (row: AlunoRow, ava: Avaliacao) => {
 
 const erroLinha = ref<string | null>(null);
 
-const aoDigitarNota = (row: AlunoRow, ava: Avaliacao) => {
+const aoDigitarNota = (row: AlunoRow, ava: Avaliacao, e?: Event) => {
     if (!periodoAberto.value || !turmaAberta.value || isFutura(ava) || row.bloqueado || semValor(ava)) return;
+    if (modo.value === 'faixa') {
+        // Não permite 2 casas decimais (corta a partir da 2ª) já na digitação.
+        const el = e?.target as HTMLInputElement | undefined;
+        if (el && /\.\d{2,}/.test(el.value)) {
+            el.value = el.value.replace(/^(-?\d*\.\d)\d+$/, '$1');
+            row.notas[ava.ava_id].valor = el.value === '' ? null : Number(el.value);
+        }
+        // Não deixa passar do valor máximo da avaliação (nem negativo).
+        const v = row.notas[ava.ava_id]?.valor;
+        if (v !== null && v !== undefined && (v as any) !== '' && !Number.isNaN(Number(v))) {
+            const max = Number(ava.ava_valor);
+            if (Number(v) > max) row.notas[ava.ava_id].valor = max;
+            else if (Number(v) < 0) row.notas[ava.ava_id].valor = 0;
+        }
+    }
     const key = ck(row.aln_id, ava.ava_id);
     const st = ensureCell(key);
     st.status = 'dirty';
@@ -365,6 +383,15 @@ const excluirAvaliacao = async (a: Avaliacao) => {
 const podeSalvarAval = computed(() =>
     !!form.iavId && !!form.dt && (modo.value !== 'faixa' || Number(form.valor) > 0) && !enviandoAval.value,
 );
+
+// Valor da avaliação: só 1 casa decimal (corta a 2ª na digitação).
+const limitarValor1Casa = (e: Event) => {
+    const el = e.target as HTMLInputElement;
+    if (/\.\d{2,}/.test(el.value)) {
+        el.value = el.value.replace(/^(-?\d*\.\d)\d+$/, '$1');
+        form.valor = el.value === '' ? '' : Number(el.value);
+    }
+};
 </script>
 
 <template>
@@ -460,11 +487,11 @@ const podeSalvarAval = computed(() =>
                                         <input
                                             v-if="modo === 'faixa'"
                                             v-model="row.notas[a.ava_id].valor"
-                                            type="number" step="0.01" min="0" :max="a.ava_valor ?? undefined"
+                                            type="number" step="0.1" min="0" :max="a.ava_valor ?? undefined"
                                             :disabled="!periodoAberto || !turmaAberta || isFutura(a) || row.bloqueado || semValor(a)"
                                             :title="!turmaAberta ? 'Turma não está aberta.' : (semValor(a) ? 'Defina o valor da avaliação antes de lançar notas.' : '')"
                                             :class="['h-8 w-16 rounded-md border bg-background px-1.5 text-center text-sm tabular-nums shadow-sm focus:outline-none focus:ring-1 focus:ring-fuchsia-500 disabled:opacity-60', statusDe(row.aln_id, a.ava_id) === 'invalid' || statusDe(row.aln_id, a.ava_id) === 'error' ? 'border-rose-400' : 'border-input']"
-                                            @input="aoDigitarNota(row, a)"
+                                            @input="aoDigitarNota(row, a, $event)"
                                             @blur="salvarNota(row, a)"
                                         />
                                         <!-- Modo conceito direto -->
@@ -487,7 +514,7 @@ const podeSalvarAval = computed(() =>
                                 </td>
                                 <td class="border-b border-l-2 border-fuchsia-200 bg-fuchsia-50/40 px-3 py-1.5 text-center dark:border-fuchsia-900 dark:bg-fuchsia-950/20">
                                     <template v-if="resultado(row)">
-                                        <div v-if="modo === 'faixa' && valorFaixa(row) !== null" class="text-sm font-bold tabular-nums text-slate-700 dark:text-slate-200">{{ valorFaixa(row)!.toFixed(2) }}</div>
+                                        <div v-if="modo === 'faixa' && valorFaixa(row) !== null" class="text-sm font-bold tabular-nums text-slate-700 dark:text-slate-200">{{ valorFaixa(row)!.toFixed(1) }}</div>
                                         <div class="font-bold text-fuchsia-700 dark:text-fuchsia-300">{{ resultado(row)!.cnc_sigla }}</div>
                                         <div class="text-[10px] text-muted-foreground">{{ resultado(row)!.cnc_descricao }}</div>
                                     </template>
@@ -534,7 +561,7 @@ const podeSalvarAval = computed(() =>
                         </div>
                         <div v-if="modo === 'faixa'">
                             <Label>Valor <span class="text-rose-600">*</span></Label>
-                            <Input v-model="form.valor" type="number" step="0.01" min="0.01" max="10" />
+                            <Input v-model="form.valor" type="number" step="0.1" min="0.1" max="10" @input="limitarValor1Casa" />
                             <p v-if="!recuperacaoSelecionada" class="mt-1 text-[11px] text-muted-foreground">Disponível p/ regulares: {{ valorDisponivel.toFixed(2) }}</p>
                         </div>
                     </div>

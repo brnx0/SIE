@@ -58,6 +58,69 @@ class CalculoNota
     }
 
     /**
+     * Médias CALCULADAS (sem aplicar o override manual) com flag de completude,
+     * para várias disciplinas/unidades de uma turma de uma só vez. Retorna apenas
+     * as células COMPLETAS (aluno com nota em todas as avaliações regulares).
+     *
+     * Usado pela tela de lançamento manual da secretaria para auto-preencher a
+     * média a partir das notas do diário. Queries constantes (não por célula).
+     *
+     * @param  array<int>  $disIds
+     * @param  array<int>  $uniIds
+     * @return array<int, array<int, array<int, array{media:?float, cnc_id:?int, tipo:?string, completo:bool}>>>  [disId][alnId][uniId]
+     */
+    public static function calculadoTurma(int $turId, array $disIds, array $uniIds): array
+    {
+        if (empty($disIds) || empty($uniIds)) {
+            return [];
+        }
+
+        $alunos = self::alunos($turId);
+        if (empty($alunos)) {
+            return [];
+        }
+
+        $avaliacoes = DiarioAvaliacao::query()
+            ->where('ava_tur_id', $turId)
+            ->whereIn('ava_dis_id', $disIds)
+            ->whereIn('ava_uni_id', $uniIds)
+            ->get(['ava_id', 'ava_dis_id', 'ava_uni_id', 'ava_tipo', 'ava_valor', 'ava_fl_recuperacao', 'ava_fl_migrada', 'ava_dt']);
+        if ($avaliacoes->isEmpty()) {
+            return [];
+        }
+
+        $conceitos = self::conceitos();
+        $notaMap   = self::notas($avaliacoes->pluck('ava_id')->all());
+        $hoje      = now()->startOfDay();
+        $futura    = fn ($a) => $a->ava_dt && Carbon::parse($a->ava_dt)->startOfDay()->gt($hoje);
+
+        // Modo do conceito por unidade (normalmente o mesmo ano, mas resolve por uni).
+        $modoPorUni = [];
+        foreach (array_unique($uniIds) as $u) {
+            $modoPorUni[$u] = self::conceitoModo((int) $u);
+        }
+
+        $out = [];
+        foreach ($avaliacoes->groupBy(fn ($a) => $a->ava_dis_id.'|'.$a->ava_uni_id) as $chave => $avs) {
+            [$disId, $uniId] = array_map('intval', explode('|', (string) $chave));
+            $modo = $modoPorUni[$uniId] ?? 'faixa';
+            foreach ($alunos as $alnId) {
+                $r = self::resultadoAluno($avs, $notaMap, $alnId, $modo, $conceitos, $futura);
+                if (($r['completo'] ?? false) && ($r['valor'] !== null || ($r['conceito']['cnc_id'] ?? null) !== null)) {
+                    $out[$disId][$alnId][$uniId] = [
+                        'media'    => $r['valor'],
+                        'cnc_id'   => $r['conceito']['cnc_id'] ?? null,
+                        'tipo'     => $r['tipo'],
+                        'completo' => true,
+                    ];
+                }
+            }
+        }
+
+        return $out;
+    }
+
+    /**
      * Médias lançadas manualmente (secretaria) para (turma, disciplina, unidade).
      *
      * @return array<int, array{tipo:?string, valor:?float, conceito:?array}>
@@ -84,7 +147,7 @@ class CalculoNota
                 $out[$aln] = ['tipo' => 'conceitual', 'valor' => null, 'conceito' => self::conceitoArray(self::conceitoPorIdModel((int) $r->nmn_cnc_id, $conceitos))];
             } elseif ($r->nmn_media !== null && $r->nmn_tipo === 'conceitual') {
                 // Conceitual por faixa (valor numérico → conceito).
-                $v = self::round05((float) $r->nmn_media);
+                $v = self::roundMeio((float) $r->nmn_media);
                 $out[$aln] = ['tipo' => 'conceitual', 'valor' => $v, 'conceito' => self::faixaDe($v, $conceitos)];
             } elseif ($r->nmn_media !== null) {
                 // Numérica.
@@ -131,12 +194,13 @@ class CalculoNota
         }
 
         if ($tipo === 'conceitual') {
-            $media = self::round05(array_sum($valores) / count($valores));
+            $media = self::roundMeio(array_sum($valores) / count($valores));
 
             return ['tipo' => $tipo, 'valor' => $media, 'conceito' => self::faixaDe($media, self::conceitos())];
         }
 
-        $media = round(array_sum($valores) / count($valores), 2);
+        // Numérica: arredonda a média final ao 0,5 mais próximo.
+        $media = self::roundMeio(array_sum($valores) / count($valores));
 
         return ['tipo' => $tipo, 'valor' => $media, 'conceito' => null];
     }
@@ -155,7 +219,7 @@ class CalculoNota
             }
         }
         if ($tipo === null) {
-            return ['tipo' => null, 'valor' => null, 'conceito' => null];
+            return ['tipo' => null, 'valor' => null, 'conceito' => null, 'completo' => false];
         }
 
         // Fonte: notas lançadas na PRÓPRIA turma têm prioridade; se o aluno não tem
@@ -173,16 +237,35 @@ class CalculoNota
         $regulares   = $fonte->where('ava_fl_recuperacao', false)->reject($futura);
         $recuperacao = $fonte->where('ava_fl_recuperacao', true)->reject($futura);
 
+        // Completo = aluno tem nota em TODAS as avaliações regulares não-futuras.
+        // (Recuperação é opcional, não conta.) Usado para auto-preencher a média
+        // na tela de lançamento manual da secretaria.
+        $completo = $regulares->isNotEmpty() && $regulares->every(function ($a) use ($notaMap, $alnId) {
+            $n = $notaMap[$a->ava_id][$alnId] ?? null;
+
+            return $n && ($n['valor'] !== null || $n['cnc_id'] !== null);
+        });
+
         if ($tipo === DiarioAvaliacao::TIPO_NUMERICA) {
             if ($regulares->isEmpty()) {
-                return ['tipo' => $tipo, 'valor' => null, 'conceito' => null];
+                return ['tipo' => $tipo, 'valor' => null, 'conceito' => null, 'completo' => false];
             }
             $soma = 0.0;
             foreach ($regulares as $a) {
                 $soma += (float) ($notaMap[$a->ava_id][$alnId]['valor'] ?? 0);
             }
-            // Numérica: soma das notas regulares, sem arredondamento (2 casas).
-            return ['tipo' => $tipo, 'valor' => round($soma, 2), 'conceito' => null];
+            // Recuperação: usa a nota da recuperação se for MAIOR que a média anterior.
+            $recNota = null;
+            foreach ($recuperacao as $a) {
+                $v = $notaMap[$a->ava_id][$alnId]['valor'] ?? null;
+                if ($v !== null && ($recNota === null || (float) $v > $recNota)) {
+                    $recNota = (float) $v;
+                }
+            }
+            $total = ($recNota !== null && $recNota > $soma) ? $recNota : $soma;
+
+            // Numérica: média final arredondada ao 0,5.
+            return ['tipo' => $tipo, 'valor' => self::roundMeio($total), 'conceito' => null, 'completo' => $completo];
         }
 
         // conceitual
@@ -200,7 +283,7 @@ class CalculoNota
             $valor    = $rec['valor'];
         }
 
-        return ['tipo' => $tipo, 'valor' => $valor, 'conceito' => $conceito];
+        return ['tipo' => $tipo, 'valor' => $valor, 'conceito' => $conceito, 'completo' => $completo];
     }
 
     private static function baseFaixa($regulares, array $notaMap, int $alnId, $conceitos): array
@@ -212,7 +295,7 @@ class CalculoNota
         foreach ($regulares as $a) {
             $soma += (float) ($notaMap[$a->ava_id][$alnId]['valor'] ?? 0);
         }
-        $soma = self::round05($soma);
+        $soma = self::roundMeio($soma);
 
         return ['valor' => $soma, 'conceito' => self::faixaDe($soma, $conceitos)];
     }
@@ -254,7 +337,7 @@ class CalculoNota
             if ($modo === 'faixa') {
                 $v = $notaMap[$a->ava_id][$alnId]['valor'] ?? null;
                 if ($v !== null) {
-                    $valor = self::round05((float) $v);
+                    $valor = self::roundMeio((float) $v);
                     $conceito = self::faixaDe($valor, $conceitos);
                 }
             } else {
@@ -347,10 +430,10 @@ class CalculoNota
         return (int) ($conceitos->firstWhere('cnc_id', $id)?->cnc_peso ?? 0);
     }
 
-    /** Arredonda ao múltiplo de 0,05 mais próximo (média final termina em 0 ou 5). */
-    private static function round05(float $v): float
+    /** Arredonda ao múltiplo de 0,5 mais próximo (1 casa, termina em 0 ou 5). */
+    private static function roundMeio(float $v): float
     {
-        return round($v * 20) / 20;
+        return round($v * 2) / 2;
     }
 
     private static function conceitoArray($c): ?array
@@ -359,6 +442,6 @@ class CalculoNota
             return null;
         }
 
-        return ['sigla' => $c->cnc_sigla, 'descricao' => $c->cnc_descricao, 'peso' => (int) $c->cnc_peso];
+        return ['cnc_id' => (int) $c->cnc_id, 'sigla' => $c->cnc_sigla, 'descricao' => $c->cnc_descricao, 'peso' => (int) $c->cnc_peso];
     }
 }

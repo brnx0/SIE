@@ -109,6 +109,7 @@ const coordenadorMenu = computed<any[]>(() => {
     const children: { title: string; href: string }[] = [];
     if (isCoordenador.value) children.push({ title: 'Validação de Planos', href: '/coordenador/planos' });
     if (isCoordenadorInterno.value) children.push({ title: 'Validação de Planos AEE', href: '/coordenador-interno/planos-aee' });
+    if (isCoordenador.value) children.push({ title: 'Conteúdo Ministrado', href: '/secretaria/conteudo-ministrado' });
 
     return [{ title: 'Pedagógico', icon: ClipboardCheck, children }];
 });
@@ -129,7 +130,6 @@ const secretariaMenu = computed<any[]>(() => {
                 ],
             },
             { title: 'Motivo Baixa Frequência', href: '/secretaria/motivos-baixa-frequencia' },
-            { title: 'Relatórios', href: '/relatorios-secretaria' },
         ],
     }];
 });

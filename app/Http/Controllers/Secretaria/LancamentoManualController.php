@@ -8,6 +8,7 @@ use App\Models\Diario\NotaManual;
 use App\Models\Matricula\Matricula;
 use App\Models\Parametro\AnoLetivo;
 use App\Models\Parametro\Conceito;
+use App\Support\CalculoNota;
 use App\Support\UserAccess;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -110,10 +111,18 @@ class LancamentoManualController extends Controller
             ];
         }
 
+        // Médias calculadas do diário, por disciplina → [aln_id][uni_id] => { media, cnc_id, completo }.
+        // Só vêm as células COMPLETAS (aluno com nota em todas as avaliações regulares);
+        // o front auto-preenche a média quando não há override manual.
+        $uniIds  = $unidades->pluck('uni_id')->map(fn ($v) => (int) $v)->all();
+        $disIds  = $grade->pluck('dis_id')->map(fn ($v) => (int) $v)->unique()->values()->all();
+        $calcAll = CalculoNota::calculadoTurma($turId, $disIds, $uniIds);
+
         $disciplinas = $grade->map(fn ($d) => [
             'dis_id'   => (int) $d->dis_id,
             'dis_nome' => $d->dis_nome,
             'valores'  => $valByDis[(int) $d->dis_id] ?? (object) [],
+            'calc'     => $calcAll[(int) $d->dis_id] ?? (object) [],
         ])->values();
 
         return response()->json([
@@ -162,7 +171,8 @@ class LancamentoManualController extends Controller
             if (($data['media'] ?? null) !== null && (float) $data['media'] > 10) {
                 throw ValidationException::withMessages(['media' => 'A média não pode passar de 10.']);
             }
-            $media = ($data['media'] ?? null) !== null ? (float) $data['media'] : null;
+            // Média final arredondada ao 0,5 mais próximo (mesma regra do diário).
+            $media = ($data['media'] ?? null) !== null ? round(((float) $data['media']) * 2) / 2 : null;
         }
         $faltas = ($data['faltas'] ?? null) !== null ? (int) $data['faltas'] : null;
 

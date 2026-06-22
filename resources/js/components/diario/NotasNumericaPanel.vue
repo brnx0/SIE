@@ -133,9 +133,21 @@ const saiuAntes = (row: AlunoRow, a: Avaliacao) => !!row.dt_saida && (a.ava_dt?.
 const media = (row: AlunoRow): number | null => {
     const regs = regulares.value.filter((a) => !isFutura(a));
     if (regs.length === 0) return null;
-    // Média = SOMA das notas das avaliações regulares (não divide). Sem arredondamento.
-    const soma = regs.reduce((s, a) => s + (Number(row.notas[a.ava_id]) || 0), 0);
-    return Math.round(soma * 100) / 100;
+    // Média = SOMA das notas regulares.
+    const base = regs.reduce((s, a) => s + (Number(row.notas[a.ava_id]) || 0), 0);
+    // Recuperação: usa a nota da recuperação se for MAIOR que a média anterior.
+    let recNota: number | null = null;
+    for (const a of recuperacoes.value) {
+        if (isFutura(a)) continue;
+        const v = row.notas[a.ava_id];
+        if (v !== null && v !== undefined && !Number.isNaN(Number(v))) {
+            const n = Number(v);
+            if (recNota === null || n > recNota) recNota = n;
+        }
+    }
+    const total = recNota !== null && recNota > base ? recNota : base;
+    // Arredondamento ao 0,5 só na média final.
+    return Math.round(total * 2) / 2;
 };
 
 const filtrados = computed(() => {
@@ -183,6 +195,13 @@ const salvarNota = async (row: AlunoRow, ava: Avaliacao) => {
 
 const aoDigitarNota = (row: AlunoRow, ava: Avaliacao) => {
     if (!periodoAberto.value || !turmaAberta.value || isFutura(ava) || row.bloqueado || saiuAntes(row, ava)) return;
+    // Não deixa passar do valor máximo da avaliação (nem negativo).
+    const v = row.notas[ava.ava_id];
+    if (v !== null && (v as any) !== '' && !Number.isNaN(Number(v))) {
+        const max = Number(ava.ava_valor);
+        if (Number(v) > max) row.notas[ava.ava_id] = max;
+        else if (Number(v) < 0) row.notas[ava.ava_id] = 0;
+    }
     const key = ck(row.aln_id, ava.ava_id);
     const st = ensureCell(key);
     st.status = 'dirty';
@@ -273,6 +292,15 @@ const excluirAvaliacao = async (a: Avaliacao) => {
 const podeSalvarAval = computed(() =>
     !!form.iavId && !!form.dt && Number(form.valor) > 0 && !enviandoAval.value,
 );
+
+// Valor da avaliação: só 1 casa decimal (corta a 2ª na digitação).
+const limitarValor1Casa = (e: Event) => {
+    const el = e.target as HTMLInputElement;
+    if (/\.\d{2,}/.test(el.value)) {
+        el.value = el.value.replace(/^(-?\d*\.\d)\d+$/, '$1');
+        form.valor = el.value === '' ? '' : Number(el.value);
+    }
+};
 </script>
 
 <template>
@@ -419,7 +447,7 @@ const podeSalvarAval = computed(() =>
                         </tbody>
                     </table>
                     <p class="mt-2 text-xs text-muted-foreground">
-                        Média = soma das notas das avaliações regulares. Recuperação (âmbar) não entra na média.
+                        Média = soma das notas das avaliações regulares. Recuperação (âmbar) substitui a média se a nota dela for maior. Média final arredondada ao 0,5.
                     </p>
                 </div>
             </template>
@@ -454,7 +482,7 @@ const podeSalvarAval = computed(() =>
                         </div>
                         <div>
                             <Label>Valor <span class="text-rose-600">*</span></Label>
-                            <Input v-model="form.valor" type="number" step="0.01" min="0.01" max="10" />
+                            <Input v-model="form.valor" type="number" step="0.1" min="0.1" max="10" @input="limitarValor1Casa" />
                             <p v-if="!recuperacaoSelecionada" class="mt-1 text-[11px] text-muted-foreground">
                                 Disponível p/ regulares: {{ valorDisponivel.toFixed(2) }}
                             </p>

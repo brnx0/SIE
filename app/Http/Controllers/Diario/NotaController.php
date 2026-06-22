@@ -8,6 +8,7 @@ use App\Http\Requests\Diario\StoreAvaliacaoRequest;
 use App\Models\Diario\DiarioAvaliacao;
 use App\Models\Diario\DiarioNota;
 use App\Models\Diario\InstrumentoAvaliativo;
+use App\Models\Diario\NotaManual;
 use App\Models\Matricula\Matricula;
 use App\Models\Parametro\Conceito;
 use Illuminate\Http\JsonResponse;
@@ -212,6 +213,13 @@ class NotaController extends Controller
         DB::transaction(function () use ($avaliacao) {
             $avaliacao->notas()->delete();
             $avaliacao->delete();
+            // Avaliação (e suas notas) removida → médias manuais da secretaria
+            // ficam obsoletas para esse contexto: invalida overrides.
+            $this->invalidarMediaManual(
+                (int) $avaliacao->ava_tur_id,
+                (int) $avaliacao->ava_dis_id,
+                (int) $avaliacao->ava_uni_id,
+            );
         });
 
         return response()->json(['ok' => true]);
@@ -278,6 +286,15 @@ class NotaController extends Controller
                 'nta_aln_id' => $data['nta_aln_id'],
             ],
             $payload,
+        );
+
+        // Professor mudou a nota → a média manual da secretaria (se houver) fica
+        // obsoleta: invalida o override para voltar a usar a média calculada.
+        $this->invalidarMediaManual(
+            (int) $avaliacao->ava_tur_id,
+            (int) $avaliacao->ava_dis_id,
+            (int) $avaliacao->ava_uni_id,
+            (int) $data['nta_aln_id'],
         );
 
         return response()->json(['ok' => true, 'nta_id' => $registro->nta_id, 'updated_at' => $registro->nta_updated_at]);
@@ -464,6 +481,32 @@ class NotaController extends Controller
             throw ValidationException::withMessages([
                 'nta_valor' => "Aluno já possui notas como {$labels[$outro]} nesta matéria. Remova-as para lançar como {$labels[$tipo]}.",
             ]);
+        }
+    }
+
+    /**
+     * Invalida a média lançada manualmente pela secretaria quando o professor
+     * altera as notas do diário (decisão: a nota do professor prevalece). Zera
+     * apenas média/conceito e PRESERVA as faltas; se a linha ficar totalmente
+     * vazia, remove (soft delete — o índice único é parcial em deleted_at null).
+     * Sem $alnId, invalida todos os alunos do contexto (turma+disciplina+unidade).
+     */
+    private function invalidarMediaManual(int $turId, int $disId, int $uniId, ?int $alnId = null): void
+    {
+        $rows = NotaManual::query()
+            ->where('nmn_tur_id', $turId)
+            ->where('nmn_dis_id', $disId)
+            ->where('nmn_uni_id', $uniId)
+            ->where(fn ($q) => $q->whereNotNull('nmn_media')->orWhereNotNull('nmn_cnc_id'))
+            ->when($alnId !== null, fn ($q) => $q->where('nmn_aln_id', $alnId))
+            ->get();
+
+        foreach ($rows as $row) {
+            if ($row->nmn_faltas !== null) {
+                $row->update(['nmn_media' => null, 'nmn_cnc_id' => null]);
+            } else {
+                $row->delete();
+            }
         }
     }
 
