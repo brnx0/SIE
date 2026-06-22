@@ -29,6 +29,7 @@ const breadcrumbs = computed<BreadcrumbItem[]>(() => {
     if (props.grupo === 'escola') return [{ title: 'Relatórios Gerais', href: '/relatorios-escola' }];
     if (props.grupo === 'diario') return [{ title: 'Relatórios do Diário', href: '/relatorios-diario' }];
     if (props.grupo === 'secretaria') return [{ title: 'Relatórios da Secretaria', href: '/relatorios-secretaria' }];
+    if (props.grupo === 'pedagogico') return [{ title: 'Relatórios Pedagógicos', href: '/relatorios-pedagogico' }];
     return [{ title: 'Relatórios', href: '/relatorios' }];
 });
 

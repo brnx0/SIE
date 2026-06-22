@@ -76,6 +76,7 @@ const diarioMenu = computed<any[]>(() => [
         children: [
             ...(isProfessor.value ? [{ title: 'Diário de Classe', href: '/diario' }] : []),
             ...(isProfessorAee.value ? [{ title: 'Diário AEE', href: '/diario-aee' }] : []),
+            ...(isProfessor.value ? [{ title: 'Diário Atividade', href: '/diario-atividade' }] : []),
             ...(!apenasSecretaria.value
                 ? [
                       {
@@ -106,10 +107,10 @@ const relatoriosMenu = [
 const coordenadorMenu = computed<any[]>(() => {
     if (!isCoordenador.value && !isCoordenadorInterno.value) return [];
 
-    const children: { title: string; href: string }[] = [];
+    const children: any[] = [];
     if (isCoordenador.value) children.push({ title: 'Validação de Planos', href: '/coordenador/planos' });
     if (isCoordenadorInterno.value) children.push({ title: 'Validação de Planos AEE', href: '/coordenador-interno/planos-aee' });
-    if (isCoordenador.value) children.push({ title: 'Conteúdo Ministrado', href: '/secretaria/conteudo-ministrado' });
+    if (isCoordenador.value) children.push({ title: 'Relatórios', href: '/relatorios-pedagogico' });
 
     return [{ title: 'Pedagógico', icon: ClipboardCheck, children }];
 });

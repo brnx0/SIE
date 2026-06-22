@@ -6,6 +6,7 @@ use App\Http\Controllers\Relatorio\AlunosDeficienciaController;
 use App\Http\Controllers\Relatorio\AlunosTranstornoController;
 use App\Http\Controllers\Relatorio\AlunosPorTurmaRelatorioController;
 use App\Http\Controllers\Relatorio\DadosAlunosTurmaController;
+use App\Http\Controllers\Relatorio\DesempenhoAeeController;
 use App\Http\Controllers\Relatorio\RelacaoTurmasAeeController;
 use App\Http\Controllers\Relatorio\RelacaoTurmasAtividadeController;
 use App\Http\Controllers\Relatorio\FichaMatriculaController;
@@ -189,6 +190,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('relatorios-escola', [RelatorioCentralController::class, 'escola'])->name('relatorios.escola');
     Route::get('relatorios-diario', [RelatorioCentralController::class, 'diario'])->name('relatorios.diario');
     Route::get('relatorios-secretaria', [RelatorioCentralController::class, 'secretaria'])->name('relatorios.secretaria')->middleware('role:secretaria_escola');
+    Route::get('relatorios-pedagogico', [RelatorioCentralController::class, 'pedagogico'])->name('relatorios.pedagogico')->middleware('role:coordenador');
     Route::get('relatorios/parecer-descritivo', [ParecerDescritivoController::class, 'form'])->name('relatorios.parecer-descritivo.form');
     Route::get('relatorios/parecer-descritivo/unidades', [ParecerDescritivoController::class, 'unidades'])->name('relatorios.parecer-descritivo.unidades');
     Route::get('relatorios/parecer-descritivo/turmas', [ParecerDescritivoController::class, 'turmas'])->name('relatorios.parecer-descritivo.turmas');
@@ -226,6 +228,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('relatorios/dados-alunos-turma/gerar', [DadosAlunosTurmaController::class, 'gerar'])->name('relatorios.dados-alunos-turma.gerar');
     Route::get('relatorios/relacao-turmas-aee', [RelacaoTurmasAeeController::class, 'form'])->name('relatorios.relacao-turmas-aee.form');
     Route::get('relatorios/relacao-turmas-aee/gerar', [RelacaoTurmasAeeController::class, 'gerar'])->name('relatorios.relacao-turmas-aee.gerar');
+
+    Route::get('relatorios/desempenho-aee', [DesempenhoAeeController::class, 'form'])->name('relatorios.desempenho-aee.form');
+    Route::get('relatorios/desempenho-aee/turmas', [DesempenhoAeeController::class, 'turmas'])->name('relatorios.desempenho-aee.turmas');
+    Route::get('relatorios/desempenho-aee/gerar', [DesempenhoAeeController::class, 'gerar'])->name('relatorios.desempenho-aee.gerar');
     Route::get('relatorios/relacao-turmas-atividade', [RelacaoTurmasAtividadeController::class, 'form'])->name('relatorios.relacao-turmas-atividade.form');
     Route::get('relatorios/relacao-turmas-atividade/gerar', [RelacaoTurmasAtividadeController::class, 'gerar'])->name('relatorios.relacao-turmas-atividade.gerar');
     Route::get('relatorios/declaracao-matricula', [DeclaracaoMatriculaController::class, 'form'])->name('relatorios.declaracao-matricula.form');
@@ -390,11 +396,32 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('contexto/escolas', [\App\Http\Controllers\Diario\DiarioAeeController::class, 'lookupEscolas'])->name('contexto.escolas');
         Route::get('contexto/turmas', [\App\Http\Controllers\Diario\DiarioAeeController::class, 'lookupTurmas'])->name('contexto.turmas');
         Route::get('contexto/unidades', [\App\Http\Controllers\Diario\DiarioAeeController::class, 'lookupUnidades'])->name('contexto.unidades');
+        Route::get('contexto/atendimentos', [\App\Http\Controllers\Diario\DiarioAeeController::class, 'lookupAtendimentos'])->name('contexto.atendimentos');
 
         // Frequência AEE (chamada por dia de atendimento)
         Route::get('frequencia/contexto', [\App\Http\Controllers\Diario\AeeFrequenciaController::class, 'contexto'])->name('frequencia.contexto');
         Route::post('frequencia/salvar', [\App\Http\Controllers\Diario\AeeFrequenciaController::class, 'salvarPresenca'])->name('frequencia.salvar');
         Route::post('frequencia/lote', [\App\Http\Controllers\Diario\AeeFrequenciaController::class, 'salvarLote'])->name('frequencia.lote');
+
+        // Avaliações descritivas AEE (aluno + data + texto rico)
+        Route::get('avaliacoes/contexto', [\App\Http\Controllers\Diario\AeeAvaliacaoController::class, 'contexto'])->name('avaliacoes.contexto');
+        Route::post('avaliacoes/salvar', [\App\Http\Controllers\Diario\AeeAvaliacaoController::class, 'salvar'])->name('avaliacoes.salvar');
+        Route::delete('avaliacoes/{avaliacao}', [\App\Http\Controllers\Diario\AeeAvaliacaoController::class, 'destroy'])->name('avaliacoes.destroy');
+    });
+
+    // Diário de Atividade — admin + professor/monitor. Turmas de atividade do funcionário.
+    Route::prefix('diario-atividade')->name('diario-atividade.')->middleware('role:professor')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Diario\DiarioAtividadeController::class, 'index'])->name('index');
+    });
+    Route::prefix('api/diario-atividade')->name('api.diario-atividade.')->middleware('role:professor')->group(function () {
+        Route::get('contexto/escolas', [\App\Http\Controllers\Diario\DiarioAtividadeController::class, 'lookupEscolas'])->name('contexto.escolas');
+        Route::get('contexto/turmas', [\App\Http\Controllers\Diario\DiarioAtividadeController::class, 'lookupTurmas'])->name('contexto.turmas');
+        Route::get('contexto/unidades', [\App\Http\Controllers\Diario\DiarioAtividadeController::class, 'lookupUnidades'])->name('contexto.unidades');
+
+        // Frequência das turmas de atividade (chamada por dia de atendimento)
+        Route::get('frequencia/contexto', [\App\Http\Controllers\Diario\AtividadeFrequenciaController::class, 'contexto'])->name('frequencia.contexto');
+        Route::post('frequencia/salvar', [\App\Http\Controllers\Diario\AtividadeFrequenciaController::class, 'salvarPresenca'])->name('frequencia.salvar');
+        Route::post('frequencia/lote', [\App\Http\Controllers\Diario\AtividadeFrequenciaController::class, 'salvarLote'])->name('frequencia.lote');
     });
 
     // Coordenador Pedagógico — Validação de Planos

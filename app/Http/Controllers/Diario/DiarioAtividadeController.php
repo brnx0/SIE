@@ -12,18 +12,18 @@ use Inertia\Inertia;
 use Inertia\Response;
 
 /**
- * Diário AEE — seletor de contexto (escola/turma AEE) do professor de AEE.
- * Visível para administrador e professor AEE. Turmas AEE (tur_modalidade='AEE',
- * sem disciplina) vinculadas ao professor via edu_turma_professor (tup_dis_id NULL).
- * Admin vê todas as escolas/turmas AEE.
+ * Diário de Atividade — seletor de contexto (escola/turma) das turmas de ATIVIDADE.
+ * Visível para administrador e professor (monitores usam a role professor).
+ * Turmas ATIVIDADE (tur_modalidade='ATIVIDADE', sem disciplina) vinculadas ao
+ * funcionário via edu_turma_professor (tup_dis_id NULL). Admin vê todas.
  */
-class DiarioAeeController extends Controller
+class DiarioAtividadeController extends Controller
 {
     public function index(Request $request): Response
     {
-        $this->abortIfNotProfessorAee();
+        $this->abortIfNotProfessor();
 
-        return Inertia::render('diario-aee/Index', [
+        return Inertia::render('diario-atividade/Index', [
             'professor'   => $this->resumoProfessor($request->user()),
             'anosLetivos' => $this->anosLetivosAtivos(),
         ]);
@@ -33,7 +33,7 @@ class DiarioAeeController extends Controller
 
     public function lookupEscolas(Request $request): JsonResponse
     {
-        $this->abortIfNotProfessorAee();
+        $this->abortIfNotProfessor();
 
         $user  = $request->user();
         $funId = (int) $user->fun_id;
@@ -44,7 +44,7 @@ class DiarioAeeController extends Controller
                 DB::table('edu_turma as t')
                     ->join('edu_escola as e', 'e.esc_id', '=', 't.tur_esc_id')
                     ->whereNull('t.tur_deleted_at')
-                    ->where('t.tur_modalidade', 'AEE')
+                    ->where('t.tur_modalidade', 'ATIVIDADE')
                     ->when($anlId, fn ($q) => $q->where('t.tur_anl_id', $anlId))
                     ->select('e.esc_id', 'e.esc_nome')
                     ->distinct()
@@ -61,7 +61,7 @@ class DiarioAeeController extends Controller
                 ->whereNull('tp.tup_dis_id')
                 ->whereNull('tp.tup_deleted_at')
                 ->whereNull('t.tur_deleted_at')
-                ->where('t.tur_modalidade', 'AEE')
+                ->where('t.tur_modalidade', 'ATIVIDADE')
                 ->when($anlId, fn ($q) => $q->where('t.tur_anl_id', $anlId))
                 ->select('e.esc_id', 'e.esc_nome')
                 ->distinct()
@@ -72,7 +72,7 @@ class DiarioAeeController extends Controller
 
     public function lookupTurmas(Request $request): JsonResponse
     {
-        $this->abortIfNotProfessorAee();
+        $this->abortIfNotProfessor();
 
         $user  = $request->user();
         $funId = (int) $user->fun_id;
@@ -90,7 +90,7 @@ class DiarioAeeController extends Controller
         $turmas = $base
             ->join('edu_escola as e', 'e.esc_id', '=', 't.tur_esc_id')
             ->whereNull('t.tur_deleted_at')
-            ->where('t.tur_modalidade', 'AEE')
+            ->where('t.tur_modalidade', 'ATIVIDADE')
             ->when($anlId, fn ($q) => $q->where('t.tur_anl_id', $anlId))
             ->when($escId, fn ($q) => $q->where('t.tur_esc_id', $escId))
             ->select(
@@ -115,7 +115,7 @@ class DiarioAeeController extends Controller
 
     public function lookupUnidades(Request $request): JsonResponse
     {
-        $this->abortIfNotProfessorAee();
+        $this->abortIfNotProfessor();
 
         $anlId = (int) $request->input('anl_id');
         if (! $anlId) {
@@ -130,35 +130,16 @@ class DiarioAeeController extends Controller
         );
     }
 
-    /** Atendimentos ofertados pela turma AEE (somente leitura no diário). */
-    public function lookupAtendimentos(Request $request): JsonResponse
-    {
-        $this->abortIfNotProfessorAee();
-
-        $turId = (int) $request->input('tur_id');
-        if (! $turId) {
-            return response()->json([]);
-        }
-
-        return response()->json(
-            DB::table('edu_turma_atendimento_aee as tat')
-                ->join('cfg_atendimento_aee as a', 'a.ate_id', '=', 'tat.tat_ate_id')
-                ->where('tat.tat_tur_id', $turId)
-                ->orderBy('a.ate_descricao')
-                ->get(['tat.tat_id', 'a.ate_id', 'a.ate_descricao'])
-        );
-    }
-
     // ============ Helpers ============
 
-    private function abortIfNotProfessorAee(): void
+    private function abortIfNotProfessor(): void
     {
         $user = request()->user();
         abort_unless($user, 403, 'Acesso restrito.');
         if ($user->isAdmin()) {
             return;
         }
-        abort_unless($user->hasRole('professor_aee'), 403, 'Acesso restrito ao professor AEE.');
+        abort_unless($user->hasRole('professor'), 403, 'Acesso restrito ao professor/monitor.');
     }
 
     private function resumoProfessor($user): array
@@ -174,7 +155,6 @@ class DiarioAeeController extends Controller
         ];
     }
 
-    /** Anos letivos em exercício (atual). Se houver mais de um ativo, todos aparecem. */
     private function anosLetivosAtivos(): array
     {
         return AnoLetivo::query()

@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import AeeFrequenciaPanel from '@/components/diario/AeeFrequenciaPanel.vue';
-import AeeAtendimentosPanel from '@/components/diario/AeeAtendimentosPanel.vue';
-import AeeAvaliacoesPanel from '@/components/diario/AeeAvaliacoesPanel.vue';
+import AtividadeFrequenciaPanel from '@/components/diario/AtividadeFrequenciaPanel.vue';
 import LocalCombobox from '@/components/common/LocalCombobox.vue';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -9,10 +7,10 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import type { AnoLetivoResumo, PlanoUnidade, ProfessorResumoDiario } from '@/types/diario';
 import { Head } from '@inertiajs/vue3';
-import { Accessibility, CalendarCheck, CalendarDays, ClipboardList, HandHeart, Pencil } from 'lucide-vue-next';
+import { Activity, CalendarCheck, CalendarDays, Pencil } from 'lucide-vue-next';
 import { computed, onMounted, ref, watch } from 'vue';
 
-interface TurmaAee {
+interface TurmaAtividade {
     tur_id: number;
     tur_nome: string;
     tur_esc_id: number;
@@ -32,7 +30,7 @@ const props = defineProps<{
     anosLetivos: AnoLetivoResumo[];
 }>();
 
-const breadcrumbs: BreadcrumbItem[] = [{ title: 'Diário AEE', href: '/diario-aee' }];
+const breadcrumbs: BreadcrumbItem[] = [{ title: 'Diário Atividade', href: '/diario-atividade' }];
 
 const anlId = ref<number | null>(null);
 const escId = ref<number | null>(null);
@@ -40,10 +38,9 @@ const turId = ref<number | null>(null);
 const uniId = ref<number | null>(null);
 
 const escolas = ref<{ esc_id: number; esc_nome: string }[]>([]);
-const turmas = ref<TurmaAee[]>([]);
+const turmas = ref<TurmaAtividade[]>([]);
 const unidades = ref<PlanoUnidade[]>([]);
 
-// Ano: trava se 1; senão o em exercício (atual).
 const anlInicial = computed<number | null>(() => {
     if (props.anosLetivos.length === 1) return props.anosLetivos[0].anl_id;
     const exer = props.anosLetivos.find((a) => a.anl_fl_em_exercicio);
@@ -52,14 +49,14 @@ const anlInicial = computed<number | null>(() => {
 
 const fetchEscolas = async () => {
     if (!anlId.value) { escolas.value = []; return; }
-    const url = new URL('/api/diario-aee/contexto/escolas', window.location.origin);
+    const url = new URL('/api/diario-atividade/contexto/escolas', window.location.origin);
     url.searchParams.set('anl_id', String(anlId.value));
     const r = await fetch(url, { headers: { Accept: 'application/json' } });
     if (r.ok) escolas.value = await r.json();
 };
 const fetchTurmas = async () => {
     if (!anlId.value || !escId.value) { turmas.value = []; return; }
-    const url = new URL('/api/diario-aee/contexto/turmas', window.location.origin);
+    const url = new URL('/api/diario-atividade/contexto/turmas', window.location.origin);
     url.searchParams.set('anl_id', String(anlId.value));
     url.searchParams.set('esc_id', String(escId.value));
     const r = await fetch(url, { headers: { Accept: 'application/json' } });
@@ -67,7 +64,7 @@ const fetchTurmas = async () => {
 };
 const fetchUnidades = async () => {
     if (!anlId.value) { unidades.value = []; uniId.value = null; return; }
-    const url = new URL('/api/diario-aee/contexto/unidades', window.location.origin);
+    const url = new URL('/api/diario-atividade/contexto/unidades', window.location.origin);
     url.searchParams.set('anl_id', String(anlId.value));
     const r = await fetch(url, { headers: { Accept: 'application/json' } });
     unidades.value = r.ok ? await r.json() : [];
@@ -128,7 +125,6 @@ onMounted(() => { anlId.value = anlInicial.value; });
 
 const semVinculo = computed(() => props.anosLetivos.length === 0);
 
-// Turma AEE selecionada + seus dias/horário de atendimento.
 const turmaSel = computed(() => turmas.value.find((t) => t.tur_id === turId.value) ?? null);
 const diasAtendimento = computed(() => {
     const dias = turmaSel.value?.tur_dias_funcionamento ?? [];
@@ -140,34 +136,17 @@ const horarioAtendimento = computed(() => {
     return `${t?.tur_hora_inicio ?? '—'} às ${t?.tur_hora_fim ?? '—'}`;
 });
 
-// Módulos do diário AEE (carregam sob demanda). Frequência exige turma + período.
 const moduloAtivo = ref<string | null>(null);
 const recarregarSeq = ref(0);
 const podeFrequencia = computed(() => !!(turId.value && uniId.value));
-const podeAtendimentos = computed(() => !!turId.value);
-const podeAvaliacoes = computed(() => !!(turId.value && uniId.value));
 const selecionarFrequencia = () => {
     if (!podeFrequencia.value) return;
     if (moduloAtivo.value === 'frequencia') recarregarSeq.value++;
     else moduloAtivo.value = 'frequencia';
 };
-const selecionarAtendimentos = () => {
-    if (!podeAtendimentos.value) return;
-    moduloAtivo.value = 'atendimentos';
-};
-const selecionarAvaliacoes = () => {
-    if (!podeAvaliacoes.value) return;
-    moduloAtivo.value = 'avaliacoes';
-};
-// Trocar contexto descarta o módulo aberto.
 watch(() => [anlId.value, escId.value, turId.value, uniId.value], () => { moduloAtivo.value = null; });
 
-// Ao abrir um painel, recolhe o contexto (barra compacta) e destaca a funcionalidade.
-const painelVisivel = computed(() =>
-    (moduloAtivo.value === 'frequencia' && podeFrequencia.value)
-    || (moduloAtivo.value === 'atendimentos' && podeAtendimentos.value)
-    || (moduloAtivo.value === 'avaliacoes' && podeAvaliacoes.value),
-);
+const painelVisivel = computed(() => moduloAtivo.value === 'frequencia' && podeFrequencia.value);
 const contextoExpandido = ref(true);
 watch(painelVisivel, (v) => { if (v) contextoExpandido.value = false; });
 const contextoChips = computed(() => {
@@ -181,15 +160,15 @@ const contextoChips = computed(() => {
 </script>
 
 <template>
-    <Head title="Diário AEE" />
+    <Head title="Diário Atividade" />
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="mx-auto flex w-[95%] flex-col gap-4 p-4 md:p-6">
             <div class="flex flex-wrap items-center justify-between gap-3">
                 <div>
                     <h1 class="flex items-center gap-2 text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
-                        <Accessibility class="size-6 text-indigo-600" /> Diário AEE
+                        <Activity class="size-6 text-indigo-600" /> Diário de Atividade
                     </h1>
-                    <p class="mt-1 text-sm text-muted-foreground">Selecione a escola e a turma de AEE para os lançamentos.</p>
+                    <p class="mt-1 text-sm text-muted-foreground">Selecione a escola e a turma de atividade para os lançamentos.</p>
                 </div>
             </div>
 
@@ -197,7 +176,7 @@ const contextoChips = computed(() => {
                 Nenhum ano letivo em exercício. Procure a administração.
             </div>
 
-            <!-- Barra de contexto compacta (quando recolhido) -->
+            <!-- Barra de contexto compacta -->
             <section v-if="!semVinculo && turId && !contextoExpandido" class="flex flex-wrap items-center gap-2 rounded-xl border bg-card px-4 py-2.5 shadow-sm">
                 <span class="text-sm font-semibold text-slate-700 dark:text-slate-200">{{ professor.fun_nome }}</span>
                 <span class="text-muted-foreground/40">·</span>
@@ -220,7 +199,7 @@ const contextoChips = computed(() => {
                 </div>
                 <div class="grid grid-cols-1 gap-4 md:grid-cols-12">
                     <div class="md:col-span-12">
-                        <Label>Professor</Label>
+                        <Label>Professor / Monitor</Label>
                         <Input :model-value="professor.fun_nome" readonly />
                     </div>
                     <div class="md:col-span-2">
@@ -234,7 +213,7 @@ const contextoChips = computed(() => {
                         <LocalCombobox v-else v-model="escId" :items="itemsEscola" placeholder="Selecione a escola..." />
                     </div>
                     <div class="md:col-span-2">
-                        <Label>Turma AEE</Label>
+                        <Label>Turma</Label>
                         <Input v-if="turTravada" :model-value="labelDe(itemsTurma, turId)" readonly />
                         <LocalCombobox v-else v-model="turId" :items="itemsTurma" placeholder="Turma..." />
                     </div>
@@ -246,7 +225,7 @@ const contextoChips = computed(() => {
                 </div>
             </section>
 
-            <!-- Dias de atendimento da turma selecionada -->
+            <!-- Dias de atendimento (read-only) + módulos -->
             <section v-if="!semVinculo && turId" class="space-y-4">
                 <div v-if="contextoExpandido" class="rounded-xl border bg-card p-4 shadow-sm">
                     <h2 class="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-200">
@@ -262,11 +241,10 @@ const contextoChips = computed(() => {
                     <p v-else class="text-sm text-muted-foreground">Nenhum dia de atendimento definido para esta turma.</p>
                     <div v-if="horarioAtendimento || turmaSel?.tur_aee_sala" class="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-sm text-muted-foreground">
                         <span v-if="horarioAtendimento"><span class="font-medium text-foreground">Horário:</span> {{ horarioAtendimento }}</span>
-                        <span v-if="turmaSel?.tur_aee_sala"><span class="font-medium text-foreground">Sala:</span> {{ turmaSel.tur_aee_sala }}</span>
+                        <span v-if="turmaSel?.tur_aee_sala"><span class="font-medium text-foreground">Local:</span> {{ turmaSel.tur_aee_sala }}</span>
                     </div>
                 </div>
 
-                <!-- Módulos -->
                 <div class="rounded-xl border bg-card p-4 shadow-sm">
                     <h2 class="mb-2 text-sm font-semibold text-muted-foreground">Lançamentos</h2>
                     <div class="flex flex-wrap gap-2">
@@ -286,58 +264,12 @@ const contextoChips = computed(() => {
                         >
                             <CalendarCheck class="size-4" /> Frequência
                         </button>
-                        <button
-                            type="button"
-                            :disabled="!podeAtendimentos"
-                            :class="[
-                                'flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition',
-                                moduloAtivo === 'atendimentos'
-                                    ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300'
-                                    : podeAtendimentos
-                                        ? 'border-input text-foreground hover:border-indigo-300 hover:bg-muted/50'
-                                        : 'cursor-not-allowed border-dashed border-input text-muted-foreground/50',
-                            ]"
-                            @click="selecionarAtendimentos"
-                        >
-                            <HandHeart class="size-4" /> Atendimentos
-                        </button>
-                        <button
-                            type="button"
-                            :disabled="!podeAvaliacoes"
-                            :title="!podeAvaliacoes ? 'Selecione o período.' : ''"
-                            :class="[
-                                'flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition',
-                                moduloAtivo === 'avaliacoes'
-                                    ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300'
-                                    : podeAvaliacoes
-                                        ? 'border-input text-foreground hover:border-indigo-300 hover:bg-muted/50'
-                                        : 'cursor-not-allowed border-dashed border-input text-muted-foreground/50',
-                            ]"
-                            @click="selecionarAvaliacoes"
-                        >
-                            <ClipboardList class="size-4" /> Avaliações
-                        </button>
                     </div>
                 </div>
 
-                <AeeFrequenciaPanel
+                <AtividadeFrequenciaPanel
                     v-if="moduloAtivo === 'frequencia' && podeFrequencia"
-                    :key="`afr-${turId}-${uniId}-${recarregarSeq}`"
-                    :anl-id="anlId!"
-                    :esc-id="escId!"
-                    :tur-id="turId!"
-                    :uni-id="uniId!"
-                />
-
-                <AeeAtendimentosPanel
-                    v-if="moduloAtivo === 'atendimentos' && podeAtendimentos"
-                    :key="`ate-${turId}`"
-                    :tur-id="turId!"
-                />
-
-                <AeeAvaliacoesPanel
-                    v-if="moduloAtivo === 'avaliacoes' && podeAvaliacoes"
-                    :key="`dav-${turId}-${uniId}`"
+                    :key="`atf-${turId}-${uniId}-${recarregarSeq}`"
                     :anl-id="anlId!"
                     :esc-id="escId!"
                     :tur-id="turId!"
@@ -345,7 +277,7 @@ const contextoChips = computed(() => {
                 />
             </section>
             <section v-else-if="!semVinculo" class="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed bg-card/50 p-10 text-center">
-                <Accessibility class="size-8 text-muted-foreground" />
+                <Activity class="size-8 text-muted-foreground" />
                 <p class="text-sm text-muted-foreground">Selecione escola e turma para começar.</p>
             </section>
         </div>

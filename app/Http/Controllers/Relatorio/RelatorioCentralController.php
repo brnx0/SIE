@@ -48,6 +48,16 @@ class RelatorioCentralController extends Controller
         ]);
     }
 
+    public function pedagogico(): Response
+    {
+        return Inertia::render('relatorios/Index', [
+            'relatorios' => $this->filtrar('pedagogico'),
+            'titulo'     => 'Relatórios Pedagógicos',
+            'subtitulo'  => 'Relatórios do acompanhamento pedagógico.',
+            'grupo'      => 'pedagogico',
+        ]);
+    }
+
     private function filtrar(string $grupo): array
     {
         return array_values(array_filter(

@@ -42,6 +42,15 @@ return [
         'icone'     => 'BookOpenText',
     ],
     [
+        'slug'      => 'conteudo-ministrado-pedagogico',
+        'titulo'    => 'Conteúdo Ministrado',
+        'descricao' => 'Por disciplina, lista os dias com aula registrada, planejamento executado e o conteúdo/metodologia do dia.',
+        'categoria' => 'Diário',
+        'grupo'     => 'pedagogico',
+        'icone'     => 'BookOpenText',
+        'href'      => '/secretaria/conteudo-ministrado',
+    ],
+    [
         'slug'      => 'alunos-por-turma',
         'titulo'    => 'Alunos por Turma',
         'descricao' => 'Lista nominal com dados pessoais, situação e contato dos alunos por turma.',
@@ -120,6 +129,14 @@ return [
         'categoria' => 'Turma',
         'grupo'     => 'escola',
         'icone'     => 'Users',
+    ],
+    [
+        'slug'      => 'desempenho-aee',
+        'titulo'    => 'Desempenho AEE',
+        'descricao' => 'Alunos das turmas AEE com suas avaliações descritivas registradas e a situação na turma.',
+        'categoria' => 'Turma',
+        'grupo'     => 'diario',
+        'icone'     => 'Accessibility',
     ],
     [
         'slug'      => 'relacao-turmas-atividade',
