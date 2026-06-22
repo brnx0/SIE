@@ -222,20 +222,10 @@ class CalculoNota
             return ['tipo' => null, 'valor' => null, 'conceito' => null, 'completo' => false];
         }
 
-        // Fonte: notas lançadas na PRÓPRIA turma têm prioridade; se o aluno não tem
-        // nota regular aqui (ex.: recém-migrado), exibe a partir das MIGRADAS (consulta).
-        // Nunca soma as duas.
-        $naoMigrada = $avaliacoes->where('ava_tipo', $tipo)->where('ava_fl_migrada', false);
-        $migrada    = $avaliacoes->where('ava_tipo', $tipo)->where('ava_fl_migrada', true);
-
-        $temNotaPropria = $naoMigrada->where('ava_fl_recuperacao', false)->reject($futura)
-            ->contains(fn ($a) => (($notaMap[$a->ava_id][$alnId]['valor'] ?? null) !== null)
-                || (($notaMap[$a->ava_id][$alnId]['cnc_id'] ?? null) !== null));
-
-        $fonte = $temNotaPropria ? $naoMigrada : ($migrada->isNotEmpty() ? $migrada : $naoMigrada);
-
-        $regulares   = $fonte->where('ava_fl_recuperacao', false)->reject($futura);
-        $recuperacao = $fonte->where('ava_fl_recuperacao', true)->reject($futura);
+        // Migradas (trazidas de outra turma) contam normalmente na média e são editáveis.
+        $doTipo      = $avaliacoes->where('ava_tipo', $tipo);
+        $regulares   = $doTipo->where('ava_fl_recuperacao', false)->reject($futura);
+        $recuperacao = $doTipo->where('ava_fl_recuperacao', true)->reject($futura);
 
         // Completo = aluno tem nota em TODAS as avaliações regulares não-futuras.
         // (Recuperação é opcional, não conta.) Usado para auto-preencher a média

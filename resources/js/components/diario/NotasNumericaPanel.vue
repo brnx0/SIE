@@ -108,11 +108,10 @@ onMounted(carregar);
 watch(() => [props.turId, props.disId, props.uniId], carregar);
 
 // ── Colunas / agregados ──────────────────────────────────────────────────────
-// Migradas (histórico de outra turma) ficam fora do cálculo de soma e média.
-const regulares = computed(() => avaliacoes.value.filter((a) => !a.ava_fl_recuperacao && !a.ava_fl_migrada));
-const recuperacoes = computed(() => avaliacoes.value.filter((a) => a.ava_fl_recuperacao && !a.ava_fl_migrada));
-const migradas = computed(() => avaliacoes.value.filter((a) => a.ava_fl_migrada));
-const colunas = computed(() => [...regulares.value, ...recuperacoes.value, ...migradas.value]);
+// Migradas (trazidas de outra turma) contam na soma/média como avaliação normal; só têm destaque visual.
+const regulares = computed(() => avaliacoes.value.filter((a) => !a.ava_fl_recuperacao));
+const recuperacoes = computed(() => avaliacoes.value.filter((a) => a.ava_fl_recuperacao));
+const colunas = computed(() => [...regulares.value, ...recuperacoes.value]);
 const somaValores = computed(() => regulares.value.reduce((s, a) => s + Number(a.ava_valor), 0));
 const valorDisponivel = computed(() => Math.max(0, Math.round((10 - somaValores.value) * 100) / 100));
 
@@ -352,7 +351,7 @@ const limitarValor1Casa = (e: Event) => {
                 <!-- Aviso período -->
                 <div v-else-if="!periodoAberto" class="mb-3 flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
                     <TriangleAlert class="size-4 shrink-0" />
-                    Período de lançamento fechado para esta unidade. As notas ficam apenas para consulta.
+                    Esta unidade está fechada para lançamento (fora da janela + extensão) — apenas consulta. Se houver outra unidade em andamento, selecione-a acima para lançar nela.
                 </div>
 
                 <!-- Sem avaliações -->

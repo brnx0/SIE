@@ -381,7 +381,7 @@ function submit() {
                 <!-- Transferência de diário (só remanejamento) -->
                 <div v-if="isRemanejamento && exigeDestino" class="grid gap-2 rounded-lg border border-amber-200 bg-amber-50/40 p-4 dark:bg-amber-900/10">
                     <h3 class="text-sm font-semibold text-amber-900 dark:text-amber-200">Transferir diário para a turma de destino</h3>
-                    <p class="text-xs text-muted-foreground">O histórico continua na turma de origem e é levado como consulta para a turma nova (fora do cálculo da média).</p>
+                    <p class="text-xs text-muted-foreground">O histórico continua na turma de origem e é copiado para a turma nova, onde fica <strong>editável</strong> e <strong>entra no cálculo da média</strong> (com destaque de origem).</p>
                     <label class="flex items-center gap-2 text-sm">
                         <input type="checkbox" v-model="form.migrar_notas" class="size-4" />
                         Transferir notas

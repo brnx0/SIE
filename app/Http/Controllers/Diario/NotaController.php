@@ -409,7 +409,6 @@ class NotaController extends Controller
             ->where('ava_uni_id', $ctx['ava_uni_id'])
             ->where('ava_tipo', $ctx['ava_tipo'])
             ->where('ava_fl_recuperacao', false)
-            ->where('ava_fl_migrada', false)
             ->when($exceptId, fn ($q) => $q->where('ava_id', '!=', $exceptId))
             ->sum('ava_valor');
 

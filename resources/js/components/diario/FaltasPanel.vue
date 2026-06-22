@@ -449,7 +449,8 @@ const statusInfo = (aln: number): { label: string; cls: string } => {
             <template v-else>
                 <div v-if="!editavel" class="mb-4 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
                     <TriangleAlert class="mt-0.5 size-4 shrink-0" />
-                    <span>{{ !turmaAberta ? 'Turma não está aberta.' : 'Fora do período de lançamento.' }} Frequência em modo leitura.</span>
+                    <span v-if="!turmaAberta">Turma não está aberta. Frequência em modo leitura.</span>
+                    <span v-else>Esta unidade está fechada para lançamento (fora da janela + extensão) — apenas consulta. Se houver outra unidade em andamento, selecione-a acima para lançar nela.</span>
                 </div>
 
                 <div v-if="!temposDoDia.length" class="py-10 text-center text-sm text-muted-foreground">Sem aula sua neste dia.</div>

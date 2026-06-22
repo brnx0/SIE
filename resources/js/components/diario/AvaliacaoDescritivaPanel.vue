@@ -230,8 +230,8 @@ const avaliados = computed(() => alunos.value.filter((a) => a.descricao.trim().l
             >
                 <TriangleAlert class="mt-0.5 size-4 shrink-0" />
                 <span>
-                    Fora do período de lançamento. A edição só é permitida dentro do período selecionado (incluindo a
-                    extensão). Os campos estão em modo leitura.
+                    Este período está fechado para lançamento (fora da janela, incluindo a extensão) — apenas consulta.
+                    Se houver outro período em andamento, selecione-o acima para fazer os lançamentos nele.
                 </span>
             </div>
 
