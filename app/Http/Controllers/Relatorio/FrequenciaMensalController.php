@@ -117,8 +117,8 @@ class FrequenciaMensalController extends Controller
 
                 $freq = ($base && $base > 0) ? round(max(0, $base - $faltas) / $base * 100, 1) : null;
 
-                // Saída tem precedência (transferido/remanejado/evadido...); senão a entrada (matriculado).
-                $codSit = $m->tma_tas_cod_saida ?? $m->tma_tas_cod_entrada;
+                // Situação de enturmação = código de entrada do aluno na turma.
+                $codSit = $m->tma_tas_cod_entrada;
 
                 return [
                     'aln_id'           => $alnId,

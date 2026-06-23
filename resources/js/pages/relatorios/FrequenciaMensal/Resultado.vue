@@ -42,6 +42,7 @@ const imprimir = () => window.print();
 <template>
     <Head title="Resultado — Frequência Mensal" />
 
+    <Teleport to="body">
     <div id="print-area">
         <header class="cab">
             <div class="logo"><img v-if="parametros?.logomarca_url" :src="parametros.logomarca_url" alt="" /></div>
@@ -81,6 +82,7 @@ const imprimir = () => window.print();
         </table>
         <footer class="rodape"><span>SIE Matrícula</span><span>Emitido em {{ dataEmissao }}</span></footer>
     </div>
+    </Teleport>
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="mx-auto w-[95%] py-6 print:py-2">
