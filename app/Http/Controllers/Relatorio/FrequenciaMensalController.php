@@ -25,11 +25,6 @@ class FrequenciaMensalController extends Controller
         7 => 'Julho', 8 => 'Agosto', 9 => 'Setembro', 10 => 'Outubro', 11 => 'Novembro', 12 => 'Dezembro',
     ];
 
-    private const SITUACAO_LABEL = [
-        'ATIVA' => 'Ativa', 'CANCELADA' => 'Cancelada', 'TRANSFERIDA' => 'Transferida',
-        'FALECIDO' => 'Falecido', 'EVADIDO' => 'Evadido', 'SAIDA' => 'Saída',
-    ];
-
     public function form(): Response
     {
         $user = auth()->user();
@@ -86,6 +81,12 @@ class FrequenciaMensalController extends Controller
         $totalAulas   = count($aulIds);
         $diasLetivos  = $modo === 'dias' ? $this->diasLetivosMes((int) $ano->anl_id, (int) $turma->tur_seg_id, $mes) : null;
 
+        // Situação na turma (edu_turma_aluno_situacao): descrição de enturmação.
+        $situacoes = DB::table('edu_turma_aluno_situacao')
+            ->get(['tas_cod', 'tas_descricao', 'tas_descricao_enturmacao'])
+            ->mapWithKeys(fn ($s) => [(int) $s->tas_cod => $s->tas_descricao_enturmacao ?: $s->tas_descricao])
+            ->all();
+
         $alunos = Matricula::query()
             ->where('tma_tur_id', $turma->tur_id)
             ->where('tma_situacao', '!=', Matricula::SITUACAO_CANCELADA)
@@ -95,7 +96,7 @@ class FrequenciaMensalController extends Controller
             ->filter(fn ($m) => $m->aluno)
             ->sortBy(fn ($m) => $m->aluno->aln_nome, SORT_FLAG_CASE | SORT_NATURAL)
             ->values()
-            ->map(function (Matricula $m) use ($modo, $absent, $aulasPorDia, $totalAulas, $diasLetivos) {
+            ->map(function (Matricula $m) use ($modo, $absent, $aulasPorDia, $totalAulas, $diasLetivos, $situacoes) {
                 $alnId = (int) $m->aluno->aln_id;
                 $aus   = $absent[$alnId] ?? [];
 
@@ -116,6 +117,9 @@ class FrequenciaMensalController extends Controller
 
                 $freq = ($base && $base > 0) ? round(max(0, $base - $faltas) / $base * 100, 1) : null;
 
+                // Saída tem precedência (transferido/remanejado/evadido...); senão a entrada (matriculado).
+                $codSit = $m->tma_tas_cod_saida ?? $m->tma_tas_cod_entrada;
+
                 return [
                     'aln_id'           => $alnId,
                     'aln_nome'         => $m->aluno->aln_nome,
@@ -123,7 +127,7 @@ class FrequenciaMensalController extends Controller
                     'base'             => $base,
                     'faltas'           => $faltas,
                     'frequencia'       => $freq,
-                    'situacao'         => self::SITUACAO_LABEL[$m->tma_situacao] ?? $m->tma_situacao,
+                    'situacao'         => $codSit !== null ? ($situacoes[(int) $codSit] ?? '—') : '—',
                 ];
             });
 
