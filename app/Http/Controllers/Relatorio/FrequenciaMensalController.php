@@ -79,7 +79,7 @@ class FrequenciaMensalController extends Controller
             ->map(fn ($g) => $g->pluck('aul_id')->map(fn ($v) => (int) $v)->all());
 
         $totalAulas   = count($aulIds);
-        $diasLetivos  = $modo === 'dias' ? $this->diasLetivosMes((int) $ano->anl_id, (int) $turma->tur_seg_id, $mes) : null;
+        $diasLetivos  = $modo === 'dias' ? $this->diasLetivosMes((int) $ano->anl_id, $mes) : null;
 
         // Situação na turma (edu_turma_aluno_situacao): descrição de enturmação.
         $situacoes = DB::table('edu_turma_aluno_situacao')
@@ -157,12 +157,11 @@ class FrequenciaMensalController extends Controller
         return (str_contains($n, 'FUNDAMENTAL II') || str_contains($n, 'EJA')) ? 'dias' : 'aulas';
     }
 
-    /** Dias letivos cadastrados (parâmetro) p/ o ano+segmento no mês. */
-    private function diasLetivosMes(int $anlId, int $segId, int $mes): ?int
+    /** Dias letivos cadastrados (parâmetro) p/ o ano no mês — único para toda a rede. */
+    private function diasLetivosMes(int $anlId, int $mes): ?int
     {
         $raw = DB::table('cfg_dias_letivos')
             ->where('dlt_anl_id', $anlId)
-            ->where('dlt_seg_id', $segId)
             ->value('dlt_meses');
 
         if (! $raw) {

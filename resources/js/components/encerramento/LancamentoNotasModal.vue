@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Dialog, DialogScrollContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Loader2, Trash2, TriangleAlert } from 'lucide-vue-next';
+import { Loader2, Lock, Trash2, TriangleAlert } from 'lucide-vue-next';
 import { computed, onMounted, reactive, ref } from 'vue';
 
 const props = defineProps<{
@@ -11,7 +11,7 @@ const props = defineProps<{
 const emit = defineEmits<{ (e: 'update:open', v: boolean): void; (e: 'saved'): void }>();
 
 interface Unidade { uni_id: number; label: string }
-interface Conceito { cnc_id: number; cnc_sigla: string; cnc_descricao: string }
+interface Conceito { cnc_id: number; cnc_sigla: string; cnc_descricao: string; cnc_peso?: number; cnc_limite_inferior?: number | string; cnc_limite_superior?: number | string }
 interface Cel { media: number | null; cnc_id: number | null; faltas: number | null; tipo: string | null }
 interface CalcCel { media: number | null; cnc_id: number | null; tipo: string | null; completo: boolean }
 interface DisciplinaBloco {
@@ -55,6 +55,58 @@ const entrada = computed<'numerica' | 'faixa' | 'conceito' | null>(() => {
     if (tipoSel.value === 'numerica') return 'numerica';
     return conceitoModo.value === 'conceito' ? 'conceito' : 'faixa';
 });
+
+// ===== Média final do aluno na disciplina =====
+// Soma os períodos e divide pela quantidade de períodos. Só calcula com todos preenchidos.
+// Numérica/faixa → número (0,5 mais próximo); conceito (letra) → média dos pesos → letra.
+const roundMeio = (v: number) => Math.round(v * 2) / 2;
+const pesoConceito = (cncId: number | null): number | null => {
+    if (cncId == null) return null;
+    const c = conceitos.value.find((x) => x.cnc_id === cncId);
+    return c && c.cnc_peso != null ? Number(c.cnc_peso) : null;
+};
+const conceitoPorPeso = (peso: number): Conceito | null => {
+    if (!conceitos.value.length) return null;
+    return [...conceitos.value].sort(
+        (a, b) => Math.abs(Number(a.cnc_peso) - peso) - Math.abs(Number(b.cnc_peso) - peso),
+    )[0] ?? null;
+};
+// Faixa: número → conceito de maior limite inferior ≤ média (mesma regra do diário).
+const faixaSigla = (media: number): string | null => {
+    if (!conceitos.value.length) return null;
+    const ord = [...conceitos.value].sort((a, b) => Number(a.cnc_limite_inferior) - Number(b.cnc_limite_inferior));
+    let sel: Conceito | null = null;
+    for (const c of ord) if (Number(c.cnc_limite_inferior) <= media) sel = c;
+    return (sel ?? ord[0])?.cnc_sigla ?? null;
+};
+const mediaFinal = (dis: number): string | null => {
+    const us = unidades.value;
+    if (!us.length || !entrada.value) return null;
+
+    // Conceito direto: média dos pesos → letra.
+    if (entrada.value === 'conceito') {
+        const pesos: number[] = [];
+        for (const u of us) {
+            const p = pesoConceito(cels[ck(dis, u.uni_id)]?.cnc_id ?? null);
+            if (p == null) return null;
+            pesos.push(p);
+        }
+        const m = Math.round(pesos.reduce((s, v) => s + v, 0) / us.length);
+        return conceitoPorPeso(m)?.cnc_sigla ?? null;
+    }
+
+    // Numérica e conceitual-faixa: média numérica (0,5). Faixa exibe a letra; numérica, o número.
+    const notas: number[] = [];
+    for (const u of us) {
+        const raw = cels[ck(dis, u.uni_id)]?.media;
+        if (raw === null || raw === '' || raw === undefined) return null;
+        const n = Number(raw);
+        if (Number.isNaN(n)) return null;
+        notas.push(n);
+    }
+    const media = roundMeio(notas.reduce((s, v) => s + v, 0) / us.length);
+    return entrada.value === 'faixa' ? faixaSigla(media) : media.toFixed(1);
+};
 
 const csrf = (): Record<string, string> => {
     const m = document.cookie.match(/XSRF-TOKEN=([^;]+)/);
@@ -237,8 +289,9 @@ onMounted(carregar);
                         :class="['rounded-md px-3 py-1 text-xs font-medium disabled:cursor-not-allowed disabled:opacity-50', tipoSel === 'conceitual' ? 'bg-indigo-600 text-white' : 'border']"
                         @click="tipoSel = 'conceitual'"
                     >Conceitual</button>
-                    <span v-if="lancadoNumerica || lancadoConceitual" class="text-xs text-muted-foreground">
-                        Travado em {{ lancadoNumerica ? 'numérica' : 'conceitual' }} (há lançamentos). Use "Remover todos" para trocar.
+                    <span v-if="lancadoNumerica || lancadoConceitual" class="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-xs font-medium text-amber-800 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
+                        <Lock class="size-3.5" />
+                        Aluno tem notas {{ lancadoNumerica ? 'numéricas' : 'conceituais' }} lançadas — use "Remover todos" para trocar.
                     </span>
                 </div>
 
@@ -256,6 +309,7 @@ onMounted(carregar);
                                     {{ u.label }}
                                     <div class="mt-0.5 text-[10px] font-normal normal-case text-muted-foreground/70">nota · faltas</div>
                                 </th>
+                                <th class="sticky right-0 top-0 z-20 border-b border-l bg-indigo-600 px-3 py-3 text-center text-xs font-semibold uppercase text-white backdrop-blur">Média<br />Final</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -294,9 +348,13 @@ onMounted(carregar);
                                         <span v-else-if="cels[ck(d.dis_id, u.uni_id)]?.status === 'error'" class="text-[11px] text-rose-600">erro</span>
                                     </div>
                                 </td>
+                                <td class="sticky right-0 z-10 border-b border-l px-3 py-2.5 text-center text-sm font-semibold tabular-nums" :class="i % 2 ? 'bg-muted/40' : 'bg-card'">
+                                    <span v-if="mediaFinal(d.dis_id) !== null" class="text-indigo-700 dark:text-indigo-300">{{ mediaFinal(d.dis_id) }}</span>
+                                    <span v-else class="text-muted-foreground">—</span>
+                                </td>
                             </tr>
                             <tr v-if="!disciplinas.length">
-                                <td :colspan="unidades.length + 1" class="px-3 py-8 text-center text-muted-foreground">Sem disciplinas na grade.</td>
+                                <td :colspan="unidades.length + 2" class="px-3 py-8 text-center text-muted-foreground">Sem disciplinas na grade.</td>
                             </tr>
                         </tbody>
                     </table>

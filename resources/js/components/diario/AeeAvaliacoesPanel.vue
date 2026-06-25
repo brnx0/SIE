@@ -39,6 +39,12 @@ const podeEditar = computed(() => periodoAberto.value && turmaAberta.value);
 const alunoSel = computed(() => alunos.value.find((a) => a.aln_id === selectedAlnId.value) ?? null);
 const nomeAluno = (id: number) => alunos.value.find((a) => a.aln_id === id)?.aln_nome ?? '—';
 
+// CSRF via cookie XSRF-TOKEN (mesmo padrão dos painéis de frequência) — evita 419.
+const csrf = (): Record<string, string> => {
+    const m = document.cookie.match(/XSRF-TOKEN=([^;]+)/);
+    return m ? { 'X-XSRF-TOKEN': decodeURIComponent(m[1]) } : {};
+};
+
 const countPorAluno = computed(() => {
     const m = new Map<number, number>();
     for (const a of avaliacoes.value) m.set(a.aln_id, (m.get(a.aln_id) ?? 0) + 1);
@@ -126,10 +132,10 @@ const save = async () => {
 
     processing.value = true;
     try {
-        const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '';
         const r = await fetch('/api/diario-aee/avaliacoes/salvar', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-CSRF-TOKEN': token },
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json', ...csrf() },
+            credentials: 'same-origin',
             body: JSON.stringify({
                 dav_id: editingId.value,
                 tur_id: props.turId,
@@ -154,10 +160,10 @@ const save = async () => {
 
 const remove = async (a: Avaliacao) => {
     if (!confirm(`Remover a avaliação de ${nomeAluno(a.aln_id)} (${fmtBr(a.dt)})?`)) return;
-    const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '';
     const r = await fetch(`/api/diario-aee/avaliacoes/${a.dav_id}`, {
         method: 'DELETE',
-        headers: { Accept: 'application/json', 'X-CSRF-TOKEN': token },
+        headers: { Accept: 'application/json', ...csrf() },
+        credentials: 'same-origin',
     });
     if (r.ok) await fetchContexto();
 };

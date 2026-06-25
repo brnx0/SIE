@@ -5,14 +5,14 @@ import LocalCombobox from '@/components/common/LocalCombobox.vue';
 import { Button } from '@/components/ui/button';
 import type { BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
-import { ChevronDown, ClipboardList, Loader2, RefreshCw, Search, TriangleAlert } from 'lucide-vue-next';
+import { ChevronDown, ClipboardList, Loader2, Lock, RefreshCw, Search, TriangleAlert } from 'lucide-vue-next';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 
 interface AnoLetivo { anl_id: number; anl_ano: number }
 interface Escola { esc_id: number; esc_nome: string }
 interface Unidade { uni_id: number; label: string }
 interface Aluno { aln_id: number; aln_nome: string; aln_nr_matricula: string | null }
-interface Conceito { cnc_id: number; cnc_sigla: string; cnc_descricao: string }
+interface Conceito { cnc_id: number; cnc_sigla: string; cnc_descricao: string; cnc_peso?: number; cnc_limite_inferior?: number | string; cnc_limite_superior?: number | string }
 interface CalcCel { media: number | null; cnc_id: number | null; tipo: string | null; completo: boolean }
 interface DisciplinaBloco {
     dis_id: number;
@@ -198,6 +198,61 @@ const cel = (dis: number, aln: number, uni: number): CelVal => {
     return vals[key];
 };
 
+// ===== Média final do aluno na disciplina =====
+// Regra: soma os valores de todos os períodos e divide pela quantidade de períodos.
+// Só calcula quando TODOS os períodos têm valor. Numérica/faixa → número (0,5 mais próximo);
+// conceito (letra) → média dos pesos arredondada, exibida como a letra correspondente.
+const roundMeio = (v: number) => Math.round(v * 2) / 2;
+
+const pesoConceito = (cncId: number | null): number | null => {
+    if (cncId == null) return null;
+    const c = conceitos.value.find((x) => x.cnc_id === cncId);
+    return c && c.cnc_peso != null ? Number(c.cnc_peso) : null;
+};
+const conceitoPorPeso = (peso: number): Conceito | null => {
+    if (!conceitos.value.length) return null;
+    return [...conceitos.value].sort(
+        (a, b) => Math.abs(Number(a.cnc_peso) - peso) - Math.abs(Number(b.cnc_peso) - peso),
+    )[0] ?? null;
+};
+// Faixa: número → conceito de maior limite inferior ≤ média (mesma regra do diário).
+const faixaSigla = (media: number): string | null => {
+    if (!conceitos.value.length) return null;
+    const ord = [...conceitos.value].sort((a, b) => Number(a.cnc_limite_inferior) - Number(b.cnc_limite_inferior));
+    let sel: Conceito | null = null;
+    for (const c of ord) if (Number(c.cnc_limite_inferior) <= media) sel = c;
+    return (sel ?? ord[0])?.cnc_sigla ?? null;
+};
+
+const mediaFinal = (dis: number, aln: number): string | null => {
+    const us = unidades.value;
+    if (!us.length || !entrada.value) return null;
+
+    // Conceito direto: média dos pesos → letra.
+    if (entrada.value === 'conceito') {
+        const pesos: number[] = [];
+        for (const u of us) {
+            const p = pesoConceito(cel(dis, aln, u.uni_id).cnc_id);
+            if (p == null) return null;
+            pesos.push(p);
+        }
+        const m = Math.round(pesos.reduce((s, v) => s + v, 0) / us.length);
+        return conceitoPorPeso(m)?.cnc_sigla ?? null;
+    }
+
+    // Numérica e conceitual-faixa: média numérica (0,5). Faixa exibe a letra; numérica, o número.
+    const notas: number[] = [];
+    for (const u of us) {
+        const raw = cel(dis, aln, u.uni_id).media;
+        if (raw === null || raw === '' || raw === undefined) return null;
+        const n = Number(raw);
+        if (Number.isNaN(n)) return null;
+        notas.push(n);
+    }
+    const media = roundMeio(notas.reduce((s, v) => s + v, 0) / us.length);
+    return entrada.value === 'faixa' ? faixaSigla(media) : media.toFixed(1);
+};
+
 // Tipo já lançado (override manual) para o aluno nesta disciplina. Células "auto"
 // (média calculada) não contam — não disparam exclusão numérica × conceitual.
 const alunoTipoLancado = (dis: number, aln: number): string | null => {
@@ -212,11 +267,35 @@ const bloqueado = (dis: number, aln: number): boolean => {
     const t = alunoTipoLancado(dis, aln);
     return t !== null && t !== tipoSel.value;
 };
+// Rótulo do tipo já lançado (para o badge): "numéricas" | "conceituais".
+const tipoLancadoLabel = (dis: number, aln: number): string =>
+    alunoTipoLancado(dis, aln) === 'conceitual' ? 'conceituais' : 'numéricas';
 
 const tituloCel = (dis: number, aln: number, uni: number, msgBloqueio: string): string => {
     if (bloqueado(dis, aln)) return msgBloqueio;
     return cel(dis, aln, uni).auto ? 'Média calculada das notas do diário. Edite para sobrescrever.' : '';
 };
+
+// Reflete no snapshot do fetch o estado gravado de uma célula (ou sua remoção do banco).
+function sincronizarSnapshot(dis: number, aln: number, uni: number, media: number | string | null, cncId: number | null, faltas: number | string | null) {
+    const bloco = disciplinas.value.find((d) => d.dis_id === dis);
+    if (!bloco) return;
+    const v = bloco.valores as Record<string, Record<string, { media: number | null; cnc_id: number | null; faltas: number | null; tipo: string | null }>>;
+    const a = String(aln);
+    const u = String(uni);
+    // Backend só apaga o registro quando média, conceito E faltas estão nulos.
+    if (media === null && cncId === null && faltas === null) {
+        if (v[a]) delete v[a][u];
+        return;
+    }
+    if (!v[a]) v[a] = {};
+    v[a][u] = {
+        media: media === null || media === '' ? null : Number(media),
+        cnc_id: cncId,
+        faltas: faltas === null || faltas === '' ? null : Number(faltas),
+        tipo: (media !== null && media !== '') || cncId !== null ? tipoSel.value : (v[a][u]?.tipo ?? null),
+    };
+}
 
 async function salvar(dis: number, aln: number, uni: number) {
     const key = ck(dis, aln, uni);
@@ -257,6 +336,9 @@ async function salvar(dis: number, aln: number, uni: number) {
                 c.auto = false;
                 c.tipo = tipoSel.value;
             }
+            // Sincroniza o snapshot do fetch (disciplinas[].valores) com o que foi gravado.
+            // Sem isso, alternar numérica/conceitual (montarCelulas) ressuscita valores já removidos do banco.
+            sincronizarSnapshot(dis, aln, uni, media, cncId, norm(c.faltas));
             status[key] = 'saved';
         } else {
             status[key] = 'error';
@@ -377,6 +459,7 @@ const toggleTodas = () => {
                                 <tr>
                                     <th rowspan="2" class="sticky left-0 top-0 z-30 min-w-[220px] border-b bg-muted/90 px-3 py-1.5 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground backdrop-blur">Aluno</th>
                                     <th v-for="u in unidades" :key="u.uni_id" colspan="2" class="border-b border-l bg-muted/90 px-2 py-1 text-center text-xs font-semibold backdrop-blur">{{ u.label }}</th>
+                                    <th rowspan="2" class="sticky right-0 top-0 z-30 border-b border-l bg-indigo-600 px-3 py-1.5 text-center text-xs font-semibold uppercase tracking-wide text-white backdrop-blur">Média<br />Final</th>
                                 </tr>
                                 <tr>
                                     <template v-for="u in unidades" :key="`s-${u.uni_id}`">
@@ -387,7 +470,7 @@ const toggleTodas = () => {
                             </thead>
                             <tbody>
                                 <tr v-if="!alunosFiltrados.length">
-                                    <td :colspan="unidades.length * 2 + 1" class="px-4 py-8 text-center text-sm text-muted-foreground">Nenhum aluno encontrado.</td>
+                                    <td :colspan="unidades.length * 2 + 2" class="px-4 py-8 text-center text-sm text-muted-foreground">Nenhum aluno encontrado.</td>
                                 </tr>
                                 <tr v-for="(a, i) in alunosFiltrados" :key="a.aln_id" class="group">
                                     <td :class="['sticky left-0 z-10 border-b px-3 py-1.5', i % 2 ? 'bg-muted/30' : 'bg-card', 'group-hover:bg-indigo-50/70 dark:group-hover:bg-indigo-950/40']">
@@ -399,6 +482,15 @@ const toggleTodas = () => {
                                             </div>
                                         </div>
                                     </td>
+                                    <template v-if="bloqueado(bloco.dis_id, a.aln_id)">
+                                        <td :colspan="unidades.length * 2 + 1" :class="['border-b border-l px-3 py-2 text-center', i % 2 ? 'bg-muted/10' : '']">
+                                            <span class="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-xs font-medium text-amber-800 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
+                                                <Lock class="size-3.5" />
+                                                Aluno tem notas {{ tipoLancadoLabel(bloco.dis_id, a.aln_id) }} lançadas
+                                            </span>
+                                        </td>
+                                    </template>
+                                    <template v-else>
                                     <template v-for="u in unidades" :key="`c-${u.uni_id}`">
                                         <td :class="['relative border-b border-l px-1.5 py-1 text-center', i % 2 ? 'bg-muted/20' : '']">
                                             <select
@@ -434,6 +526,11 @@ const toggleTodas = () => {
                                                 @input="onInput(bloco.dis_id, a.aln_id, u.uni_id)"
                                             />
                                         </td>
+                                    </template>
+                                    <td :class="['sticky right-0 z-10 border-b border-l px-3 py-1.5 text-center text-sm font-semibold tabular-nums', i % 2 ? 'bg-muted/30' : 'bg-card', 'group-hover:bg-indigo-50/70 dark:group-hover:bg-indigo-950/40']">
+                                        <span v-if="mediaFinal(bloco.dis_id, a.aln_id) !== null" class="text-indigo-700 dark:text-indigo-300">{{ mediaFinal(bloco.dis_id, a.aln_id) }}</span>
+                                        <span v-else class="text-muted-foreground">—</span>
+                                    </td>
                                     </template>
                                 </tr>
                             </tbody>

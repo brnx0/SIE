@@ -41,6 +41,7 @@ export interface AnoLetivo {
     anl_fl_aprovacao_conselho_freq: boolean;
     anl_frequencia_minima: number | string | null;
     anl_media_geral: number | string | null;
+    anl_cnc_id_geral: number | null;
     anl_conceito_modo: 'faixa' | 'conceito' | null;
     anl_created_at: string | null;
     anl_updated_at: string | null;
@@ -59,6 +60,7 @@ export interface AnoLetivoFormData {
     anl_fl_aprovacao_conselho_freq: boolean;
     anl_frequencia_minima: number | '';
     anl_media_geral: number | '';
+    anl_cnc_id_geral: number | null;
     anl_conceito_modo: 'faixa' | 'conceito';
     [key: string]: any;
 }
@@ -123,13 +125,16 @@ export interface MediaEscola {
     mde_anl_id: number;
     mde_esc_id: number;
     mde_media: number | string;
+    mde_cnc_id: number | null;
     escola?: { esc_id: number; esc_nome: string } | null;
+    conceito?: { cnc_id: number; cnc_sigla: string; cnc_descricao: string } | null;
 }
 
 export interface MediaEscolaFormData {
     mde_anl_id: number | null;
     mde_esc_id: number | null;
     mde_media: number | '';
+    mde_cnc_id: number | null;
     _method?: 'put';
 }
 
@@ -165,7 +170,6 @@ export interface SituacaoBloqueio {
 export interface DiasLetivos {
     dlt_id: number;
     dlt_anl_id: number;
-    dlt_seg_id: number;
     dlt_meses: Record<string, number> | null;
     dlt_periodos: Record<string, number> | null;
 }

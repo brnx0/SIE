@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import type { AnoLetivo, AnoLetivoFormData } from '@/types/parametro';
+import type { AnoLetivo, AnoLetivoFormData, Conceito } from '@/types/parametro';
 import { useForm } from '@inertiajs/vue3';
 import { LoaderCircle, Save } from 'lucide-vue-next';
 import { computed, watch } from 'vue';
@@ -14,7 +14,10 @@ import { computed, watch } from 'vue';
 const props = defineProps<{
     open: boolean;
     initial?: AnoLetivo | null;
+    conceitos: Conceito[];
 }>();
+
+const conceitosOrdenados = computed(() => [...props.conceitos].sort((a, b) => Number(a.cnc_limite_inferior) - Number(b.cnc_limite_inferior)));
 
 const emit = defineEmits<{
     (e: 'update:open', v: boolean): void;
@@ -34,6 +37,7 @@ const form = useForm<AnoLetivoFormData>({
     anl_fl_aprovacao_conselho_freq: false,
     anl_frequencia_minima: '',
     anl_media_geral: '',
+    anl_cnc_id_geral: null,
     anl_conceito_modo: 'faixa',
 });
 
@@ -49,6 +53,7 @@ const reset = () => {
         form.anl_fl_aprovacao_conselho_freq = props.initial.anl_fl_aprovacao_conselho_freq;
         form.anl_frequencia_minima = props.initial.anl_frequencia_minima != null ? Number(props.initial.anl_frequencia_minima) : '';
         form.anl_media_geral = props.initial.anl_media_geral != null ? Number(props.initial.anl_media_geral) : '';
+        form.anl_cnc_id_geral = props.initial.anl_cnc_id_geral ?? null;
         form.anl_conceito_modo = props.initial.anl_conceito_modo ?? 'faixa';
     } else {
         form.reset();
@@ -178,7 +183,21 @@ const clampAno4Digitos = (field: keyof AnoLetivoFormData) => (e: Event) => {
                     <InputError :message="form.errors.anl_media_geral" />
                 </div>
 
-                <div class="grid gap-2 sm:col-span-2">
+                <div class="grid gap-2 sm:col-span-1">
+                    <FormLabel :for="'anl_cnc_id_geral'">Média Conceitual (aprovação)</FormLabel>
+                    <select
+                        id="anl_cnc_id_geral"
+                        v-model="form.anl_cnc_id_geral"
+                        class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    >
+                        <option :value="null">— Sem conceito —</option>
+                        <option v-for="c in conceitosOrdenados" :key="c.cnc_id" :value="c.cnc_id">{{ c.cnc_sigla }} — {{ c.cnc_descricao }}</option>
+                    </select>
+                    <p class="text-xs text-muted-foreground">Conceito mínimo para aprovação na avaliação conceitual.</p>
+                    <InputError :message="form.errors.anl_cnc_id_geral" />
+                </div>
+
+                <div class="grid gap-2 sm:col-span-1">
                     <FormLabel :for="'anl_conceito_modo'" :required="true">Lançamento do Conceito</FormLabel>
                     <select
                         id="anl_conceito_modo"

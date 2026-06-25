@@ -15,7 +15,6 @@ class StoreDiasLetivosRequest extends FormRequest
     {
         return [
             'dlt_anl_id'    => ['required', 'integer', 'exists:cfg_ano_letivo,anl_id'],
-            'dlt_seg_id'    => ['required', 'integer', 'exists:edu_segmento,seg_id'],
             'meses'         => ['array'],
             'meses.*'       => ['nullable', 'integer', 'min:0', 'max:31'],
             'periodos'      => ['array'],
@@ -27,7 +26,6 @@ class StoreDiasLetivosRequest extends FormRequest
     {
         return [
             'dlt_anl_id' => 'ano letivo',
-            'dlt_seg_id' => 'segmento',
         ];
     }
 }

@@ -116,8 +116,8 @@ const maxFim = computed(() => (vigentes.value.length ? [...vigentes.value].map((
 
 const reset = () => {
     form.jfa_mbf_id = null;
-    form.jfa_dt_inicio = vigentes.value[0]?.dt_inicio ?? '';
-    form.jfa_dt_fim = vigentes.value[0]?.dt_inicio ?? '';
+    form.jfa_dt_inicio = '';
+    form.jfa_dt_fim = '';
     form.jfa_observacao = '';
     errors.value = {};
 };

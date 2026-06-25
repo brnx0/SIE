@@ -130,8 +130,10 @@ class LancamentoManualController extends Controller
             'conceito_modo' => $modo,          // 'faixa' | 'conceito'
             'unidades'      => $unidades,
             'alunos'        => $alunos,
-            'conceitos'     => in_array('conceitual', $tipos, true) && $modo === 'conceito'
-                ? Conceito::orderBy('cnc_peso')->get(['cnc_id', 'cnc_sigla', 'cnc_descricao'])
+            // Enviados sempre que a série permite conceitual (faixa OU conceito): o modo conceito
+            // usa no <select> das células; ambos usam para exibir a média final como letra.
+            'conceitos'     => in_array('conceitual', $tipos, true)
+                ? Conceito::orderBy('cnc_peso')->get(['cnc_id', 'cnc_sigla', 'cnc_descricao', 'cnc_peso', 'cnc_limite_inferior', 'cnc_limite_superior'])
                 : [],
             'disciplinas'   => $disciplinas,
         ]);

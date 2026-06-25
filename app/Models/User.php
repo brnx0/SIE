@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Funcionario\Funcionario;
+use App\Notifications\ResetPasswordNotification;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -91,5 +92,13 @@ class User extends Authenticatable
     public function funcionario(): BelongsTo
     {
         return $this->belongsTo(Funcionario::class, 'fun_id', 'fun_id');
+    }
+
+    /**
+     * Envia a notificação de redefinição de senha (e-mail em pt_BR).
+     */
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new ResetPasswordNotification($token));
     }
 }

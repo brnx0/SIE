@@ -6,7 +6,7 @@ import RefreshButton from '@/components/common/RefreshButton.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import type { Escola } from '@/types/funcionario';
-import type { AnoLetivo, MediaEscola, MediaEscolaFormData } from '@/types/parametro';
+import type { AnoLetivo, Conceito, MediaEscola, MediaEscolaFormData } from '@/types/parametro';
 import { router } from '@inertiajs/vue3';
 import { CopyPlus, LoaderCircle, Pencil, Plus, Save, School, Trash2, X } from 'lucide-vue-next';
 import { computed, reactive, ref } from 'vue';
@@ -14,7 +14,11 @@ import { computed, reactive, ref } from 'vue';
 const props = defineProps<{
     mediasEscola: MediaEscola[];
     anosLetivos: AnoLetivo[];
+    conceitos: Conceito[];
 }>();
+
+const conceitosOrdenados = computed(() => [...props.conceitos].sort((a, b) => Number(a.cnc_limite_inferior) - Number(b.cnc_limite_inferior)));
+const labelConceito = (c: Conceito) => `${c.cnc_sigla} — ${c.cnc_descricao}`;
 
 // Anos: em exercício primeiro, depois ano desc
 const anosOrdenados = computed(() =>
@@ -32,7 +36,10 @@ const mediaGeral = computed(() => {
     const m = anoSelecionado.value?.anl_media_geral;
     return m != null ? Number(m) : null;
 });
+const conceitoGeral = computed(() => props.conceitos.find((c) => c.cnc_id === anoSelecionado.value?.anl_cnc_id_geral) ?? null);
 const anoSeguinte = computed(() => (anoSelecionado.value ? anoSelecionado.value.anl_ano + 1 : null));
+
+const siglaConceito = (id: number | null) => props.conceitos.find((c) => c.cnc_id === id)?.cnc_sigla ?? '—';
 
 const mediasDoAno = computed(() => props.mediasEscola.filter((m) => m.mde_anl_id === selectedAnlId.value));
 
@@ -47,6 +54,7 @@ const emptyForm = (): MediaEscolaFormData => ({
     mde_anl_id: selectedAnlId.value,
     mde_esc_id: null,
     mde_media: '',
+    mde_cnc_id: null,
 });
 
 const form = reactive<MediaEscolaFormData>(emptyForm());
@@ -65,6 +73,7 @@ const openEdit = (m: MediaEscola) => {
     form.mde_anl_id = m.mde_anl_id;
     form.mde_esc_id = m.mde_esc_id;
     form.mde_media = Number(m.mde_media);
+    form.mde_cnc_id = m.mde_cnc_id ?? null;
     errors.value = {};
     showForm.value = true;
 };
@@ -83,6 +92,7 @@ const save = () => {
         mde_anl_id: form.mde_anl_id,
         mde_esc_id: form.mde_esc_id,
         mde_media: form.mde_media,
+        mde_cnc_id: form.mde_cnc_id,
     };
 
     const opts = {
@@ -169,9 +179,12 @@ const difereDaGeral = (m: MediaEscola) => mediaGeral.value != null && Number(m.m
         </div>
 
         <!-- Média geral de referência -->
-        <div class="flex items-center gap-2 text-xs text-muted-foreground">
+        <div class="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
             <span class="rounded bg-indigo-100 px-2 py-0.5 font-medium text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300">
                 Média geral do ano: {{ mediaGeral != null ? mediaGeral.toFixed(1) : '— (defina no Ano Letivo)' }}
+            </span>
+            <span class="rounded bg-fuchsia-100 px-2 py-0.5 font-medium text-fuchsia-700 dark:bg-fuchsia-900/40 dark:text-fuchsia-300">
+                Conceito de aprovação: {{ conceitoGeral ? conceitoGeral.cnc_sigla : '—' }}
             </span>
             <span>Cadastre aqui apenas as escolas com média diferente da geral.</span>
         </div>
@@ -182,7 +195,7 @@ const difereDaGeral = (m: MediaEscola) => mediaGeral.value != null && Number(m.m
                 {{ editing ? 'Editar média da escola' : 'Cadastrar média de escola' }}
             </h4>
             <div class="grid gap-4 sm:grid-cols-12">
-                <div class="grid gap-1.5 sm:col-span-9">
+                <div class="grid gap-1.5 sm:col-span-6">
                     <FormLabel for="mde_esc_id" :required="true">Escola</FormLabel>
                     <EscolaCombobox
                         v-model="form.mde_esc_id"
@@ -193,7 +206,7 @@ const difereDaGeral = (m: MediaEscola) => mediaGeral.value != null && Number(m.m
                     <InputError :message="errors.mde_esc_id" />
                 </div>
                 <div class="grid gap-1.5 sm:col-span-3">
-                    <FormLabel for="mde_media" :required="true">Média</FormLabel>
+                    <FormLabel for="mde_media" :required="true">Média numérica</FormLabel>
                     <Input
                         id="mde_media"
                         v-model.number="form.mde_media"
@@ -206,6 +219,19 @@ const difereDaGeral = (m: MediaEscola) => mediaGeral.value != null && Number(m.m
                         :class="{ 'border-red-500 ring-1 ring-red-500': errors.mde_media }"
                     />
                     <InputError :message="errors.mde_media" />
+                </div>
+                <div class="grid gap-1.5 sm:col-span-3">
+                    <FormLabel for="mde_cnc_id">Média conceitual</FormLabel>
+                    <select
+                        id="mde_cnc_id"
+                        v-model="form.mde_cnc_id"
+                        class="flex h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                        :class="{ 'border-red-500 ring-1 ring-red-500': errors.mde_cnc_id }"
+                    >
+                        <option :value="null">— Sem conceito —</option>
+                        <option v-for="c in conceitosOrdenados" :key="c.cnc_id" :value="c.cnc_id">{{ labelConceito(c) }}</option>
+                    </select>
+                    <InputError :message="errors.mde_cnc_id" />
                 </div>
             </div>
             <div class="mt-4 flex justify-end gap-2">
@@ -227,12 +253,13 @@ const difereDaGeral = (m: MediaEscola) => mediaGeral.value != null && Number(m.m
                     <tr>
                         <th class="px-3 py-2 font-semibold">Escola</th>
                         <th class="px-3 py-2 text-center font-semibold">Média</th>
+                        <th class="px-3 py-2 text-center font-semibold">Conceito</th>
                         <th class="px-3 py-2 text-right font-semibold">Ações</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-if="mediasDoAno.length === 0">
-                        <td colspan="3" class="px-3 py-6 text-center text-muted-foreground">
+                        <td colspan="4" class="px-3 py-6 text-center text-muted-foreground">
                             Nenhuma escola com média específica neste ano letivo.
                         </td>
                     </tr>
@@ -247,6 +274,7 @@ const difereDaGeral = (m: MediaEscola) => mediaGeral.value != null && Number(m.m
                                 {{ Number(m.mde_media).toFixed(1) }}
                             </span>
                         </td>
+                        <td class="px-3 py-2 text-center">{{ m.conceito?.cnc_sigla ?? siglaConceito(m.mde_cnc_id) }}</td>
                         <td class="px-3 py-2 text-right">
                             <div class="flex justify-end gap-1">
                                 <Button type="button" variant="ghost" size="sm" @click="openEdit(m)" aria-label="Editar">

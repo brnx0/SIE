@@ -24,6 +24,12 @@ const busca = ref('');
 const presencaMap = reactive<Record<string, boolean>>({});
 const status = reactive<Record<string, 'idle' | 'saving' | 'saved' | 'error'>>({});
 
+// Conteúdo/metodologia do dia (1 por dia — atividade não tem disciplina).
+interface ConteudoInfo { conteudo: string; metodologia: string }
+const conteudoMap = reactive<Record<string, ConteudoInfo>>({});
+const conteudoStatus = reactive<Record<string, 'idle' | 'saving' | 'saved' | 'error'>>({});
+const conteudoTimer: Record<string, number> = {};
+
 const csrf = (): Record<string, string> => {
     const m = document.cookie.match(/XSRF-TOKEN=([^;]+)/);
     return m ? { 'X-XSRF-TOKEN': decodeURIComponent(m[1]) } : {};
@@ -43,12 +49,15 @@ const carregar = async (silent = false) => {
         const data = await r.json();
         Object.keys(presencaMap).forEach((key) => delete presencaMap[key]);
         Object.keys(status).forEach((key) => delete status[key]);
+        Object.keys(conteudoMap).forEach((key) => delete conteudoMap[key]);
+        Object.keys(conteudoStatus).forEach((key) => delete conteudoStatus[key]);
         dias.value = data.dias ?? [];
         alunos.value = data.alunos ?? [];
         periodo.value = data.periodo ?? null;
         periodoAberto.value = data.periodo_aberto ?? false;
         turmaAberta.value = data.turma_aberta ?? false;
         for (const p of data.presencas ?? []) presencaMap[k(p.dt, p.aln_id)] = p.presente;
+        for (const c of data.conteudos ?? []) conteudoMap[c.dt] = { conteudo: c.conteudo ?? '', metodologia: c.metodologia ?? '' };
         if (!dataSel.value || !diasComAtendimento.value.some((d) => d.dt === dataSel.value)) escolherDataInicial();
     } finally {
         carregando.value = false;
@@ -153,6 +162,42 @@ const marcarLote = async (val: boolean) => {
 
 const totalPresentes = computed(() => alunosFiltrados.value.filter((a) => !saiuNoDia(a) && presente(a.aln_id)).length);
 const totalAusentes = computed(() => alunosFiltrados.value.filter((a) => !saiuNoDia(a) && !presente(a.aln_id)).length);
+
+// ── Conteúdo / metodologia do dia ────────────────────────────────────────────
+const SEM_CONTEUDO: ConteudoInfo = { conteudo: '', metodologia: '' };
+const infoDia = (): ConteudoInfo => conteudoMap[dataSel.value] ?? SEM_CONTEUDO;
+const ensureDia = (): ConteudoInfo => {
+    if (!conteudoMap[dataSel.value]) conteudoMap[dataSel.value] = { conteudo: '', metodologia: '' };
+    return conteudoMap[dataSel.value];
+};
+const getConteudo = (campo: 'conteudo' | 'metodologia') => infoDia()[campo] ?? '';
+
+const salvarConteudo = async () => {
+    if (!editavel.value || !dataSel.value) return;
+    const key = dataSel.value;
+    const i = ensureDia();
+    conteudoStatus[key] = 'saving';
+    try {
+        const r = await fetch('/api/diario-atividade/frequencia/conteudo', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json', ...csrf() },
+            credentials: 'same-origin',
+            body: JSON.stringify({ tur_id: props.turId, uni_id: props.uniId, dt: dataSel.value, conteudo: i.conteudo, metodologia: i.metodologia }),
+        });
+        conteudoStatus[key] = r.ok ? 'saved' : 'error';
+    } catch {
+        conteudoStatus[key] = 'error';
+    }
+};
+
+const setConteudo = (campo: 'conteudo' | 'metodologia', val: string) => {
+    const i = ensureDia();
+    i[campo] = val;
+    const key = dataSel.value;
+    conteudoStatus[key] = 'idle';
+    if (conteudoTimer[key]) clearTimeout(conteudoTimer[key]);
+    conteudoTimer[key] = window.setTimeout(salvarConteudo, 1200);
+};
 </script>
 
 <template>
@@ -191,6 +236,42 @@ const totalAusentes = computed(() => alunosFiltrados.value.filter((a) => !saiuNo
                 <div v-if="!editavel" class="mb-4 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
                     <TriangleAlert class="mt-0.5 size-4 shrink-0" />
                     <span>{{ !turmaAberta ? 'Turma não está aberta.' : 'Fora do período de lançamento.' }} Frequência em modo leitura.</span>
+                </div>
+
+                <!-- Registro do dia: conteúdo / metodologia -->
+                <div class="mb-4 rounded-lg border bg-background p-3">
+                    <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
+                        <span class="text-sm font-semibold">Registro do dia</span>
+                        <span class="text-xs">
+                            <span v-if="conteudoStatus[dataSel] === 'saving'" class="inline-flex items-center gap-1 text-amber-600"><Loader2 class="size-3.5 animate-spin" /> Salvando</span>
+                            <span v-else-if="conteudoStatus[dataSel] === 'saved'" class="text-emerald-600">Salvo</span>
+                            <span v-else-if="conteudoStatus[dataSel] === 'error'" class="text-rose-600">Erro ao salvar</span>
+                        </span>
+                    </div>
+                    <div class="grid gap-3 sm:grid-cols-2">
+                        <div>
+                            <label class="text-xs font-medium text-muted-foreground">Conteúdo</label>
+                            <textarea
+                                :value="getConteudo('conteudo')"
+                                :disabled="!editavel"
+                                rows="2"
+                                placeholder="O que foi trabalhado na atividade..."
+                                class="mt-1 w-full resize-y rounded-md border bg-background px-2.5 py-1.5 text-sm leading-relaxed outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 disabled:cursor-not-allowed disabled:opacity-60 dark:focus:ring-indigo-950"
+                                @input="setConteudo('conteudo', ($event.target as HTMLTextAreaElement).value)"
+                            ></textarea>
+                        </div>
+                        <div>
+                            <label class="text-xs font-medium text-muted-foreground">Metodologia</label>
+                            <textarea
+                                :value="getConteudo('metodologia')"
+                                :disabled="!editavel"
+                                rows="2"
+                                placeholder="Como foi trabalhado..."
+                                class="mt-1 w-full resize-y rounded-md border bg-background px-2.5 py-1.5 text-sm leading-relaxed outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 disabled:cursor-not-allowed disabled:opacity-60 dark:focus:ring-indigo-950"
+                                @input="setConteudo('metodologia', ($event.target as HTMLTextAreaElement).value)"
+                            ></textarea>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="max-h-[70vh] overflow-auto rounded-lg border">

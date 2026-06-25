@@ -24,7 +24,8 @@ class StoreMediaEscolaRequest extends FormRequest
                     ->where('mde_anl_id', $this->input('mde_anl_id'))
                     ->ignore($selfId, 'mde_id'),
             ],
-            'mde_media' => ['required', 'numeric', 'between:0,10'],
+            'mde_media'  => ['required', 'numeric', 'between:0,10'],
+            'mde_cnc_id' => ['nullable', 'integer', 'exists:cfg_conceito,cnc_id'],
         ];
     }
 
@@ -41,6 +42,7 @@ class StoreMediaEscolaRequest extends FormRequest
             'mde_anl_id' => 'ano letivo',
             'mde_esc_id' => 'escola',
             'mde_media'  => 'média',
+            'mde_cnc_id' => 'média conceitual',
         ];
     }
 }

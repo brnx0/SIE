@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Diario;
 
 use App\Http\Controllers\Controller;
+use App\Models\Diario\AtividadeConteudo;
 use App\Models\Diario\AtividadeFrequencia;
 use App\Models\Matricula\Matricula;
 use Illuminate\Http\JsonResponse;
@@ -72,6 +73,17 @@ class AtividadeFrequenciaController extends Controller
                 'presente' => (bool) $r->atf_fl_presente,
             ]);
 
+        // Conteúdo/metodologia por dia (atividade não tem disciplina → 1 por dia).
+        $conteudos = AtividadeConteudo::query()
+            ->where('dtc_tur_id', $turId)
+            ->where('dtc_uni_id', $uniId)
+            ->get(['dtc_dt', 'dtc_conteudo', 'dtc_metodologia'])
+            ->map(fn ($r) => [
+                'dt'          => Carbon::parse($r->dtc_dt)->toDateString(),
+                'conteudo'    => $r->dtc_conteudo,
+                'metodologia' => $r->dtc_metodologia,
+            ]);
+
         return response()->json([
             'dias'           => array_values($dias),
             'periodo'        => $periodo,
@@ -79,7 +91,39 @@ class AtividadeFrequenciaController extends Controller
             'turma_aberta'   => $this->turmaAberta($turId),
             'alunos'         => $alunos,
             'presencas'      => $presencas,
+            'conteudos'      => $conteudos,
         ]);
+    }
+
+    /** Salva conteúdo/metodologia do dia (turma + data). */
+    public function salvarConteudo(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'tur_id'      => ['required', 'integer', 'exists:edu_turma,tur_id'],
+            'uni_id'      => ['required', 'integer', 'exists:cfg_unidade,uni_id'],
+            'dt'          => ['required', 'date'],
+            'conteudo'    => ['nullable', 'string', 'max:5000'],
+            'metodologia' => ['nullable', 'string', 'max:5000'],
+        ]);
+
+        $this->abortIfNotProfessor();
+        $this->assertProfessorDaTurma($request, (int) $data['tur_id']);
+        $this->assertTurmaAberta((int) $data['tur_id']);
+        $this->assertPeriodoAberto((int) $data['uni_id']);
+        $this->assertDataNoPeriodo((int) $data['uni_id'], $data['dt']);
+        $this->assertDiaDeAtendimento((int) $data['tur_id'], $data['dt']);
+
+        AtividadeConteudo::updateOrCreate(
+            ['dtc_tur_id' => $data['tur_id'], 'dtc_dt' => $data['dt']],
+            [
+                'dtc_user_id'     => (int) $request->user()->id,
+                'dtc_uni_id'      => $data['uni_id'],
+                'dtc_conteudo'    => $data['conteudo'] ?? null,
+                'dtc_metodologia' => $data['metodologia'] ?? null,
+            ],
+        );
+
+        return response()->json(['ok' => true]);
     }
 
     public function salvarPresenca(Request $request): JsonResponse

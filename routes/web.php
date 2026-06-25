@@ -436,6 +436,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('frequencia/contexto', [\App\Http\Controllers\Diario\AtividadeFrequenciaController::class, 'contexto'])->name('frequencia.contexto');
         Route::post('frequencia/salvar', [\App\Http\Controllers\Diario\AtividadeFrequenciaController::class, 'salvarPresenca'])->name('frequencia.salvar');
         Route::post('frequencia/lote', [\App\Http\Controllers\Diario\AtividadeFrequenciaController::class, 'salvarLote'])->name('frequencia.lote');
+        Route::post('frequencia/conteudo', [\App\Http\Controllers\Diario\AtividadeFrequenciaController::class, 'salvarConteudo'])->name('frequencia.conteudo');
     });
 
     // Coordenador Pedagógico — Validação de Planos
@@ -544,7 +545,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('parametros/situacoes-bloqueio/{situacaoBloqueio}', [SituacaoBloqueioController::class, 'destroy'])->name('parametros.situacoes-bloqueio.destroy');
 
         Route::post('parametros/dias-letivos', [DiasLetivosController::class, 'salvar'])->name('parametros.dias-letivos.salvar');
-        Route::post('parametros/dias-letivos/migrar', [DiasLetivosController::class, 'migrar'])->name('parametros.dias-letivos.migrar');
 
         Route::post('parametros/grade-horarios', [GradeHorarioController::class, 'store'])->name('parametros.grade-horarios.store');
         Route::put('parametros/grade-horarios/{gradeHorario}', [GradeHorarioController::class, 'update'])->name('parametros.grade-horarios.update');

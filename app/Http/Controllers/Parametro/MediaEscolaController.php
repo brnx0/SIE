@@ -78,6 +78,7 @@ class MediaEscolaController extends Controller
                     'mde_anl_id'        => $destino->anl_id,
                     'mde_esc_id'        => $r->mde_esc_id,
                     'mde_media'         => $r->mde_media,
+                    'mde_cnc_id'        => $r->mde_cnc_id,
                     'mde_created_by_id' => auth()->id(),
                     'mde_updated_by_id' => auth()->id(),
                 ]);

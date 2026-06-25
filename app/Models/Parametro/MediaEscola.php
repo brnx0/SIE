@@ -19,6 +19,7 @@ class MediaEscola extends Model
         'mde_anl_id',
         'mde_esc_id',
         'mde_media',
+        'mde_cnc_id',
         'mde_created_by_id',
         'mde_updated_by_id',
     ];
@@ -26,6 +27,11 @@ class MediaEscola extends Model
     protected $casts = [
         'mde_media' => 'decimal:2',
     ];
+
+    public function conceito(): BelongsTo
+    {
+        return $this->belongsTo(Conceito::class, 'mde_cnc_id', 'cnc_id');
+    }
 
     public function anoLetivo(): BelongsTo
     {

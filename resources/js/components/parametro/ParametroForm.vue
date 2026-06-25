@@ -400,8 +400,8 @@ const fmtDateTime = (s?: string | null) => {
                 <div class="grid gap-6">
                     <ConceitoSection :conceitos="conceitos" />
                     <SituacaoBloqueioSection :situacoes-bloqueio="situacoesBloqueio" :situacoes="situacoesAluno" />
-                    <DiasLetivosSection :dias-letivos="diasLetivos" :anos-letivos="anosLetivos" :segmentos="segmentos" :unidades="unidades" />
-                    <MediaEscolaTab :medias-escola="mediasEscola" :anos-letivos="anosLetivos" />
+                    <DiasLetivosSection :dias-letivos="diasLetivos" :anos-letivos="anosLetivos" :unidades="unidades" />
+                    <MediaEscolaTab :medias-escola="mediasEscola" :anos-letivos="anosLetivos" :conceitos="conceitos" />
                 </div>
             </TabsContent>
 
@@ -486,6 +486,6 @@ const fmtDateTime = (s?: string | null) => {
 
         </Tabs>
 
-        <AnoLetivoDialog v-model:open="dialogOpen" :initial="editingAno" />
+        <AnoLetivoDialog v-model:open="dialogOpen" :initial="editingAno" :conceitos="conceitos" />
     </div>
 </template>
