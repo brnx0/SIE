@@ -186,7 +186,7 @@ const clampAno4Digitos = (field: keyof AnoLetivoFormData) => (e: Event) => {
                 </div>
 
                 <div class="grid gap-2 sm:col-span-1">
-                    <FormLabel :for="'anl_cnc_id_geral'">Média Conceitual (aprovação)</FormLabel>
+                    <FormLabel :for="'anl_cnc_id_geral'">Média Conceitual</FormLabel>
                     <select
                         id="anl_cnc_id_geral"
                         v-model="form.anl_cnc_id_geral"

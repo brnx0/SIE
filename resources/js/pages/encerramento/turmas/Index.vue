@@ -6,8 +6,8 @@ import Switch from '@/components/common/Switch.vue';
 import LancamentoNotasModal from '@/components/encerramento/LancamentoNotasModal.vue';
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue';
 import type { BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/vue3';
-import { Archive, ArrowLeft, CheckCircle2, Loader2, Lock, PencilLine, Search, Users } from 'lucide-vue-next';
+import { Head, router } from '@inertiajs/vue3';
+import { Archive, ArrowLeft, CheckCircle2, Loader2, Lock, PencilLine, ScrollText, Search, Users } from 'lucide-vue-next';
 import { computed, reactive, ref } from 'vue';
 
 interface AnoLetivo { anl_id: number; anl_ano: number; anl_fl_em_exercicio: boolean }
@@ -38,7 +38,8 @@ const props = defineProps<{
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Encerramento de Turmas', href: '/encerramento-turmas' }];
 
-const anoDefault = props.anosLetivos.find((a) => a.anl_fl_em_exercicio) ?? props.anosLetivos[0];
+// Padrão: o MAIOR ano em exercício (sem depender da ordem da lista).
+const anoDefault = [...props.anosLetivos].filter((a) => a.anl_fl_em_exercicio).sort((a, b) => b.anl_ano - a.anl_ano)[0] ?? props.anosLetivos[0];
 const anlId = ref<number | ''>(anoDefault?.anl_id ?? '');
 const escId = ref<number | ''>(props.userEscola?.esc_id ?? '');
 
@@ -197,7 +198,7 @@ const cancelarTurma = async () => {
     if (!t) return;
     const ok = await confirmar({
         title: 'Cancelar encerramento',
-        message: 'A situação final de TODOS os alunos será removida e a turma voltará a ficar aberta.',
+        message: 'A situação final de TODOS os alunos será removida e a turma voltará a ficar aberta.\n\n⚠️ As matrículas já feitas para o ano seguinte (renovação) serão removidas.',
         variant: 'danger',
         confirmLabel: 'Cancelar encerramento',
     });
@@ -211,13 +212,20 @@ const cancelarAluno = async (a: AlunoLinha) => {
     if (!t) return;
     const ok = await confirmar({
         title: 'Reabrir aluno',
-        message: `${a.nome}\n\nA situação final dele será removida e a turma voltará a ficar aberta.`,
+        message: `${a.nome}\n\nA situação final dele será removida e a turma voltará a ficar aberta.\n\n⚠️ Se houver matrícula dele no ano seguinte (renovação), ela será removida.`,
         variant: 'danger',
         confirmLabel: 'Reabrir',
     });
     if (!ok) return;
     processando.value = true;
     try { const r = await postJson('/encerramento-turmas/cancelar-aluno', { tur_id: t.tur_id, aln_id: a.aln_id }); if (r.ok) await recarregar(); } catch { erro.value = 'Falha ao cancelar.'; } finally { processando.value = false; }
+};
+
+// Ata Final — abre o relatório na MESMA aba (não abre nova guia). Só com a turma encerrada.
+const abrirAtaFinal = () => {
+    const t = turmaSel.value;
+    if (!t || !anlId.value || !escId.value) return;
+    router.get('/relatorios/ata-final/gerar', { anl_id: anlId.value, esc_id: escId.value, tur_id: t.tur_id });
 };
 
 const podeEncerrar = (a: AlunoLinha) => a.status === 'completo' || a.status === 'nao_avaliativa';
@@ -347,6 +355,15 @@ const pendentesTurma = (t: TurmaLinha) => t.alunos.filter((a) => !podeEncerrar(a
                     </div>
                     <div class="flex items-center gap-3">
                         <span class="text-sm text-muted-foreground">{{ completos(turmaSel) }}/{{ turmaSel.alunos.length }} aptos</span>
+                        <Button
+                            v-if="turmaSel.encerrada"
+                            variant="outline"
+                            title="Emitir a Ata Final do encerramento"
+                            class="gap-1"
+                            @click="abrirAtaFinal"
+                        >
+                            <ScrollText class="size-4" /> Ata Final
+                        </Button>
                         <Button
                             v-if="turmaSel.encerrada"
                             :disabled="processando"

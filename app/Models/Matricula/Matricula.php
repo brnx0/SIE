@@ -42,6 +42,7 @@ class Matricula extends Model
         'tma_dt_matricula',
         'tma_dt_saida',
         'tma_dt_encerramento',
+        'tma_origem_tma_id',
         'tma_obs',
         'tma_created_by_id',
     ];

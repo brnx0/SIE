@@ -21,7 +21,8 @@ const props = defineProps<{
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Duplicar Turmas', href: '/duplicar-turmas' }];
 
-const anoDefault = props.anosLetivos.find((a) => a.anl_fl_em_exercicio) ?? props.anosLetivos[0];
+// Padrão: o MAIOR ano em exercício (sem depender da ordem da lista).
+const anoDefault = [...props.anosLetivos].filter((a) => a.anl_fl_em_exercicio).sort((a, b) => b.anl_ano - a.anl_ano)[0] ?? props.anosLetivos[0];
 const anlId = ref<number | ''>(anoDefault?.anl_id ?? '');
 const escId = ref<number | ''>(props.userEscola?.esc_id ?? '');
 

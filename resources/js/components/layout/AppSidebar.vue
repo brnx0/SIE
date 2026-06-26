@@ -6,7 +6,7 @@ import NavUser from '@/components/layout/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { Link } from '@inertiajs/vue3';
 import { LayoutDashboard, LifeBuoy, UserPlus, Cog, ClipboardList, FileBarChart, BookOpen, ClipboardCheck, KeyRound, Archive, ArrowRightLeft } from 'lucide-vue-next';
-import { computed, onMounted, ref } from 'vue';
+import { computed, ref } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import type { SharedData } from '@/types';
 import AppLogo from './AppLogo.vue';
@@ -14,16 +14,6 @@ import AppLogo from './AppLogo.vue';
 const page = usePage<SharedData>();
 const userRoles = computed(() => page.props.auth?.user?.roles ?? []);
 
-// Estilo do menu: 'moderno' (novo) ou 'classico' (anterior). Persistido — reversível.
-const menuModerno = ref(true);
-onMounted(() => {
-    const v = localStorage.getItem('sie_menu_estilo');
-    if (v) menuModerno.value = v === 'moderno';
-});
-const setEstilo = (moderno: boolean) => {
-    menuModerno.value = moderno;
-    localStorage.setItem('sie_menu_estilo', moderno ? 'moderno' : 'classico');
-};
 const isAdmin = computed(() => userRoles.value.includes('admin'));
 const isCoordenador = computed(() => userRoles.value.includes('coordenador') || isAdmin.value);
 const isCoordenadorInterno = computed(() => userRoles.value.includes('coordenador_interno') || isAdmin.value);
@@ -148,6 +138,7 @@ const secretariaMenu = computed<any[]>(() => {
                     { title: 'Justificativa de Falta', href: '/secretaria/justificativas-falta' },
                 ],
             },
+            { title: 'Renovação de Matrícula', href: '/secretaria/renovacao-matricula' },
             { title: 'Motivo Baixa Frequência', href: '/secretaria/motivos-baixa-frequencia' },
         ],
     }];
@@ -162,6 +153,7 @@ const encerramentoMenu = computed<any[]>(() => {
         children: [
             { title: 'Encerramento de Turmas', href: '/encerramento-turmas' },
             { title: 'Duplicar Turmas', href: '/duplicar-turmas' },
+            { title: 'Confirmação de Renovação', href: '/confirmacao-renovacao' },
         ],
     }];
 });
@@ -226,23 +218,7 @@ const searching = computed(() => search.value.trim().length > 0);
             </SidebarMenu>
         </SidebarHeader>
 
-        <SidebarContent :class="menuModerno ? 'menu-moderno' : ''">
-            <!-- Alternador de estilo do menu -->
-            <div class="px-2 pt-1 group-data-[collapsible=icon]:hidden">
-                <div class="flex rounded-lg border bg-muted/50 p-0.5 text-[11px] font-medium">
-                    <button
-                        type="button"
-                        :class="['flex-1 rounded-md px-2 py-1 transition', menuModerno ? 'bg-gradient-to-r from-indigo-600 to-indigo-800 text-white shadow-sm' : 'text-muted-foreground hover:text-foreground']"
-                        @click="setEstilo(true)"
-                    >Moderno</button>
-                    <button
-                        type="button"
-                        :class="['flex-1 rounded-md px-2 py-1 transition', !menuModerno ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground']"
-                        @click="setEstilo(false)"
-                    >Clássico</button>
-                </div>
-            </div>
-
+        <SidebarContent class="menu-moderno">
             <NavSearch v-model="search" :items="flatLeaves" />
 
             <template v-if="!searching">
@@ -357,6 +333,41 @@ const searching = computed(() => search.value.trim().length > 0);
     box-shadow: inset 0 0 0 1px rgba(100, 116, 139, 0.2);
     transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
 }
+
+/* ===== Modo retraído (ícone): rail compacto — ignora estilos do expandido ===== */
+/* Rótulos de seção não aparecem no rail de ícones */
+[data-collapsible="icon"] .menu-moderno [data-sidebar="group-label"] {
+    display: none;
+}
+[data-collapsible="icon"] .menu-moderno [data-sidebar="menu-button"] {
+    min-height: 0;
+    gap: 0;
+    margin: 2px auto;
+    border-radius: 0.6rem;
+    justify-content: center;
+}
+/* Texto do item some no rail de ícones (só o ícone) */
+[data-collapsible="icon"] .menu-moderno [data-sidebar="menu-button"] > span {
+    display: none;
+}
+[data-collapsible="icon"] .menu-moderno [data-sidebar="menu-button"] > svg:first-child {
+    width: 1rem;
+    height: 1rem;
+    padding: 0;
+    background: transparent;
+    box-shadow: none;
+    border-radius: 0;
+    color: inherit;
+}
+[data-collapsible="icon"] .menu-moderno [data-sidebar="menu-button"][data-active="true"] > svg:first-child {
+    background: transparent;
+    box-shadow: none;
+}
+/* Esconde o rail lateral (::before) no modo ícone */
+[data-collapsible="icon"] .menu-moderno [data-sidebar="menu-button"]::before {
+    display: none;
+}
+
 .dark .menu-moderno [data-sidebar="menu-button"] > svg:first-child {
     background: rgba(148, 163, 184, 0.16);
     color: #cbd5e1;

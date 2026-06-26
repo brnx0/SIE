@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/composables/useToast';
 import { Loader2, RefreshCw } from 'lucide-vue-next';
 import { computed, onMounted, ref } from 'vue';
 
@@ -9,7 +8,6 @@ const props = defineProps<{ turId: number }>();
 interface AlunoMatricula {
     tma_id: number;
     tma_dt_matricula: string | null;
-    tma_fl_renovado: boolean;
     tma_situacao: string;
     tas_descricao_entrada: string | null;
     tas_descricao_saida: string | null;
@@ -19,10 +17,8 @@ interface AlunoMatricula {
     idade: number | null;
 }
 
-const { push } = useToast();
 const alunos   = ref<AlunoMatricula[]>([]);
 const loading  = ref(true);
-const saving   = ref<number | null>(null);
 
 const load = async () => {
     loading.value = true;
@@ -31,37 +27,6 @@ const load = async () => {
         alunos.value = await r.json();
     } finally {
         loading.value = false;
-    }
-};
-
-const toggleRenovado = async (aluno: AlunoMatricula) => {
-    saving.value = aluno.tma_id;
-    const novoValor = !aluno.tma_fl_renovado;
-
-    const xsrf = decodeURIComponent(
-        document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]+)/)?.[1] ?? ''
-    );
-
-    try {
-        const r = await fetch(`/api/turmas/${props.turId}/alunos/${aluno.tma_id}/renovado`, {
-            method: 'PATCH',
-            credentials: 'same-origin',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-XSRF-TOKEN': xsrf,
-                'Accept': 'application/json',
-            },
-            body: JSON.stringify({ tma_fl_renovado: novoValor }),
-        });
-
-        if (!r.ok) {
-            push('error', 'Erro ao atualizar renovado.');
-            return;
-        }
-
-        aluno.tma_fl_renovado = novoValor;
-    } finally {
-        saving.value = null;
     }
 };
 
@@ -111,7 +76,6 @@ onMounted(load);
                         <th class="px-4 py-2.5 text-center font-semibold">Dt. Matrícula</th>
                         <th class="px-4 py-2.5 text-center font-semibold">Idade</th>
                         <th class="px-4 py-2.5 text-center font-semibold">Situação</th>
-                        <th class="px-4 py-2.5 text-center font-semibold">Renovado</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y">
@@ -138,15 +102,6 @@ onMounted(load);
                             >
                                 {{ statusLabel(a) }}
                             </span>
-                        </td>
-                        <td class="px-4 py-2.5 text-center">
-                            <input
-                                type="checkbox"
-                                :checked="a.tma_fl_renovado"
-                                :disabled="saving === a.tma_id"
-                                class="size-4 cursor-pointer accent-indigo-600 disabled:opacity-50"
-                                @change="toggleRenovado(a)"
-                            />
                         </td>
                     </tr>
                 </tbody>

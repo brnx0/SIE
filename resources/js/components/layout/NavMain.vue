@@ -11,10 +11,11 @@ import {
     SidebarMenuSubItem,
 } from '@/components/ui/sidebar';
 import { ChevronRight } from 'lucide-vue-next';
-import { computed, type Component } from 'vue';
+import { computed, nextTick, reactive, type Component } from 'vue';
 import { useTabStore } from '@/stores/tabs';
 import { pathOf } from '@/lib/tabRegistry';
 import { useTabNav } from '@/composables/useTabNav';
+import { useSidebar } from '@/components/ui/sidebar';
 
 interface NavLeaf {
     title: string;
@@ -49,6 +50,22 @@ const activePath = computed(() => store.activeTab?.path ?? '');
 const isActive = (href?: string) => !!href && activePath.value === pathOf(href);
 
 const { open } = useTabNav();
+
+const { state, setOpen } = useSidebar();
+
+// Estado aberto/fechado controlado por grupo (default: aberto se contém o item ativo).
+const openMap = reactive<Record<string, boolean>>({});
+const isItemOpen = (item: NavItem) => openMap[item.title] ?? isGroupActive(item);
+const setItemOpen = (item: NavItem, v: boolean) => { openMap[item.title] = v; };
+
+// Sidebar retraída: clicar no item expande a sidebar e abre o grupo.
+const onTrigger = (item: NavItem, e: MouseEvent) => {
+    if (state.value === 'collapsed') {
+        setOpen(true);
+        nextTick(() => setItemOpen(item, true));
+    }
+    scrollExpandToView(e);
+};
 
 const isChildActive = (child: NavChild): boolean =>
     isGroup(child)
@@ -93,7 +110,7 @@ const scrollExpandToView = (e: MouseEvent) => {
             <template v-for="item in items" :key="item.title">
                 <!-- Item simples -->
                 <SidebarMenuItem v-if="!item.children">
-                    <SidebarMenuButton as-child :is-active="isActive(item.href)">
+                    <SidebarMenuButton as-child :is-active="isActive(item.href)" class="group-data-[collapsible=icon]:justify-center">
                         <a :href="item.href!" @click.prevent="open(item.href)">
                             <component :is="item.icon" />
                             <span>{{ item.title }}</span>
@@ -104,16 +121,17 @@ const scrollExpandToView = (e: MouseEvent) => {
                 <!-- Item com submenu -->
                 <Collapsible
                     v-else
-                    :default-open="isGroupActive(item)"
+                    :open="isItemOpen(item)"
+                    @update:open="(v: boolean) => setItemOpen(item, v)"
                     as-child
                     class="group/collapsible"
                 >
                     <SidebarMenuItem>
                         <CollapsibleTrigger as-child>
-                            <SidebarMenuButton :is-active="isGroupActive(item)" @click="scrollExpandToView">
+                            <SidebarMenuButton :is-active="isGroupActive(item)" class="group-data-[collapsible=icon]:justify-center" @click="onTrigger(item, $event)">
                                 <component :is="item.icon" />
                                 <span>{{ item.title }}</span>
-                                <ChevronRight class="ml-auto size-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                                <ChevronRight class="ml-auto size-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90 group-data-[collapsible=icon]:hidden" />
                             </SidebarMenuButton>
                         </CollapsibleTrigger>
                         <CollapsibleContent>

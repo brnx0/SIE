@@ -19,6 +19,7 @@ use App\Http\Controllers\Relatorio\BoletimController;
 use App\Http\Controllers\Relatorio\ConteudoMinistradoController;
 use App\Http\Controllers\Relatorio\BoletimAvaliativoController;
 use App\Http\Controllers\Relatorio\MapaNotasController;
+use App\Http\Controllers\Relatorio\AtaFinalController;
 use App\Http\Controllers\Relatorio\FrequenciaMensalController;
 use App\Http\Controllers\Relatorio\RelatorioCentralController;
 use App\Http\Controllers\Api\AlunoSearchController;
@@ -75,6 +76,7 @@ use App\Http\Controllers\UsersController;
 use App\Http\Controllers\Secretaria\AcessoProfessorController;
 use App\Http\Controllers\Secretaria\ConteudoMinistradoController as SecretariaConteudoMinistradoController;
 use App\Http\Controllers\Secretaria\LancamentoManualController;
+use App\Http\Controllers\Secretaria\RenovacaoMatriculaController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -206,6 +208,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('duplicar-turmas/dados', [\App\Http\Controllers\Encerramento\DuplicarTurmaController::class, 'dados'])->name('duplicar-turmas.dados');
         Route::post('duplicar-turmas/duplicar', [\App\Http\Controllers\Encerramento\DuplicarTurmaController::class, 'duplicar'])->name('duplicar-turmas.duplicar');
         Route::post('duplicar-turmas/duplicar-todas', [\App\Http\Controllers\Encerramento\DuplicarTurmaController::class, 'duplicarTodas'])->name('duplicar-turmas.duplicar-todas');
+
+        Route::get('confirmacao-renovacao', [\App\Http\Controllers\Encerramento\ConfirmacaoRenovacaoController::class, 'index'])->name('confirmacao-renovacao.index');
+        Route::get('confirmacao-renovacao/turmas', [\App\Http\Controllers\Encerramento\ConfirmacaoRenovacaoController::class, 'turmas'])->name('confirmacao-renovacao.turmas');
+        Route::get('confirmacao-renovacao/alunos', [\App\Http\Controllers\Encerramento\ConfirmacaoRenovacaoController::class, 'alunos'])->name('confirmacao-renovacao.alunos');
+        Route::get('confirmacao-renovacao/turmas-destino', [\App\Http\Controllers\Encerramento\ConfirmacaoRenovacaoController::class, 'turmasDestino'])->name('confirmacao-renovacao.turmas-destino');
+        Route::post('confirmacao-renovacao/confirmar', [\App\Http\Controllers\Encerramento\ConfirmacaoRenovacaoController::class, 'confirmar'])->name('confirmacao-renovacao.confirmar');
+        Route::post('confirmacao-renovacao/confirmar-lote', [\App\Http\Controllers\Encerramento\ConfirmacaoRenovacaoController::class, 'confirmarLote'])->name('confirmacao-renovacao.confirmar-lote');
     });
     Route::get('relatorios/parecer-descritivo', [ParecerDescritivoController::class, 'form'])->name('relatorios.parecer-descritivo.form');
     Route::get('relatorios/parecer-descritivo/unidades', [ParecerDescritivoController::class, 'unidades'])->name('relatorios.parecer-descritivo.unidades');
@@ -226,6 +235,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('relatorios/mapa-notas/turmas', [MapaNotasController::class, 'turmas'])->name('relatorios.mapa-notas.turmas');
     Route::get('relatorios/mapa-notas/unidades', [MapaNotasController::class, 'unidades'])->name('relatorios.mapa-notas.unidades');
     Route::get('relatorios/mapa-notas/gerar', [MapaNotasController::class, 'gerar'])->name('relatorios.mapa-notas.gerar');
+    Route::get('relatorios/ata-final', [AtaFinalController::class, 'form'])->name('relatorios.ata-final.form');
+    Route::get('relatorios/ata-final/turmas', [AtaFinalController::class, 'turmasEncerradas'])->name('relatorios.ata-final.turmas');
+    Route::get('relatorios/ata-final/gerar', [AtaFinalController::class, 'gerar'])->name('relatorios.ata-final.gerar');
 
     // Diário de Frequência Mensal
     Route::get('relatorios/frequencia-mensal', [FrequenciaMensalController::class, 'form'])->name('relatorios.frequencia-mensal.form');
@@ -510,6 +522,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('lancamento-manual/disciplinas', [LancamentoManualController::class, 'disciplinas'])->name('lancamento-manual.disciplinas');
         Route::get('lancamento-manual/contexto', [LancamentoManualController::class, 'contexto'])->name('lancamento-manual.contexto');
         Route::post('lancamento-manual/salvar', [LancamentoManualController::class, 'salvar'])->name('lancamento-manual.salvar');
+
+        // Interesse de renovação de matrícula
+        Route::get('renovacao-matricula', [RenovacaoMatriculaController::class, 'index'])->name('renovacao-matricula.index');
+        Route::get('renovacao-matricula/turmas', [RenovacaoMatriculaController::class, 'turmas'])->name('renovacao-matricula.turmas');
+        Route::get('renovacao-matricula/alunos', [RenovacaoMatriculaController::class, 'alunos'])->name('renovacao-matricula.alunos');
+        Route::post('renovacao-matricula/salvar', [RenovacaoMatriculaController::class, 'salvar'])->name('renovacao-matricula.salvar');
 
         // Cadastro: Motivos de baixa frequência (justificativa de falta)
         Route::get('motivos-baixa-frequencia', [MotivoBaixaFrequenciaController::class, 'index'])->name('motivos-baixa-frequencia.index');

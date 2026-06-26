@@ -280,6 +280,9 @@ class EncerramentoTurmaController extends Controller
         $this->autorizarEscola((int) $turma->tur_esc_id);
 
         DB::transaction(function () use ($data) {
+            $origens = Matricula::where('tma_tur_id', $data['tur_id'])->whereNotNull('tma_dt_encerramento')->pluck('tma_id');
+            $this->removerRenovacoes($origens);
+
             Matricula::where('tma_tur_id', $data['tur_id'])
                 ->whereNotNull('tma_dt_encerramento')
                 ->update(['tma_tas_cod_saida' => null, 'tma_dt_encerramento' => null]);
@@ -301,6 +304,9 @@ class EncerramentoTurmaController extends Controller
         $this->autorizarEscola((int) $turma->tur_esc_id);
 
         DB::transaction(function () use ($data) {
+            $origens = Matricula::where('tma_tur_id', $data['tur_id'])->where('tma_aln_id', $data['aln_id'])->whereNotNull('tma_dt_encerramento')->pluck('tma_id');
+            $this->removerRenovacoes($origens);
+
             Matricula::where('tma_tur_id', $data['tur_id'])
                 ->where('tma_aln_id', $data['aln_id'])
                 ->whereNotNull('tma_dt_encerramento')
@@ -309,6 +315,15 @@ class EncerramentoTurmaController extends Controller
         });
 
         return response()->json(['ok' => true]);
+    }
+
+    /** Remove as matrículas de renovação (ano seguinte) criadas a partir das matrículas de origem dadas. */
+    private function removerRenovacoes($origemTmaIds): void
+    {
+        if ($origemTmaIds === null || count($origemTmaIds) === 0) {
+            return;
+        }
+        Matricula::whereIn('tma_origem_tma_id', $origemTmaIds)->delete();
     }
 
     /** Situação exibida: encerrado → situação final (saída); ativo → entrada; demais → saída. Descrição de enturmação. */

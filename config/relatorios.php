@@ -2,6 +2,14 @@
 
 return [
     [
+        'slug'      => 'ata-final',
+        'titulo'    => 'Ata Final do Encerramento',
+        'descricao' => 'Por turma encerrada: nota final de cada disciplina e o resultado final do aluno (aprovado/reprovado). Alunos que saíram não têm resultado.',
+        'categoria' => 'Secretaria Acadêmica',
+        'grupo'     => 'secretaria',
+        'icone'     => 'ScrollText',
+    ],
+    [
         'slug'      => 'parecer-descritivo',
         'titulo'    => 'Parecer Descritivo',
         'descricao' => 'Pareceres descritivos dos alunos de uma turma por período (bimestre/trimestre).',
