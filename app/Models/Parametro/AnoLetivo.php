@@ -31,6 +31,7 @@ class AnoLetivo extends Model
         'anl_media_geral',
         'anl_cnc_id_geral',
         'anl_conceito_modo',
+        'anl_qtd_materias_conselho',
         'anl_created_by_id',
         'anl_updated_by_id',
     ];

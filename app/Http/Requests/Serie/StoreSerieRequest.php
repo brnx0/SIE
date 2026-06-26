@@ -17,6 +17,7 @@ class StoreSerieRequest extends FormRequest
         $this->merge([
             'ser_fl_ativo'  => $this->boolean('ser_fl_ativo'),
             'ser_fl_multi'  => $this->boolean('ser_fl_multi'),
+            'ser_fl_progressao_auto' => $this->boolean('ser_fl_progressao_auto'),
             'ser_nome'     => mb_strtoupper($this->input('ser_nome', ''), 'UTF-8'),
         ]);
     }
@@ -36,6 +37,7 @@ class StoreSerieRequest extends FormRequest
             'ser_ordem_no_segmento'   => ['required', 'integer'],
             'ser_fl_ativo'            => ['boolean'],
             'ser_fl_multi'            => ['boolean'],
+            'ser_fl_progressao_auto'  => ['boolean'],
             'ser_tipo_avaliacao'      => ['nullable', 'array'],
             'ser_tipo_avaliacao.*'    => ['string', Rule::in(['diagnostico', 'conceitual', 'numerica', 'descritiva'])],
             'ser_tipo_avaliacao_descritiva' => [

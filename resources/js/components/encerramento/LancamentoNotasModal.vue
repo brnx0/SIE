@@ -32,23 +32,41 @@ const conceitos = ref<Conceito[]>([]);
 const disciplinas = ref<DisciplinaBloco[]>([]);
 
 // Estado editável por célula (dis|uni): nota + faltas + status.
-interface EditCel { media: number | string | null; cnc_id: number | null; faltas: number | string | null; auto: boolean; status: 'idle' | 'saving' | 'saved' | 'error' }
+interface EditCel { media: number | string | null; cnc_id: number | null; faltas: number | string | null; tipo: string | null; auto: boolean; status: 'idle' | 'saving' | 'saved' | 'error' }
 const cels = reactive<Record<string, EditCel>>({});
 const ck = (dis: number, uni: number) => `${dis}|${uni}`;
 
-// Tipo já lançado (manual) p/ o aluno — trava o toggle (não pode misturar numérica e conceitual).
-const existeTipoLancado = (tipo: string): boolean => {
+// Tipo já lançado (manual) por DISCIPLINA: o aluno pode ter numérica numa e conceitual noutra.
+// Bloqueia só inserir o tipo diferente do já lançado naquela disciplina — o toggle fica livre.
+// Usa o snapshot persistido (mesma fonte do backend p/ o erro) + os lançamentos ao vivo.
+const disTipoLancado = (dis: number): string | null => {
     const aln = String(props.aluno.aln_id);
-    return disciplinas.value.some((d) =>
-        Object.values(d.valores?.[aln] ?? {}).some((v) => v.tipo === tipo && (v.media !== null || v.cnc_id !== null)),
-    );
+    const bloco = disciplinas.value.find((d) => d.dis_id === dis);
+    const v = (bloco?.valores?.[aln] ?? {}) as Record<string, Cel>;
+    for (const uni of Object.keys(v)) {
+        const cell = v[uni];
+        if (cell && cell.tipo && (cell.media !== null || cell.cnc_id !== null)) return cell.tipo;
+    }
+    for (const u of unidades.value) {
+        const c = cels[ck(dis, u.uni_id)];
+        if (c && !c.auto && c.tipo && ((c.media !== null && c.media !== '') || c.cnc_id !== null)) return c.tipo;
+    }
+    return null;
 };
-// Lançamento manual ao vivo (não-auto) — reflete edições antes de recarregar.
-const temNotaManualAtual = computed(() =>
-    Object.values(cels).some((c) => !c.auto && ((c.media !== null && c.media !== '') || c.cnc_id !== null)),
-);
-const lancadoNumerica = computed(() => existeTipoLancado('numerica') || (temNotaManualAtual.value && tipoSel.value === 'numerica'));
-const lancadoConceitual = computed(() => existeTipoLancado('conceitual') || (temNotaManualAtual.value && tipoSel.value === 'conceitual'));
+const bloqueadoDisc = (dis: number): boolean => {
+    const t = disTipoLancado(dis);
+    return t !== null && t !== tipoSel.value;
+};
+const bloqLabel = (dis: number) => (disTipoLancado(dis) === 'conceitual' ? 'conceituais' : 'numéricas');
+
+// Aba inicial ao abrir: o tipo já lançado em alguma disciplina (só p/ abrir numa visão útil).
+const tipoInicial = (): 'numerica' | 'conceitual' => {
+    const aln = String(props.aluno.aln_id);
+    const temTipo = (t: string) => disciplinas.value.some((d) => Object.values(d.valores?.[aln] ?? {}).some((v) => v.tipo === t && (v.media !== null || v.cnc_id !== null)));
+    if (temTipo('numerica')) return 'numerica';
+    if (temTipo('conceitual')) return 'conceitual';
+    return tipos.value.includes('numerica') ? 'numerica' : 'conceitual';
+};
 
 const entrada = computed<'numerica' | 'faixa' | 'conceito' | null>(() => {
     if (!tipos.value.length) return null;
@@ -127,10 +145,8 @@ const carregar = async () => {
         unidades.value = j.unidades ?? [];
         conceitos.value = j.conceitos ?? [];
         disciplinas.value = j.disciplinas ?? [];
-        // Se já há lançamento de um tipo, fixa nele; senão default numérica (se houver).
-        if (lancadoNumerica.value) tipoSel.value = 'numerica';
-        else if (lancadoConceitual.value) tipoSel.value = 'conceitual';
-        else tipoSel.value = tipos.value.includes('numerica') ? 'numerica' : 'conceitual';
+        // Aba inicial só p/ abrir numa visão útil; o usuário pode trocar livremente.
+        tipoSel.value = tipoInicial();
 
         const aln = String(props.aluno.aln_id);
         Object.keys(cels).forEach((k) => delete cels[k]);
@@ -139,11 +155,11 @@ const carregar = async () => {
                 const val = d.valores?.[aln]?.[u.uni_id];
                 const calc = d.calc?.[aln]?.[u.uni_id];
                 if (val) {
-                    cels[ck(d.dis_id, u.uni_id)] = { media: val.media, cnc_id: val.cnc_id, faltas: val.faltas, auto: false, status: 'idle' };
+                    cels[ck(d.dis_id, u.uni_id)] = { media: val.media, cnc_id: val.cnc_id, faltas: val.faltas, tipo: val.tipo ?? null, auto: false, status: 'idle' };
                 } else if (calc) {
-                    cels[ck(d.dis_id, u.uni_id)] = { media: calc.media, cnc_id: calc.cnc_id, faltas: null, auto: true, status: 'idle' };
+                    cels[ck(d.dis_id, u.uni_id)] = { media: calc.media, cnc_id: calc.cnc_id, faltas: null, tipo: null, auto: true, status: 'idle' };
                 } else {
-                    cels[ck(d.dis_id, u.uni_id)] = { media: null, cnc_id: null, faltas: null, auto: false, status: 'idle' };
+                    cels[ck(d.dis_id, u.uni_id)] = { media: null, cnc_id: null, faltas: null, tipo: null, auto: false, status: 'idle' };
                 }
             }
         }
@@ -188,6 +204,7 @@ const salvar = async (dis: number, uni: number) => {
     if (!c) return;
     c.media = normalizarMedia(c.media);
     c.auto = false;
+    const temValor = (c.media !== null && c.media !== '') || c.cnc_id !== null;
     c.status = 'saving';
     erroSalvar.value = null;
     try {
@@ -207,9 +224,13 @@ const salvar = async (dis: number, uni: number) => {
             }),
         });
         if (r.ok) {
+            // Só grava o tipo no sucesso — base do bloqueio por disciplina.
+            c.tipo = temValor ? tipoSel.value : null;
             c.status = 'saved';
             emit('saved');
         } else {
+            // Rejeitado (ex.: tipo diferente do já lançado na disciplina) → desfaz o que foi digitado.
+            if (entrada.value === 'conceito') c.cnc_id = null; else c.media = null;
             c.status = 'error';
             erroSalvar.value = await mensagemErro(r);
         }
@@ -272,27 +293,20 @@ onMounted(carregar);
             </div>
 
             <template v-else>
-                <!-- Toggle de tipo quando a série permite ambos -->
+                <!-- Toggle de tipo quando a série permite ambos. Livre: o aluno pode ter
+                     numérica numa disciplina e conceitual noutra; o bloqueio é por disciplina. -->
                 <div v-if="tipos.length > 1" class="mb-3 flex flex-wrap items-center gap-2 text-sm">
-                    <span class="text-muted-foreground">Tipo:</span>
+                    <span class="text-muted-foreground">Lançar como:</span>
                     <button
                         type="button"
-                        :disabled="lancadoConceitual"
-                        :title="lancadoConceitual ? 'Aluno já tem lançamento conceitual — remova-os para usar numérica.' : ''"
-                        :class="['rounded-md px-3 py-1 text-xs font-medium disabled:cursor-not-allowed disabled:opacity-50', tipoSel === 'numerica' ? 'bg-indigo-600 text-white' : 'border']"
+                        :class="['rounded-md px-3 py-1 text-xs font-medium', tipoSel === 'numerica' ? 'bg-indigo-600 text-white' : 'border']"
                         @click="tipoSel = 'numerica'"
                     >Numérica</button>
                     <button
                         type="button"
-                        :disabled="lancadoNumerica"
-                        :title="lancadoNumerica ? 'Aluno já tem lançamento numérico — remova-os para usar conceitual.' : ''"
-                        :class="['rounded-md px-3 py-1 text-xs font-medium disabled:cursor-not-allowed disabled:opacity-50', tipoSel === 'conceitual' ? 'bg-indigo-600 text-white' : 'border']"
+                        :class="['rounded-md px-3 py-1 text-xs font-medium', tipoSel === 'conceitual' ? 'bg-indigo-600 text-white' : 'border']"
                         @click="tipoSel = 'conceitual'"
                     >Conceitual</button>
-                    <span v-if="lancadoNumerica || lancadoConceitual" class="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-xs font-medium text-amber-800 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
-                        <Lock class="size-3.5" />
-                        Aluno tem notas {{ lancadoNumerica ? 'numéricas' : 'conceituais' }} lançadas — use "Remover todos" para trocar.
-                    </span>
                 </div>
 
                 <div v-if="erroSalvar" class="mb-3 flex items-start gap-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:border-rose-900 dark:bg-rose-950/40 dark:text-rose-300">
@@ -315,6 +329,14 @@ onMounted(carregar);
                         <tbody>
                             <tr v-for="(d, i) in disciplinas" :key="d.dis_id" :class="i % 2 ? 'bg-muted/20' : ''">
                                 <td class="sticky left-0 z-10 border-b px-4 py-3 font-medium" :class="i % 2 ? 'bg-muted/40' : 'bg-card'">{{ d.dis_nome }}</td>
+                                <template v-if="bloqueadoDisc(d.dis_id)">
+                                    <td :colspan="unidades.length + 1" class="border-b border-l px-4 py-3 text-center">
+                                        <span class="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-xs font-medium text-amber-800 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
+                                            <Lock class="size-3.5" /> Notas {{ bloqLabel(d.dis_id) }} lançadas nesta disciplina
+                                        </span>
+                                    </td>
+                                </template>
+                                <template v-else>
                                 <td v-for="u in unidades" :key="u.uni_id" class="border-b border-l px-3 py-2.5">
                                     <div class="flex items-center justify-center gap-2">
                                         <!-- Conceito (modo conceito) -->
@@ -352,6 +374,7 @@ onMounted(carregar);
                                     <span v-if="mediaFinal(d.dis_id) !== null" class="text-indigo-700 dark:text-indigo-300">{{ mediaFinal(d.dis_id) }}</span>
                                     <span v-else class="text-muted-foreground">—</span>
                                 </td>
+                                </template>
                             </tr>
                             <tr v-if="!disciplinas.length">
                                 <td :colspan="unidades.length + 2" class="px-3 py-8 text-center text-muted-foreground">Sem disciplinas na grade.</td>

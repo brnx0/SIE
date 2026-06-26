@@ -5,7 +5,7 @@ import NavSearch, { type FlatNavLeaf } from '@/components/layout/NavSearch.vue';
 import NavUser from '@/components/layout/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { Link } from '@inertiajs/vue3';
-import { LayoutDashboard, LifeBuoy, UserPlus, Cog, ClipboardList, FileBarChart, BookOpen, ClipboardCheck, KeyRound, Archive } from 'lucide-vue-next';
+import { LayoutDashboard, LifeBuoy, UserPlus, Cog, ClipboardList, FileBarChart, BookOpen, ClipboardCheck, KeyRound, Archive, ArrowRightLeft } from 'lucide-vue-next';
 import { computed, onMounted, ref } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import type { SharedData } from '@/types';
@@ -75,8 +75,15 @@ const matriculasMenu = [
         children: [
             { title: 'Matrículas', href: '/matriculas' },
             { title: 'Matrículas AEE', href: '/matriculas-aee' },
-            { title: 'Movimentações', href: '/movimentacoes' },
             { title: '2ª Via Comprovante', href: '/matriculas/segunda-via' },
+        ],
+    },
+    {
+        title: 'Movimentações',
+        icon: ArrowRightLeft,
+        children: [
+            { title: 'Movimentar Aluno', href: '/movimentacoes' },
+            ...(isSecretariaEscolar.value ? [{ title: 'Remanejar Turmas', href: '/remanejamento-turmas' }] : []),
         ],
     },
 ];
@@ -154,6 +161,7 @@ const encerramentoMenu = computed<any[]>(() => {
         icon: Archive,
         children: [
             { title: 'Encerramento de Turmas', href: '/encerramento-turmas' },
+            { title: 'Duplicar Turmas', href: '/duplicar-turmas' },
         ],
     }];
 });

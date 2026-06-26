@@ -198,6 +198,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware('role:secretaria_escola')->group(function () {
         Route::get('encerramento-turmas', [\App\Http\Controllers\Encerramento\EncerramentoTurmaController::class, 'index'])->name('encerramento.turmas.index');
         Route::get('encerramento-turmas/dados', [\App\Http\Controllers\Encerramento\EncerramentoTurmaController::class, 'dados'])->name('encerramento.turmas.dados');
+        Route::post('encerramento-turmas/encerrar', [\App\Http\Controllers\Encerramento\EncerramentoTurmaController::class, 'encerrar'])->name('encerramento.turmas.encerrar');
+        Route::post('encerramento-turmas/cancelar', [\App\Http\Controllers\Encerramento\EncerramentoTurmaController::class, 'cancelar'])->name('encerramento.turmas.cancelar');
+        Route::post('encerramento-turmas/cancelar-aluno', [\App\Http\Controllers\Encerramento\EncerramentoTurmaController::class, 'cancelarAluno'])->name('encerramento.turmas.cancelar-aluno');
+
+        Route::get('duplicar-turmas', [\App\Http\Controllers\Encerramento\DuplicarTurmaController::class, 'index'])->name('duplicar-turmas.index');
+        Route::get('duplicar-turmas/dados', [\App\Http\Controllers\Encerramento\DuplicarTurmaController::class, 'dados'])->name('duplicar-turmas.dados');
+        Route::post('duplicar-turmas/duplicar', [\App\Http\Controllers\Encerramento\DuplicarTurmaController::class, 'duplicar'])->name('duplicar-turmas.duplicar');
+        Route::post('duplicar-turmas/duplicar-todas', [\App\Http\Controllers\Encerramento\DuplicarTurmaController::class, 'duplicarTodas'])->name('duplicar-turmas.duplicar-todas');
     });
     Route::get('relatorios/parecer-descritivo', [ParecerDescritivoController::class, 'form'])->name('relatorios.parecer-descritivo.form');
     Route::get('relatorios/parecer-descritivo/unidades', [ParecerDescritivoController::class, 'unidades'])->name('relatorios.parecer-descritivo.unidades');
@@ -268,6 +276,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('movimentacoes/{movimentacao}', [MovimentacaoController::class, 'show'])->name('movimentacoes.show');
     Route::post('movimentacoes/{movimentacao}/desfazer', [MovimentacaoController::class, 'desfazer'])->name('movimentacoes.desfazer');
     Route::get('movimentacoes/{movimentacao}/declaracao-transferencia', [MovimentacaoController::class, 'declaracaoTransferencia'])->name('movimentacoes.declaracao-transferencia');
+
+    // Remanejamento (troca de alunos entre turmas) — Secretaria Escolar
+    Route::middleware('role:secretaria_escola')->group(function () {
+        Route::get('remanejamento-turmas', [\App\Http\Controllers\Secretaria\RemanejamentoController::class, 'index'])->name('remanejamento-turmas.index');
+        Route::get('remanejamento-turmas/turmas', [\App\Http\Controllers\Secretaria\RemanejamentoController::class, 'turmas'])->name('remanejamento-turmas.turmas');
+        Route::get('remanejamento-turmas/alunos', [\App\Http\Controllers\Secretaria\RemanejamentoController::class, 'alunos'])->name('remanejamento-turmas.alunos');
+        Route::post('remanejamento-turmas/remanejar', [\App\Http\Controllers\Secretaria\RemanejamentoController::class, 'remanejar'])->name('remanejamento-turmas.remanejar');
+        Route::post('remanejamento-turmas/trocar', [\App\Http\Controllers\Secretaria\RemanejamentoController::class, 'trocar'])->name('remanejamento-turmas.trocar');
+    });
 
     Route::get('matriculas', [MatriculaController::class, 'index'])->name('matriculas.index');
     Route::post('matriculas', [MatriculaController::class, 'store'])->name('matriculas.store');
@@ -386,11 +403,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('notas/avaliacoes/{avaliacao}', [\App\Http\Controllers\Diario\NotaController::class, 'destroyAvaliacao'])->name('notas.avaliacoes.destroy');
         Route::post('notas/salvar', [\App\Http\Controllers\Diario\NotaController::class, 'salvarNota'])->name('notas.salvar');
 
+        // Avaliação por diagnóstico (indicadores × alunos)
+        Route::get('diagnostico/contexto', [\App\Http\Controllers\Diario\DiagnosticoController::class, 'contexto'])->name('diagnostico.contexto');
+        Route::post('diagnostico/salvar', [\App\Http\Controllers\Diario\DiagnosticoController::class, 'salvar'])->name('diagnostico.salvar');
+
         // Lançamento de frequência (faltas/presenças por tempo do quadro de horário)
         Route::get('faltas/contexto', [\App\Http\Controllers\Diario\FaltaController::class, 'contexto'])->name('faltas.contexto');
         Route::post('faltas/salvar', [\App\Http\Controllers\Diario\FaltaController::class, 'salvarPresenca'])->name('faltas.salvar');
         Route::post('faltas/lote', [\App\Http\Controllers\Diario\FaltaController::class, 'salvarLote'])->name('faltas.lote');
         Route::post('faltas/conteudo', [\App\Http\Controllers\Diario\FaltaController::class, 'salvarConteudo'])->name('faltas.conteudo');
+        Route::post('faltas/aula-nao-executada', [\App\Http\Controllers\Diario\FaltaController::class, 'salvarAulaNaoExecutada'])->name('faltas.aula-nao-executada');
         Route::get('planos/escolas', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'lookupEscolas'])->name('planos.escolas');
         Route::get('planos/turmas', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'lookupTurmas'])->name('planos.turmas');
         Route::get('planos/disciplinas', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'lookupDisciplinas'])->name('planos.disciplinas');

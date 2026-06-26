@@ -10,6 +10,8 @@ interface Aluno {
     aln_id: number;
     aln_nome: string;
     aln_nr_matricula: string | null;
+    segmento: string;
+    modo: 'dias' | 'aulas';
     base: number | null;
     faltas: number;
     frequencia: number | null;
@@ -20,7 +22,7 @@ interface Parametros { nome_entidade: string; logomarca_url: string | null; bras
 const props = defineProps<{
     parametros: Parametros | null;
     filtros: { anl_ano: number; esc_nome: string; turma: string; segmento: string; mes_label: string };
-    modo: 'dias' | 'aulas';
+    multi: boolean;
     dias_letivos: number | null;
     total_aulas: number;
     alunos: Aluno[];
@@ -28,8 +30,10 @@ const props = defineProps<{
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Diário de Frequência Mensal', href: '/relatorios/frequencia-mensal' }];
 
-const baseLabel = computed(() => (props.modo === 'dias' ? 'Dias Letivos' : 'Aulas'));
-const semBase = computed(() => props.modo === 'dias' && !props.dias_letivos);
+// Unidade por aluno (modo decidido pelo segmento dele — multi-seriada mistura).
+const unidade = (m: 'dias' | 'aulas') => (m === 'dias' ? 'dias' : 'aulas');
+// Falta base quando algum aluno conta por dias mas não há dias letivos cadastrados.
+const semBase = computed(() => props.alunos.some((a) => a.modo === 'dias' && a.base == null));
 
 const dataEmissao = computed(() => {
     const d = new Date();
@@ -56,14 +60,16 @@ const imprimir = () => window.print();
             <span><b>Escola:</b> {{ filtros.esc_nome }}</span>
             <span><b>Turma:</b> {{ filtros.turma }}</span>
             <span><b>Segmento:</b> {{ filtros.segmento }}</span>
-            <span><b>{{ baseLabel }}:</b> {{ modo === 'dias' ? (dias_letivos ?? '—') : total_aulas }}</span>
+            <span><b>Dias letivos:</b> {{ dias_letivos ?? '—' }}</span>
+            <span><b>Aulas no mês:</b> {{ total_aulas }}</span>
         </div>
         <table class="tbl">
             <thead>
                 <tr>
                     <th>#</th>
                     <th class="esq">Aluno</th>
-                    <th>{{ baseLabel }}</th>
+                    <th v-if="multi" class="esq">Segmento</th>
+                    <th>Base</th>
                     <th>Faltas</th>
                     <th>Frequência</th>
                     <th>Situação</th>
@@ -73,7 +79,8 @@ const imprimir = () => window.print();
                 <tr v-for="(a, i) in alunos" :key="a.aln_id">
                     <td>{{ i + 1 }}</td>
                     <td class="esq">{{ a.aln_nome }}</td>
-                    <td>{{ a.base ?? '—' }}</td>
+                    <td v-if="multi" class="esq">{{ a.segmento }}</td>
+                    <td>{{ a.base ?? '—' }} {{ unidade(a.modo) }}</td>
                     <td>{{ a.faltas }}</td>
                     <td>{{ freqTxt(a.frequencia) }}</td>
                     <td>{{ a.situacao }}</td>
@@ -98,13 +105,13 @@ const imprimir = () => window.print();
                 <div><strong>Mês:</strong> {{ filtros.mes_label }} · <strong>Escola:</strong> {{ filtros.esc_nome }}</div>
                 <div><strong>Turma:</strong> {{ filtros.turma }} · <strong>Segmento:</strong> {{ filtros.segmento }}</div>
                 <div>
-                    <strong>{{ baseLabel }}:</strong> {{ modo === 'dias' ? (dias_letivos ?? '—') : total_aulas }}
-                    <span class="text-muted-foreground">· {{ modo === 'dias' ? 'falta = dia sem presença em nenhuma disciplina' : 'faltas por aula' }}</span>
+                    <strong>Dias letivos:</strong> {{ dias_letivos ?? '—' }} · <strong>Aulas no mês:</strong> {{ total_aulas }}
+                    <span class="text-muted-foreground">· Pré/Fund. I contam por dias (falta = dia sem presença em nenhuma disciplina); Fund. II/EJA/Creche por aulas</span>
                 </div>
             </div>
 
             <div v-if="semBase" class="mb-4 flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
-                <TriangleAlert class="size-4 shrink-0" /> Dias letivos não cadastrados para este segmento/mês em Parâmetros. A frequência não pôde ser calculada.
+                <TriangleAlert class="size-4 shrink-0" /> Dias letivos não cadastrados para este mês em Parâmetros (aba Diário). Alunos que contam por dias ficaram sem frequência.
             </div>
 
             <div v-if="!alunos.length" class="rounded-xl border bg-card py-12 text-center text-muted-foreground">Nenhum aluno na turma.</div>
@@ -115,7 +122,8 @@ const imprimir = () => window.print();
                         <tr>
                             <th class="px-3 py-2 text-left">#</th>
                             <th class="px-3 py-2 text-left">Aluno</th>
-                            <th class="px-3 py-2 text-center">{{ baseLabel }}</th>
+                            <th v-if="multi" class="px-3 py-2 text-left">Segmento</th>
+                            <th class="px-3 py-2 text-center">Base</th>
                             <th class="px-3 py-2 text-center">Faltas</th>
                             <th class="px-3 py-2 text-center">Frequência</th>
                             <th class="px-3 py-2 text-left">Situação</th>
@@ -128,7 +136,8 @@ const imprimir = () => window.print();
                                 {{ a.aln_nome }}
                                 <span v-if="a.aln_nr_matricula" class="text-[10px] text-muted-foreground">· Mat. {{ a.aln_nr_matricula }}</span>
                             </td>
-                            <td class="px-3 py-1.5 text-center tabular-nums">{{ a.base ?? '—' }}</td>
+                            <td v-if="multi" class="px-3 py-1.5 text-muted-foreground">{{ a.segmento }}</td>
+                            <td class="px-3 py-1.5 text-center tabular-nums">{{ a.base ?? '—' }} <span class="text-[10px] text-muted-foreground">{{ unidade(a.modo) }}</span></td>
                             <td class="px-3 py-1.5 text-center tabular-nums">{{ a.faltas }}</td>
                             <td class="px-3 py-1.5 text-center font-semibold tabular-nums" :class="a.frequencia !== null && a.frequencia < 75 ? 'text-rose-600' : 'text-emerald-600'">{{ freqTxt(a.frequencia) }}</td>
                             <td class="px-3 py-1.5">{{ a.situacao }}</td>

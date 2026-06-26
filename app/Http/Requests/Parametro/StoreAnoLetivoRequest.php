@@ -33,6 +33,7 @@ class StoreAnoLetivoRequest extends FormRequest
             'anl_media_geral' => ['required', 'numeric', 'between:0,10'],
             'anl_cnc_id_geral' => ['nullable', 'integer', 'exists:cfg_conceito,cnc_id'],
             'anl_conceito_modo' => ['required', 'in:faixa,conceito'],
+            'anl_qtd_materias_conselho' => ['nullable', 'integer', 'min:1', 'max:50'],
         ];
     }
 
@@ -72,6 +73,7 @@ class StoreAnoLetivoRequest extends FormRequest
             'anl_media_geral' => 'média geral',
             'anl_cnc_id_geral' => 'conceito de aprovação',
             'anl_conceito_modo' => 'modo do conceito',
+            'anl_qtd_materias_conselho' => 'quantidade de matérias por conselho',
         ];
     }
 

@@ -4,10 +4,12 @@ import { Button } from '@/components/ui/button';
 import type { BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/vue3';
 import { ArrowLeft, Printer } from 'lucide-vue-next';
+import { computed } from 'vue';
 
 interface Avaliacao { dt: string; descricao: string }
 interface AlunoLinha { aln_id: number; nome: string; matricula: string | null; situacao: string; avaliacoes: Avaliacao[] }
 interface TurmaLinha { tur_id: number; turma: string | null; escola: string | null; alunos: AlunoLinha[] }
+interface AlunoFlat extends AlunoLinha { escola: string | null; turma: string | null }
 interface Parametros {
     nome_entidade: string;
     msg_cab_secretaria: string | null;
@@ -16,7 +18,7 @@ interface Parametros {
     brasao_url: string | null;
 }
 
-defineProps<{
+const props = defineProps<{
     parametros: Parametros | null;
     anoLetivo: { anl_id: number; anl_ano: number };
     escola: { esc_id: number; esc_nome: string } | null;
@@ -28,6 +30,11 @@ defineProps<{
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Desempenho AEE', href: '/relatorios/desempenho-aee' },
 ];
+
+// Impressão: 1 aluno por página (avaliação é individual).
+const alunosFlat = computed<AlunoFlat[]>(() =>
+    props.linhas.flatMap((t) => t.alunos.map((al) => ({ ...al, escola: t.escola, turma: t.turma }))),
+);
 
 const fmtBr = (d: string) => {
     if (!d) return '—';
@@ -44,32 +51,31 @@ const imprimir = () => window.print();
     <!-- Impressão -->
     <Teleport to="body">
         <div id="print-area">
-            <header class="cab">
-                <div class="logo"><img v-if="parametros?.logomarca_url" :src="parametros.logomarca_url" /></div>
-                <div class="cab-textos">
-                    <div v-if="parametros?.msg_cab_estado">{{ parametros.msg_cab_estado }}</div>
-                    <div v-if="parametros?.msg_cab_secretaria">{{ parametros.msg_cab_secretaria }}</div>
-                    <div class="entidade">{{ parametros?.nome_entidade ?? '—' }}</div>
+            <!-- 1 aluno por página -->
+            <div v-for="al in alunosFlat" :key="al.aln_id" class="pagina-aluno">
+                <header class="cab">
+                    <div class="logo"><img v-if="parametros?.logomarca_url" :src="parametros.logomarca_url" /></div>
+                    <div class="cab-textos">
+                        <div v-if="parametros?.msg_cab_estado">{{ parametros.msg_cab_estado }}</div>
+                        <div v-if="parametros?.msg_cab_secretaria">{{ parametros.msg_cab_secretaria }}</div>
+                        <div class="entidade">{{ parametros?.nome_entidade ?? '—' }}</div>
+                    </div>
+                    <div class="logo"><img v-if="parametros?.brasao_url" :src="parametros.brasao_url" /></div>
+                </header>
+
+                <h1 class="titulo">RELATÓRIO DE DESEMPENHO AEE — {{ anoLetivo.anl_ano }}</h1>
+                <p class="subtitulo">{{ al.escola }} — Turma {{ al.turma }}</p>
+
+                <div class="aluno-cab">
+                    <span class="aluno-nome">{{ al.nome }}</span>
+                    <span v-if="al.matricula"> — Matr. {{ al.matricula }}</span>
+                    <span class="aluno-sit">Situação: {{ al.situacao }}</span>
                 </div>
-                <div class="logo"><img v-if="parametros?.brasao_url" :src="parametros.brasao_url" /></div>
-            </header>
 
-            <h1 class="titulo">RELATÓRIO DE DESEMPENHO AEE — {{ anoLetivo.anl_ano }}</h1>
-            <p v-if="escola" class="subtitulo">Escola: {{ escola.esc_nome }}</p>
-
-            <div v-for="t in linhas" :key="t.tur_id" class="turma-bloco">
-                <h2 class="turma-tit">{{ t.escola }} — Turma {{ t.turma }}</h2>
-                <div v-for="al in t.alunos" :key="al.aln_id" class="aluno-bloco">
-                    <div class="aluno-cab">
-                        <span class="aluno-nome">{{ al.nome }}</span>
-                        <span v-if="al.matricula"> — Matr. {{ al.matricula }}</span>
-                        <span class="aluno-sit">Situação: {{ al.situacao }}</span>
-                    </div>
-                    <div v-if="al.avaliacoes.length === 0" class="sem-av">Sem avaliações registradas.</div>
-                    <div v-for="(av, i) in al.avaliacoes" :key="i" class="av">
-                        <div class="av-data">{{ fmtBr(av.dt) }}</div>
-                        <div class="av-texto" v-html="av.descricao"></div>
-                    </div>
+                <div v-if="al.avaliacoes.length === 0" class="sem-av">Sem avaliações registradas.</div>
+                <div v-for="(av, i) in al.avaliacoes" :key="i" class="av">
+                    <div class="av-data">{{ fmtBr(av.dt) }}</div>
+                    <div class="av-texto" v-html="av.descricao"></div>
                 </div>
             </div>
         </div>
@@ -160,10 +166,10 @@ const imprimir = () => window.print();
     .entidade { font-weight: 700; font-size: 9pt; }
     .titulo { text-align: center; font-size: 12pt; font-weight: 700; margin: 4px 0 2px; }
     .subtitulo { text-align: center; font-size: 9pt; margin-bottom: 6px; }
-    .turma-bloco { margin-bottom: 10px; page-break-inside: avoid; }
-    .turma-tit { font-size: 10pt; font-weight: 700; background: #e5e7eb; padding: 3px 6px; margin: 8px 0 4px; }
-    .aluno-bloco { border: 1px solid #444; padding: 4px 6px; margin-bottom: 4px; page-break-inside: avoid; }
-    .aluno-cab { font-size: 9pt; border-bottom: 1px solid #ccc; padding-bottom: 2px; margin-bottom: 3px; }
+    /* 1 aluno por página */
+    .pagina-aluno { page-break-after: always; break-after: page; }
+    .pagina-aluno:last-child { page-break-after: auto; break-after: auto; }
+    .aluno-cab { font-size: 9pt; border: 1px solid #444; padding: 4px 6px; margin-bottom: 6px; }
     .aluno-nome { font-weight: 700; }
     .aluno-sit { float: right; font-weight: 700; }
     .sem-av { font-size: 8pt; font-style: italic; color: #555; }

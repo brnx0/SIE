@@ -37,6 +37,7 @@ const form = useForm<SerieFormData>({
     ser_ordem_no_segmento:   props.initial?.ser_ordem_no_segmento ?? null,
     ser_fl_ativo:            props.initial?.ser_fl_ativo ?? true,
     ser_fl_multi:            props.initial?.ser_fl_multi ?? false,
+    ser_fl_progressao_auto:  props.initial?.ser_fl_progressao_auto ?? false,
     ser_tipo_avaliacao:      props.initial?.ser_tipo_avaliacao ?? [],
     ser_tipo_avaliacao_descritiva: props.initial?.ser_tipo_avaliacao_descritiva ?? '',
     ser_promo_ser_id_1:      props.initial?.ser_promo_ser_id_1 ?? null,
@@ -202,6 +203,12 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar série' : 'Salvar alter
             <div class="flex items-center gap-3 self-end pb-1">
                 <Switch id="ser_fl_multi" v-model="form.ser_fl_multi" />
                 <FormLabel for="ser_fl_multi" class="font-normal">Turma Multi</FormLabel>
+            </div>
+
+            <!-- Progressão continuada -->
+            <div class="flex items-center gap-3 self-end pb-1">
+                <Switch id="ser_fl_progressao_auto" v-model="form.ser_fl_progressao_auto" />
+                <FormLabel for="ser_fl_progressao_auto" class="font-normal">Progressão continuada</FormLabel>
             </div>
 
             <!-- Separador -->

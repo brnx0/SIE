@@ -75,6 +75,10 @@ const planos = ref<Plano[]>([]);
 const justificativas = ref<Justificativa[]>([]);
 // Sábados letivos do período (já filtrados pela escola da turma): cada um espelha um dia útil.
 const sabadosLetivos = ref<{ dt: string; dia_ref: string }[]>([]);
+// Aulas não executadas (tempo + data): `${trh}|${dt}` → true. Cada professor marca a sua;
+// a aula marcada não conta falta nem presença e sai dos relatórios de frequência.
+const naoExecMap = reactive<Record<string, boolean>>({});
+const salvandoNE = reactive<Record<string, boolean>>({});
 
 const csrf = (): Record<string, string> => {
     const m = document.cookie.match(/XSRF-TOKEN=([^;]+)/);
@@ -115,6 +119,8 @@ const carregar = async (silent = false) => {
         planos.value = data.planos ?? [];
         justificativas.value = data.justificativas ?? [];
         sabadosLetivos.value = data.sabados_letivos ?? [];
+        Object.keys(naoExecMap).forEach((key) => delete naoExecMap[key]);
+        for (const a of data.aulas_nao_executadas ?? []) naoExecMap[`${a.trh_id}|${a.dt}`] = true;
         for (const c of data.conteudos ?? []) {
             if (c.dis_id == null) continue;
             conteudoMap[`${c.dt}|${c.dis_id}`] = {
@@ -242,6 +248,33 @@ const marcarLote = async (trh: number, val: boolean) => {
     }
 };
 
+// ── Aula não executada (tempo + data) ────────────────────────────────────────
+const neKey = (trh: number) => `${trh}|${dataSel.value}`;
+const aulaNaoExec = (trh: number) => !!naoExecMap[neKey(trh)];
+const salvandoAula = (trh: number) => !!salvandoNE[neKey(trh)];
+
+const marcarAulaNaoExecutada = async (trh: number, val: boolean) => {
+    if (!editavel.value || !dataSel.value) return;
+    const key = neKey(trh);
+    naoExecMap[key] = val; // otimista
+    salvandoNE[key] = true;
+    try {
+        const r = await fetch('/api/diario/faltas/aula-nao-executada', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json', ...csrf() },
+            credentials: 'same-origin',
+            body: JSON.stringify({ tur_id: props.turId, uni_id: props.uniId, trh_id: trh, dt: dataSel.value, nao_executado: val }),
+        });
+        if (r.ok) { if (!val) delete naoExecMap[key]; }
+        else { naoExecMap[key] = !val; erro.value = 'Não foi possível salvar a aula não executada.'; }
+    } catch {
+        naoExecMap[key] = !val;
+        erro.value = 'Não foi possível salvar a aula não executada.';
+    } finally {
+        delete salvandoNE[key];
+    }
+};
+
 const alunosFiltrados = computed(() => {
     const q = busca.value.trim().toLowerCase();
     if (!q) return alunos.value;
@@ -358,7 +391,11 @@ const reg = (trh: number, aln: number): boolean | null => {
     return key in presencaMap ? presencaMap[key] : null;
 };
 // Tempo editável: sem registro assume presente. Tempo de outro professor: só o que foi lançado.
-const mostrarFalta = (t: Tempo, aln: number) => (t.pode_editar ? !presente(t.trh_id, aln) : reg(t.trh_id, aln) === false);
+// Aula não executada nunca conta falta.
+const mostrarFalta = (t: Tempo, aln: number) => {
+    if (aulaNaoExec(t.trh_id)) return false;
+    return t.pode_editar ? !presente(t.trh_id, aln) : reg(t.trh_id, aln) === false;
+};
 
 // ── Justificativa de falta (intervalo por aluno cobre o dia) ─────────────────
 const justificativaDe = (aln: number, dt: string): Justificativa | null => {
@@ -372,7 +409,7 @@ const motivoCell = (aln: number) => justificativaDe(aln, dataSel.value)?.motivo 
 
 const faltasDia = (aln: number) => temposDoDia.value.filter((t) => mostrarFalta(t, aln)).length;
 const statusDia = (aln: number): 'presente' | 'parcial' | 'ausente' | 'justificada' => {
-    const total = temposDoDia.value.length;
+    const total = temposDoDia.value.filter((t) => !aulaNaoExec(t.trh_id)).length;
     const f = faltasDia(aln);
     if (f === 0) return 'presente';
     if (diaJustificado(aln)) return 'justificada'; // toda falta do dia está coberta pela justificativa
@@ -521,10 +558,10 @@ const statusInfo = (aln: number): { label: string; cls: string } => {
                                     <th class="sticky left-0 top-0 z-30 min-w-[220px] border-b bg-muted/90 px-3 py-1.5 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground backdrop-blur">
                                         Aluno
                                     </th>
-                                    <th v-for="t in temposDoDia" :key="t.trh_id" :class="['sticky top-0 z-20 border-b border-l px-2 py-1 text-center align-top backdrop-blur', t.pode_editar ? 'bg-muted/90' : 'bg-muted/50']">
+                                    <th v-for="t in temposDoDia" :key="t.trh_id" :class="['sticky top-0 z-20 border-b border-l px-2 py-1 text-center align-top backdrop-blur', aulaNaoExec(t.trh_id) ? 'bg-amber-100 dark:bg-amber-950/40' : (t.pode_editar ? 'bg-muted/90' : 'bg-muted/50')]">
                                         <div class="mx-auto flex w-24 items-center justify-center gap-1 truncate text-xs font-semibold text-slate-700 dark:text-slate-200" :title="tempoLabel(t) + (t.fun_nome ? ' · ' + t.fun_nome : '')">
                                             <span>{{ t.trh_tempo }}º<span v-if="t.dis_nome"> · {{ t.dis_nome }}</span></span>
-                                            <template v-if="t.pode_editar">
+                                            <template v-if="t.pode_editar && !aulaNaoExec(t.trh_id)">
                                                 <button type="button" :disabled="!editavel" title="Todos presentes" class="text-[11px] font-semibold text-emerald-600 hover:text-emerald-700 disabled:opacity-40" @click="marcarLote(t.trh_id, true)">✓</button>
                                                 <button type="button" :disabled="!editavel" title="Todos ausentes" class="text-[11px] font-semibold text-rose-600 hover:text-rose-700 disabled:opacity-40" @click="marcarLote(t.trh_id, false)">✕</button>
                                             </template>
@@ -532,6 +569,18 @@ const statusInfo = (aln: number): { label: string; cls: string } => {
                                         <div class="mx-auto w-24 truncate text-[10px] font-normal text-muted-foreground" :title="t.fun_nome ?? ''">
                                             {{ nomeCurto(t.fun_nome) }}<span v-if="!t.pode_editar"> · leitura</span>
                                         </div>
+                                        <button
+                                            v-if="t.pode_editar"
+                                            type="button"
+                                            :disabled="!editavel || salvandoAula(t.trh_id)"
+                                            class="mx-auto mt-1 inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-semibold transition disabled:opacity-40"
+                                            :class="aulaNaoExec(t.trh_id) ? 'bg-amber-500 text-white hover:bg-amber-600' : 'border text-muted-foreground hover:bg-muted'"
+                                            :title="aulaNaoExec(t.trh_id) ? 'Aula não executada — clique para reativar' : 'Marcar aula não executada (não conta falta nem presença)'"
+                                            @click="marcarAulaNaoExecutada(t.trh_id, !aulaNaoExec(t.trh_id))"
+                                        >
+                                            <Loader2 v-if="salvandoAula(t.trh_id)" class="size-3 animate-spin" />
+                                            NE
+                                        </button>
                                     </th>
                                     <th class="sticky top-0 z-20 border-b border-l bg-muted/90 px-2 py-1.5 text-center text-[11px] font-semibold uppercase tracking-wide text-muted-foreground backdrop-blur">Situação</th>
                                 </tr>
@@ -552,7 +601,8 @@ const statusInfo = (aln: number): { label: string; cls: string } => {
                                         </div>
                                     </td>
                                     <td v-for="t in temposDoDia" :key="t.trh_id" :class="['border-b border-l px-2 py-2 text-center transition-colors', i % 2 ? 'bg-muted/20' : '', 'group-hover:bg-indigo-50/40 dark:group-hover:bg-indigo-950/20']">
-                                        <span v-if="saiuNoDia(a)" :title="`Aluno saiu em ${fmtData(a.dt_saida)} — bloqueado`" class="inline-flex size-8 items-center justify-center rounded-md text-xs text-muted-foreground/40">·</span>
+                                        <span v-if="aulaNaoExec(t.trh_id)" title="Aula não executada — não conta falta nem presença" class="inline-flex size-8 items-center justify-center rounded-md bg-amber-100 text-[10px] font-semibold text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">NE</span>
+                                        <span v-else-if="saiuNoDia(a)" :title="`Aluno saiu em ${fmtData(a.dt_saida)} — bloqueado`" class="inline-flex size-8 items-center justify-center rounded-md text-xs text-muted-foreground/40">·</span>
                                         <template v-else>
                                         <button
                                             v-if="t.pode_editar"
@@ -618,7 +668,7 @@ const statusInfo = (aln: number): { label: string; cls: string } => {
                         <span class="inline-flex items-center gap-1"><span class="inline-block size-3 rounded bg-rose-600"></span> Falta</span>
                         <span>·</span>
                         <span class="inline-flex items-center gap-1"><span class="inline-flex size-3.5 items-center justify-center rounded bg-indigo-100 text-[7px] font-bold leading-none text-indigo-700 ring-1 ring-inset ring-indigo-300 dark:bg-indigo-950/40 dark:text-indigo-300">FJ</span> Falta justificada</span>
-                        <span>· clique alterna · ✓/✕ no topo marca a coluna inteira.</span>
+                        <span>· clique alterna · ✓/✕ no topo marca a coluna inteira · <b>NE</b> = aula não executada.</span>
                     </p>
                 </template>
             </template>

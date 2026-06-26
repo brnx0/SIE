@@ -23,6 +23,7 @@ class FaltasAluno
             ->where('a.aul_dis_id', $disId)
             ->where('a.aul_uni_id', $uniId)
             ->where('f.fal_fl_presente', false)
+            ->where('a.aul_fl_nao_executada', false) // ignora faltas em aulas não executadas
             ->whereNull('a.aul_deleted_at')
             ->whereNull('f.fal_deleted_at')
             ->groupBy('f.fal_aln_id')

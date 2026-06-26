@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import FormLabel from '@/components/common/FormLabel.vue';
 import Switch from '@/components/common/Switch.vue';
 import LancamentoNotasModal from '@/components/encerramento/LancamentoNotasModal.vue';
+import ConfirmDialog from '@/components/common/ConfirmDialog.vue';
 import type { BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
 import { Archive, ArrowLeft, CheckCircle2, Loader2, Lock, PencilLine, Search, Users } from 'lucide-vue-next';
@@ -21,8 +22,12 @@ interface AlunoLinha {
     total: number;
     lancadas: number;
     pendencias: Pendencia[];
+    encerrado: boolean;
+    situacao_final: string | null;
+    elegivel_conselho: boolean;
 }
-interface TurmaLinha { tur_id: number; turma: string; serie: string | null; avaliativa: boolean; encerrada: boolean; alunos: AlunoLinha[] }
+interface TurmaLinha { tur_id: number; turma: string; serie: string | null; seg_id: number | null; segmento: string | null; avaliativa: boolean; encerrada: boolean; alunos: AlunoLinha[] }
+interface SegmentoOpc { seg_id: number; seg_nome: string }
 
 const props = defineProps<{
     anosLetivos: AnoLetivo[];
@@ -41,13 +46,18 @@ const carregando = ref(false);
 const carregado = ref(false);
 const erro = ref<string | null>(null);
 const turmas = ref<TurmaLinha[]>([]);
+const segmentos = ref<SegmentoOpc[]>([]);
 
-// Busca de turma na listagem.
+// Busca + filtro de segmento na listagem.
 const busca = ref('');
+const segId = ref<number | ''>('');
 const turmasFiltradas = computed(() => {
     const q = busca.value.trim().toLowerCase();
-    if (!q) return turmas.value;
-    return turmas.value.filter((t) => `${t.serie ?? ''} ${t.turma}`.toLowerCase().includes(q));
+    return turmas.value.filter((t) => {
+        if (segId.value !== '' && t.seg_id !== segId.value) return false;
+        if (q && !`${t.serie ?? ''} ${t.turma}`.toLowerCase().includes(q)) return false;
+        return true;
+    });
 });
 
 // Mestre-detalhe: turma selecionada.
@@ -67,6 +77,7 @@ const buscarDados = async () => {
     if (r.ok) {
         const j = await r.json();
         turmas.value = j.turmas ?? [];
+        segmentos.value = j.segmentos ?? [];
         carregado.value = true;
     } else {
         erro.value = `Não foi possível listar as turmas (erro ${r.status}).`;
@@ -77,6 +88,7 @@ const listar = async () => {
     if (!anlId.value || !escId.value) return;
     carregando.value = true;
     selectedTurId.value = null;
+    segId.value = '';
     try {
         await buscarDados();
     } catch {
@@ -89,6 +101,14 @@ const listar = async () => {
 // Recarrega mantendo a turma aberta (após lançar notas no modal).
 const recarregar = async () => {
     try { await buscarDados(); } catch { /* mantém estado */ }
+};
+
+// A cada lançamento/remoção no modal, atualiza a situação (completude) do aluno na lista — com debounce.
+let recarregarTimer: number | undefined;
+const onSaved = () => {
+    houveLancamento.value = true;
+    if (recarregarTimer) clearTimeout(recarregarTimer);
+    recarregarTimer = window.setTimeout(() => recarregar(), 600);
 };
 
 // Modal de lançamento de notas/faltas do aluno.
@@ -117,6 +137,88 @@ const statusInfo = (s: AlunoLinha['status']) => ({
     nao_avaliativa: { label: 'Avaliação descritiva', cls: 'bg-slate-100 text-slate-600 ring-slate-200 dark:bg-slate-800 dark:text-slate-300' },
     sem_grade:      { label: 'Sem grade definida', cls: 'bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-950/40 dark:text-amber-300' },
 }[s]);
+
+// ===== Confirmação (diálogo) =====
+type ConfirmVariant = 'danger' | 'warning' | 'success';
+const confirmState = reactive<{ open: boolean; title: string; message: string; variant: ConfirmVariant; confirmLabel: string }>({
+    open: false, title: '', message: '', variant: 'warning', confirmLabel: 'Confirmar',
+});
+let confirmResolve: ((v: boolean) => void) | null = null;
+const confirmar = (opts: { title: string; message: string; variant?: ConfirmVariant; confirmLabel?: string }): Promise<boolean> => {
+    confirmState.title = opts.title;
+    confirmState.message = opts.message;
+    confirmState.variant = opts.variant ?? 'warning';
+    confirmState.confirmLabel = opts.confirmLabel ?? 'Confirmar';
+    confirmState.open = true;
+    return new Promise((resolve) => { confirmResolve = resolve; });
+};
+const onConfirmOk = () => { confirmState.open = false; confirmResolve?.(true); confirmResolve = null; };
+const onConfirmCancel = () => { confirmResolve?.(false); confirmResolve = null; };
+
+// ===== Encerrar / cancelar =====
+const processando = ref(false);
+const csrf = (): Record<string, string> => {
+    const m = document.cookie.match(/XSRF-TOKEN=([^;]+)/);
+    return m ? { 'X-XSRF-TOKEN': decodeURIComponent(m[1]) } : {};
+};
+const postJson = (url: string, body: unknown) =>
+    fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json', ...csrf() }, credentials: 'same-origin', body: JSON.stringify(body) });
+
+const encerrarTurma = async () => {
+    const t = turmaSel.value;
+    if (!t) return;
+    const conselhoIds = t.alunos.filter((a) => a.elegivel_conselho && conselho[a.aln_id]).map((a) => a.aln_id);
+    const ok = await confirmar({
+        title: 'Encerrar turma',
+        message: `${t.serie ? t.serie + ' — ' : ''}Turma ${t.turma}\n\nA situação final de cada aluno será calculada e gravada.`,
+        variant: 'success',
+        confirmLabel: 'Encerrar turma',
+    });
+    if (!ok) return;
+    processando.value = true;
+    erro.value = null;
+    try {
+        const r = await postJson('/encerramento-turmas/encerrar', { tur_id: t.tur_id, conselho: conselhoIds });
+        if (r.ok) {
+            await recarregar();
+        } else {
+            const j = await r.json().catch(() => ({}));
+            erro.value = (j.message ?? 'Não foi possível encerrar.') + (Array.isArray(j.erros) ? ' ' + j.erros.join(' · ') : '');
+        }
+    } catch {
+        erro.value = 'Falha de conexão ao encerrar.';
+    } finally {
+        processando.value = false;
+    }
+};
+
+const cancelarTurma = async () => {
+    const t = turmaSel.value;
+    if (!t) return;
+    const ok = await confirmar({
+        title: 'Cancelar encerramento',
+        message: 'A situação final de TODOS os alunos será removida e a turma voltará a ficar aberta.',
+        variant: 'danger',
+        confirmLabel: 'Cancelar encerramento',
+    });
+    if (!ok) return;
+    processando.value = true;
+    try { const r = await postJson('/encerramento-turmas/cancelar', { tur_id: t.tur_id }); if (r.ok) await recarregar(); } catch { erro.value = 'Falha ao cancelar.'; } finally { processando.value = false; }
+};
+
+const cancelarAluno = async (a: AlunoLinha) => {
+    const t = turmaSel.value;
+    if (!t) return;
+    const ok = await confirmar({
+        title: 'Reabrir aluno',
+        message: `${a.nome}\n\nA situação final dele será removida e a turma voltará a ficar aberta.`,
+        variant: 'danger',
+        confirmLabel: 'Reabrir',
+    });
+    if (!ok) return;
+    processando.value = true;
+    try { const r = await postJson('/encerramento-turmas/cancelar-aluno', { tur_id: t.tur_id, aln_id: a.aln_id }); if (r.ok) await recarregar(); } catch { erro.value = 'Falha ao cancelar.'; } finally { processando.value = false; }
+};
 
 const podeEncerrar = (a: AlunoLinha) => a.status === 'completo' || a.status === 'nao_avaliativa';
 const completos = (t: TurmaLinha) => t.alunos.filter((a) => podeEncerrar(a)).length;
@@ -178,13 +280,24 @@ const pendentesTurma = (t: TurmaLinha) => t.alunos.filter((a) => !podeEncerrar(a
                             <span class="inline-flex items-center gap-1.5"><span class="size-3 rounded-full bg-emerald-500"></span> Fechada</span>
                             <span class="inline-flex items-center gap-1.5"><span class="size-3 rounded-full bg-slate-400"></span> Ativa</span>
                         </div>
-                        <div class="relative w-full max-w-xs">
-                            <Search class="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                            <input v-model="busca" type="text" placeholder="Buscar turma..." class="h-9 w-full rounded-md border border-input bg-background pl-8 pr-3 text-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-ring" />
+                        <div class="flex flex-wrap items-center gap-2">
+                            <select
+                                v-if="segmentos.length"
+                                v-model="segId"
+                                class="h-9 rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                title="Filtrar por segmento"
+                            >
+                                <option value="">Todos os segmentos</option>
+                                <option v-for="sg in segmentos" :key="sg.seg_id" :value="sg.seg_id">{{ sg.seg_nome }}</option>
+                            </select>
+                            <div class="relative w-full max-w-xs sm:w-64">
+                                <Search class="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                                <input v-model="busca" type="text" placeholder="Buscar turma..." class="h-9 w-full rounded-md border border-input bg-background pl-8 pr-3 text-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-ring" />
+                            </div>
                         </div>
                     </div>
                     <div v-if="!turmasFiltradas.length" class="rounded-xl border bg-card py-10 text-center text-sm text-muted-foreground">
-                        Nenhuma turma encontrada para "{{ busca }}".
+                        Nenhuma turma encontrada<span v-if="busca"> para "{{ busca }}"</span><span v-if="segId !== ''"> neste segmento</span>.
                     </div>
                     <div v-else class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                         <button
@@ -235,11 +348,25 @@ const pendentesTurma = (t: TurmaLinha) => t.alunos.filter((a) => !podeEncerrar(a
                     <div class="flex items-center gap-3">
                         <span class="text-sm text-muted-foreground">{{ completos(turmaSel) }}/{{ turmaSel.alunos.length }} aptos</span>
                         <Button
-                            :disabled="!podeEncerrarTurma(turmaSel)"
-                            :title="podeEncerrarTurma(turmaSel) ? 'Encerrar a turma (em breve)' : `${pendentesTurma(turmaSel)} aluno(s) com notas pendentes`"
-                            class="gap-1 bg-emerald-600 text-white hover:bg-emerald-700"
+                            v-if="turmaSel.encerrada"
+                            :disabled="processando"
+                            title="Cancelar o encerramento da turma e reabrir"
+                            class="gap-1 border-rose-300 bg-rose-50 text-rose-700 hover:bg-rose-100 dark:border-rose-900 dark:bg-rose-950/30 dark:text-rose-300"
+                            variant="outline"
+                            @click="cancelarTurma"
                         >
-                            <Lock class="size-4" /> Encerrar turma
+                            <Loader2 v-if="processando" class="size-4 animate-spin" />
+                            <ArrowLeft v-else class="size-4" /> Cancelar encerramento
+                        </Button>
+                        <Button
+                            v-else
+                            :disabled="!podeEncerrarTurma(turmaSel) || processando"
+                            :title="podeEncerrarTurma(turmaSel) ? 'Encerrar a turma' : `${pendentesTurma(turmaSel)} aluno(s) com notas pendentes`"
+                            class="gap-1 bg-emerald-600 text-white hover:bg-emerald-700"
+                            @click="encerrarTurma"
+                        >
+                            <Loader2 v-if="processando" class="size-4 animate-spin" />
+                            <Lock v-else class="size-4" /> Encerrar turma
                         </Button>
                     </div>
                 </div>
@@ -279,7 +406,8 @@ const pendentesTurma = (t: TurmaLinha) => t.alunos.filter((a) => !podeEncerrar(a
                                             <div v-if="a.matricula" class="text-[11px] text-muted-foreground">Matr. {{ a.matricula }}</div>
                                         </td>
                                         <td class="px-3 py-2">
-                                            <span class="rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">{{ a.situacao }}</span>
+                                            <span :class="['rounded-full px-2 py-0.5 text-[11px] font-medium', a.encerrado ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300' : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300']">{{ a.situacao }}</span>
+                                            <span v-if="a.encerrado" class="ml-1 text-[10px] text-muted-foreground">(final)</span>
                                         </td>
                                         <td class="px-3 py-2">
                                             <span :class="['inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ring-1 ring-inset', statusInfo(a.status).cls]">
@@ -295,10 +423,30 @@ const pendentesTurma = (t: TurmaLinha) => t.alunos.filter((a) => !podeEncerrar(a
                                             </button>
                                         </td>
                                         <td class="px-3 py-2 text-center">
-                                            <Switch :model-value="conselho[a.aln_id] ?? false" @update:model-value="conselho[a.aln_id] = $event" />
+                                            <Switch
+                                                v-if="!a.encerrado && a.elegivel_conselho"
+                                                :model-value="conselho[a.aln_id] ?? false"
+                                                @update:model-value="conselho[a.aln_id] = $event"
+                                            />
+                                            <span
+                                                v-else
+                                                class="text-[11px] text-muted-foreground"
+                                                :title="a.encerrado ? '' : 'Disponível apenas para alunos que não atingiram a média ou a frequência'"
+                                            >—</span>
                                         </td>
                                         <td class="px-3 py-2 text-right">
-                                            <Button size="sm" variant="outline" class="gap-1" title="Lançar notas e faltas do aluno" @click="abrirLancamento(a)">
+                                            <Button
+                                                v-if="a.encerrado"
+                                                size="sm"
+                                                variant="outline"
+                                                :disabled="processando"
+                                                class="gap-1 text-rose-700 hover:bg-rose-50 dark:text-rose-300 dark:hover:bg-rose-950/30"
+                                                title="Cancelar o encerramento deste aluno (reabre a turma)"
+                                                @click="cancelarAluno(a)"
+                                            >
+                                                <ArrowLeft class="size-3.5" /> Reabrir
+                                            </Button>
+                                            <Button v-else size="sm" variant="outline" class="gap-1" title="Lançar notas e faltas do aluno" @click="abrirLancamento(a)">
                                                 <PencilLine class="size-3.5" /> Lançar notas
                                             </Button>
                                         </td>
@@ -329,7 +477,18 @@ const pendentesTurma = (t: TurmaLinha) => t.alunos.filter((a) => !podeEncerrar(a
             :tur-id="turmaSel.tur_id"
             :aluno="modalAluno"
             @update:open="onModalOpen"
-            @saved="houveLancamento = true"
+            @saved="onSaved"
+        />
+
+        <ConfirmDialog
+            :open="confirmState.open"
+            :title="confirmState.title"
+            :message="confirmState.message"
+            :variant="confirmState.variant"
+            :confirm-label="confirmState.confirmLabel"
+            @update:open="confirmState.open = $event"
+            @confirm="onConfirmOk"
+            @cancel="onConfirmCancel"
         />
     </AppLayout>
 </template>

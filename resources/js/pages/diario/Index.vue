@@ -3,6 +3,7 @@ import AvaliacaoDescritivaPanel from '@/components/diario/AvaliacaoDescritivaPan
 import QuadroHorarioPanel from '@/components/diario/QuadroHorarioPanel.vue';
 import NotasNumericaPanel from '@/components/diario/NotasNumericaPanel.vue';
 import NotasConceitualPanel from '@/components/diario/NotasConceitualPanel.vue';
+import DiagnosticoPanel from '@/components/diario/DiagnosticoPanel.vue';
 import FaltasPanel from '@/components/diario/FaltasPanel.vue';
 import LocalCombobox from '@/components/common/LocalCombobox.vue';
 import { Input } from '@/components/ui/input';
@@ -17,7 +18,7 @@ import type {
     ProfessorResumoDiario,
 } from '@/types/diario';
 import { Head } from '@inertiajs/vue3';
-import { BookOpenCheck, CalendarCheck, CalendarClock, Calculator, ClipboardList, ListChecks, Pencil } from 'lucide-vue-next';
+import { BookOpenCheck, CalendarCheck, CalendarClock, Calculator, ClipboardList, ListChecks, Pencil, Stethoscope } from 'lucide-vue-next';
 import { computed, onMounted, ref, watch } from 'vue';
 
 const props = defineProps<{
@@ -211,6 +212,9 @@ const modulos = computed(() => [
         : []),
     ...(tiposAvaliacao.value.includes('conceitual')
         ? [{ key: 'notas-conceitual', label: 'Avaliação Conceitual', icon: ListChecks, req: 'completo', grupo: 'Lançamentos' }]
+        : []),
+    ...(tiposAvaliacao.value.includes('diagnostico')
+        ? [{ key: 'diagnostico', label: 'Avaliação por Diagnóstico', icon: Stethoscope, req: 'completo', grupo: 'Lançamentos' }]
         : []),
     { key: 'avaliacao-descritiva', label: 'Avaliação Descritiva', icon: ClipboardList, req: 'completo', grupo: 'Lançamentos' },
     { key: 'faltas', label: 'Frequência', icon: CalendarCheck, req: 'periodo', grupo: 'Lançamentos' },
@@ -417,6 +421,17 @@ const semVinculo = computed(() => props.anosLetivos.length === 0);
             <NotasConceitualPanel
                 v-if="!semVinculo && contextoCompleto && moduloAtivo === 'notas-conceitual'"
                 :key="`nc-${turId}-${disId}-${uniId}-${recarregarSeq}`"
+                :anl-id="anlId!"
+                :esc-id="escId!"
+                :tur-id="turId!"
+                :dis-id="disId!"
+                :uni-id="uniId!"
+            />
+
+            <!-- Módulo ativo: Avaliação por Diagnóstico -->
+            <DiagnosticoPanel
+                v-if="!semVinculo && contextoCompleto && moduloAtivo === 'diagnostico'"
+                :key="`dgn-${turId}-${disId}-${uniId}-${recarregarSeq}`"
                 :anl-id="anlId!"
                 :esc-id="escId!"
                 :tur-id="turId!"

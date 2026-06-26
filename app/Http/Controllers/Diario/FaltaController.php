@@ -180,6 +180,20 @@ class FaltaController extends Controller
                 'metodologia' => $p->dpa_estrategias,
             ]);
 
+        // Aulas marcadas como NÃO executadas (por tempo + data) — não contam falta/presença.
+        $aulasNaoExecutadas = [];
+        if ($tempos->isNotEmpty()) {
+            $aulasNaoExecutadas = DB::table('edu_diario_aula')
+                ->where('aul_tur_id', $turId)
+                ->where('aul_uni_id', $uniId)
+                ->where('aul_fl_nao_executada', true)
+                ->whereIn('aul_trh_id', $tempos->pluck('trh_id'))
+                ->whereNull('aul_deleted_at')
+                ->get(['aul_trh_id', 'aul_dt'])
+                ->map(fn ($r) => ['trh_id' => (int) $r->aul_trh_id, 'dt' => Carbon::parse($r->aul_dt)->toDateString()])
+                ->values();
+        }
+
         return response()->json([
             'tempos'         => $tempos,
             'alunos'         => $alunos,
@@ -191,6 +205,7 @@ class FaltaController extends Controller
             'planos'         => $planos,
             'sabados_letivos' => $sabadosLetivos,
             'justificativas' => $justificativas,
+            'aulas_nao_executadas' => $aulasNaoExecutadas,
         ]);
     }
 
@@ -324,6 +339,55 @@ class FaltaController extends Controller
         });
 
         return response()->json(['ok' => true]);
+    }
+
+    /**
+     * Marca/desmarca a AULA do professor (tempo + data) como NÃO executada.
+     * É por tempo: marcar a sua não anula a dos outros professores. A aula marcada
+     * não conta falta nem presença e sai dos relatórios de frequência.
+     */
+    public function salvarAulaNaoExecutada(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'tur_id'        => ['required', 'integer', 'exists:edu_turma,tur_id'],
+            'uni_id'        => ['required', 'integer', 'exists:cfg_unidade,uni_id'],
+            'trh_id'        => ['required', 'integer', 'exists:edu_turma_horario,trh_id'],
+            'dt'            => ['required', 'date'],
+            'nao_executado' => ['required', 'boolean'],
+        ]);
+
+        $this->abortIfNotProfessor();
+        $slot = $this->slotDoProfessor($request, (int) $data['tur_id'], (int) $data['trh_id']);
+        $this->assertTurmaAberta((int) $data['tur_id']);
+        $this->assertPeriodoAberto((int) $data['uni_id']);
+        $this->assertDataNoPeriodo((int) $data['uni_id'], $data['dt']);
+
+        $naoExec = (bool) $data['nao_executado'];
+
+        if (! $naoExec) {
+            // Desmarca: se a aula não tem nenhuma frequência lançada, remove; senão só limpa a flag.
+            $aula = DiarioAula::where('aul_tur_id', $data['tur_id'])
+                ->where('aul_trh_id', $data['trh_id'])
+                ->whereDate('aul_dt', Carbon::parse($data['dt'])->toDateString())
+                ->first();
+
+            if ($aula) {
+                $temFalta = DB::table('edu_diario_falta')->where('fal_aul_id', $aula->aul_id)->whereNull('fal_deleted_at')->exists();
+                if ($temFalta) {
+                    $aula->update(['aul_fl_nao_executada' => false]);
+                } else {
+                    $aula->delete();
+                }
+            }
+
+            return response()->json(['ok' => true, 'nao_executado' => false]);
+        }
+
+        // Marca: cria/recupera a aula do tempo e seta a flag.
+        $aula = $this->resolverAula($request, $data, $slot);
+        $aula->update(['aul_fl_nao_executada' => true]);
+
+        return response()->json(['ok' => true, 'nao_executado' => true]);
     }
 
     // ============ Helpers ============

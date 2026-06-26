@@ -72,6 +72,7 @@ class Turma extends Model
     protected $fillable = [
         'tur_esc_id',
         'tur_anl_id',
+        'tur_origem_tur_id',
         'tur_modalidade',
         'tur_seg_id',
         'tur_ser_id',

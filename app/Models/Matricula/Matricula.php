@@ -41,6 +41,7 @@ class Matricula extends Model
         'tma_fl_renovado',
         'tma_dt_matricula',
         'tma_dt_saida',
+        'tma_dt_encerramento',
         'tma_obs',
         'tma_created_by_id',
     ];
@@ -55,6 +56,7 @@ class Matricula extends Model
         'tma_fl_renovado'      => 'boolean',
         'tma_dt_matricula'    => 'date',
         'tma_dt_saida'        => 'date',
+        'tma_dt_encerramento' => 'datetime',
         'tma_created_by_id'          => 'integer',
     ];
 

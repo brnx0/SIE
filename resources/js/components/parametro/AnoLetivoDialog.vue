@@ -39,6 +39,7 @@ const form = useForm<AnoLetivoFormData>({
     anl_media_geral: '',
     anl_cnc_id_geral: null,
     anl_conceito_modo: 'faixa',
+    anl_qtd_materias_conselho: null,
 });
 
 const reset = () => {
@@ -55,6 +56,7 @@ const reset = () => {
         form.anl_media_geral = props.initial.anl_media_geral != null ? Number(props.initial.anl_media_geral) : '';
         form.anl_cnc_id_geral = props.initial.anl_cnc_id_geral ?? null;
         form.anl_conceito_modo = props.initial.anl_conceito_modo ?? 'faixa';
+        form.anl_qtd_materias_conselho = props.initial.anl_qtd_materias_conselho ?? null;
     } else {
         form.reset();
         form.clearErrors();
@@ -209,6 +211,22 @@ const clampAno4Digitos = (field: keyof AnoLetivoFormData) => (e: Event) => {
                     </select>
                     <p class="text-xs text-muted-foreground">Define como a avaliação conceitual é lançada neste ano letivo.</p>
                     <InputError :message="form.errors.anl_conceito_modo" />
+                </div>
+
+                <div class="grid gap-2 sm:col-span-2">
+                    <FormLabel :for="'anl_qtd_materias_conselho'">Matérias aprováveis por Conselho</FormLabel>
+                    <Input
+                        id="anl_qtd_materias_conselho"
+                        type="number"
+                        min="1"
+                        max="50"
+                        step="1"
+                        inputmode="numeric"
+                        placeholder="Vazio = ilimitado"
+                        v-model.number="form.anl_qtd_materias_conselho"
+                    />
+                    <p class="text-xs text-muted-foreground">Limite de disciplinas que o conselho pode aprovar por aluno no encerramento. Vazio = sem limite.</p>
+                    <InputError :message="form.errors.anl_qtd_materias_conselho" />
                 </div>
 
                 <div class="flex items-center gap-3 sm:col-span-2">

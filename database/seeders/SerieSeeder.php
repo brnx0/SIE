@@ -96,6 +96,8 @@ class SerieSeeder extends Seeder
                     'ser_tipo_avaliacao_descritiva' => $tipoDescritiva,
                     'ser_fl_ativo'                  => true,
                     'ser_fl_multi'                  => str_contains($serNome, 'MULTI'),
+                    // Até o 2º ANO (ordem <= 10): progressão automática.
+                    'ser_fl_progressao_auto'        => $ordem <= 10,
                 ],
             );
         }

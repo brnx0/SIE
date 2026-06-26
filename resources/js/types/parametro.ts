@@ -43,6 +43,7 @@ export interface AnoLetivo {
     anl_media_geral: number | string | null;
     anl_cnc_id_geral: number | null;
     anl_conceito_modo: 'faixa' | 'conceito' | null;
+    anl_qtd_materias_conselho: number | null;
     anl_created_at: string | null;
     anl_updated_at: string | null;
     created_by?: AnoLetivoUserRef | null;
@@ -62,6 +63,7 @@ export interface AnoLetivoFormData {
     anl_media_geral: number | '';
     anl_cnc_id_geral: number | null;
     anl_conceito_modo: 'faixa' | 'conceito';
+    anl_qtd_materias_conselho: number | null;
     [key: string]: any;
 }
 
