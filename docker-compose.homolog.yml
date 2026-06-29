@@ -40,7 +40,8 @@ services:
     container_name: sie_web_homolog
     restart: unless-stopped
     ports:
-      - "${WEB_PORT:-8080}:80"
+      # so o nginx do HOST acessa (proxy reverso) - nao expoe externo
+      - "127.0.0.1:${WEB_PORT:-8090}:80"
     volumes:
       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
       # serve assets estaticos direto do container app
