@@ -17,12 +17,15 @@ RUN npm run build
 FROM composer:2 AS vendor
 WORKDIR /app
 COPY composer.json composer.lock ./
-# sem scripts: artisan ainda nao tem app completa aqui
+# sem scripts: artisan ainda nao tem app completa aqui.
+# --ignore-platform-reqs: imagem composer nao tem gd/pgsql, mas o runtime
+# (php:8.3-fpm) tem. So resolvemos deps aqui; extensoes reais existem la.
 RUN composer install \
       --no-dev \
       --no-interaction \
       --prefer-dist \
       --no-scripts \
+      --ignore-platform-reqs \
       --optimize-autoloader
 
 #########################
