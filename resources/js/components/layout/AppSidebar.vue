@@ -154,6 +154,7 @@ const encerramentoMenu = computed<any[]>(() => {
             { title: 'Encerramento de Turmas', href: '/encerramento-turmas' },
             { title: 'Duplicar Turmas', href: '/duplicar-turmas' },
             { title: 'Confirmação de Renovação', href: '/confirmacao-renovacao' },
+            { title: 'Relatórios', href: '/relatorios-encerramento' },
         ],
     }];
 });

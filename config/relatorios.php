@@ -4,9 +4,17 @@ return [
     [
         'slug'      => 'ata-final',
         'titulo'    => 'Ata Final do Encerramento',
-        'descricao' => 'Por turma encerrada: nota final de cada disciplina e o resultado final do aluno (aprovado/reprovado). Alunos que saíram não têm resultado.',
+        'descricao' => 'Por turma: nota final de cada disciplina e o resultado final do aluno (aprovado/reprovado). Lista todas as turmas e sinaliza as ainda não encerradas. Alunos que saíram não têm resultado.',
         'categoria' => 'Secretaria Acadêmica',
         'grupo'     => 'secretaria',
+        'icone'     => 'ScrollText',
+    ],
+    [
+        'slug'      => 'ata-final',
+        'titulo'    => 'Ata de Encerramento',
+        'descricao' => 'Por turma: nota final de cada disciplina e o resultado final do aluno. Lista todas as turmas (sinaliza as que ainda não foram encerradas).',
+        'categoria' => 'Encerramento',
+        'grupo'     => 'encerramento',
         'icone'     => 'ScrollText',
     ],
     [

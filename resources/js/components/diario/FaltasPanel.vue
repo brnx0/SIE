@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
 import Switch from '@/components/common/Switch.vue';
-import { ChevronLeft, ChevronRight, Loader2, RefreshCw, Search, TriangleAlert } from 'lucide-vue-next';
+import { Ban, ChevronLeft, ChevronRight, Loader2, RefreshCw, Search, TriangleAlert } from 'lucide-vue-next';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 
 const props = defineProps<{
@@ -573,13 +573,16 @@ const statusInfo = (aln: number): { label: string; cls: string } => {
                                             v-if="t.pode_editar"
                                             type="button"
                                             :disabled="!editavel || salvandoAula(t.trh_id)"
-                                            class="mx-auto mt-1 inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-semibold transition disabled:opacity-40"
-                                            :class="aulaNaoExec(t.trh_id) ? 'bg-amber-500 text-white hover:bg-amber-600' : 'border text-muted-foreground hover:bg-muted'"
-                                            :title="aulaNaoExec(t.trh_id) ? 'Aula não executada — clique para reativar' : 'Marcar aula não executada (não conta falta nem presença)'"
+                                            class="mx-auto mt-1.5 flex w-24 items-center justify-center gap-1 rounded-md border px-1.5 py-1 text-[11px] font-semibold leading-none shadow-sm transition active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
+                                            :class="aulaNaoExec(t.trh_id)
+                                                ? 'border-amber-600 bg-amber-500 text-white shadow-amber-500/30 hover:bg-amber-600'
+                                                : 'border-amber-400 bg-amber-50 text-amber-700 hover:bg-amber-100 dark:border-amber-700/70 dark:bg-amber-950/40 dark:text-amber-300 dark:hover:bg-amber-900/40'"
+                                            :title="aulaNaoExec(t.trh_id) ? 'Aula NÃO executada — clique para reativar (volta a contar falta/presença)' : 'Marcar aula como NÃO executada (não conta falta nem presença)'"
                                             @click="marcarAulaNaoExecutada(t.trh_id, !aulaNaoExec(t.trh_id))"
                                         >
-                                            <Loader2 v-if="salvandoAula(t.trh_id)" class="size-3 animate-spin" />
-                                            NE
+                                            <Loader2 v-if="salvandoAula(t.trh_id)" class="size-3.5 animate-spin" />
+                                            <Ban v-else class="size-3.5 shrink-0" />
+                                            <span class="truncate">Não exec.</span>
                                         </button>
                                     </th>
                                     <th class="sticky top-0 z-20 border-b border-l bg-muted/90 px-2 py-1.5 text-center text-[11px] font-semibold uppercase tracking-wide text-muted-foreground backdrop-blur">Situação</th>

@@ -5,7 +5,7 @@ import FormLabel from '@/components/common/FormLabel.vue';
 import LocalCombobox from '@/components/common/LocalCombobox.vue';
 import type { BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
-import { ScrollText, Loader2 } from 'lucide-vue-next';
+import { ScrollText, Loader2, TriangleAlert } from 'lucide-vue-next';
 import { computed, onMounted, ref, watch } from 'vue';
 
 interface AnoLetivo { anl_id: number; anl_ano: number }
@@ -19,7 +19,7 @@ const anlId = ref<number | null>(props.anosLetivos[0]?.anl_id ?? null);
 const escId = ref<number | null>(props.userEscola?.esc_id ?? null);
 const turId = ref<number | null>(null);
 
-const turmas = ref<{ tur_id: number; turma: string }[]>([]);
+const turmas = ref<{ tur_id: number; turma: string; encerrada: boolean }[]>([]);
 const carregandoTurmas = ref(false);
 const gerando = ref(false);
 
@@ -43,7 +43,9 @@ watch([escId, anlId], loadTurmas);
 
 const itemsAno = computed(() => props.anosLetivos.map((a) => ({ id: a.anl_id, label: String(a.anl_ano) })));
 const itemsEscola = computed(() => props.escolas.map((e) => ({ id: e.esc_id, label: e.esc_nome })));
-const itemsTurma = computed(() => turmas.value.map((t) => ({ id: t.tur_id, label: t.turma })));
+const itemsTurma = computed(() => turmas.value.map((t) => ({ id: t.tur_id, label: t.encerrada ? t.turma : `${t.turma} — não encerrada` })));
+const turmaSel = computed(() => turmas.value.find((t) => t.tur_id === turId.value) ?? null);
+const turmaNaoEncerrada = computed(() => !!turmaSel.value && !turmaSel.value.encerrada);
 
 function gerar() {
     if (!escId.value || !anlId.value || !turId.value) return;
@@ -59,7 +61,7 @@ function gerar() {
             <h1 class="mb-1 flex items-center gap-2 text-xl font-semibold">
                 <ScrollText class="size-5 text-indigo-600" /> Ata Final do Encerramento
             </h1>
-            <p class="mb-6 text-sm text-muted-foreground">Nota final de cada disciplina e o resultado final do aluno. Somente turmas <strong>encerradas</strong>.</p>
+            <p class="mb-6 text-sm text-muted-foreground">Nota final de cada disciplina e o resultado final do aluno. Lista <strong>todas as turmas</strong> e sinaliza as ainda <strong>não encerradas</strong>.</p>
 
             <div class="grid gap-4 rounded-xl border bg-card p-6 shadow-sm sm:grid-cols-2 lg:grid-cols-3">
                 <div class="grid gap-1.5">
@@ -71,8 +73,12 @@ function gerar() {
                     <LocalCombobox v-model="escId" :items="itemsEscola" placeholder="Selecione a escola..." />
                 </div>
                 <div class="grid gap-1.5">
-                    <FormLabel :required="true">Turma (encerrada)</FormLabel>
-                    <LocalCombobox v-model="turId" :items="itemsTurma" :placeholder="carregandoTurmas ? 'Carregando...' : (itemsTurma.length ? 'Selecione a turma...' : 'Nenhuma turma encerrada')" />
+                    <FormLabel :required="true">Turma</FormLabel>
+                    <LocalCombobox v-model="turId" :items="itemsTurma" :placeholder="carregandoTurmas ? 'Carregando...' : (itemsTurma.length ? 'Selecione a turma...' : 'Nenhuma turma encontrada')" />
+                </div>
+                <div v-if="turmaNaoEncerrada" class="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 sm:col-span-2 lg:col-span-3 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
+                    <TriangleAlert class="mt-0.5 size-4 shrink-0" />
+                    <span>Esta turma <strong>ainda não foi encerrada</strong>. A ata sai com as notas atuais, mas <strong>sem o resultado final</strong> dos alunos.</span>
                 </div>
                 <div class="flex items-end justify-end sm:col-span-2 lg:col-span-3">
                     <Button :disabled="!escId || !anlId || !turId || gerando" class="bg-indigo-600 text-white hover:bg-indigo-700" @click="gerar">

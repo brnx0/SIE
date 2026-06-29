@@ -246,6 +246,7 @@ const painelVisivel = computed(() => {
     if (moduloAtivo.value === 'quadro-horario') return !!turId.value;
     if (moduloAtivo.value === 'notas-numerica') return contextoCompleto.value;
     if (moduloAtivo.value === 'notas-conceitual') return contextoCompleto.value;
+    if (moduloAtivo.value === 'diagnostico') return contextoCompleto.value;
     if (moduloAtivo.value === 'avaliacao-descritiva') return contextoCompleto.value;
     if (moduloAtivo.value === 'faltas') return !!(turId.value && uniId.value);
     return false;

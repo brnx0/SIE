@@ -195,6 +195,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('relatorios-diario', [RelatorioCentralController::class, 'diario'])->name('relatorios.diario');
     Route::get('relatorios-secretaria', [RelatorioCentralController::class, 'secretaria'])->name('relatorios.secretaria')->middleware('role:secretaria_escola');
     Route::get('relatorios-pedagogico', [RelatorioCentralController::class, 'pedagogico'])->name('relatorios.pedagogico')->middleware('role:coordenador');
+    Route::get('relatorios-encerramento', [RelatorioCentralController::class, 'encerramento'])->name('relatorios.encerramento')->middleware('role:secretaria_escola');
 
     // Encerramento do Ano Letivo — somente consulta por enquanto.
     Route::middleware('role:secretaria_escola')->group(function () {
@@ -236,7 +237,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('relatorios/mapa-notas/unidades', [MapaNotasController::class, 'unidades'])->name('relatorios.mapa-notas.unidades');
     Route::get('relatorios/mapa-notas/gerar', [MapaNotasController::class, 'gerar'])->name('relatorios.mapa-notas.gerar');
     Route::get('relatorios/ata-final', [AtaFinalController::class, 'form'])->name('relatorios.ata-final.form');
-    Route::get('relatorios/ata-final/turmas', [AtaFinalController::class, 'turmasEncerradas'])->name('relatorios.ata-final.turmas');
+    Route::get('relatorios/ata-final/turmas', [AtaFinalController::class, 'turmas'])->name('relatorios.ata-final.turmas');
     Route::get('relatorios/ata-final/gerar', [AtaFinalController::class, 'gerar'])->name('relatorios.ata-final.gerar');
 
     // Diário de Frequência Mensal

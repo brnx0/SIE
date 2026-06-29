@@ -95,15 +95,17 @@ const onConfirmCancel = () => { confirmResolve?.(false); confirmResolve = null; 
 const processandoId = ref<number | null>(null);
 const processandoTodas = ref(false);
 
+const notaProxAno = () => (temProxAno.value ? '' : `\n\n⚠️ O ano letivo ${proxAno.value} ainda não existe e será criado automaticamente, copiando as configurações do ano atual.`);
+
 const duplicarUma = async (t: TurmaLinha) => {
-    if (t.duplicada || !temProxAno.value) return;
-    const ok = await confirmar('Duplicar turma', `${t.serie ? t.serie + ' — ' : ''}Turma ${t.turma}\n\nSerá criada uma cópia em ${proxAno.value}.`, 'Duplicar');
+    if (t.duplicada) return;
+    const ok = await confirmar('Duplicar turma', `${t.serie ? t.serie + ' — ' : ''}Turma ${t.turma}\n\nSerá criada uma cópia em ${proxAno.value}.${notaProxAno()}`, 'Duplicar');
     if (!ok) return;
     processandoId.value = t.tur_id;
     erro.value = null;
     try {
         const r = await postJson('/duplicar-turmas/duplicar', { tur_id: t.tur_id });
-        if (r.ok) { t.duplicada = true; aviso.value = `Turma ${t.turma} duplicada para ${proxAno.value}.`; }
+        if (r.ok) { t.duplicada = true; temProxAno.value = true; aviso.value = `Turma ${t.turma} duplicada para ${proxAno.value}.`; }
         else { const j = await r.json().catch(() => ({})); erro.value = j.message ?? 'Não foi possível duplicar.'; }
     } catch {
         erro.value = 'Falha de conexão ao duplicar.';
@@ -113,8 +115,8 @@ const duplicarUma = async (t: TurmaLinha) => {
 };
 
 const duplicarTodas = async () => {
-    if (!disponiveis.value || !temProxAno.value) return;
-    const ok = await confirmar('Duplicar todas as turmas', `${disponiveis.value} turma(s) disponível(eis) serão duplicadas para ${proxAno.value}.`, 'Duplicar todas');
+    if (!disponiveis.value) return;
+    const ok = await confirmar('Duplicar todas as turmas', `${disponiveis.value} turma(s) disponível(eis) serão duplicadas para ${proxAno.value}.${notaProxAno()}`, 'Duplicar todas');
     if (!ok) return;
     processandoTodas.value = true;
     erro.value = null;
@@ -172,9 +174,9 @@ const duplicarTodas = async () => {
             <div v-if="aviso" class="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-300">{{ aviso }}</div>
 
             <template v-if="carregado">
-                <div v-if="!temProxAno" class="mb-4 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
+                <div v-if="!temProxAno" class="mb-4 flex items-start gap-2 rounded-lg border border-sky-200 bg-sky-50 p-3 text-sm text-sky-800 dark:border-sky-900 dark:bg-sky-950/40 dark:text-sky-200">
                     <TriangleAlert class="mt-0.5 size-4 shrink-0" />
-                    <span>O ano letivo seguinte ainda não existe. Cadastre-o em Parâmetros → Ano Letivo para poder duplicar.</span>
+                    <span>O ano letivo <strong>{{ proxAno }}</strong> ainda não existe — será <strong>criado automaticamente</strong> ao duplicar, copiando as configurações e os períodos do ano atual (datas deslocadas +1 ano). Ajuste-o depois em Parâmetros → Ano Letivo.</span>
                 </div>
 
                 <div v-if="!turmas.length" class="rounded-xl border bg-card py-12 text-center text-muted-foreground">
@@ -194,8 +196,8 @@ const duplicarTodas = async () => {
                                 <input v-model="busca" type="text" placeholder="Buscar turma..." class="h-9 w-full rounded-md border border-input bg-background pl-8 pr-3 text-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-ring" />
                             </div>
                             <Button
-                                :disabled="!disponiveis || !temProxAno || processandoTodas"
-                                :title="!temProxAno ? 'O ano seguinte não existe' : (!disponiveis ? 'Nenhuma turma disponível' : `Duplicar ${disponiveis} turma(s) para ${proxAno}`)"
+                                :disabled="!disponiveis || processandoTodas"
+                                :title="!disponiveis ? 'Nenhuma turma disponível' : `Duplicar ${disponiveis} turma(s) para ${proxAno}`"
                                 class="gap-1.5 bg-indigo-600 text-white hover:bg-indigo-700"
                                 @click="duplicarTodas"
                             >
@@ -232,7 +234,7 @@ const duplicarTodas = async () => {
                                 v-if="!t.duplicada"
                                 size="sm"
                                 variant="outline"
-                                :disabled="!temProxAno || processandoId === t.tur_id"
+                                :disabled="processandoId === t.tur_id"
                                 class="shrink-0 gap-1"
                                 @click="duplicarUma(t)"
                             >

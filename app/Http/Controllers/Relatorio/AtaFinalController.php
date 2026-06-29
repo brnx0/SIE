@@ -41,8 +41,8 @@ class AtaFinalController extends Controller
         ]);
     }
 
-    /** Turmas ENCERRADAS do ano/escola (a ata só vale para turma encerrada). */
-    public function turmasEncerradas(Request $request): JsonResponse
+    /** Turmas do ano/escola — TODAS (REGULAR); a ata sinaliza as ainda não encerradas. */
+    public function turmas(Request $request): JsonResponse
     {
         $data = $request->validate([
             'anl_id' => ['required', 'integer', 'exists:cfg_ano_letivo,anl_id'],
@@ -54,12 +54,15 @@ class AtaFinalController extends Controller
             ->leftJoin('edu_serie as s', 's.ser_id', '=', 't.tur_ser_id')
             ->whereNull('t.tur_deleted_at')
             ->where('t.tur_modalidade', 'REGULAR')
-            ->where('t.tur_situacao', 'ENCERRADA')
             ->where('t.tur_anl_id', $data['anl_id'])
             ->where('t.tur_esc_id', $data['esc_id'])
             ->orderBy('s.ser_nome')->orderBy('t.tur_nome')
-            ->get(['t.tur_id', 't.tur_nome', 's.ser_nome'])
-            ->map(fn ($t) => ['tur_id' => (int) $t->tur_id, 'turma' => trim(($t->ser_nome ? $t->ser_nome . ' - ' : '') . $t->tur_nome)]);
+            ->get(['t.tur_id', 't.tur_nome', 's.ser_nome', 't.tur_situacao'])
+            ->map(fn ($t) => [
+                'tur_id'    => (int) $t->tur_id,
+                'turma'     => trim(($t->ser_nome ? $t->ser_nome . ' - ' : '') . $t->tur_nome),
+                'encerrada' => $t->tur_situacao === 'ENCERRADA',
+            ]);
 
         return response()->json(['turmas' => $turmas]);
     }
@@ -114,6 +117,13 @@ class AtaFinalController extends Controller
                 $cod       = $m->tma_tas_cod_saida !== null ? (int) $m->tma_tas_cod_saida : null;
                 $aprovado  = $encerrado && $cod !== null && in_array($cod, self::APROVADO, true);
 
+                // Label da situação de saída pela coluna de ENTURMAÇÃO (edu_turma_aluno_situacao).
+                // Cobre tanto o resultado do encerramento (Aprovado/Reprovado) quanto a saída da
+                // turma (Transferido/Remanejado/Desistente/...).
+                $situacaoSaida = $cod !== null
+                    ? ($m->situacaoSaida?->tas_descricao_enturmacao ?: $m->situacaoSaida?->tas_descricao)
+                    : null;
+
                 $celulas = $disciplinas->map(function ($d) use ($alnId, $uniIds, $res) {
                     $porUni = [];
                     foreach ($uniIds as $u) {
@@ -128,10 +138,11 @@ class AtaFinalController extends Controller
                     'aln_nome'         => $m->aluno->aln_nome,
                     'aln_nr_matricula' => $m->aluno->aln_nr_matricula,
                     'celulas'          => $celulas,
-                    // Resultado final só para quem está encerrado; quem saiu não tem.
-                    'resultado'        => $encerrado ? ($m->situacaoSaida?->tas_descricao_enturmacao ?: ($m->situacaoSaida?->tas_descricao ?? '—')) : null,
+                    // Enturmação da saída: resultado final (encerrado) OU motivo da saída (saiu).
+                    'resultado'        => $situacaoSaida,
                     'aprovado'         => $aprovado,
                     'saiu'             => ! $ativo,
+                    'encerrado'        => $encerrado,
                 ];
             });
 

@@ -48,6 +48,16 @@ class RelatorioCentralController extends Controller
         ]);
     }
 
+    public function encerramento(): Response
+    {
+        return Inertia::render('relatorios/Index', [
+            'relatorios' => $this->filtrar('encerramento'),
+            'titulo'     => 'Relatórios de Encerramento',
+            'subtitulo'  => 'Relatórios do encerramento do ano letivo.',
+            'grupo'      => 'encerramento',
+        ]);
+    }
+
     public function pedagogico(): Response
     {
         return Inertia::render('relatorios/Index', [

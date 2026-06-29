@@ -9,7 +9,7 @@ import { ArrowLeft, Printer } from 'lucide-vue-next';
 import { computed, inject } from 'vue';
 
 interface Cell { texto: string; tipo: string | null }
-interface Aluno { aln_id: number; aln_nome: string; aln_nr_matricula: string | null; celulas: Cell[]; resultado: string | null; aprovado: boolean; saiu: boolean }
+interface Aluno { aln_id: number; aln_nome: string; aln_nr_matricula: string | null; celulas: Cell[]; resultado: string | null; aprovado: boolean; saiu: boolean; encerrado: boolean }
 interface Parametros { nome_entidade: string; msg_cab_secretaria: string | null; msg_cab_estado: string | null; logomarca_url: string | null; brasao_url: string | null }
 
 defineProps<{
@@ -25,7 +25,8 @@ const tabId = inject(TAB_ID, null);
 const tabStore = useTabStore();
 const isActiveTab = computed(() => !tabId || tabId === tabStore.activeId);
 
-const resultadoTxt = (a: Aluno) => (a.saiu ? 'Saiu' : (a.resultado ?? '—'));
+// Resultado final (Aprovado/Reprovado) só p/ quem encerrou e não saiu; saídos vão pela enturmação ao lado do nome.
+const resultadoTxt = (a: Aluno) => (!a.saiu && a.encerrado ? (a.resultado ?? '—') : '—');
 const imprimir = () => window.print();
 </script>
 
@@ -57,7 +58,7 @@ const imprimir = () => window.print();
                     <tbody>
                         <tr v-for="(a, i) in alunos" :key="a.aln_id">
                             <td class="af-num">{{ i + 1 }}</td>
-                            <td class="af-nome">{{ a.aln_nome }}</td>
+                            <td class="af-nome">{{ a.aln_nome }}<span v-if="a.saiu && a.resultado" class="af-saida"> — {{ a.resultado }}</span></td>
                             <td v-for="(c, j) in a.celulas" :key="j">{{ c.texto }}</td>
                             <td class="af-res">{{ resultadoTxt(a) }}</td>
                         </tr>
@@ -66,7 +67,7 @@ const imprimir = () => window.print();
                         </tr>
                     </tbody>
                 </table>
-                <p class="af-leg">Nota final consolidada por disciplina. Alunos que saíram da turma não têm resultado final.</p>
+                <p class="af-leg">Nota final consolidada por disciplina. Alunos que saíram aparecem com a situação de saída ao lado do nome e sem resultado final.</p>
             </div>
         </div>
     </Teleport>
@@ -103,14 +104,14 @@ const imprimir = () => window.print();
                             <td class="px-3 py-1.5 text-muted-foreground">{{ i + 1 }}</td>
                             <td class="sticky left-0 bg-card px-3 py-1.5 font-medium">
                                 {{ a.aln_nome }}
-                                <span v-if="a.saiu" class="ml-1 rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">saiu</span>
+                                <span v-if="a.saiu" class="ml-1 rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">{{ a.resultado ?? 'Saiu da turma' }}</span>
                             </td>
                             <td v-for="(c, j) in a.celulas" :key="j" class="px-2 py-1.5 text-center font-medium tabular-nums">{{ c.texto }}</td>
                             <td class="px-3 py-1.5 text-center">
-                                <span v-if="a.saiu" class="text-muted-foreground">—</span>
-                                <span v-else :class="['rounded-full px-2 py-0.5 text-[11px] font-medium', a.aprovado ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300' : 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300']">
+                                <span v-if="!a.saiu && a.encerrado" :class="['rounded-full px-2 py-0.5 text-[11px] font-medium', a.aprovado ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300' : 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300']">
                                     {{ a.resultado ?? '—' }}
                                 </span>
+                                <span v-else class="text-muted-foreground">—</span>
                             </td>
                         </tr>
                     </tbody>
@@ -136,6 +137,7 @@ const imprimir = () => window.print();
     .af-tbl .af-num { width: 26px; }
     .af-tbl .af-nome { width: 190px; text-align: left; }
     .af-tbl tbody .af-nome { font-size: 7.5pt; }
+    .af-saida { font-weight: 400; font-style: italic; color: #444; }
     .af-tbl .af-res { width: 120px; font-weight: 700; }
     .af-tbl tbody td { font-weight: 700; }
 

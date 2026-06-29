@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { Loader2, RefreshCw, Search, TriangleAlert } from 'lucide-vue-next';
+import { ChevronLeft, ChevronRight, Loader2, RefreshCw, Search, TriangleAlert } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
-import { computed, onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref, watch } from 'vue';
 
 const props = defineProps<{ anlId: number; escId: number; turId: number; disId: number; uniId: number }>();
 
@@ -19,6 +19,10 @@ const periodoAberto = ref(true);
 const turmaAberta = ref(true);
 const busca = ref('');
 
+// Modo de visualização: 'foco' (1 aluno por vez, escala p/ muitos indicadores) | 'grade' (matriz).
+const view = ref<'foco' | 'grade'>('foco');
+const alunoSel = ref<number | null>(null);
+
 const valorMap = reactive<Record<string, string>>({});
 const status = reactive<Record<string, 'idle' | 'saving' | 'saved' | 'error'>>({});
 
@@ -31,6 +35,22 @@ const corOpcao: Record<string, string> = {
     apoio:        'bg-sky-50 text-sky-800 dark:bg-sky-950/40 dark:text-sky-200',
     nao_realiza:  'bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-200',
     nao_trabalha: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300',
+};
+
+// Swatch sólido só p/ a legenda (o corOpcao é pálido p/ o fundo do select; aqui precisa contrastar).
+const corLegenda: Record<string, string> = {
+    autonomia:    'bg-emerald-500',
+    apoio:        'bg-sky-500',
+    nao_realiza:  'bg-amber-500',
+    nao_trabalha: 'bg-slate-400',
+};
+
+// Botão selecionado no modo "Foco no aluno" (sólido, alto contraste).
+const corBtnSel: Record<string, string> = {
+    autonomia:    'border-emerald-600 bg-emerald-500 text-white hover:bg-emerald-600',
+    apoio:        'border-sky-600 bg-sky-500 text-white hover:bg-sky-600',
+    nao_realiza:  'border-amber-600 bg-amber-500 text-white hover:bg-amber-600',
+    nao_trabalha: 'border-slate-500 bg-slate-500 text-white hover:bg-slate-600',
 };
 
 const csrf = (): Record<string, string> => {
@@ -58,6 +78,7 @@ const carregar = async (silent = false) => {
         periodoAberto.value = data.periodo_aberto ?? false;
         turmaAberta.value = data.turma_aberta ?? false;
         for (const v of data.valores ?? []) valorMap[ck(v.aln_id, v.ind_id)] = v.opcao;
+        alunoSel.value = alunos.value[0]?.aln_id ?? null;
     } finally {
         carregando.value = false;
         recarregando.value = false;
@@ -73,10 +94,27 @@ const alunosFiltrados = computed(() => {
 });
 
 const opcoesKeys = computed(() => Object.keys(opcoes.value));
-const valorDe = (aln: number, ind: number) => valorMap[ck(aln, ind)] ?? '';
+const valorDe = (aln: number | null, ind: number) => (aln == null ? '' : valorMap[ck(aln, ind)] ?? '');
 
-const salvar = async (aln: number, ind: number, val: string) => {
-    if (!editavel.value) return;
+// ── Navegação "Foco no aluno" ────────────────────────────────────────────────
+const alunoAtual = computed(() => alunosFiltrados.value.find((a) => a.aln_id === alunoSel.value) ?? null);
+const alunoIdx = computed(() => alunosFiltrados.value.findIndex((a) => a.aln_id === alunoSel.value));
+const irAluno = (delta: number) => {
+    const lst = alunosFiltrados.value;
+    if (!lst.length) return;
+    const i = Math.min(Math.max(alunoIdx.value + delta, 0), lst.length - 1);
+    alunoSel.value = lst[i].aln_id;
+};
+const progressoAluno = (aln: number | null) => (aln == null ? 0 : indicadores.value.reduce((n, ind) => n + (valorDe(aln, ind.ind_id) ? 1 : 0), 0));
+
+// Mantém o aluno selecionado válido ao filtrar pela busca.
+watch(alunosFiltrados, (lst) => {
+    if (!lst.length) { alunoSel.value = null; return; }
+    if (!lst.some((a) => a.aln_id === alunoSel.value)) alunoSel.value = lst[0].aln_id;
+});
+
+const salvar = async (aln: number | null, ind: number, val: string) => {
+    if (!editavel.value || aln == null) return;
     const key = ck(aln, ind);
     if (val) valorMap[key] = val; else delete valorMap[key];
     status[key] = 'saving';
@@ -124,11 +162,65 @@ const salvar = async (aln: number, ind: number, val: string) => {
                     <span>{{ !turmaAberta ? 'Turma não está aberta.' : 'Fora do período de lançamento.' }} Diagnóstico em modo leitura.</span>
                 </div>
 
-                <p class="mb-2 text-xs text-muted-foreground">
-                    Ao marcar <b>Realiza com autonomia</b>, os períodos seguintes são preenchidos com a mesma opção (editável).
-                </p>
+                <!-- Cabeçalho: dica + alternância de visualização -->
+                <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+                    <p class="text-xs text-muted-foreground">
+                        Ao marcar <b>Realiza com autonomia</b>, os períodos seguintes são preenchidos com a mesma opção (editável).
+                    </p>
+                    <div class="inline-flex shrink-0 rounded-lg border bg-muted/40 p-0.5 text-xs font-medium">
+                        <button type="button" :class="['rounded-md px-3 py-1.5 transition', view === 'foco' ? 'bg-background text-slate-900 shadow-sm dark:text-slate-50' : 'text-muted-foreground hover:text-foreground']" @click="view = 'foco'">Foco no aluno</button>
+                        <button type="button" :class="['rounded-md px-3 py-1.5 transition', view === 'grade' ? 'bg-background text-slate-900 shadow-sm dark:text-slate-50' : 'text-muted-foreground hover:text-foreground']" @click="view = 'grade'">Grade</button>
+                    </div>
+                </div>
 
-                <div class="max-h-[70vh] overflow-auto rounded-lg border">
+                <!-- ───────── Foco no aluno (1 aluno por vez; escala p/ muitos indicadores) ───────── -->
+                <div v-if="view === 'foco'">
+                    <!-- Navegador de aluno -->
+                    <div class="mb-3 flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-muted/30 px-3 py-2">
+                        <div class="flex items-center gap-2">
+                            <Button variant="outline" size="icon" class="size-8 shrink-0" :disabled="alunoIdx <= 0" @click="irAluno(-1)"><ChevronLeft class="size-4" /></Button>
+                            <select v-model.number="alunoSel" class="h-9 min-w-[200px] max-w-[60vw] rounded-md border bg-background px-2 text-sm font-medium">
+                                <option v-for="a in alunosFiltrados" :key="a.aln_id" :value="a.aln_id">{{ a.aln_nome }}</option>
+                            </select>
+                            <Button variant="outline" size="icon" class="size-8 shrink-0" :disabled="alunoIdx >= alunosFiltrados.length - 1" @click="irAluno(1)"><ChevronRight class="size-4" /></Button>
+                            <span class="whitespace-nowrap text-xs text-muted-foreground">{{ alunoIdx + 1 }} / {{ alunosFiltrados.length }}</span>
+                        </div>
+                        <div v-if="alunoAtual" class="flex items-center gap-2 text-xs">
+                            <span v-if="alunoAtual.aln_nr_matricula" class="text-muted-foreground">Mat. {{ alunoAtual.aln_nr_matricula }}</span>
+                            <span class="rounded-full px-2 py-0.5 font-semibold" :class="progressoAluno(alunoSel) === indicadores.length ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300' : 'bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300'">
+                                {{ progressoAluno(alunoSel) }}/{{ indicadores.length }} avaliados
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Indicadores do aluno: lista vertical com botões segmentados -->
+                    <div class="max-h-[62vh] space-y-1.5 overflow-auto pr-1">
+                        <div v-for="(ind, idx) in indicadores" :key="ind.ind_id" class="rounded-lg border bg-card p-2.5">
+                            <div class="mb-2 flex items-start gap-2">
+                                <span class="mt-0.5 grid size-5 shrink-0 place-items-center rounded bg-muted text-[10px] font-bold text-muted-foreground">{{ idx + 1 }}</span>
+                                <span class="text-sm leading-snug text-slate-800 dark:text-slate-100">{{ ind.ind_descricao }}</span>
+                                <Loader2 v-if="status[ck(alunoSel ?? 0, ind.ind_id)] === 'saving'" class="ml-auto mt-0.5 size-4 shrink-0 animate-spin text-amber-600" />
+                                <span v-else-if="status[ck(alunoSel ?? 0, ind.ind_id)] === 'error'" class="ml-auto mt-0.5 shrink-0 text-[10px] font-medium text-rose-600">erro</span>
+                            </div>
+                            <div class="flex flex-wrap gap-1.5 pl-7">
+                                <button
+                                    v-for="k in opcoesKeys"
+                                    :key="k"
+                                    type="button"
+                                    :disabled="!editavel"
+                                    class="rounded-md border px-2.5 py-1.5 text-xs font-medium transition active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                                    :class="valorDe(alunoSel, ind.ind_id) === k ? corBtnSel[k] : 'border-input bg-background text-slate-600 hover:bg-muted dark:text-slate-300'"
+                                    @click="salvar(alunoSel, ind.ind_id, valorDe(alunoSel, ind.ind_id) === k ? '' : k)"
+                                >
+                                    {{ opcoes[k] }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ───────── Grade (matriz aluno × indicador) ───────── -->
+                <div v-else class="max-h-[70vh] overflow-auto rounded-lg border">
                     <table class="w-full border-separate border-spacing-0 text-sm">
                         <thead>
                             <tr>
@@ -165,9 +257,9 @@ const salvar = async (aln: number, ind: number, val: string) => {
                 </div>
 
                 <!-- Legenda -->
-                <div class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
-                    <span v-for="k in opcoesKeys" :key="k" class="inline-flex items-center gap-1">
-                        <span :class="['inline-block size-3 rounded', corOpcao[k]]"></span> {{ opcoes[k] }}
+                <div class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[11px] font-medium text-slate-600 dark:text-slate-300">
+                    <span v-for="k in opcoesKeys" :key="k" class="inline-flex items-center gap-1.5">
+                        <span :class="['inline-block size-3.5 rounded-sm border border-black/10 shadow-sm dark:border-white/20', corLegenda[k]]"></span> {{ opcoes[k] }}
                     </span>
                 </div>
             </template>
