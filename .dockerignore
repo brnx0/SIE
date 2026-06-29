@@ -1,0 +1,38 @@
+# Build context enxuto - NAO mandar deps/segredos/build pro daemon
+
+.git
+.gitignore
+.github
+
+# Deps (reinstaladas no build)
+vendor
+node_modules
+
+# Build local (refeito no stage de assets)
+public/build
+public/hot
+
+# Segredos / ambiente
+.env
+.env.*
+!.env.example
+
+# Storage runtime
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+storage/*.key
+
+# Docker / docs / IDE
+docker-compose*.yml
+Dockerfile
+.dockerignore
+docs
+*.md
+.vscode
+.idea
+
+# Testes / sqlite local
+tests
+database/database.sqlite

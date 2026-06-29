@@ -1,10 +1,73 @@
-# Postgres - ambiente de HOMOLOGAÇÃO
-# Subir:   docker compose -f docker-compose.homolog.yml --env-file .env.homolog up -d
-# Logs:    docker compose -f docker-compose.homolog.yml logs -f db
-# Backup:  docker exec sie_pg_homolog pg_dump -U "$POSTGRES_USER" "$POSTGRES_DB" > backup.sql
-# Parar:   docker compose -f docker-compose.homolog.yml down   (volume PERSISTE)
+# Stack HOMOLOGAÇÃO - app (php-fpm) + web (nginx) + worker (fila) + db (postgres)
+# Build+subir:  docker compose -f docker-compose.homolog.yml up -d --build
+# Logs:         docker compose -f docker-compose.homolog.yml logs -f app
+# Artisan:      docker compose -f docker-compose.homolog.yml exec app php artisan <cmd>
+# Backup db:    docker exec sie_pg_homolog pg_dump -U "$POSTGRES_USER" "$POSTGRES_DB" > backup.sql
+# Parar:        docker compose -f docker-compose.homolog.yml down   (volume PERSISTE)
+#
+# Pre-req: .env com APP_KEY setada. Recomendado APP_ENV=production, APP_DEBUG=false.
+# DB_HOST/DB_PORT do app sao SOBRESCRITOS abaixo p/ rede interna (db:5432).
 
 services:
+  app:
+    build:
+      context: .
+      target: runtime
+    image: sie_matricula_app:homolog
+    container_name: sie_app_homolog
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      # rede interna do compose - ignora DB_HOST do .env
+      DB_HOST: db
+      DB_PORT: 5432
+      RUN_MIGRATIONS: "true"
+    volumes:
+      # uploads/arquivos gerados persistem fora da imagem
+      - app_storage:/var/www/html/storage/app
+      # public compartilhado com nginx (re-sync no entrypoint)
+      - app_public:/var/www/html/public
+    depends_on:
+      db:
+        condition: service_healthy
+    networks: [sie_net]
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "5" }
+
+  web:
+    image: nginx:1.27-alpine
+    container_name: sie_web_homolog
+    restart: unless-stopped
+    ports:
+      - "${WEB_PORT:-8080}:80"
+    volumes:
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      # serve assets estaticos direto do container app
+      - app_public:/var/www/html/public:ro
+    depends_on: [app]
+    networks: [sie_net]
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "5" }
+
+  worker:
+    image: sie_matricula_app:homolog
+    container_name: sie_worker_homolog
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+    command: php artisan queue:work --tries=3 --sleep=3 --max-time=3600
+    depends_on:
+      db:
+        condition: service_healthy
+    networks: [sie_net]
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "5" }
+
   db:
     image: postgres:16.4
     container_name: sie_pg_homolog
@@ -13,9 +76,10 @@ services:
     environment:
       POSTGRES_DB: ${DB_DATABASE:-sie_auth}
       POSTGRES_USER: ${DB_USERNAME:-sie_homolog}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:}
-      # Locale pt_BR p/ ordenacao/acentuacao igual producao
-      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=pt_BR.UTF-8"
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      # Imagem oficial NAO tem pt_BR.UTF-8 -> usa ICU p/ collation pt-BR
+      # (acentos/ç corretos) + libc em C.UTF-8 (sempre presente).
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C.UTF-8 --locale-provider=icu --icu-locale=pt-BR"
       TZ: America/Sao_Paulo
       PGTZ: America/Sao_Paulo
 
@@ -29,6 +93,8 @@ services:
       # Tuning leve aplicado no boot (ver conf abaixo)
       - ./docker/postgres/postgresql.homolog.conf:/etc/postgresql/postgresql.conf:ro
     command: ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf"]
+
+    networks: [sie_net]
 
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
@@ -51,6 +117,14 @@ services:
         max-size: "10m"
         max-file: "5"
 
+networks:
+  sie_net:
+    name: sie_net_homolog
+
 volumes:
   pg_homolog_data:
     name: sie_pg_homolog_data
+  app_storage:
+    name: sie_app_storage_homolog
+  app_public:
+    name: sie_app_public_homolog
