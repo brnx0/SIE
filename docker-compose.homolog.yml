@@ -53,6 +53,9 @@ services:
       options: { max-size: "10m", max-file: "5" }
 
   worker:
+    build:
+      context: .
+      target: runtime
     image: sie_matricula_app:homolog
     container_name: sie_worker_homolog
     restart: unless-stopped
