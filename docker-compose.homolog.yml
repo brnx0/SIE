@@ -1,4 +1,7 @@
-# Stack HOMOLOGAÇÃO - app (php-fpm) + web (nginx) + worker (fila) + db (postgres)
+# Stack HOMOLOGAÇÃO - app (php-fpm) + worker (fila) + db (postgres)
+# SEM nginx no compose: o nginx do HOST faz fastcgi_pass -> 127.0.0.1:9000
+# e serve os estaticos de ./public (sincronizado pelo entrypoint do app).
+#
 # Build+subir:  docker compose -f docker-compose.homolog.yml up -d --build
 # Logs:         docker compose -f docker-compose.homolog.yml logs -f app
 # Artisan:      docker compose -f docker-compose.homolog.yml exec app php artisan <cmd>
@@ -22,48 +25,15 @@ services:
       DB_HOST: db
       DB_PORT: 5432
       RUN_MIGRATIONS: "true"
+    ports:
+      # php-fpm exposto SO no loopback - nginx do HOST faz fastcgi_pass aqui
+      - "127.0.0.1:${FPM_PORT:-9000}:9000"
     volumes:
       # uploads/arquivos gerados persistem fora da imagem
       - app_storage:/var/www/html/storage/app
-      # public compartilhado com nginx (re-sync no entrypoint)
-      - app_public:/var/www/html/public
-    depends_on:
-      db:
-        condition: service_healthy
-    networks: [sie_net]
-    logging:
-      driver: json-file
-      options: { max-size: "10m", max-file: "5" }
-
-  web:
-    image: nginx:1.27-alpine
-    container_name: sie_web_homolog
-    restart: unless-stopped
-    ports:
-      # so o nginx do HOST acessa (proxy reverso) - nao expoe externo
-      - "127.0.0.1:${WEB_PORT:-8090}:80"
-    volumes:
-      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
-      # serve assets estaticos direto do container app
-      - app_public:/var/www/html/public:ro
-    depends_on: [app]
-    networks: [sie_net]
-    logging:
-      driver: json-file
-      options: { max-size: "10m", max-file: "5" }
-
-  worker:
-    build:
-      context: .
-      target: runtime
-    image: sie_matricula_app:homolog
-    container_name: sie_worker_homolog
-    restart: unless-stopped
-    env_file: .env
-    environment:
-      DB_HOST: db
-      DB_PORT: 5432
-    command: php artisan queue:work --tries=3 --sleep=3 --max-time=3600
+      # public no host -> nginx do HOST serve estaticos daqui.
+      # entrypoint sincroniza os assets buildados (public/build) p/ ca.
+      - ./public:/var/www/html/public
     depends_on:
       db:
         condition: service_healthy
@@ -130,5 +100,3 @@ volumes:
     name: sie_pg_homolog_data
   app_storage:
     name: sie_app_storage_homolog
-  app_public:
-    name: sie_app_public_homolog
