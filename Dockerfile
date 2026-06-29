@@ -1,18 +1,7 @@
 # syntax=docker/dockerfile:1.7
 
-############################
-# Stage 1 - assets (Vite) #
-############################
-FROM node:20-bookworm-slim AS assets
-WORKDIR /app
-COPY package.json package-lock.json* ./
-# usa lockfile se existir; senao install normal
-RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
-COPY . .
-RUN npm run build
-
 ###############################
-# Stage 2 - vendor (Composer) #
+# Stage 1 - vendor (Composer) #
 ###############################
 FROM composer:2 AS vendor
 WORKDIR /app
@@ -27,6 +16,19 @@ RUN composer install \
       --no-scripts \
       --ignore-platform-reqs \
       --optimize-autoloader
+
+############################
+# Stage 2 - assets (Vite) #
+############################
+FROM node:20-bookworm-slim AS assets
+WORKDIR /app
+COPY package.json package-lock.json* ./
+# usa lockfile se existir; senao install normal
+RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
+COPY . .
+# app.ts importa de vendor/tightenco/ziggy -> traz do stage vendor antes do build
+COPY --from=vendor /app/vendor/tightenco/ziggy ./vendor/tightenco/ziggy
+RUN npm run build
 
 #########################
 # Stage 3 - runtime PHP #
