@@ -691,7 +691,7 @@ const initials = computed(() => {
                     </div>
 
                     <h3 class="mt-4 text-sm font-semibold">Programas e Serviços</h3>
-                    <div class="grid gap-3 sm:grid-cols-2">
+                    <div class="grid gap-3 sm:grid-cols-3">
                         <div class="flex items-center gap-3">
                             <Switch id="aln_fl_bolsa_familia" v-model="form.aln_fl_bolsa_familia" />
                             <Label for="aln_fl_bolsa_familia" class="text-sm font-normal">Bolsa Família</Label>

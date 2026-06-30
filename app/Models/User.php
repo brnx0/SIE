@@ -16,13 +16,17 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     public const ROLES = [
-        'professor'            => 'Professor',
-        'professor_aee'        => 'Professor AEE',
-        'coordenador'          => 'Coordenador Pedagógico',
-        'coordenador_interno'  => 'Coordenador Pedagógico Interno',
-        'diretor'              => 'Diretor',
-        'secretaria_escola'    => 'Secretaria Escolar',
         'admin'                => 'Administrador',
+        'gestor_secretaria'    => 'Gestor Secretaria',
+        'professor'            => 'Professor',
+        'professor_aee'        => 'Prof AEE',
+        'coordenador'          => 'Coordenador',
+        'coordenador_interno'  => 'Coord. Interno',
+        'diretor'              => 'Diretor/Vice',
+        'secretaria_escola'    => 'Secretaria',
+        'pedagogico'           => 'Pedagógico',
+        'monitor'              => 'Monitor',
+        'matricula_censo'      => 'Matrícula/Censo',
     ];
 
     protected $fillable = [

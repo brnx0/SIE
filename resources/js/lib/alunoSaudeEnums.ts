@@ -77,7 +77,7 @@ export const RECURSOS_INEP = [
     'Guia-Intérprete',
     'Intérprete de Libras',
     'Leitura Labial',
-    'Material Ditático em Braille',
+    'Material Didático em Braille',
     'CD com áudio para deficiente visual',
     'Prova em Vídeo em Libras',
     'Tempo Adicional',

@@ -165,7 +165,7 @@ class StoreAlunoRequest extends FormRequest
             'saude.als_recursos_inep' => ['nullable', 'array'],
             'saude.als_recursos_inep.*' => ['string', Rule::in([
                 'Auxílio ledor', 'Auxílio transcrição', 'Guia-Intérprete',
-                'Intérprete de Libras', 'Leitura Labial', 'Material Ditático em Braille',
+                'Intérprete de Libras', 'Leitura Labial', 'Material Didático em Braille',
                 'CD com áudio para deficiente visual', 'Prova em Vídeo em Libras',
                 'Tempo Adicional', 'Prova Ampliada (Fonte Tamanho 18)',
                 'Prova Ampliada (Fonte Tamanho 24)', 'Prova em Braile',

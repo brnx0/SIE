@@ -84,11 +84,6 @@ const submit = () => {
                 <LoaderCircle v-if="form.processing" class="mr-2 h-4 w-4 animate-spin" />
                 Entrar
             </Button>
-
-            <p class="text-center text-sm text-muted-foreground">
-                Ainda não tem conta?
-                <TextLink :href="route('register')" :tabindex="5">Cadastre-se</TextLink>
-            </p>
         </form>
     </AuthBase>
 </template>

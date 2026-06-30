@@ -15,7 +15,7 @@ import Switch from '@/components/common/Switch.vue';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/composables/useToast';
 import { useSeriesBySegmento, type SerieSegmentoItem } from '@/composables/useSeriesBySegmento';
-import { computed, reactive, ref, watch } from 'vue';
+import { computed, nextTick, reactive, ref, watch } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { LoaderCircle, Save, X } from 'lucide-vue-next';
 
@@ -323,6 +323,45 @@ const err = (field: string): string | undefined =>
 
 const labelSemestre = (s: number) => `${s}º Semestre`;
 
+// ── Foco no primeiro campo com erro ─────────────────────────────────────────
+const NON_FIELD_ERRORS = ['_geral', 'duplicata_aluno'];
+
+// chave do erro → aba onde o campo vive
+const tabForErrorKey = (key: string): 'dados' | 'saude' =>
+    key.startsWith('saude.') ? 'saude' : 'dados';
+
+// chave do erro → id do input (remove prefixo aluno./saude.)
+const elForErrorKey = (key: string): HTMLElement | null => {
+    const id = key.replace(/^aluno\.|^saude\./, '');
+    return document.getElementById(id)
+        ?? (id.endsWith('_tipo') ? document.getElementById(id.replace(/_tipo$/, '')) : null);
+};
+
+const focusFirstError = async () => {
+    const keys = Object.keys(errors.value).filter(k => !NON_FIELD_ERRORS.includes(k));
+    if (!keys.length) return;
+
+    // prioriza aba "dados"; só vai p/ "saude" se o erro só existir lá
+    const dadosKeys = keys.filter(k => tabForErrorKey(k) === 'dados');
+    const targetKeys = dadosKeys.length ? dadosKeys : keys;
+    activeTab.value = tabForErrorKey(targetKeys[0]);
+
+    await nextTick();
+
+    const els = targetKeys
+        .map(elForErrorKey)
+        .filter((e): e is HTMLElement => !!e);
+    if (!els.length) return;
+
+    // primeiro na ordem do documento
+    els.sort((a, b) =>
+        a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1
+    );
+    const first = els[0];
+    first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    first.focus({ preventScroll: true });
+};
+
 // ── Submit ────────────────────────────────────────────────────────────────────
 const submit = async () => {
     if (!props.turma) return;
@@ -337,8 +376,8 @@ const submit = async () => {
 
     // Turma multi exige série do aluno
     if (isMulti.value && !serieSelecionadaId.value) {
-        activeTab.value = 'dados';
-        errors.value['tma_ser_id'] = 'Informe a série do aluno.';
+        errors.value = { tma_ser_id: 'Informe a série do aluno.' };
+        focusFirstError();
         return;
     }
 
@@ -358,9 +397,11 @@ const submit = async () => {
             if (corte < aniv) idade--;
 
             if (idade < serIdade) {
-                activeTab.value = 'dados';
-                errors.value['aluno.aln_dt_nascimento'] =
-                    `Idade insuficiente: ${idade} ano${idade !== 1 ? 's' : ''} na data de corte. Série exige ${serIdade} ano${serIdade !== 1 ? 's' : ''}.`;
+                errors.value = {
+                    'aluno.aln_dt_nascimento':
+                        `Idade insuficiente: ${idade} ano${idade !== 1 ? 's' : ''} na data de corte. Série exige ${serIdade} ano${serIdade !== 1 ? 's' : ''}.`,
+                };
+                focusFirstError();
                 return;
             }
         }
@@ -371,8 +412,8 @@ const submit = async () => {
         || formSaude.als_transtornos_globais.length > 0
         || formSaude.als_transtornos_aprendizagem.length > 0;
     if (possuiDeficiencia.value && !temItemPcd) {
-        activeTab.value = 'saude';
-        errors.value['saude.als_deficiencias'] = 'Informe ao menos uma deficiência ou transtorno.';
+        errors.value = { 'saude.als_deficiencias': 'Informe ao menos uma deficiência ou transtorno.' };
+        focusFirstError();
         return;
     }
 
@@ -443,6 +484,7 @@ const submit = async () => {
                 if (json.message && Object.keys(errs).length === 0) {
                     errors.value['_geral'] = json.message;
                 }
+                focusFirstError();
             } else {
                 errors.value['_geral'] = json.message ?? 'Erro ao realizar matrícula.';
             }
@@ -476,7 +518,7 @@ const selectClass = 'flex h-10 w-full rounded-md border border-input bg-backgrou
 
 <template>
     <Dialog :open="open" @update:open="(v) => emit('update:open', v)">
-        <DialogContent class="flex max-h-[90vh] w-full max-w-3xl flex-col gap-0 overflow-hidden p-0">
+        <DialogContent class="flex max-h-[92vh] w-full max-w-5xl flex-col gap-0 overflow-hidden p-0">
             <DialogHeader class="shrink-0 border-b px-6 py-4">
                 <DialogTitle>
                     Matrícula
@@ -911,8 +953,8 @@ const selectClass = 'flex h-10 w-full rounded-md border border-input bg-backgrou
                                     <InputError :message="err('saude.als_deficiencia_outro')" />
                                 </div>
                             </div>
-                            <div class="mt-4 grid gap-4 sm:grid-cols-3">
-                                <div class="flex items-center gap-3">
+                            <div class="mt-4 grid items-end gap-x-8 gap-y-4 sm:grid-cols-2">
+                                <div class="flex items-center gap-3 sm:h-10">
                                     <Switch id="als_fl_altas_habilidades" v-model="formSaude.als_fl_altas_habilidades" />
                                     <Label for="als_fl_altas_habilidades" class="text-sm font-normal">Altas Habilidades/Superdotação</Label>
                                 </div>

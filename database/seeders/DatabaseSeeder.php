@@ -23,16 +23,16 @@ class DatabaseSeeder extends Seeder
         $this->call(ConceitoSeeder::class);
         $this->call(MotivoBaixaFrequenciaSeeder::class);
 
-        User::updateOrCreate(
+        $admin = User::updateOrCreate(
             ['email' => 'admin@sie.local'],
             [
                 'name' => 'Administrador',
+                'login' => 'admin@sie.local',
                 'password' => Hash::make('123456'),
-                'role' => 'admin',
                 'active' => true,
             ],
         );
 
-        User::factory()->count(8)->create();
+        $admin->syncRoles(['admin']);
     }
 }

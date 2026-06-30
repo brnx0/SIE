@@ -20,6 +20,8 @@ use App\Http\Controllers\Relatorio\ConteudoMinistradoController;
 use App\Http\Controllers\Relatorio\BoletimAvaliativoController;
 use App\Http\Controllers\Relatorio\MapaNotasController;
 use App\Http\Controllers\Relatorio\AtaFinalController;
+use App\Http\Controllers\Relatorio\DiagnosticoRelatorioController;
+use App\Http\Controllers\Relatorio\FinalEducacaoInfantilController;
 use App\Http\Controllers\Relatorio\FrequenciaMensalController;
 use App\Http\Controllers\Relatorio\RelatorioCentralController;
 use App\Http\Controllers\Api\AlunoSearchController;
@@ -239,6 +241,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('relatorios/ata-final', [AtaFinalController::class, 'form'])->name('relatorios.ata-final.form');
     Route::get('relatorios/ata-final/turmas', [AtaFinalController::class, 'turmas'])->name('relatorios.ata-final.turmas');
     Route::get('relatorios/ata-final/gerar', [AtaFinalController::class, 'gerar'])->name('relatorios.ata-final.gerar');
+    Route::get('relatorios/final-educacao-infantil', [FinalEducacaoInfantilController::class, 'form'])->name('relatorios.final-educacao-infantil.form');
+    Route::get('relatorios/final-educacao-infantil/turmas', [FinalEducacaoInfantilController::class, 'turmas'])->name('relatorios.final-educacao-infantil.turmas');
+    Route::get('relatorios/final-educacao-infantil/gerar', [FinalEducacaoInfantilController::class, 'gerar'])->name('relatorios.final-educacao-infantil.gerar');
+    Route::get('relatorios/diagnostico', [DiagnosticoRelatorioController::class, 'form'])->name('relatorios.diagnostico.form');
+    Route::get('relatorios/diagnostico/turmas', [DiagnosticoRelatorioController::class, 'turmas'])->name('relatorios.diagnostico.turmas');
+    Route::get('relatorios/diagnostico/disciplinas', [DiagnosticoRelatorioController::class, 'disciplinas'])->name('relatorios.diagnostico.disciplinas');
+    Route::get('relatorios/diagnostico/alunos', [DiagnosticoRelatorioController::class, 'alunos'])->name('relatorios.diagnostico.alunos');
+    Route::get('relatorios/diagnostico/gerar', [DiagnosticoRelatorioController::class, 'gerar'])->name('relatorios.diagnostico.gerar');
 
     // Diário de Frequência Mensal
     Route::get('relatorios/frequencia-mensal', [FrequenciaMensalController::class, 'form'])->name('relatorios.frequencia-mensal.form');

@@ -29,12 +29,11 @@ import { ArrowRight, BookMarked, GraduationCap, NotebookPen, ShieldCheck, Users 
                     Painel
                 </Link>
                 <template v-else>
-                    <Link :href="route('login')" class="text-sm font-medium hover:text-sky-700 dark:hover:text-sky-300">Entrar</Link>
                     <Link
-                        :href="route('register')"
+                        :href="route('login')"
                         class="rounded-md bg-sky-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-400"
                     >
-                        Criar conta
+                        Entrar
                     </Link>
                 </template>
             </div>
@@ -55,7 +54,7 @@ import { ArrowRight, BookMarked, GraduationCap, NotebookPen, ShieldCheck, Users 
                     </p>
                     <div class="mt-6 flex flex-wrap gap-3">
                         <Link
-                            :href="$page.props.auth.user ? route('dashboard') : route('register')"
+                            :href="$page.props.auth.user ? route('dashboard') : route('login')"
                             class="inline-flex items-center gap-2 rounded-lg bg-sky-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-400"
                         >
                             Começar agora <ArrowRight class="size-4" />

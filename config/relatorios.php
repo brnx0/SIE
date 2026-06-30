@@ -18,6 +18,14 @@ return [
         'icone'     => 'ScrollText',
     ],
     [
+        'slug'      => 'final-educacao-infantil',
+        'titulo'    => 'Final da Educação Infantil',
+        'descricao' => 'Por turma de Educação Infantil (Creche/Pré-escola), 1 por página: matrícula, nome, data de nascimento e situação final do aluno. Vazio gera todas as turmas.',
+        'categoria' => 'Encerramento',
+        'grupo'     => 'encerramento',
+        'icone'     => 'Baby',
+    ],
+    [
         'slug'      => 'parecer-descritivo',
         'titulo'    => 'Parecer Descritivo',
         'descricao' => 'Pareceres descritivos dos alunos de uma turma por período (bimestre/trimestre).',
@@ -64,6 +72,14 @@ return [
         'categoria' => 'Diário',
         'grupo'     => 'diario',
         'icone'     => 'CalendarCheck',
+    ],
+    [
+        'slug'      => 'diagnostico',
+        'titulo'    => 'Avaliações por Diagnóstico',
+        'descricao' => 'Por turma e disciplina, agrupado por aluno e ordenado por indicador: a opção atribuída em cada período. Por aluno ou todos de uma vez.',
+        'categoria' => 'Diário',
+        'grupo'     => 'diario',
+        'icone'     => 'Stethoscope',
     ],
     [
         'slug'      => 'conteudo-ministrado-pedagogico',
