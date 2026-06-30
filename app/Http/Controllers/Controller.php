@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\PermissaoTela;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\QueryException;
@@ -12,6 +13,27 @@ use Illuminate\Support\Facades\DB;
 
 abstract class Controller
 {
+    /**
+     * Nível efetivo do usuário na tela da request atual (matriz de permissão).
+     * 0 = sem acesso, 1 = ver+editar, 2 = só visualizar.
+     */
+    protected function nivelTela(?Request $request = null): int
+    {
+        $request ??= request();
+        return PermissaoTela::nivelDaRequest($request->user(), $request);
+    }
+
+    /**
+     * True quando o usuário está em modo somente-visualização nesta tela.
+     * Use para pular filtros de autoria (ex.: "só meus registros") e liberar
+     * a leitura completa a perfis de supervisão. A escrita já é barrada pelo
+     * middleware `tela` (nível 2 + verbo de escrita → 403).
+     */
+    protected function soVisualizacaoTela(?Request $request = null): bool
+    {
+        return $this->nivelTela($request) === PermissaoTela::VISUALIZAR;
+    }
+
     /**
      * Data de saída (tma_dt_saida) do aluno na turma — string Y-m-d — ou null
      * se o aluno está ativo / sem saída registrada. Saída = tma_tas_cod_saida preenchido.

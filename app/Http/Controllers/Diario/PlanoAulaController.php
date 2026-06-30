@@ -28,7 +28,7 @@ class PlanoAulaController extends Controller
         $user = $request->user();
 
         $planos = DiarioPlanoAula::query()
-            ->when(! $user->isAdmin(), fn ($q) => $q->where('dpa_user_id', (int) $user->id))
+            ->when(! $user->isAdmin() && ! $this->soVisualizacaoTela($request), fn ($q) => $q->where('dpa_user_id', (int) $user->id))
             ->with([
                 'turma:tur_id,tur_nome,tur_ser_id',
                 'turma.serie:ser_id,ser_nome',
@@ -118,7 +118,7 @@ class PlanoAulaController extends Controller
         $user = $request->user();
 
         $planos = DiarioPlanoAula::query()
-            ->when(! $user->isAdmin(), fn ($q) => $q->where('dpa_user_id', (int) $user->id))
+            ->when(! $user->isAdmin() && ! $this->soVisualizacaoTela($request), fn ($q) => $q->where('dpa_user_id', (int) $user->id))
             ->with([
                 'turma:tur_id,tur_nome,tur_ser_id',
                 'turma.serie:ser_id,ser_nome',
@@ -455,17 +455,12 @@ class PlanoAulaController extends Controller
 
     private function abortIfNotProfessor(): void
     {
-        $user = request()->user();
-        abort_unless($user, 403, 'Acesso restrito a professores.');
-        if ($user->isAdmin()) {
-            return;
-        }
-        abort_unless($user->hasRole('professor'), 403, 'Acesso restrito a professores.');
+        abort_unless(request()->user(), 403);
     }
 
     private function abortIfNotOwner(DiarioPlanoAula $plano, Request $request): void
     {
-        if ($request->user()->isAdmin()) {
+        if ($request->user()->isAdmin() || $this->soVisualizacaoTela($request)) {
             return;
         }
         abort_unless((int) $plano->dpa_user_id === (int) $request->user()->id, 403);

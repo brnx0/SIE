@@ -10,6 +10,9 @@ import type { Serie } from '@/types/serie';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { GraduationCap, Pencil, Plus, Search, Trash2 } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
+import { usePermissao } from '@/composables/usePermissao';
+
+const { isReadOnly } = usePermissao();
 
 const props = defineProps<{
     series: Paginated<Serie>;
@@ -45,7 +48,7 @@ const remove = (ser: Serie) => {
                     <h1 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">Séries</h1>
                     <p class="text-sm text-slate-500 dark:text-slate-400">Gerencie as séries da rede de ensino.</p>
                 </div>
-                <Link href="/series/create">
+                <Link v-if="!isReadOnly" href="/series/create">
                     <Button class="bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400">
                         <Plus class="mr-2 size-4" /> Nova série
                     </Button>
@@ -107,7 +110,7 @@ const remove = (ser: Serie) => {
                                     <Link :href="`/series/${ser.ser_id}/edit`">
                                         <Button variant="ghost" size="sm"><Pencil class="size-4" /></Button>
                                     </Link>
-                                    <Button variant="ghost" size="sm" class="text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:hover:bg-rose-900/30" @click="remove(ser)">
+                                    <Button v-if="!isReadOnly" variant="ghost" size="sm" class="text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:hover:bg-rose-900/30" @click="remove(ser)">
                                         <Trash2 class="size-4" />
                                     </Button>
                                 </div>

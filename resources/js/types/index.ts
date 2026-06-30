@@ -35,6 +35,8 @@ export interface SharedData {
     auth: Auth;
     flash?: { success?: string | null; error?: string | null };
     params?: SystemParams;
+    /** Mapa rota→nível (0/1/2) das telas com nível ≥ 1 para o usuário atual. */
+    permissoes?: Record<string, number>;
     ziggy: {
         location: string;
         url: string;

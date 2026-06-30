@@ -4,6 +4,7 @@ import InputError from '@/components/common/InputError.vue';
 import Switch from '@/components/common/Switch.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { usePermissao } from '@/composables/usePermissao';
 import type { AreaConhecimento, Disciplina, DisciplinaFormData } from '@/types/disciplina';
 import { Link, useForm } from '@inertiajs/vue3';
 import { ChevronLeft, LoaderCircle, Save, PlusCircle } from 'lucide-vue-next';
@@ -13,6 +14,8 @@ const props = defineProps<{
     areas: Pick<AreaConhecimento, 'arc_id' | 'arc_nome'>[];
     initial?: Disciplina;
 }>();
+
+const { isReadOnly } = usePermissao();
 
 const form = useForm<DisciplinaFormData & { continue_new?: boolean }>({
     arc_id:            props.initial?.arc_id ?? null,
@@ -26,6 +29,7 @@ const form = useForm<DisciplinaFormData & { continue_new?: boolean }>({
 });
 
 const submit = (continueNew = false) => {
+    if (isReadOnly.value) return;
     form.continue_new = continueNew;
     const opts = {
         preserveScroll: true,
@@ -56,7 +60,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar disciplina' : 'Salvar a
                     <ChevronLeft class="mr-1 size-4" /> Voltar para listagem
                 </Button>
             </Link>
-            <div class="flex items-center gap-2">
+            <div v-if="!isReadOnly" class="flex items-center gap-2">
                 <Button
                     v-if="mode === 'create'"
                     type="button"
@@ -82,6 +86,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar disciplina' : 'Salvar a
         </div>
 
         <!-- Card dados gerais -->
+        <fieldset :disabled="isReadOnly" class="contents">
         <div class="grid gap-5 rounded-xl border bg-card p-6 shadow-sm sm:grid-cols-4 sm:items-start">
 
             <!-- Situação — destaque no topo -->
@@ -173,6 +178,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar disciplina' : 'Salvar a
                 <InputError :message="form.errors.dis_sigla" />
             </div>
         </div>
+        </fieldset>
 
     </form>
 </template>

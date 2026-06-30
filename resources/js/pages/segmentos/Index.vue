@@ -10,6 +10,9 @@ import type { Segmento } from '@/types/segmento';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { BookOpen, Pencil, Plus, Search, Trash2 } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
+import { usePermissao } from '@/composables/usePermissao';
+
+const { isReadOnly } = usePermissao();
 
 const props = defineProps<{
     segmentos: Paginated<Segmento>;
@@ -51,7 +54,7 @@ const remove = (seg: Segmento) => {
                     <h1 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">Segmentos</h1>
                     <p class="text-sm text-slate-500 dark:text-slate-400">Gerencie os segmentos da rede de ensino.</p>
                 </div>
-                <Link href="/segmentos/create">
+                <Link v-if="!isReadOnly" href="/segmentos/create">
                     <Button class="bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400">
                         <Plus class="mr-2 size-4" /> Novo segmento
                     </Button>
@@ -123,6 +126,7 @@ const remove = (seg: Segmento) => {
                                         <Button variant="ghost" size="sm"><Pencil class="size-4" /></Button>
                                     </Link>
                                     <Button
+                                        v-if="!isReadOnly"
                                         variant="ghost"
                                         size="sm"
                                         class="text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:hover:bg-rose-900/30"

@@ -37,6 +37,9 @@ import type { CensoEscolarResumo } from '@/types/censo';
 import type { AnoLetivo } from '@/types/parametro';
 import type { Segmento } from '@/types/segmento';
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
+import { usePermissao } from '@/composables/usePermissao';
+
+const { isReadOnly } = usePermissao();
 
 const props = defineProps<{
     mode: 'create' | 'edit';
@@ -276,6 +279,7 @@ const goToFirstErrorTab = () => {
 const submitLabel = computed(() => (props.mode === 'create' ? 'Cadastrar escola' : 'Salvar alterações'));
 
 const submit = () => {
+    if (isReadOnly.value) return;
     const opts = {
         onError: () => goToFirstErrorTab(),
         preserveScroll: true,
@@ -304,6 +308,7 @@ const isLast = computed(() => activeTab.value === TABS.value[TABS.value.length -
                 <Button type="button" variant="outline">Voltar para listagem</Button>
             </Link>
             <Button
+                v-if="!isReadOnly"
                 type="submit"
                 :disabled="form.processing"
                 class="bg-sky-600 text-white hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-400"
@@ -322,6 +327,7 @@ const isLast = computed(() => activeTab.value === TABS.value[TABS.value.length -
                 <TabsTrigger v-if="mode === 'edit'" value="segmentos">4. Segmentos</TabsTrigger>
                 <TabsTrigger v-if="mode === 'edit'" value="censo">5. Censo</TabsTrigger>
             </TabsList>
+            <fieldset :disabled="isReadOnly" class="contents">
 
             <!-- Aba 1: Identificação -->
             <TabsContent value="identificacao" class="grid gap-6">
@@ -722,6 +728,7 @@ const isLast = computed(() => activeTab.value === TABS.value[TABS.value.length -
                 />
             </TabsContent>
 
+        </fieldset>
         </Tabs>
 
         <!-- Navegação entre abas -->

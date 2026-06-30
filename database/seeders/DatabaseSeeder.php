@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
         $this->call(InstrumentoAvaliativoSeeder::class);
         $this->call(ConceitoSeeder::class);
         $this->call(MotivoBaixaFrequenciaSeeder::class);
+        $this->call(TelaPermissaoSeeder::class);
 
         $admin = User::updateOrCreate(
             ['email' => 'admin@sie.local'],

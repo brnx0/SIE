@@ -10,16 +10,31 @@ use Illuminate\Support\Facades\DB;
 class UserAccess
 {
     /**
+     * Roles globais sem lotação: enxergam todos os dados sem filtro de escola.
+     * Não possuem vínculo de lotação, então não há escola a filtrar.
+     */
+    public const ROLES_SEM_FILTRO_LOTACAO = ['admin', 'gestor_secretaria', 'coordenador_interno'];
+
+    /**
+     * Usuário que vê tudo sem filtro de lotação (admin e demais roles globais).
+     */
+    public static function semFiltroLotacao(?User $user): bool
+    {
+        return (bool) $user && $user->hasAnyRole(self::ROLES_SEM_FILTRO_LOTACAO);
+    }
+
+    /**
      * Retorna IDs de escolas em que o usuário tem lotação ativa hoje.
      *
      * Convenção:
-     * - Admin → null (sinaliza "sem filtro" para callers; SQL aplica filtro só se array)
+     * - Role global sem lotação (admin/gestor_secretaria/coordenador_interno) → null
+     *   (sinaliza "sem filtro" para callers; SQL aplica filtro só se array)
      * - Sem fun_id ou sem lotação ativa → [] (caller deve interpretar como acesso negado)
      */
     public static function escolasIds(?User $user): ?array
     {
         if (! $user) return [];
-        if ($user->isAdmin()) return null;
+        if (self::semFiltroLotacao($user)) return null;
         if (! $user->fun_id) return [];
 
         $hoje = now()->toDateString();
@@ -68,7 +83,7 @@ class UserAccess
 
         $query = Escola::query()->where('esc_fl_ativo', true)->orderBy('esc_nome');
 
-        if (! $user->isAdmin()) {
+        if (! self::semFiltroLotacao($user)) {
             $ids = self::escolasIds($user) ?: [-1];
             $query->whereIn('esc_id', $ids);
         }
@@ -84,7 +99,7 @@ class UserAccess
      */
     public static function acessoPorEscola(?User $user): bool
     {
-        return $user && ! $user->isAdmin() && $user->hasAnyRole(['secretaria_escola']);
+        return $user && ! self::semFiltroLotacao($user) && $user->hasAnyRole(['secretaria_escola']);
     }
 
     /**
@@ -93,7 +108,7 @@ class UserAccess
      */
     public static function escolaDefault(?User $user): ?array
     {
-        if (! $user || $user->isAdmin()) return null;
+        if (! $user || self::semFiltroLotacao($user)) return null;
 
         $esc = self::escolasVisiveis($user)->first();
         if (! $esc) return null;

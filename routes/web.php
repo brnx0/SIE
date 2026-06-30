@@ -86,7 +86,7 @@ Route::get('/', function () {
     return Inertia::render('Welcome');
 })->name('home');
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', 'tela'])->group(function () {
     Route::get('dashboard', function () {
         $anlId = \Illuminate\Support\Facades\DB::table('cfg_ano_letivo')
             ->where('anl_fl_em_exercicio', true)
@@ -196,11 +196,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('relatorios-escola', [RelatorioCentralController::class, 'escola'])->name('relatorios.escola');
     Route::get('relatorios-diario', [RelatorioCentralController::class, 'diario'])->name('relatorios.diario');
     Route::get('relatorios-secretaria', [RelatorioCentralController::class, 'secretaria'])->name('relatorios.secretaria')->middleware('role:secretaria_escola');
-    Route::get('relatorios-pedagogico', [RelatorioCentralController::class, 'pedagogico'])->name('relatorios.pedagogico')->middleware('role:coordenador');
-    Route::get('relatorios-encerramento', [RelatorioCentralController::class, 'encerramento'])->name('relatorios.encerramento')->middleware('role:secretaria_escola');
+    Route::get('relatorios-pedagogico', [RelatorioCentralController::class, 'pedagogico'])->name('relatorios.pedagogico');
+    Route::get('relatorios-encerramento', [RelatorioCentralController::class, 'encerramento'])->name('relatorios.encerramento');
 
-    // Encerramento do Ano Letivo — somente consulta por enquanto.
-    Route::middleware('role:secretaria_escola')->group(function () {
+    // Encerramento do Ano Letivo — acesso governado pela matriz de telas.
+    Route::group([], function () {
         Route::get('encerramento-turmas', [\App\Http\Controllers\Encerramento\EncerramentoTurmaController::class, 'index'])->name('encerramento.turmas.index');
         Route::get('encerramento-turmas/dados', [\App\Http\Controllers\Encerramento\EncerramentoTurmaController::class, 'dados'])->name('encerramento.turmas.dados');
         Route::post('encerramento-turmas/encerrar', [\App\Http\Controllers\Encerramento\EncerramentoTurmaController::class, 'encerrar'])->name('encerramento.turmas.encerrar');
@@ -300,8 +300,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('movimentacoes/{movimentacao}/desfazer', [MovimentacaoController::class, 'desfazer'])->name('movimentacoes.desfazer');
     Route::get('movimentacoes/{movimentacao}/declaracao-transferencia', [MovimentacaoController::class, 'declaracaoTransferencia'])->name('movimentacoes.declaracao-transferencia');
 
-    // Remanejamento (troca de alunos entre turmas) — Secretaria Escolar
-    Route::middleware('role:secretaria_escola')->group(function () {
+    // Remanejamento (troca de alunos entre turmas) — governado pela matriz de telas.
+    Route::group([], function () {
         Route::get('remanejamento-turmas', [\App\Http\Controllers\Secretaria\RemanejamentoController::class, 'index'])->name('remanejamento-turmas.index');
         Route::get('remanejamento-turmas/turmas', [\App\Http\Controllers\Secretaria\RemanejamentoController::class, 'turmas'])->name('remanejamento-turmas.turmas');
         Route::get('remanejamento-turmas/alunos', [\App\Http\Controllers\Secretaria\RemanejamentoController::class, 'alunos'])->name('remanejamento-turmas.alunos');
@@ -371,9 +371,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('api/disciplinas/search', [DisciplinaApiController::class, 'search'])->name('api.disciplinas.search');
     Route::get('api/grade-disciplinar', [GradeDisciplinarController::class, 'index'])->name('api.grade-disciplinar.index');
 
-    // Diário — Plano de Aula (turmas regulares). Secretaria não acessa o Diário
-    // (só os Relatórios, que ficam fora deste grupo). Admin passa sempre.
-    Route::prefix('diario')->name('diario.')->middleware('role:professor,coordenador,coordenador_interno')->group(function () {
+    // Diário — Plano de Aula (turmas regulares). Acesso governado pela matriz
+    // de telas (cada rota resolve sua própria tela: /diario, /diario/planos...).
+    Route::prefix('diario')->name('diario.')->group(function () {
         // Diário de Classe — seletor de contexto do professor
         Route::get('/', [\App\Http\Controllers\Diario\DiarioController::class, 'index'])->name('index');
 
@@ -446,8 +446,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('planos-aee/turmas', [\App\Http\Controllers\Diario\PlanoAeeController::class, 'lookupTurmas'])->name('planos-aee.turmas');
     });
 
-    // Diário AEE — admin + professor AEE. Turmas AEE do professor.
-    Route::prefix('diario-aee')->name('diario-aee.')->middleware('role:professor_aee')->group(function () {
+    // Diário AEE — acesso governado pela matriz de telas.
+    Route::prefix('diario-aee')->name('diario-aee.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Diario\DiarioAeeController::class, 'index'])->name('index');
     });
     Route::prefix('api/diario-aee')->name('api.diario-aee.')->middleware('role:professor_aee')->group(function () {
@@ -468,8 +468,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('avaliacoes/{avaliacao}', [\App\Http\Controllers\Diario\AeeAvaliacaoController::class, 'destroy'])->name('avaliacoes.destroy');
     });
 
-    // Diário de Atividade — admin + professor/monitor. Turmas de atividade do funcionário.
-    Route::prefix('diario-atividade')->name('diario-atividade.')->middleware('role:professor')->group(function () {
+    // Diário de Atividade — acesso governado pela matriz de telas.
+    Route::prefix('diario-atividade')->name('diario-atividade.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Diario\DiarioAtividadeController::class, 'index'])->name('index');
     });
     Route::prefix('api/diario-atividade')->name('api.diario-atividade.')->middleware('role:professor')->group(function () {
@@ -484,8 +484,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('frequencia/conteudo', [\App\Http\Controllers\Diario\AtividadeFrequenciaController::class, 'salvarConteudo'])->name('frequencia.conteudo');
     });
 
-    // Coordenador Pedagógico — Validação de Planos
-    Route::prefix('coordenador')->name('coordenador.')->middleware('role:coordenador')->group(function () {
+    // Coordenador Pedagógico — Validação de Planos (governado pela matriz de telas)
+    Route::prefix('coordenador')->name('coordenador.')->group(function () {
         Route::get('planos/export', [\App\Http\Controllers\Coordenador\PlanoValidacaoController::class, 'export'])->name('planos.export-lista');
         Route::get('planos', [\App\Http\Controllers\Coordenador\PlanoValidacaoController::class, 'index'])->name('planos.index');
         Route::put('planos/{plano}/status', [\App\Http\Controllers\Coordenador\PlanoValidacaoController::class, 'update'])->name('planos.status');
@@ -500,8 +500,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('planos-lookup/turmas',    [\App\Http\Controllers\Coordenador\PlanoValidacaoController::class, 'lookupTurmas'])->name('planos.turmas');
     });
 
-    // Coordenador Pedagógico Interno — Validação de Planos AEE
-    Route::prefix('coordenador-interno')->name('coordenador-interno.')->middleware('role:coordenador_interno')->group(function () {
+    // Coordenador Pedagógico Interno — Validação de Planos AEE (governado pela matriz)
+    Route::prefix('coordenador-interno')->name('coordenador-interno.')->group(function () {
         Route::get('planos-aee', [\App\Http\Controllers\Coordenador\PlanoAeeValidacaoController::class, 'index'])->name('planos-aee.index');
         Route::put('planos-aee/{plano}/status', [\App\Http\Controllers\Coordenador\PlanoAeeValidacaoController::class, 'update'])->name('planos-aee.status');
         Route::get('planos-aee/{plano}/pdf', [\App\Http\Controllers\Coordenador\PlanoAeeValidacaoController::class, 'pdf'])->name('planos-aee.pdf');
@@ -522,7 +522,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('conteudo-ministrado/gerar', [SecretariaConteudoMinistradoController::class, 'gerar'])->name('conteudo-ministrado.gerar');
     });
 
-    Route::prefix('secretaria')->name('secretaria.')->middleware('role:secretaria_escola')->group(function () {
+    // Secretaria Escolar — acesso governado pela matriz de telas (cada rota
+    // resolve sua tela: acessos-professores, lancamento-manual, etc.).
+    Route::prefix('secretaria')->name('secretaria.')->group(function () {
         Route::get('acessos-professores/export', [AcessoProfessorController::class, 'export'])->name('acessos-professores.export');
         Route::get('acessos-professores', [AcessoProfessorController::class, 'index'])->name('acessos-professores.index');
         Route::post('acessos-professores/gerar', [AcessoProfessorController::class, 'gerar'])->name('acessos-professores.gerar');
@@ -555,7 +557,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('justificativas-falta/{justificativa}', [JustificativaFaltaController::class, 'destroy'])->name('justificativas-falta.destroy');
     });
 
-    Route::middleware('can:admin')->group(function () {
+    // Configuração/Parâmetros — governado pela matriz de telas. As rotas
+    // parametros/* resolvem para a tela /parametros (somente admin); telas
+    // próprias (sabados-letivos, grade-disciplinar, atividades...) seguem a matriz.
+    Route::group([], function () {
         Route::get('parametros', [ParametroController::class, 'edit'])->name('parametros.edit');
         Route::put('parametros', [ParametroController::class, 'update'])->name('parametros.update');
 

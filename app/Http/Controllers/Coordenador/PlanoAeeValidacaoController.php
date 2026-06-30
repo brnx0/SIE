@@ -201,8 +201,7 @@ class PlanoAeeValidacaoController extends Controller
 
     private function abortIfNotCoordenadorInterno(): void
     {
-        $user = request()->user();
-        abort_unless($user && $user->hasAnyRole(['coordenador_interno', 'admin']), 403, 'Acesso restrito a coordenadores pedagógicos internos.');
+        abort_unless(request()->user(), 403);
     }
 
     private function lotadoNaEscola(int $funId, int $escId): bool

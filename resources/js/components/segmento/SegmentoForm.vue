@@ -9,6 +9,9 @@ import type { Segmento, SegmentoFormData } from '@/types/segmento';
 import { Link, useForm } from '@inertiajs/vue3';
 import { ChevronLeft, LoaderCircle, Save } from 'lucide-vue-next';
 import { computed, watch } from 'vue';
+import { usePermissao } from '@/composables/usePermissao';
+
+const { isReadOnly } = usePermissao();
 
 const props = defineProps<{
     mode: 'create' | 'edit';
@@ -43,6 +46,7 @@ watch(() => form.seg_fl_prereq, (v) => {
 const minEncerramento = computed(() => form.seg_dt_abertura || undefined);
 
 const submit = () => {
+    if (isReadOnly.value) return;
     const opts = { preserveScroll: true };
     if (props.mode === 'create') {
         form.post('/segmentos', opts);
@@ -64,6 +68,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar segmento' : 'Salvar alt
                 </Button>
             </Link>
             <Button
+                v-if="!isReadOnly"
                 type="submit"
                 :disabled="form.processing"
                 class="bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
@@ -75,6 +80,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar segmento' : 'Salvar alt
         </div>
 
         <!-- Card principal -->
+        <fieldset :disabled="isReadOnly" class="contents">
         <div class="grid gap-5 rounded-xl border bg-card p-6 shadow-sm sm:grid-cols-4 sm:items-start">
 
             <!-- Código INEP -->
@@ -216,5 +222,6 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar segmento' : 'Salvar alt
                 <InputError :message="form.errors.seg_observacoes" />
             </div>
         </div>
+        </fieldset>
     </form>
 </template>

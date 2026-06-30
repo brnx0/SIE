@@ -17,6 +17,12 @@ import { DIAS_SEMANA, SEMESTRES_TURMA, SITUACOES_TURMA, TIPOS_MEDIACAO, TURNOS }
 import { Link, useForm } from '@inertiajs/vue3';
 import { ChevronLeft, LoaderCircle, Save } from 'lucide-vue-next';
 import { computed } from 'vue';
+import { usePermissao } from '@/composables/usePermissao';
+
+const { isReadOnly, hasRole } = usePermissao();
+const bloqueiaComposicao = computed(
+    () => isReadOnly.value && !hasRole('secretaria_escola') && !hasRole('diretor'),
+);
 
 const props = defineProps<{
     mode: 'create' | 'edit';
@@ -62,6 +68,7 @@ const toggleDia = (dia: string) => {
 };
 
 const submit = () => {
+    if (isReadOnly.value) return;
     form.transform((data) => ({
         ...data,
         tur_mediacao: data.tur_mediacao === '' ? null : data.tur_mediacao,
@@ -91,7 +98,7 @@ const matriculados = computed(() => props.initial?.total_matriculados ?? 0);
                     <ChevronLeft class="mr-1 size-4" /> Voltar à lista
                 </Button>
             </Link>
-            <Button type="button" :disabled="form.processing" class="bg-indigo-600 hover:bg-indigo-700" @click="submit">
+            <Button v-if="!isReadOnly" type="button" :disabled="form.processing" class="bg-indigo-600 hover:bg-indigo-700" @click="submit">
                 <LoaderCircle v-if="form.processing" class="mr-2 size-4 animate-spin" />
                 <Save v-else class="mr-2 size-4" />
                 {{ submitLabel }}
@@ -106,6 +113,7 @@ const matriculados = computed(() => props.initial?.total_matriculados ?? 0);
                 <TabsTrigger value="atendimentos">Atendimentos Oferecidos</TabsTrigger>
             </TabsList>
 
+            <fieldset :disabled="isReadOnly" class="contents">
             <TabsContent value="dados">
                 <div class="grid gap-6">
                     <!-- Identificação -->
@@ -271,7 +279,9 @@ const matriculados = computed(() => props.initial?.total_matriculados ?? 0);
                     </div>
                 </div>
             </TabsContent>
+            </fieldset>
 
+            <fieldset :disabled="bloqueiaComposicao" class="contents">
             <TabsContent v-if="mode === 'edit'" value="alunos">
                 <TurmaAeeAlunosTab
                     :tur-id="initial!.tur_id"
@@ -292,6 +302,7 @@ const matriculados = computed(() => props.initial?.total_matriculados ?? 0);
             <TabsContent v-if="mode === 'edit'" value="atendimentos">
                 <TurmaAeeAtendimentosTab :tur-id="initial!.tur_id" />
             </TabsContent>
+            </fieldset>
         </Tabs>
     </div>
 </template>

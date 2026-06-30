@@ -11,6 +11,9 @@ import { TURNOS } from '@/types/turma';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { Accessibility, Pencil, Plus, Trash2 } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
+import { usePermissao } from '@/composables/usePermissao';
+
+const { isReadOnly } = usePermissao();
 
 const props = defineProps<{
     turmas: Paginated<Turma>;
@@ -76,7 +79,7 @@ const exportFilters = () => ({
                     <h1 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">Turmas AEE</h1>
                     <p class="text-sm text-slate-500 dark:text-slate-400">Atendimento Educacional Especializado.</p>
                 </div>
-                <Link href="/turmas-aee/create">
+                <Link v-if="!isReadOnly" href="/turmas-aee/create">
                     <Button class="bg-indigo-600 text-white hover:bg-indigo-700">
                         <Plus class="mr-2 size-4" /> Nova Turma AEE
                     </Button>
@@ -157,7 +160,7 @@ const exportFilters = () => ({
                                     <Link :href="`/turmas-aee/${t.tur_id}/edit`">
                                         <Button variant="ghost" size="sm"><Pencil class="size-4" /></Button>
                                     </Link>
-                                    <Button variant="ghost" size="sm" class="text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:hover:bg-rose-900/30" @click="remove(t)">
+                                    <Button v-if="!isReadOnly" variant="ghost" size="sm" class="text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:hover:bg-rose-900/30" @click="remove(t)">
                                         <Trash2 class="size-4" />
                                     </Button>
                                 </div>

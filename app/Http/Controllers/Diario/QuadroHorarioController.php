@@ -304,12 +304,7 @@ class QuadroHorarioController extends Controller
 
     private function abortIfNotProfessor(): void
     {
-        $user = request()->user();
-        abort_unless($user, 403, 'Acesso restrito a professores.');
-        if ($user->isAdmin()) {
-            return;
-        }
-        abort_unless($user->hasRole('professor'), 403, 'Acesso restrito a professores.');
+        abort_unless(request()->user(), 403);
     }
 
     private function assertTurmaDoProfessor(Turma $turma, int $funId, Request $request): void

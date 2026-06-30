@@ -11,6 +11,9 @@ import type { Serie, SerieFormData, SerieIndicador, SerieParaReplicar } from '@/
 import { Link, useForm } from '@inertiajs/vue3';
 import { ChevronLeft, LoaderCircle, Save } from 'lucide-vue-next';
 import { computed, watch } from 'vue';
+import { usePermissao } from '@/composables/usePermissao';
+
+const { isReadOnly } = usePermissao();
 
 const props = defineProps<{
     mode: 'create' | 'edit';
@@ -48,6 +51,7 @@ const form = useForm<SerieFormData>({
 });
 
 const submit = () => {
+    if (isReadOnly.value) return;
     const opts = { preserveScroll: true };
     if (props.mode === 'create') {
         form.post('/series', opts);
@@ -94,6 +98,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar série' : 'Salvar alter
                 </Button>
             </Link>
             <Button
+                v-if="!isReadOnly"
                 type="submit"
                 :disabled="form.processing"
                 class="bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
@@ -104,6 +109,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar série' : 'Salvar alter
             </Button>
         </div>
 
+        <fieldset :disabled="isReadOnly" class="contents">
         <!-- Card principal -->
         <div class="grid gap-5 rounded-xl border bg-card p-6 shadow-sm sm:grid-cols-4 sm:items-start">
 
@@ -379,6 +385,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar série' : 'Salvar alter
                 <InputError :message="form.errors.ser_cons_ser_id_2" />
             </div>
         </div>
+        </fieldset>
 
         <!-- Indicadores (somente edit) -->
         <div v-if="mode === 'edit' && initial">

@@ -7,27 +7,27 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, Sid
 import { Link } from '@inertiajs/vue3';
 import { LayoutDashboard, LifeBuoy, UserPlus, Cog, ClipboardList, FileBarChart, BookOpen, ClipboardCheck, KeyRound, Archive, ArrowRightLeft } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
-import { usePage } from '@inertiajs/vue3';
-import type { SharedData } from '@/types';
+import { usePermissao } from '@/composables/usePermissao';
 import AppLogo from './AppLogo.vue';
 
-const page = usePage<SharedData>();
-const userRoles = computed(() => page.props.auth?.user?.roles ?? []);
+const { podeVer } = usePermissao();
 
-const isAdmin = computed(() => userRoles.value.includes('admin'));
-const isCoordenador = computed(() => userRoles.value.includes('coordenador') || isAdmin.value);
-const isCoordenadorInterno = computed(() => userRoles.value.includes('coordenador_interno') || isAdmin.value);
-const isProfessor = computed(() => userRoles.value.includes('professor') || isAdmin.value);
-const isProfessorAee = computed(() => userRoles.value.includes('professor_aee') || isAdmin.value);
-const isSecretariaEscolar = computed(() => userRoles.value.includes('secretaria_escola') || isAdmin.value);
-// Secretaria (sem outro perfil de diário): no Diário Online só enxerga Relatórios.
-const apenasSecretaria = computed(() =>
-    userRoles.value.includes('secretaria_escola')
-    && !isAdmin.value
-    && !userRoles.value.includes('professor')
-    && !userRoles.value.includes('coordenador')
-    && !userRoles.value.includes('coordenador_interno'),
-);
+// Filtra recursivamente a árvore de menu pela matriz de permissão:
+// folha (com href) aparece se podeVer(href); pai aparece se sobrar ≥1 filho.
+function filtrarMenu(items: any[]): any[] {
+    const out: any[] = [];
+    for (const it of items ?? []) {
+        if (it.children?.length) {
+            const kids = filtrarMenu(it.children);
+            if (kids.length) out.push({ ...it, children: kids });
+        } else if (it.href) {
+            if (podeVer(it.href)) out.push(it);
+        } else {
+            out.push(it);
+        }
+    }
+    return out;
+}
 
 const overview = [
     { title: 'Painel', href: '/dashboard', icon: LayoutDashboard },
@@ -73,35 +73,31 @@ const matriculasMenu = [
         icon: ArrowRightLeft,
         children: [
             { title: 'Movimentar Aluno', href: '/movimentacoes' },
-            ...(isSecretariaEscolar.value ? [{ title: 'Remanejar Turmas', href: '/remanejamento-turmas' }] : []),
+            { title: 'Remanejar Turmas', href: '/remanejamento-turmas' },
         ],
     },
 ];
-const diarioMenu = computed<any[]>(() => [
+const diarioMenu = [
     {
         title: 'Diário Online',
         icon: BookOpen,
         children: [
-            ...(isProfessor.value ? [{ title: 'Diário de Classe', href: '/diario' }] : []),
-            ...(isProfessorAee.value ? [{ title: 'Diário AEE', href: '/diario-aee' }] : []),
-            ...(isProfessor.value ? [{ title: 'Diário Atividade', href: '/diario-atividade' }] : []),
-            ...(!apenasSecretaria.value
-                ? [
-                      {
-                          title: 'Cadastro',
-                          children: [
-                              { title: 'Instrumentos Avaliativos', href: '/diario/instrumentos-avaliativos' },
-                              ...(isAdmin.value ? [{ title: 'Sábados Letivos', href: '/sabados-letivos' }] : []),
-                          ],
-                      },
-                      { title: 'Planos de Aula', href: '/diario/planos' },
-                      { title: 'Planos de Aula AEE', href: '/diario/planos-aee' },
-                  ]
-                : []),
+            { title: 'Diário de Classe', href: '/diario' },
+            { title: 'Diário AEE', href: '/diario-aee' },
+            { title: 'Diário Atividade', href: '/diario-atividade' },
+            {
+                title: 'Cadastro',
+                children: [
+                    { title: 'Instrumentos Avaliativos', href: '/diario/instrumentos-avaliativos' },
+                    { title: 'Sábados Letivos', href: '/sabados-letivos' },
+                ],
+            },
+            { title: 'Planos de Aula', href: '/diario/planos' },
+            { title: 'Planos de Aula AEE', href: '/diario/planos-aee' },
             { title: 'Relatórios', href: '/relatorios-diario' },
         ],
     },
-]);
+];
 const relatoriosMenu = [
     {
         title: 'Relatórios',
@@ -112,21 +108,19 @@ const relatoriosMenu = [
         ],
     },
 ];
-const coordenadorMenu = computed<any[]>(() => {
-    if (!isCoordenador.value && !isCoordenadorInterno.value) return [];
-
-    const children: any[] = [];
-    if (isCoordenador.value) children.push({ title: 'Validação de Planos', href: '/coordenador/planos' });
-    if (isCoordenadorInterno.value) children.push({ title: 'Validação de Planos AEE', href: '/coordenador-interno/planos-aee' });
-    if (isCoordenador.value) children.push({ title: 'Relatórios', href: '/relatorios-pedagogico' });
-
-    return [{ title: 'Pedagógico', icon: ClipboardCheck, children }];
-});
-
-const secretariaMenu = computed<any[]>(() => {
-    if (!isSecretariaEscolar.value) return [];
-
-    return [{
+const coordenadorMenu = [
+    {
+        title: 'Pedagógico',
+        icon: ClipboardCheck,
+        children: [
+            { title: 'Validação de Planos', href: '/coordenador/planos' },
+            { title: 'Validação de Planos AEE', href: '/coordenador-interno/planos-aee' },
+            { title: 'Relatórios', href: '/relatorios-pedagogico' },
+        ],
+    },
+];
+const secretariaMenu = [
+    {
         title: 'Secretaria Escolar',
         icon: KeyRound,
         children: [
@@ -141,13 +135,10 @@ const secretariaMenu = computed<any[]>(() => {
             { title: 'Renovação de Matrícula', href: '/secretaria/renovacao-matricula' },
             { title: 'Motivo Baixa Frequência', href: '/secretaria/motivos-baixa-frequencia' },
         ],
-    }];
-});
-
-const encerramentoMenu = computed<any[]>(() => {
-    if (!isSecretariaEscolar.value) return [];
-
-    return [{
+    },
+];
+const encerramentoMenu = [
+    {
         title: 'Ano Letivo',
         icon: Archive,
         children: [
@@ -156,19 +147,29 @@ const encerramentoMenu = computed<any[]>(() => {
             { title: 'Confirmação de Renovação', href: '/confirmacao-renovacao' },
             { title: 'Relatórios', href: '/relatorios-encerramento' },
         ],
-    }];
-});
-
-const administracao = computed<any[]>(() => [
+    },
+];
+const administracao = [
     {
         title: 'Sistema',
         icon: Cog,
         children: [
             { title: 'Usuários', href: '/users' },
-            ...(isAdmin.value ? [{ title: 'Parâmetros', href: '/parametros' }] : []),
+            { title: 'Parâmetros', href: '/parametros' },
         ],
     },
-]);
+];
+
+// Versões filtradas pela matriz de permissão (esconde nível 0).
+const overviewF = computed(() => filtrarMenu(overview));
+const cadastrosF = computed(() => filtrarMenu(cadastros));
+const matriculasF = computed(() => filtrarMenu(matriculasMenu));
+const diarioF = computed(() => filtrarMenu(diarioMenu));
+const coordenadorF = computed(() => filtrarMenu(coordenadorMenu));
+const secretariaF = computed(() => filtrarMenu(secretariaMenu));
+const encerramentoF = computed(() => filtrarMenu(encerramentoMenu));
+const relatoriosF = computed(() => filtrarMenu(relatoriosMenu));
+const administracaoF = computed(() => filtrarMenu(administracao));
 
 const footerNavItems = [
     { title: 'Suporte', href: '#', icon: LifeBuoy },
@@ -191,15 +192,15 @@ const flattenItems = (items: any[], parents: string[] = []): FlatNavLeaf[] => {
 };
 
 const flatLeaves = computed<FlatNavLeaf[]>(() => [
-    ...flattenItems(overview),
-    ...flattenItems(cadastros),
-    ...flattenItems(matriculasMenu),
-    ...flattenItems(diarioMenu.value),
-    ...flattenItems(coordenadorMenu.value),
-    ...flattenItems(secretariaMenu.value),
-    ...flattenItems(encerramentoMenu.value),
-    ...flattenItems(relatoriosMenu),
-    ...flattenItems(administracao.value),
+    ...flattenItems(overviewF.value),
+    ...flattenItems(cadastrosF.value),
+    ...flattenItems(matriculasF.value),
+    ...flattenItems(diarioF.value),
+    ...flattenItems(coordenadorF.value),
+    ...flattenItems(secretariaF.value),
+    ...flattenItems(encerramentoF.value),
+    ...flattenItems(relatoriosF.value),
+    ...flattenItems(administracaoF.value),
 ]);
 
 const searching = computed(() => search.value.trim().length > 0);
@@ -223,15 +224,15 @@ const searching = computed(() => search.value.trim().length > 0);
             <NavSearch v-model="search" :items="flatLeaves" />
 
             <template v-if="!searching">
-                <NavMain label="Visão geral" :items="overview" />
-                <NavMain label="Gestão" :items="cadastros" />
-                <NavMain label="Matrículas" :items="matriculasMenu" />
-                <NavMain label="Diário" :items="diarioMenu" />
-                <NavMain v-if="isCoordenador || isCoordenadorInterno" label="Pedagógico" :items="coordenadorMenu" />
-                <NavMain v-if="isSecretariaEscolar" label="Secretaria Escolar" :items="secretariaMenu" />
-                <NavMain v-if="isSecretariaEscolar" label="Encerramento" :items="encerramentoMenu" />
-                <NavMain label="Relatórios" :items="relatoriosMenu" />
-                <NavMain label="Administração" :items="administracao" />
+                <NavMain v-if="overviewF.length" label="Visão geral" :items="overviewF" />
+                <NavMain v-if="cadastrosF.length" label="Gestão" :items="cadastrosF" />
+                <NavMain v-if="matriculasF.length" label="Matrículas" :items="matriculasF" />
+                <NavMain v-if="diarioF.length" label="Diário" :items="diarioF" />
+                <NavMain v-if="coordenadorF.length" label="Pedagógico" :items="coordenadorF" />
+                <NavMain v-if="secretariaF.length" label="Secretaria Escolar" :items="secretariaF" />
+                <NavMain v-if="encerramentoF.length" label="Encerramento" :items="encerramentoF" />
+                <NavMain v-if="relatoriosF.length" label="Relatórios" :items="relatoriosF" />
+                <NavMain v-if="administracaoF.length" label="Administração" :items="administracaoF" />
             </template>
         </SidebarContent>
 

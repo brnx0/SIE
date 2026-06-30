@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useViaCep } from '@/composables/useViaCep';
+import { usePermissao } from '@/composables/usePermissao';
 import { COR_RACA } from '@/lib/corRaca';
 import { PAISES } from '@/lib/paises';
 import { TIPOS_SANGUINEOS } from '@/lib/tiposSanguineos';
@@ -319,7 +320,10 @@ const handleErrors = (errors: Record<string, string>) => {
     goToFirstErrorTab();
 };
 
+const { isReadOnly } = usePermissao();
+
 const submit = () => {
+    if (isReadOnly.value) return;
     const opts = {
         onError: (errors: Record<string, string>) => handleErrors(errors),
         preserveScroll: true,
@@ -409,6 +413,7 @@ const initials = computed(() => {
                 <Button type="button" variant="outline">Voltar para listagem</Button>
             </Link>
             <Button
+                v-if="!isReadOnly"
                 type="submit"
                 :disabled="form.processing"
                 class="bg-sky-600 text-white hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-400"
@@ -438,6 +443,7 @@ const initials = computed(() => {
                 </TabsTrigger>
             </TabsList>
 
+            <fieldset :disabled="isReadOnly" class="contents">
             <!-- Aba 1 -->
             <TabsContent value="dados-pessoais" class="grid gap-6">
                 <div class="flex flex-col items-center gap-4 rounded-xl border bg-card p-6 shadow-sm sm:flex-row sm:items-start sm:gap-6">
@@ -1367,6 +1373,7 @@ const initials = computed(() => {
                     </div>
                 </div>
             </TabsContent>
+        </fieldset>
         </Tabs>
 
         <!-- Navegação entre abas -->

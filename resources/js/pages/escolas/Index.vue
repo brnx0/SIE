@@ -10,6 +10,9 @@ import type { Escola } from '@/types/escola';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { Building2, Pencil, Plus, Search, Trash2 } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
+import { usePermissao } from '@/composables/usePermissao';
+
+const { isReadOnly } = usePermissao();
 
 const props = defineProps<{
     escolas: Paginated<Escola>;
@@ -60,7 +63,7 @@ const situacaoClass = (s: number) => {
                     <h1 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">Escolas</h1>
                     <p class="text-sm text-slate-500 dark:text-slate-400">Gerencie as unidades escolares.</p>
                 </div>
-                <Link href="/escolas/create">
+                <Link v-if="!isReadOnly" href="/escolas/create">
                     <Button class="bg-sky-600 text-white hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-400">
                         <Plus class="mr-2 size-4" /> Nova escola
                     </Button>
@@ -124,7 +127,7 @@ const situacaoClass = (s: number) => {
                                     <Link :href="`/escolas/${esc.esc_id}/edit`">
                                         <Button variant="ghost" size="sm"><Pencil class="size-4" /></Button>
                                     </Link>
-                                    <Button variant="ghost" size="sm" class="text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:hover:bg-rose-900/30" @click="remove(esc)">
+                                    <Button v-if="!isReadOnly" variant="ghost" size="sm" class="text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:hover:bg-rose-900/30" @click="remove(esc)">
                                         <Trash2 class="size-4" />
                                     </Button>
                                 </div>

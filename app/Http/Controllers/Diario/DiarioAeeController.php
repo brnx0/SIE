@@ -153,12 +153,7 @@ class DiarioAeeController extends Controller
 
     private function abortIfNotProfessorAee(): void
     {
-        $user = request()->user();
-        abort_unless($user, 403, 'Acesso restrito.');
-        if ($user->isAdmin()) {
-            return;
-        }
-        abort_unless($user->hasRole('professor_aee'), 403, 'Acesso restrito ao professor AEE.');
+        abort_unless(request()->user(), 403);
     }
 
     private function resumoProfessor($user): array

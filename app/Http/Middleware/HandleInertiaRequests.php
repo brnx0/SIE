@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\Parametro\ParametroEntidade;
+use App\Support\PermissaoTela;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -51,6 +52,7 @@ class HandleInertiaRequests extends Middleware
                 'error' => fn () => $request->session()->get('error'),
             ],
             'params' => fn () => $this->parametrosFlags(),
+            'permissoes' => fn () => PermissaoTela::mapaParaUsuario($request->user()),
         ]);
     }
 

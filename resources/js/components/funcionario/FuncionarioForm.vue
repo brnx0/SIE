@@ -15,6 +15,7 @@ import TabsTrigger from '@/components/common/TabsTrigger.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { usePermissao } from '@/composables/usePermissao';
 import { useViaCep } from '@/composables/useViaCep';
 import { COR_RACA } from '@/lib/corRaca';
 import { PAISES } from '@/lib/paises';
@@ -54,6 +55,7 @@ const props = defineProps<{
     horarios?: HorarioItem[];
 }>();
 
+const { isReadOnly } = usePermissao();
 const page = usePage<SharedData>();
 const DEFAULT_PARAMS: SystemParams = {
     nome_pessoa_caixa_alta: true,
@@ -308,6 +310,7 @@ const goToFirstErrorTab = () => {
 const submitLabel = computed(() => (props.mode === 'create' ? 'Cadastrar funcionário' : 'Salvar alterações'));
 
 const submit = () => {
+    if (isReadOnly.value) return;
     const opts = {
         onError: (errors: Record<string, string>) => {
             handleHomonimo(errors);
@@ -394,6 +397,7 @@ const initials = computed(() => {
                 <Button type="button" variant="outline">Voltar para listagem</Button>
             </Link>
             <Button
+                v-if="!isReadOnly"
                 type="submit"
                 :disabled="form.processing"
                 class="bg-sky-600 text-white hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-400"
@@ -423,6 +427,7 @@ const initials = computed(() => {
                 </TabsTrigger>
             </TabsList>
 
+            <fieldset :disabled="isReadOnly" class="contents">
             <!-- Aba 1: Dados Pessoais -->
             <TabsContent value="dados-pessoais" class="grid gap-6">
                 <!-- Foto + Status ativo -->
@@ -1001,6 +1006,7 @@ const initials = computed(() => {
             <TabsContent v-if="mode === 'edit'" value="horario">
                 <HorariosTab :horarios="horarios ?? []" />
             </TabsContent>
+            </fieldset>
         </Tabs>
 
         <!-- Navegação entre abas -->

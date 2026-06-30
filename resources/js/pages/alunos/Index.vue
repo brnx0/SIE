@@ -10,6 +10,9 @@ import type { Aluno } from '@/types/aluno';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { Pencil, Plus, Search, Trash2 } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
+import { usePermissao } from '@/composables/usePermissao';
+
+const { isReadOnly } = usePermissao();
 
 const props = defineProps<{
     alunos: Paginated<Aluno>;
@@ -56,7 +59,7 @@ const formatDate = (iso: string) => {
                     <h1 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">Alunos</h1>
                     <p class="text-sm text-slate-500 dark:text-slate-400">Gerencie os cadastros de alunos da instituição.</p>
                 </div>
-                <Link href="/alunos/create">
+                <Link v-if="!isReadOnly" href="/alunos/create">
                     <Button class="bg-sky-600 text-white hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-400">
                         <Plus class="mr-2 size-4" /> Novo aluno
                     </Button>
@@ -113,7 +116,7 @@ const formatDate = (iso: string) => {
                                     <Link :href="`/alunos/${aluno.aln_id}/edit`">
                                         <Button variant="ghost" size="sm"><Pencil class="size-4" /></Button>
                                     </Link>
-                                    <Button variant="ghost" size="sm" class="text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:hover:bg-rose-900/30" @click="remove(aluno)">
+                                    <Button v-if="!isReadOnly" variant="ghost" size="sm" class="text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:hover:bg-rose-900/30" @click="remove(aluno)">
                                         <Trash2 class="size-4" />
                                     </Button>
                                 </div>
