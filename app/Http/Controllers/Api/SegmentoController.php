@@ -29,6 +29,7 @@ class SegmentoController extends Controller
         $segmentos = EscolaSegmento::with('segmento:seg_id,seg_nome_reduzido,seg_nome_completo,seg_fl_ativo')
             ->where('esc_id', $escId)
             ->vigente($anlId)
+            ->orderBy('seg_id', 'asc')
             ->get(['esg_id', 'seg_id', 'ser_id_inicio', 'ser_id_fim'])
             ->filter(function ($esg) use ($incluirIds) {
                 // Lista se segmento ativo OU se já estava vinculado
