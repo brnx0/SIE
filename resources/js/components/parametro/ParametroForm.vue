@@ -19,6 +19,8 @@ import Switch from '@/components/common/Switch.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useToast } from '@/composables/useToast';
+import { validarImagem } from '@/lib/validaArquivo';
 import type { Municipio } from '@/types/aluno';
 import type { AnoLetivo, Conceito, DiaNaoLetivo, DiasLetivos, GradeHorario, MediaEscola, ParametroEntidade, ParametroEntidadeFormData, SegmentoResumo, SituacaoBloqueio, TurmaAlunoSituacaoResumo, Unidade } from '@/types/parametro';
 import { router, useForm } from '@inertiajs/vue3';
@@ -97,12 +99,18 @@ const onMunicipioChange = (v: number | null) => {
 };
 
 // Uploads
+const { push } = useToast();
 const logoInput = ref<HTMLInputElement | null>(null);
 const logoPreview = ref<string | null>(props.initial.par_logomarca_url ?? null);
 let logoObjectUrl: string | null = null;
 
 const onLogoChange = (e: Event) => {
-    const file = (e.target as HTMLInputElement).files?.[0] ?? null;
+    const target = e.target as HTMLInputElement;
+    const file = target.files?.[0] ?? null;
+    if (file) {
+        const erro = validarImagem(file);
+        if (erro) { push('error', erro); target.value = ''; return; }
+    }
     form.par_logomarca = file;
     if (logoObjectUrl) { URL.revokeObjectURL(logoObjectUrl); logoObjectUrl = null; }
     if (file) { logoObjectUrl = URL.createObjectURL(file); logoPreview.value = logoObjectUrl; }
@@ -121,7 +129,12 @@ const brasaoPreview = ref<string | null>(props.initial.par_brasao_url ?? null);
 let brasaoObjectUrl: string | null = null;
 
 const onBrasaoChange = (e: Event) => {
-    const file = (e.target as HTMLInputElement).files?.[0] ?? null;
+    const target = e.target as HTMLInputElement;
+    const file = target.files?.[0] ?? null;
+    if (file) {
+        const erro = validarImagem(file);
+        if (erro) { push('error', erro); target.value = ''; return; }
+    }
     form.par_brasao = file;
     if (brasaoObjectUrl) { URL.revokeObjectURL(brasaoObjectUrl); brasaoObjectUrl = null; }
     if (file) { brasaoObjectUrl = URL.createObjectURL(file); brasaoPreview.value = brasaoObjectUrl; }

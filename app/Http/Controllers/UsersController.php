@@ -59,6 +59,8 @@ class UsersController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        $request->merge(['login' => strtolower(trim((string) $request->input('login')))]);
+
         $data = $request->validate([
             'name'     => ['required', 'string', 'max:255'],
             'login'    => ['required', 'string', 'max:255', 'unique:users,login'],
@@ -98,6 +100,8 @@ class UsersController extends Controller
 
     public function update(Request $request, User $user): RedirectResponse
     {
+        $request->merge(['login' => strtolower(trim((string) $request->input('login')))]);
+
         $data = $request->validate([
             'name'     => ['required', 'string', 'max:255'],
             'login'    => ['required', 'string', 'max:255', \Illuminate\Validation\Rule::unique('users')->ignore($user->id)],

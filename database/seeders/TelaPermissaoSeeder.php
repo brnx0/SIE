@@ -83,6 +83,7 @@ class TelaPermissaoSeeder extends Seeder
         ['/users', 'Usuários', 'Sistema', 41, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
         ['/parametros', 'Parâmetros', 'Sistema', 42, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
         ['/permissoes', 'Permissões de Telas', 'Sistema', 43, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
+        ['/auditoria', 'Auditoria', 'Sistema', 44, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
     ];
 
     public function run(): void

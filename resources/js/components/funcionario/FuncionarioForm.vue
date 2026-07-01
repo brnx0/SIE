@@ -17,7 +17,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { usePermissao } from '@/composables/usePermissao';
 import { useErrorFocus } from '@/composables/useErrorFocus';
+import { useToast } from '@/composables/useToast';
 import { useViaCep } from '@/composables/useViaCep';
+import { validarImagem } from '@/lib/validaArquivo';
 import { COR_RACA } from '@/lib/corRaca';
 import { PAISES } from '@/lib/paises';
 import { UFS } from '@/lib/ufs';
@@ -349,6 +351,7 @@ const isFirst = computed(() => activeTab.value === TABS[0]);
 const isLast = computed(() => activeTab.value === TABS[TABS.length - 1]);
 
 // Foto
+const { push } = useToast();
 const fileInput = ref<HTMLInputElement | null>(null);
 const previewUrl = ref<string | null>(props.initial?.fun_foto_url ?? null);
 let objectUrl: string | null = null;
@@ -356,6 +359,16 @@ let objectUrl: string | null = null;
 const onFotoChange = (e: Event) => {
     const target = e.target as HTMLInputElement;
     const file = target.files?.[0] ?? null;
+
+    if (file) {
+        const erro = validarImagem(file);
+        if (erro) {
+            push('error', erro);
+            target.value = ''; // não faz upload; mantém a foto anterior
+            return;
+        }
+    }
+
     form.fun_foto = file;
 
     if (objectUrl) {

@@ -20,6 +20,17 @@ class LoginRequest extends FormRequest
     }
 
     /**
+     * Normaliza o login para minúsculas antes de validar/autenticar,
+     * evitando divergência de caixa (case) contra o cadastro.
+     */
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'login' => strtolower(trim((string) $this->input('login'))),
+        ]);
+    }
+
+    /**
      * Get the validation rules that apply to the request.
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>

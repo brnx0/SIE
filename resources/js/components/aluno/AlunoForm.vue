@@ -16,7 +16,9 @@ import { Label } from '@/components/ui/label';
 import { useViaCep } from '@/composables/useViaCep';
 import { usePermissao } from '@/composables/usePermissao';
 import { useErrorFocus } from '@/composables/useErrorFocus';
+import { useToast } from '@/composables/useToast';
 import { COR_RACA } from '@/lib/corRaca';
+import { validarImagem } from '@/lib/validaArquivo';
 import { PAISES } from '@/lib/paises';
 import { TIPOS_SANGUINEOS } from '@/lib/tiposSanguineos';
 import {
@@ -366,6 +368,7 @@ const prev = () => {
 const isFirst = computed(() => activeTab.value === NAV_TABS[0]);
 const isLast  = computed(() => activeTab.value === NAV_TABS[NAV_TABS.length - 1] || activeTab.value === 'turmas');
 
+const { push } = useToast();
 const fileInput = ref<HTMLInputElement | null>(null);
 const previewUrl = ref<string | null>(props.initial?.aln_foto_url ?? null);
 let objectUrl: string | null = null;
@@ -373,6 +376,16 @@ let objectUrl: string | null = null;
 const onFotoChange = (e: Event) => {
     const target = e.target as HTMLInputElement;
     const file = target.files?.[0] ?? null;
+
+    if (file) {
+        const erro = validarImagem(file);
+        if (erro) {
+            push('error', erro);
+            target.value = ''; // não faz upload; mantém a foto anterior
+            return;
+        }
+    }
+
     form.aln_foto = file;
 
     if (objectUrl) {

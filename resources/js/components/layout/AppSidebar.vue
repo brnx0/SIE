@@ -157,6 +157,7 @@ const administracao = [
             { title: 'Usuários', href: '/users' },
             { title: 'Parâmetros', href: '/parametros' },
             { title: 'Permissões de Telas', href: '/permissoes' },
+            { title: 'Auditoria', href: '/auditoria' },
         ],
     },
 ];

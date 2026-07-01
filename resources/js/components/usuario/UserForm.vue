@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Link, useForm } from '@inertiajs/vue3';
 import { LoaderCircle, Save, X } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 
 interface UserFormData {
     name: string;
@@ -41,6 +41,12 @@ const form = useForm<UserFormData>({
     fun_id:                props.initial?.fun_id ?? null,
     password:              '',
     password_confirmation: '',
+});
+
+// Login sempre em minúsculas — evita cadastro com caixa alta divergindo do usado no login.
+watch(() => form.login, (v) => {
+    const lower = v.toLowerCase();
+    if (lower !== v) form.login = lower;
 });
 
 const availableRoles = computed(() =>

@@ -15,7 +15,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useBairros } from '@/composables/useBairros';
 import { useMunicipios } from '@/composables/useMunicipios';
+import { useToast } from '@/composables/useToast';
 import { useViaCep } from '@/composables/useViaCep';
+import { validarImagem } from '@/lib/validaArquivo';
 import {
     DEP_ADMINISTRATIVA,
     FORMA_OCUPACAO,
@@ -231,6 +233,7 @@ watch(
 );
 
 // Logo upload
+const { push } = useToast();
 const fileInput = ref<HTMLInputElement | null>(null);
 const previewUrl = ref<string | null>(props.initial?.esc_logo_url ?? null);
 let objectUrl: string | null = null;
@@ -238,6 +241,16 @@ let objectUrl: string | null = null;
 const onLogoChange = (e: Event) => {
     const target = e.target as HTMLInputElement;
     const file = target.files?.[0] ?? null;
+
+    if (file) {
+        const erro = validarImagem(file);
+        if (erro) {
+            push('error', erro);
+            target.value = ''; // não faz upload; mantém o logo anterior
+            return;
+        }
+    }
+
     form.esc_logo = file;
 
     if (objectUrl) {

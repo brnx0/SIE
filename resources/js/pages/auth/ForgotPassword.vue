@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import AuthLayout from '@/layouts/AuthLayout.vue';
 import { Head, useForm } from '@inertiajs/vue3';
 import { LoaderCircle } from 'lucide-vue-next';
+import { watch } from 'vue';
 
 defineProps<{
     status?: string;
@@ -14,6 +15,12 @@ defineProps<{
 
 const form = useForm({
     login: '',
+});
+
+// Login em minúsculas — casa com o cadastro (normalizado no backend também).
+watch(() => form.login, (v) => {
+    const lower = v.toLowerCase();
+    if (lower !== v) form.login = lower;
 });
 
 const submit = () => {

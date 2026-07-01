@@ -96,6 +96,9 @@ Route::middleware(['auth', 'verified', 'tela'])->group(function () {
     Route::get('permissoes', [\App\Http\Controllers\PermissaoTelaController::class, 'index'])->name('permissoes.index');
     Route::put('permissoes', [\App\Http\Controllers\PermissaoTelaController::class, 'update'])->name('permissoes.update');
 
+    // Auditoria — trilha de quem alterou o quê e quando (governado pela matriz: admin)
+    Route::get('auditoria', [\App\Http\Controllers\AuditoriaController::class, 'index'])->name('auditoria.index');
+
     Route::get('alunos/export', [AlunoController::class, 'export'])->name('alunos.export');
     Route::resource('alunos', AlunoController::class)->except(['show']);
     Route::get('escolas/export', [EscolaController::class, 'export'])->name('escolas.export');
