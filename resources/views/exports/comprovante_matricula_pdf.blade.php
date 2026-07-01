@@ -6,8 +6,8 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { font-family: DejaVu Sans, sans-serif; font-size: 10px; color: #111; }
 
-.via { width: 100%; padding: 10mm 12mm 8mm 12mm; page-break-after: always; }
-.via:last-child { page-break-after: avoid; }
+.via { width: 100%; padding: 10mm 12mm 8mm 12mm; }
+.via-break { page-break-after: always; }
 
 /* Cabeçalho */
 .header-box { border: 1px solid #aaa; margin-bottom: 5mm; }
@@ -79,7 +79,7 @@ body { font-family: DejaVu Sans, sans-serif; font-size: 10px; color: #111; }
 @endphp
 
 @foreach($vias as $via)
-<div class="via">
+<div class="via @unless($loop->last) via-break @endunless">
 
 {{-- ── Cabeçalho ─────────────────────────────────────────── --}}
 <table class="header-box" width="100%" cellspacing="0" cellpadding="0">

@@ -201,6 +201,7 @@ Route::middleware(['auth', 'verified', 'tela'])->group(function () {
     Route::get('relatorios/parecer-descritivo/disciplinas', [ParecerDescritivoController::class, 'disciplinas'])->name('relatorios.parecer-descritivo.disciplinas');
     Route::get('relatorios/parecer-descritivo/alunos', [ParecerDescritivoController::class, 'alunos'])->name('relatorios.parecer-descritivo.alunos');
     Route::get('relatorios/parecer-descritivo/gerar', [ParecerDescritivoController::class, 'gerar'])->name('relatorios.parecer-descritivo.gerar');
+    Route::get('relatorios/parecer-descritivo/xlsx', [ParecerDescritivoController::class, 'exportarXlsx'])->name('relatorios.parecer-descritivo.xlsx');
 
     // Boletim do aluno
     Route::get('relatorios/boletim', [BoletimController::class, 'form'])->name('relatorios.boletim.form');
@@ -244,6 +245,7 @@ Route::middleware(['auth', 'verified', 'tela'])->group(function () {
     Route::get('relatorios/conteudo-ministrado/gerar', [ConteudoMinistradoController::class, 'gerar'])->name('relatorios.conteudo-ministrado.gerar');
     Route::get('relatorios/alunos-por-turma', [AlunosPorTurmaRelatorioController::class, 'form'])->name('relatorios.alunos-por-turma.form');
     Route::get('relatorios/alunos-por-turma/gerar', [AlunosPorTurmaRelatorioController::class, 'gerar'])->name('relatorios.alunos-por-turma.gerar');
+    Route::get('relatorios/alunos-por-turma/xlsx', [AlunosPorTurmaRelatorioController::class, 'exportarXlsx'])->name('relatorios.alunos-por-turma.xlsx');
     Route::get('relatorios/dados-alunos-turma', [DadosAlunosTurmaController::class, 'form'])->name('relatorios.dados-alunos-turma.form');
     Route::get('relatorios/dados-alunos-turma/gerar', [DadosAlunosTurmaController::class, 'gerar'])->name('relatorios.dados-alunos-turma.gerar');
     Route::get('relatorios/relacao-turmas-aee', [RelacaoTurmasAeeController::class, 'form'])->name('relatorios.relacao-turmas-aee.form');

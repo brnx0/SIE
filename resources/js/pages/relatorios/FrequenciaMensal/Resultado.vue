@@ -40,13 +40,16 @@ const dataEmissao = computed(() => {
     return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 });
 const freqTxt = (f: number | null) => (f === null ? '—' : `${f.toFixed(1)}%`);
+import { useIsActiveTab } from '@/composables/useIsActiveTab';
+
+const isActiveTab = useIsActiveTab();
 const imprimir = () => window.print();
 </script>
 
 <template>
     <Head title="Resultado — Frequência Mensal" />
 
-    <Teleport to="body">
+    <Teleport to="body" :disabled="!isActiveTab">
     <div id="print-area">
         <header class="cab">
             <div class="logo"><img v-if="parametros?.logomarca_url" :src="parametros.logomarca_url" alt="" /></div>

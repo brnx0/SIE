@@ -89,23 +89,24 @@ const submit = () => {
 
 const close = () => emit('update:open', false);
 
-const clampAno4Digitos = (field: keyof AnoLetivoFormData) => (e: Event) => {
+// Normaliza a data digitada/selecionada: clampa ano > 4 dígitos e SEMPRE reflete
+// o valor no form. Ligado a @input e @change — o `change` (dispara no blur, antes
+// do clique em Salvar) garante o commit do que foi DIGITADO, não só do calendário.
+const normalizaData = (field: keyof AnoLetivoFormData) => (e: Event) => {
     const input = e.target as HTMLInputElement;
-    const v = input.value;
-    if (!v) return;
+    let v = input.value;
     const m = v.match(/^(\d+)-(\d{2})-(\d{2})$/);
-    if (!m) return;
-    if (m[1].length > 4) {
-        const fixed = `${m[1].slice(0, 4)}-${m[2]}-${m[3]}`;
-        input.value = fixed;
-        (form as any)[field] = fixed;
+    if (m && m[1].length > 4) {
+        v = `${m[1].slice(0, 4)}-${m[2]}-${m[3]}`;
+        input.value = v;
     }
+    (form as any)[field] = v;
 };
 </script>
 
 <template>
     <Dialog :open="open" @update:open="(v) => emit('update:open', v)">
-        <DialogContent class="sm:max-w-2xl">
+        <DialogContent class="sm:max-w-3xl">
             <DialogHeader>
                 <DialogTitle>{{ isEdit ? 'Editar Ano Letivo' : 'Novo Ano Letivo' }}</DialogTitle>
                 <DialogDescription>
@@ -113,8 +114,8 @@ const clampAno4Digitos = (field: keyof AnoLetivoFormData) => (e: Event) => {
                 </DialogDescription>
             </DialogHeader>
 
-            <form @submit.prevent="submit" novalidate class="grid gap-4 sm:grid-cols-2">
-                <div class="grid gap-2 sm:col-span-1">
+            <form @submit.prevent="submit" novalidate class="grid gap-x-5 gap-y-2 sm:grid-cols-2">
+                <div class="grid gap-1.5 sm:col-span-1">
                     <FormLabel :for="'anl_ano'" :required="true">Ano</FormLabel>
                     <Input
                         id="anl_ano"
@@ -129,31 +130,31 @@ const clampAno4Digitos = (field: keyof AnoLetivoFormData) => (e: Event) => {
                     <InputError :message="form.errors.anl_ano" />
                 </div>
 
-                <div class="grid gap-2 sm:col-span-1">
+                <div class="grid gap-1.5 sm:col-span-1">
                     <FormLabel :for="'anl_dt_censo'">Data do Censo</FormLabel>
-                    <Input id="anl_dt_censo" type="date" min="1900-01-01" max="2999-12-31" v-model="form.anl_dt_censo" @input="clampAno4Digitos('anl_dt_censo')" />
+                    <Input id="anl_dt_censo" type="date" min="1900-01-01" max="2999-12-31" v-model="form.anl_dt_censo" @input="normalizaData('anl_dt_censo')" @change="normalizaData('anl_dt_censo')" />
                     <InputError :message="form.errors.anl_dt_censo" />
                 </div>
 
-                <div class="grid gap-2 sm:col-span-1">
+                <div class="grid gap-1.5 sm:col-span-1">
                     <FormLabel :for="'anl_dt_inicio_ano'" :required="true">Início do Ano</FormLabel>
-                    <Input id="anl_dt_inicio_ano" type="date" min="1900-01-01" max="2999-12-31" v-model="form.anl_dt_inicio_ano" :required="true" @input="clampAno4Digitos('anl_dt_inicio_ano')" />
+                    <Input id="anl_dt_inicio_ano" type="date" min="1900-01-01" max="2999-12-31" v-model="form.anl_dt_inicio_ano" :required="true" @input="normalizaData('anl_dt_inicio_ano')" @change="normalizaData('anl_dt_inicio_ano')" />
                     <InputError :message="form.errors.anl_dt_inicio_ano" />
                 </div>
 
-                <div class="grid gap-2 sm:col-span-1">
+                <div class="grid gap-1.5 sm:col-span-1">
                     <FormLabel :for="'anl_dt_fim'" :required="true">Fim do Ano</FormLabel>
-                    <Input id="anl_dt_fim" type="date" min="1900-01-01" max="2999-12-31" v-model="form.anl_dt_fim" :required="true" @input="clampAno4Digitos('anl_dt_fim')" />
+                    <Input id="anl_dt_fim" type="date" min="1900-01-01" max="2999-12-31" v-model="form.anl_dt_fim" :required="true" @input="normalizaData('anl_dt_fim')" @change="normalizaData('anl_dt_fim')" />
                     <InputError :message="form.errors.anl_dt_fim" />
                 </div>
 
-                <div class="grid gap-2 sm:col-span-1">
+                <div class="grid gap-1.5 sm:col-span-1">
                     <FormLabel :for="'anl_dt_corte'" :required="true">Data de Corte</FormLabel>
-                    <Input id="anl_dt_corte" type="date" min="1900-01-01" max="2999-12-31" v-model="form.anl_dt_corte" :required="true" @input="clampAno4Digitos('anl_dt_corte')" />
+                    <Input id="anl_dt_corte" type="date" min="1900-01-01" max="2999-12-31" v-model="form.anl_dt_corte" :required="true" @input="normalizaData('anl_dt_corte')" @change="normalizaData('anl_dt_corte')" />
                     <InputError :message="form.errors.anl_dt_corte" />
                 </div>
 
-                <div class="grid gap-2 sm:col-span-1">
+                <div class="grid gap-1.5 sm:col-span-1">
                     <FormLabel :for="'anl_frequencia_minima'" :required="true">Frequência Mínima (%)</FormLabel>
                     <Input
                         id="anl_frequencia_minima"
@@ -169,7 +170,7 @@ const clampAno4Digitos = (field: keyof AnoLetivoFormData) => (e: Event) => {
                     <InputError :message="form.errors.anl_frequencia_minima" />
                 </div>
 
-                <div class="grid gap-2 sm:col-span-1">
+                <div class="grid gap-1.5 sm:col-span-1">
                     <FormLabel :for="'anl_media_geral'" :required="true">Média Geral</FormLabel>
                     <Input
                         id="anl_media_geral"
@@ -185,7 +186,7 @@ const clampAno4Digitos = (field: keyof AnoLetivoFormData) => (e: Event) => {
                     <InputError :message="form.errors.anl_media_geral" />
                 </div>
 
-                <div class="grid gap-2 sm:col-span-1">
+                <div class="grid gap-1.5 sm:col-span-1">
                     <FormLabel :for="'anl_cnc_id_geral'">Média Conceitual</FormLabel>
                     <select
                         id="anl_cnc_id_geral"
@@ -199,7 +200,7 @@ const clampAno4Digitos = (field: keyof AnoLetivoFormData) => (e: Event) => {
                     <InputError :message="form.errors.anl_cnc_id_geral" />
                 </div>
 
-                <div class="grid gap-2 sm:col-span-1">
+                <div class="grid gap-1.5 sm:col-span-1">
                     <FormLabel :for="'anl_conceito_modo'" :required="true">Lançamento do Conceito</FormLabel>
                     <select
                         id="anl_conceito_modo"
@@ -213,7 +214,7 @@ const clampAno4Digitos = (field: keyof AnoLetivoFormData) => (e: Event) => {
                     <InputError :message="form.errors.anl_conceito_modo" />
                 </div>
 
-                <div class="grid gap-2 sm:col-span-2">
+                <div class="grid gap-1.5 sm:col-span-2">
                     <FormLabel :for="'anl_qtd_materias_conselho'">Matérias aprováveis por Conselho</FormLabel>
                     <Input
                         id="anl_qtd_materias_conselho"

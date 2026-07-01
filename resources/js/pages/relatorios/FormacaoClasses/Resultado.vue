@@ -63,6 +63,9 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Formação de Classes', href: '/relatorios/formacao-classes' },
 ];
 
+import { useIsActiveTab } from '@/composables/useIsActiveTab';
+
+const isActiveTab = useIsActiveTab();
 const imprimir = () => window.print();
 
 const totais = computed(() => {
@@ -86,6 +89,7 @@ const dataEmissao = computed(() => {
     <Head title="Formação de Classes" />
 
     <!-- Bloco impressão -->
+    <Teleport to="body" :disabled="!isActiveTab">
     <div id="print-area">
         <header class="cabecalho-impressao">
             <div class="logomarca">
@@ -181,6 +185,7 @@ const dataEmissao = computed(() => {
             <span>Emitido em {{ dataEmissao }}</span>
         </footer>
     </div>
+    </Teleport>
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="mx-auto w-[95%] py-6">
@@ -276,13 +281,10 @@ const dataEmissao = computed(() => {
 
 @media print {
     @page { size: A4 landscape; margin: 3mm 10mm 8mm 10mm; }
-    body * { visibility: hidden !important; }
-    #print-area, #print-area * { visibility: visible !important; }
+    body > *:not(#print-area) { display: none !important; }
     #print-area {
         display: block !important;
-        position: absolute;
-        left: 0;
-        top: 0;
+        position: static;
         width: 100%;
         font-family: 'Times New Roman', Times, serif;
         color: #000;

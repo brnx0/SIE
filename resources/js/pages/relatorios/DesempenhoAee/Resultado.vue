@@ -42,6 +42,9 @@ const fmtBr = (d: string) => {
     return `${day}/${m}/${y}`;
 };
 
+import { useIsActiveTab } from '@/composables/useIsActiveTab';
+
+const isActiveTab = useIsActiveTab();
 const imprimir = () => window.print();
 </script>
 
@@ -49,7 +52,7 @@ const imprimir = () => window.print();
     <Head title="Desempenho AEE" />
 
     <!-- Impressão -->
-    <Teleport to="body">
+    <Teleport to="body" :disabled="!isActiveTab">
         <div id="print-area">
             <!-- 1 aluno por página -->
             <div v-for="al in alunosFlat" :key="al.aln_id" class="pagina-aluno">

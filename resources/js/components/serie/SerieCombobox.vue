@@ -93,7 +93,7 @@ onBeforeUnmount(() => document.removeEventListener('mousedown', handleOutside));
 </script>
 
 <template>
-    <div ref="wrapper" class="relative">
+    <div ref="wrapper" class="relative w-full min-w-0">
         <button
             type="button"
             :disabled="disabled"
@@ -104,7 +104,7 @@ onBeforeUnmount(() => document.removeEventListener('mousedown', handleOutside));
             ]"
             @click="!disabled && openPanel()"
         >
-            <span v-if="selected" class="flex items-center gap-2 truncate">
+            <span v-if="selected" class="flex min-w-0 items-center gap-2">
                 <BookOpen class="size-4 shrink-0 text-indigo-500 dark:text-indigo-400" />
                 <span class="truncate">{{ selected.ser_nome }}</span>
             </span>

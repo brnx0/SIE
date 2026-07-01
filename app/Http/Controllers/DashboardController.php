@@ -200,9 +200,10 @@ class DashboardController extends Controller
     private function anoLetivoId(): ?int
     {
         return Cache::remember('dash:anl_atual', 600, function () {
-            // Ano em exercício; se não houver, cai no ano letivo do ano-calendário atual.
-            $id = DB::table('cfg_ano_letivo')->where('anl_fl_em_exercicio', true)->value('anl_id')
-                ?? DB::table('cfg_ano_letivo')->where('anl_ano', (int) now()->year)->value('anl_id');
+            // Ano letivo do ano-calendário atual; se ainda não existir (ex.: virou
+            // 2027 e o ano letivo não foi criado), cai no último ano cadastrado.
+            $id = DB::table('cfg_ano_letivo')->where('anl_ano', (int) now()->year)->value('anl_id')
+                ?? DB::table('cfg_ano_letivo')->orderByDesc('anl_ano')->value('anl_id');
             return $id ? (int) $id : null;
         });
     }

@@ -38,6 +38,9 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Alunos com Transtorno', href: '/relatorios/alunos-transtorno' },
 ];
 
+import { useIsActiveTab } from '@/composables/useIsActiveTab';
+
+const isActiveTab = useIsActiveTab();
 const imprimir = () => window.print();
 </script>
 
@@ -45,7 +48,7 @@ const imprimir = () => window.print();
     <Head title="Alunos com Transtorno" />
 
     <!-- Bloco impressão -->
-    <Teleport to="body">
+    <Teleport to="body" :disabled="!isActiveTab">
         <div id="print-area">
             <header class="cab">
                 <div class="logo">

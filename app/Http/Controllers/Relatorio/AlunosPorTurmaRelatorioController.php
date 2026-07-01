@@ -9,6 +9,7 @@ use App\Models\Parametro\AnoLetivo;
 use App\Models\Parametro\ParametroEntidade;
 use App\Models\Turma\Turma;
 use App\Support\UserAccess;
+use App\Support\XlsxExport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Inertia\Inertia;
@@ -30,7 +31,47 @@ class AlunosPorTurmaRelatorioController extends Controller
 
     public function gerar(Request $request): Response
     {
-        $componente = 'relatorios/AlunosPorTurma/Resultado';
+        ['parametros' => $parametros, 'filtros' => $filtros, 'linhas' => $linhas] = $this->montar($request);
+
+        return Inertia::render('relatorios/AlunosPorTurma/Resultado', [
+            'parametros' => $parametros,
+            'filtros'    => $filtros,
+            'linhas'     => $linhas,
+            'total'      => $linhas->count(),
+        ]);
+    }
+
+    public function exportarXlsx(Request $request): \Illuminate\Http\Response
+    {
+        ['linhas' => $linhas] = $this->montar($request);
+
+        $headers = ['Turma', 'Nome', 'Sexo', 'Idade', 'Transporte', 'Situação', 'Deficiência', 'Nascimento', 'CPF', 'Cartão SUS', 'Filiação', 'Contato'];
+
+        $rows = $linhas->map(fn ($l) => [
+            $l['turma'],
+            $l['nome'],
+            $l['sexo'],
+            $l['idade'],
+            $l['usa_transporte'],
+            $l['situacao'],
+            $l['possui_deficiencia'],
+            $l['dt_nascimento'] ? Carbon::parse($l['dt_nascimento'])->format('d/m/Y') : '',
+            $l['cpf'],
+            $l['cartao_sus'],
+            $l['filiacao'],
+            $l['contato'],
+        ])->all();
+
+        return XlsxExport::download('alunos_por_turma_' . now()->format('Ymd_His') . '.xlsx', $headers, $rows);
+    }
+
+    /**
+     * Executa a query e monta linhas/filtros/parametros (compartilhado entre tela e export).
+     *
+     * @return array{parametros: array|null, filtros: array, linhas: \Illuminate\Support\Collection}
+     */
+    private function montar(Request $request): array
+    {
         $data = $request->validate([
             'anl_id'           => ['required', 'integer', 'exists:cfg_ano_letivo,anl_id'],
             'esc_id'           => ['required', 'integer', 'exists:edu_escola,esc_id'],
@@ -115,7 +156,7 @@ class AlunosPorTurmaRelatorioController extends Controller
 
         $parametros = ParametroEntidade::first();
 
-        return Inertia::render($componente, [
+        return [
             'parametros' => $parametros ? [
                 'nome_entidade'      => $parametros->par_nome_entidade,
                 'msg_cab_secretaria' => $parametros->par_msg_cab_secretaria,
@@ -133,7 +174,6 @@ class AlunosPorTurmaRelatorioController extends Controller
                 'incluir_saidas' => $incluirSaidas,
             ],
             'linhas' => $linhas,
-            'total'  => $linhas->count(),
-        ]);
+        ];
     }
 }

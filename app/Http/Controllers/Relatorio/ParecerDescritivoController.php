@@ -9,6 +9,7 @@ use App\Models\Parametro\AnoLetivo;
 use App\Models\Parametro\ParametroEntidade;
 use App\Models\Turma\Turma;
 use App\Support\UserAccess;
+use App\Support\XlsxExport;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -151,6 +152,46 @@ class ParecerDescritivoController extends Controller
 
     public function gerar(Request $request): Response
     {
+        ['parametros' => $parametros, 'filtros' => $filtros, 'linhas' => $linhas] = $this->montar($request);
+
+        return Inertia::render('relatorios/ParecerDescritivo/Resultado', [
+            'parametros'   => $parametros,
+            'filtros'      => $filtros,
+            'linhas'       => $linhas,
+            'total'        => $linhas->count(),
+            'exportParams' => $request->only(['anl_id', 'esc_id', 'tur_id', 'dis_id', 'aln_id', 'uni_id']),
+        ]);
+    }
+
+    public function exportarXlsx(Request $request): \Illuminate\Http\Response
+    {
+        ['linhas' => $linhas] = $this->montar($request);
+
+        $headers = ['Nº', 'Aluno', 'Matrícula', 'Período', 'Disciplina', 'Parecer'];
+
+        $rows = [];
+        $i = 1;
+        foreach ($linhas as $l) {
+            if (empty($l['pareceres'])) {
+                $rows[] = [$i, $l['aln_nome'], $l['aln_nr_matricula'] ?? '', '', '', 'NÃO PREENCHIDO'];
+            } else {
+                foreach ($l['pareceres'] as $p) {
+                    $rows[] = [$i, $l['aln_nome'], $l['aln_nr_matricula'] ?? '', $p['periodo'], $p['disciplina'] ?? '', $p['descricao']];
+                }
+            }
+            $i++;
+        }
+
+        return XlsxExport::download('parecer_descritivo_' . now()->format('Ymd_His') . '.xlsx', $headers, $rows);
+    }
+
+    /**
+     * Valida, autoriza e monta parametros/filtros/linhas (compartilhado entre tela e export).
+     *
+     * @return array{parametros: array|null, filtros: array, linhas: \Illuminate\Support\Collection}
+     */
+    private function montar(Request $request): array
+    {
         $data = $request->validate([
             'anl_id' => ['required', 'integer', 'exists:cfg_ano_letivo,anl_id'],
             'esc_id' => ['required', 'integer', 'exists:edu_escola,esc_id'],
@@ -252,7 +293,7 @@ class ParecerDescritivoController extends Controller
 
         $parametros = ParametroEntidade::first();
 
-        return Inertia::render('relatorios/ParecerDescritivo/Resultado', [
+        return [
             'parametros' => $parametros ? [
                 'nome_entidade'      => $parametros->par_nome_entidade,
                 'msg_cab_secretaria' => $parametros->par_msg_cab_secretaria,
@@ -271,7 +312,6 @@ class ParecerDescritivoController extends Controller
                 'periodo'    => $uniId ? ($uniMap[$uniId] ?? null) : null,
             ],
             'linhas' => $linhas->values(),
-            'total'  => $linhas->count(),
-        ]);
+        ];
     }
 }

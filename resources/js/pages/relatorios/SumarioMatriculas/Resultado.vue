@@ -35,6 +35,9 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Sumário de Matrículas', href: '/relatorios/sumario-matriculas' },
 ];
 
+import { useIsActiveTab } from '@/composables/useIsActiveTab';
+
+const isActiveTab = useIsActiveTab();
 const imprimir = () => window.print();
 
 const dataEmissao = computed(() => {
@@ -47,7 +50,7 @@ const dataEmissao = computed(() => {
     <Head title="Sumário de Matrículas" />
 
     <!-- Bloco impressão -->
-    <Teleport to="body">
+    <Teleport to="body" :disabled="!isActiveTab">
     <div id="print-area">
         <header class="cabecalho-impressao">
             <div class="logomarca">

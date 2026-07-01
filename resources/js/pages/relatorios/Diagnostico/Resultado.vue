@@ -44,7 +44,7 @@ const imprimir = () => window.print();
 <template>
     <Head title="Resultado — Avaliações por Diagnóstico" />
 
-    <Teleport to="body">
+    <Teleport to="body" :disabled="!isActiveTab">
         <div class="report-print" :class="{ 'is-active': isActiveTab }">
             <div class="dg-doc">
                 <div v-if="parametros" class="dg-head">

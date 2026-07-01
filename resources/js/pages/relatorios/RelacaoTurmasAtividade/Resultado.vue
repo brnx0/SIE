@@ -41,6 +41,9 @@ const turnoLabel = (t: string | null) => {
     return map[t.toUpperCase()] ?? t;
 };
 
+import { useIsActiveTab } from '@/composables/useIsActiveTab';
+
+const isActiveTab = useIsActiveTab();
 const imprimir = () => window.print();
 </script>
 
@@ -48,7 +51,7 @@ const imprimir = () => window.print();
     <Head title="Relação de Turmas de Atividade" />
 
     <!-- Impressão -->
-    <Teleport to="body">
+    <Teleport to="body" :disabled="!isActiveTab">
         <div id="print-area">
             <header class="cab">
                 <div class="logo">

@@ -98,9 +98,10 @@ class MovimentacaoController extends Controller
             'observacao'      => 'observação',
         ]);
 
-        $service->executar($data);
+        $mva = $service->executar($data);
 
-        return to_route('movimentacoes.index')->with('success', 'Movimentação registrada com sucesso.');
+        // Fica na tela do registro salvo (Show), não volta pra listagem.
+        return to_route('movimentacoes.show', $mva)->with('success', 'Movimentação registrada com sucesso.');
     }
 
     public function show(AlunoMovimentacao $movimentacao): Response

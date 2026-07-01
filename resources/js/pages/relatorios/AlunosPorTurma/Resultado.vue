@@ -70,6 +70,9 @@ const dataEmissao = computed(() => {
     return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 });
 
+import { useIsActiveTab } from '@/composables/useIsActiveTab';
+
+const isActiveTab = useIsActiveTab();
 const imprimir = () => window.print();
 
 const contarSexos = (alunos: Linha[]) => {
@@ -100,12 +103,23 @@ const exportarCsv = () => {
     a.click();
     URL.revokeObjectURL(url);
 };
+
+const exportarExcel = () => {
+    const f = props.filtros;
+    const p = new URLSearchParams();
+    p.set('anl_id', String(f.anl_id));
+    p.set('esc_id', String(f.esc_id));
+    if (f.tur_id) p.set('tur_id', String(f.tur_id));
+    if (f.incluir_saidas) p.set('incluir_saidas', '1');
+    window.open(`/relatorios/alunos-por-turma/xlsx?${p.toString()}`, '_blank');
+};
 </script>
 
 <template>
     <Head title="Resultado — Alunos por Turma" />
 
     <!-- Bloco exclusivo p/ impressão -->
+    <Teleport to="body" :disabled="!isActiveTab">
     <div id="print-area">
         <header class="cabecalho-impressao">
             <div class="logomarca">
@@ -184,6 +198,7 @@ const exportarCsv = () => {
             <span>Emitido em {{ dataEmissao }}</span>
         </footer>
     </div>
+    </Teleport>
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="mx-auto w-[95%] py-6 print:py-2">
@@ -194,6 +209,7 @@ const exportarCsv = () => {
                         <Button variant="outline"><ArrowLeft class="mr-1 size-4" /> Voltar</Button>
                     </Link>
                     <Button variant="outline" @click="exportarCsv">CSV</Button>
+                    <Button variant="outline" @click="exportarExcel">Excel</Button>
                     <Button variant="outline" @click="imprimir"><Printer class="mr-1 size-4" /> Imprimir / PDF</Button>
                 </div>
             </div>
@@ -263,13 +279,10 @@ const exportarCsv = () => {
 
 @media print {
     @page { size: A4 landscape; margin: 3mm 10mm 8mm 10mm; }
-    body * { visibility: hidden !important; }
-    #print-area, #print-area * { visibility: visible !important; }
+    body > *:not(#print-area) { display: none !important; }
     #print-area {
         display: block !important;
-        position: absolute;
-        left: 0;
-        top: 0;
+        position: static;
         width: 100%;
         font-family: 'Times New Roman', Times, serif;
         color: #000;

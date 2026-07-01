@@ -96,6 +96,9 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Ficha de Matrícula', href: '/relatorios/ficha-matricula' },
 ];
 
+import { useIsActiveTab } from '@/composables/useIsActiveTab';
+
+const isActiveTab = useIsActiveTab();
 const imprimir = () => window.print();
 
 const formatCpf = (cpf: string | null) => {
@@ -133,7 +136,7 @@ const sexoLabel = (s: string | null) => {
     <Head title="Ficha de Matrícula" />
 
     <!-- Bloco impressão (teleportado p/ body — page-break funciona corretamente) -->
-    <Teleport to="body">
+    <Teleport to="body" :disabled="!isActiveTab">
     <div id="print-area">
         <div v-for="(f, idx) in fichas" :key="idx" class="ficha-aluno">
         <div class="folha pagina-1">

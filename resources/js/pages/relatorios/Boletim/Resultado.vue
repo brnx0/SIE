@@ -52,7 +52,7 @@ const isActiveTab = computed(() => !tabId || tabId === tabStore.activeId);
 <template>
     <Head title="Resultado — Boletim" />
 
-    <Teleport to="body">
+    <Teleport to="body" :disabled="!isActiveTab">
     <div class="report-print" :class="{ 'is-active': isActiveTab }">
         <section v-for="aluno in alunos" :key="`pb-${aluno.aln_id}`" class="bol-pagina">
             <!-- Cabeçalho institucional -->

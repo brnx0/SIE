@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { usePermissao } from '@/composables/usePermissao';
+import { useErrorFocus } from '@/composables/useErrorFocus';
 import { useViaCep } from '@/composables/useViaCep';
 import { COR_RACA } from '@/lib/corRaca';
 import { PAISES } from '@/lib/paises';
@@ -298,10 +299,15 @@ watch(
     },
 );
 
-const goToFirstErrorTab = () => {
+const { focusFirstError } = useErrorFocus();
+
+const goToFirstErrorTab = async () => {
     for (const tab of TABS) {
         if (tabHasError(tab)) {
             activeTab.value = tab;
+            // leva o usuário ao 1º campo inválido da aba
+            const keys = TAB_FIELDS[tab].filter((f) => (form.errors as Record<string, string>)[f]);
+            await focusFirstError(keys);
             return;
         }
     }

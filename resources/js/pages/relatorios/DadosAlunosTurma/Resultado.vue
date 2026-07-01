@@ -45,6 +45,9 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const sexoLabel = (s: string | null) => s === 'M' ? 'Masculino' : s === 'F' ? 'Feminino' : '—';
 
+import { useIsActiveTab } from '@/composables/useIsActiveTab';
+
+const isActiveTab = useIsActiveTab();
 const imprimir = () => window.print();
 
 const grupos = computed(() => {
@@ -62,7 +65,7 @@ const grupos = computed(() => {
     <Head title="Dados de Alunos por Turma" />
 
     <!-- Impressão -->
-    <Teleport to="body">
+    <Teleport to="body" :disabled="!isActiveTab">
         <div id="print-area">
             <header class="cab">
                 <div class="logo">

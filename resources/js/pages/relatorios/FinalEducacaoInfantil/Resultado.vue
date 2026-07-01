@@ -33,7 +33,7 @@ const imprimir = () => window.print();
     <Head title="Resultado — Final da Educação Infantil" />
 
     <!-- Área de impressão (teleportada p/ o body; imprime só quando esta aba está ativa) -->
-    <Teleport to="body">
+    <Teleport to="body" :disabled="!isActiveTab">
         <div class="report-print" :class="{ 'is-active': isActiveTab }">
             <div class="ei-doc">
                 <section v-for="t in turmas" :key="t.tur_id" class="ei-page">

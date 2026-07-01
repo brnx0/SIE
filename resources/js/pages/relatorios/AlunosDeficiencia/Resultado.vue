@@ -37,6 +37,9 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Alunos com Deficiência', href: '/relatorios/alunos-deficiencia' },
 ];
 
+import { useIsActiveTab } from '@/composables/useIsActiveTab';
+
+const isActiveTab = useIsActiveTab();
 const imprimir = () => window.print();
 
 const grupos = computed(() => {
@@ -59,6 +62,7 @@ const dataEmissao = computed(() => {
     <Head title="Alunos com Deficiência" />
 
     <!-- Bloco impressão -->
+    <Teleport to="body" :disabled="!isActiveTab">
     <div id="print-area">
         <header class="cabecalho-impressao">
             <div class="logomarca">
@@ -122,6 +126,7 @@ const dataEmissao = computed(() => {
             <span>Impresso: {{ dataEmissao }}</span>
         </footer>
     </div>
+    </Teleport>
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="mx-auto w-[95%] py-6">
@@ -187,13 +192,10 @@ const dataEmissao = computed(() => {
 
 @media print {
     @page { size: A4 portrait; margin: 8mm 10mm; }
-    body * { visibility: hidden !important; }
-    #print-area, #print-area * { visibility: visible !important; }
+    body > *:not(#print-area) { display: none !important; }
     #print-area {
         display: block !important;
-        position: absolute;
-        left: 0;
-        top: 0;
+        position: static;
         width: 100%;
         font-family: 'Times New Roman', Times, serif;
         color: #000;

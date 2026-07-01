@@ -29,6 +29,9 @@ const dataEmissao = computed(() => {
     const d = new Date();
     return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 });
+import { useIsActiveTab } from '@/composables/useIsActiveTab';
+
+const isActiveTab = useIsActiveTab();
 const imprimir = () => window.print();
 </script>
 
@@ -36,6 +39,7 @@ const imprimir = () => window.print();
     <Head title="Resultado — Conteúdo Ministrado" />
 
     <!-- Área de impressão -->
+    <Teleport to="body" :disabled="!isActiveTab">
     <div id="print-area">
         <header class="cab">
             <div class="logo"><img v-if="parametros?.logomarca_url" :src="parametros.logomarca_url" alt="" /></div>
@@ -81,6 +85,7 @@ const imprimir = () => window.print();
 
         <footer class="rodape"><span>SIE Matrícula</span><span>Emitido em {{ dataEmissao }}</span></footer>
     </div>
+    </Teleport>
 
     <!-- Tela -->
     <AppLayout :breadcrumbs="breadcrumbs">
@@ -152,9 +157,8 @@ const imprimir = () => window.print();
 #print-area { display: none; }
 @media print {
     @page { size: A4 portrait; margin: 10mm; }
-    body * { visibility: hidden !important; }
-    #print-area, #print-area * { visibility: visible !important; }
-    #print-area { display: block !important; position: absolute; left: 0; top: 0; width: 100%; font-family: 'Times New Roman', Times, serif; color: #000; }
+    body > *:not(#print-area) { display: none !important; }
+    #print-area { display: block !important; position: static; width: 100%; font-family: 'Times New Roman', Times, serif; color: #000; }
     .cab { display: grid; grid-template-columns: 80px 1fr 80px; align-items: center; border-bottom: 2px solid #000; padding-bottom: 4px; }
     .logo img { max-width: 75px; max-height: 75px; object-fit: contain; }
     .cab-textos { text-align: center; }

@@ -36,7 +36,7 @@ const imprimir = () => window.print();
 <template>
     <Head title="Resultado — Boletim Avaliativo" />
 
-    <Teleport to="body">
+    <Teleport to="body" :disabled="!isActiveTab">
         <div class="report-print" :class="{ 'is-active': isActiveTab }">
             <section v-for="(bloco, bi) in disciplinas" :key="bi" class="ba-pagina">
                 <!-- Cabeçalho institucional -->

@@ -33,7 +33,7 @@ const imprimir = () => window.print();
     <Head title="Resultado — Notas por Unidade" />
 
     <!-- Área de impressão (teleportada p/ o body; imprime só quando esta aba está ativa) -->
-    <Teleport to="body">
+    <Teleport to="body" :disabled="!isActiveTab">
         <div class="report-print" :class="{ 'is-active': isActiveTab }">
             <div class="nu-area">
                 <div v-if="parametros" class="nu-head">

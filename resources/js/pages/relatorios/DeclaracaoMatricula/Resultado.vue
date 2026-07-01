@@ -41,6 +41,9 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Declaração de Matrícula', href: '/relatorios/declaracao-matricula' },
 ];
 
+import { useIsActiveTab } from '@/composables/useIsActiveTab';
+
+const isActiveTab = useIsActiveTab();
 const imprimir = () => window.print();
 
 const filiacaoText = (d: Declaracao) => {
@@ -63,7 +66,8 @@ const localData = () => {
 <template>
     <Head title="Declaração de Matrícula" />
 
-    <!-- Bloco impressão -->
+    <!-- Bloco impressão (teleportado p/ body; imprime só quando esta aba está ativa) -->
+    <Teleport to="body" :disabled="!isActiveTab">
     <div id="print-area">
         <div v-for="(d, idx) in declaracoes" :key="d.aln_id ?? idx" class="folha-declaracao">
             <header class="cabecalho-impressao">
@@ -99,6 +103,7 @@ const localData = () => {
             </div>
         </div>
     </div>
+    </Teleport>
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="mx-auto w-[95%] py-6">
@@ -142,8 +147,7 @@ const localData = () => {
 
 @media print {
     @page { size: A4 portrait; margin: 15mm 20mm; }
-    body * { visibility: hidden !important; }
-    #print-area, #print-area * { visibility: visible !important; }
+    body > *:not(#print-area) { display: none !important; }
     #print-area {
         display: block !important;
         position: static;

@@ -33,7 +33,7 @@ const imprimir = () => window.print();
 <template>
     <Head title="Resultado — Ata Final" />
 
-    <Teleport to="body">
+    <Teleport to="body" :disabled="!isActiveTab">
         <div class="report-print" :class="{ 'is-active': isActiveTab }">
             <div class="af-area">
                 <div v-if="parametros" class="af-head">
