@@ -73,7 +73,7 @@ const matriculasMenu = [
         icon: ArrowRightLeft,
         children: [
             { title: 'Movimentar Aluno', href: '/movimentacoes' },
-            { title: 'Remanejar Turmas', href: '/remanejamento-turmas' },
+            { title: 'Troca entre Turmas', href: '/remanejamento-turmas' },
         ],
     },
 ];
@@ -156,6 +156,7 @@ const administracao = [
         children: [
             { title: 'Usuários', href: '/users' },
             { title: 'Parâmetros', href: '/parametros' },
+            { title: 'Permissões de Telas', href: '/permissoes' },
         ],
     },
 ];

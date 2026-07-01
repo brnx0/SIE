@@ -42,6 +42,9 @@ class StoreTurmaAtividadeRequest extends FormRequest
             'tur_tipo_atendimento' => 'ATIVIDADE COMPLEMENTAR',
             'tur_seg_id'           => null,
             'tur_ser_id'           => null,
+            'tur_nome'             => is_string($this->input('tur_nome'))
+                ? mb_strtoupper($this->input('tur_nome'), 'UTF-8')
+                : $this->input('tur_nome'),
         ]);
     }
 

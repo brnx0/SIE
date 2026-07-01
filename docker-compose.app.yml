@@ -1,0 +1,52 @@
+# App (php-fpm) por MUNICIPIO. DB vive em docker-compose.db.yml (ciclo separado).
+# Parametrizado por ${MUNICIPIO} (default: homolog). Define no .env: MUNICIPIO=coruripe
+#
+# Pre-req: subir o DB antes ->  docker compose -f docker-compose.db.yml up -d
+#
+# Build+subir:  docker compose -f docker-compose.app.yml up -d --build
+# Logs:         docker compose -f docker-compose.app.yml logs -f app
+# Artisan:      docker compose -f docker-compose.app.yml exec app php artisan <cmd>
+# Parar app:    docker compose -f docker-compose.app.yml down     (NAO toca no DB)
+#
+# SEM nginx no compose: nginx do HOST faz fastcgi_pass -> 127.0.0.1:${FPM_PORT}
+# e serve estaticos de ./public (entrypoint do app sincroniza public/build).
+#
+# .env: APP_KEY setada, APP_ENV=production, APP_DEBUG=false. DB_HOST/DB_PORT
+# sao SOBRESCRITOS p/ a rede interna (db:5432).
+
+services:
+  app:
+    build:
+      context: .
+      target: runtime
+    image: sie_matricula_app:${MUNICIPIO:-homolog}
+    container_name: sie_app_${MUNICIPIO:-homolog}
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      # conexao pela rede docker - ignora DB_HOST/DB_PORT do .env
+      DB_HOST: db
+      DB_PORT: 5432
+      # migrations NAO rodam no boot (prod = controlado). Deploy:
+      #   docker compose -f docker-compose.app.yml run --rm app php artisan migrate --force
+      RUN_MIGRATIONS: "${RUN_MIGRATIONS:-false}"
+    ports:
+      # php-fpm SO no loopback - nginx do HOST faz fastcgi_pass aqui. Varie por cliente.
+      - "127.0.0.1:${FPM_PORT:-9000}:9000"
+    volumes:
+      - app_storage:/var/www/html/storage/app
+      # public no host -> nginx do HOST serve estaticos daqui (entrypoint sincroniza)
+      - ./public:/var/www/html/public
+    networks: [sie_net]
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "5" }
+
+networks:
+  sie_net:
+    name: sie_net_${MUNICIPIO:-homolog}
+    external: true        # rede criada pelo docker-compose.db.yml
+
+volumes:
+  app_storage:
+    name: sie_app_storage_${MUNICIPIO:-homolog}

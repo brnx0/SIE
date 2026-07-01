@@ -50,7 +50,7 @@ class TelaPermissaoSeeder extends Seeder
         ['/matriculas', 'Matrículas', 'Matrículas', 14, [1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 1]],
         ['/matriculas-aee', 'Matrículas AEE', 'Matrículas', 15, [1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0]],
         ['/movimentacoes', 'Movimentar Aluno', 'Matrículas', 16, [1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0]],
-        ['/remanejamento-turmas', 'Remanejar Turmas', 'Matrículas', 17, [1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0]],
+        ['/remanejamento-turmas', 'Troca entre Turmas', 'Matrículas', 17, [1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0]],
         ['/matriculas/segunda-via', '2ª Via Comprovante', 'Matrículas', 18, [1, 1, 0, 0, 0, 0, 2, 2, 0, 0, 2]],
 
         ['/diario', 'Diário de Classe', 'Diário', 19, [1, 2, 1, 0, 0, 0, 0, 2, 0, 0, 0]],
@@ -82,18 +82,22 @@ class TelaPermissaoSeeder extends Seeder
 
         ['/users', 'Usuários', 'Sistema', 41, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
         ['/parametros', 'Parâmetros', 'Sistema', 42, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
+        ['/permissoes', 'Permissões de Telas', 'Sistema', 43, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
     ];
 
     public function run(): void
     {
         foreach (self::MATRIZ as [$rota, $nome, $grupo, $ordem, $niveis]) {
+            // Metadados da tela são sempre atualizados (nome/grupo/ordem).
             $tela = Tela::updateOrCreate(
                 ['tla_rota' => $rota],
                 ['tla_nome' => $nome, 'tla_grupo' => $grupo, 'tla_ordem' => $ordem],
             );
 
+            // Níveis: só na criação. NÃO sobrescreve edições feitas pela tela de
+            // Permissões — o banco é a fonte de verdade após o seed inicial.
             foreach (self::ROLES as $i => $role) {
-                TelaPermissao::updateOrCreate(
+                TelaPermissao::firstOrCreate(
                     ['tlp_tla_id' => $tela->tla_id, 'tlp_role' => $role],
                     ['tlp_nivel' => $niveis[$i]],
                 );

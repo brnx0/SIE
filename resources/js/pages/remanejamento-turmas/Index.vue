@@ -27,7 +27,7 @@ const props = defineProps<{
     segmentos: Segmento[];
 }>();
 
-const breadcrumbs: BreadcrumbItem[] = [{ title: 'Remanejar Turmas', href: '/remanejamento-turmas' }];
+const breadcrumbs: BreadcrumbItem[] = [{ title: 'Troca entre Turmas', href: '/remanejamento-turmas' }];
 
 const anoDefault = props.anosLetivos.find((a) => a.anl_fl_em_exercicio) ?? props.anosLetivos[0];
 const anlId = ref<number | ''>(anoDefault?.anl_id ?? '');
@@ -169,11 +169,11 @@ const trocar = () => {
 </script>
 
 <template>
-    <Head title="Remanejar Turmas" />
+    <Head title="Troca entre Turmas" />
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="mx-auto w-[95%] py-6">
             <h1 class="mb-1 flex items-center gap-2 text-xl font-semibold">
-                <ArrowRightLeft class="size-5 text-indigo-600" /> Remanejar Turmas
+                <ArrowRightLeft class="size-5 text-indigo-600" /> Troca entre Turmas
             </h1>
             <p class="mb-6 text-sm text-muted-foreground">
                 Move ou troca alunos entre turmas da mesma série (mesma escola e segmento).

@@ -14,6 +14,13 @@ class StoreTurmaRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        if (is_string($this->input('tur_nome'))) {
+            $this->merge(['tur_nome' => mb_strtoupper($this->input('tur_nome'), 'UTF-8')]);
+        }
+    }
+
     public function rules(): array
     {
         return [

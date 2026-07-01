@@ -13,8 +13,10 @@ if [ "$1" = "php-fpm" ]; then
     # storage link (ignora se ja existe)
     php artisan storage:link 2>/dev/null || true
 
-    # Migrations (controlavel via env; default ON em homolog)
-    if [ "${RUN_MIGRATIONS:-true}" = "true" ]; then
+    # Migrations: default OFF (prod = controlado no deploy). Ligue RUN_MIGRATIONS=true
+    # so se quiser migrar no boot. Fluxo prod recomendado (manual, antes do up):
+    #   docker compose -f docker-compose.app.yml run --rm app php artisan migrate --force
+    if [ "${RUN_MIGRATIONS:-false}" = "true" ]; then
         echo "[entrypoint] Rodando migrations..."
         php artisan migrate --force
     fi

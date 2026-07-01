@@ -13,13 +13,16 @@ export function usePermissao() {
     const page = usePage<SharedData>();
     const mapa = computed(() => page.props.permissoes ?? {});
     const roles = computed(() => page.props.auth?.user?.roles ?? []);
+    // Se o sistema de permissão não está configurado (sem telas), fail-open:
+    // não esconde menu nem trava telas. Default true p/ não quebrar se ausente.
+    const ativo = computed(() => page.props.permissoesAtivas !== false);
 
     const nivelAtual = computed(() => resolveNivel(page.url, mapa.value));
-    const isReadOnly = computed(() => nivelAtual.value === NIVEL_VISUALIZAR);
+    const isReadOnly = computed(() => ativo.value && nivelAtual.value === NIVEL_VISUALIZAR);
 
     const nivelDe = (rota: string) => nivelDaRota(rota, mapa.value);
-    const podeVer = (rota: string) => nivelDe(rota) > 0;
+    const podeVer = (rota: string) => !ativo.value || nivelDe(rota) > 0;
     const hasRole = (role: string) => roles.value.includes(role);
 
-    return { mapa, roles, nivelAtual, isReadOnly, nivelDe, podeVer, hasRole };
+    return { mapa, roles, ativo, nivelAtual, isReadOnly, nivelDe, podeVer, hasRole };
 }

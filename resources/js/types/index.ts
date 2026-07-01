@@ -37,6 +37,8 @@ export interface SharedData {
     params?: SystemParams;
     /** Mapa rota→nível (0/1/2) das telas com nível ≥ 1 para o usuário atual. */
     permissoes?: Record<string, number>;
+    /** Sistema de permissão configurado (há telas). Se false, fail-open (não esconde). */
+    permissoesAtivas?: boolean;
     ziggy: {
         location: string;
         url: string;

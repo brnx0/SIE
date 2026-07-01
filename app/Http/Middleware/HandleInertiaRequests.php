@@ -53,6 +53,7 @@ class HandleInertiaRequests extends Middleware
             ],
             'params' => fn () => $this->parametrosFlags(),
             'permissoes' => fn () => PermissaoTela::mapaParaUsuario($request->user()),
+            'permissoesAtivas' => fn () => PermissaoTela::ativo(),
         ]);
     }
 

@@ -16,7 +16,7 @@ import type { EscolaResumo, ProfessorResumo, Turma, TurmaProfessor } from '@/typ
 import { DIAS_SEMANA, SEMESTRES_TURMA, SITUACOES_TURMA, TIPOS_MEDIACAO, TURNOS } from '@/types/turma';
 import { Link, useForm } from '@inertiajs/vue3';
 import { ChevronLeft, LoaderCircle, Save } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 import { usePermissao } from '@/composables/usePermissao';
 
 const { isReadOnly, hasRole } = usePermissao();
@@ -55,6 +55,11 @@ const form = useForm({
     tur_dias_funcionamento: props.initial?.tur_dias_funcionamento ?? ['seg', 'ter', 'qua', 'qui', 'sex'],
     tur_obs:         props.initial?.tur_obs ?? '',
     _method:         props.mode === 'edit' ? 'put' : undefined,
+});
+
+// Nome da turma sempre em maiúsculas
+watch(() => form.tur_nome, (v) => {
+    if (typeof v === 'string' && v !== v.toUpperCase()) form.tur_nome = v.toUpperCase();
 });
 
 const onEscolaChange = (v: number | null) => {
@@ -157,7 +162,7 @@ const matriculados = computed(() => props.initial?.total_matriculados ?? 0);
                             <!-- Nome da Turma -->
                             <div class="grid gap-1.5 sm:col-span-4">
                                 <FormLabel :required="true">Nome da Turma</FormLabel>
-                                <Input v-model="form.tur_nome" maxlength="20" placeholder="AEE TURMA J" :class="{ 'border-red-500': form.errors.tur_nome }" />
+                                <Input v-model="form.tur_nome" maxlength="20" placeholder="AEE TURMA J" class="uppercase" :class="{ 'border-red-500': form.errors.tur_nome }" />
                                 <InputError :message="form.errors.tur_nome" />
                             </div>
 

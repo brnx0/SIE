@@ -120,6 +120,10 @@ Route::middleware(['auth', 'verified', 'tela'])->group(function () {
     Route::get('users/export', [UsersController::class, 'export'])->name('users.export');
     Route::resource('users', UsersController::class)->except(['show']);
 
+    // Permissões de Telas — editor da matriz role × tela (governado pela própria matriz: admin)
+    Route::get('permissoes', [\App\Http\Controllers\PermissaoTelaController::class, 'index'])->name('permissoes.index');
+    Route::put('permissoes', [\App\Http\Controllers\PermissaoTelaController::class, 'update'])->name('permissoes.update');
+
     Route::get('alunos/export', [AlunoController::class, 'export'])->name('alunos.export');
     Route::resource('alunos', AlunoController::class)->except(['show']);
     Route::get('escolas/export', [EscolaController::class, 'export'])->name('escolas.export');

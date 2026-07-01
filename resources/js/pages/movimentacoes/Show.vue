@@ -33,22 +33,32 @@ const formatDateTime = (iso: string | null) => {
 const dialogOpen = ref(false);
 const motivo = ref('');
 const processing = ref(false);
+const erroDesfazer = ref('');
 
 const abrirDialog = () => {
+    erroDesfazer.value = '';
     motivo.value = '';
     dialogOpen.value = true;
 };
 
 const confirmarDesfazer = () => {
     processing.value = true;
+    erroDesfazer.value = '';
     router.post(
         `/movimentacoes/${props.movimentacao.mva_id}/desfazer`,
         { motivo: motivo.value || null },
         {
             preserveScroll: true,
+            onSuccess: () => {
+                dialogOpen.value = false;
+            },
+            onError: (errors) => {
+                // mantém o diálogo aberto e exibe o motivo (sem vaga, já desfeita, etc.)
+                erroDesfazer.value = errors.vaga || errors.mva_id || errors.motivo
+                    || 'Não foi possível desfazer a movimentação.';
+            },
             onFinish: () => {
                 processing.value = false;
-                dialogOpen.value = false;
             },
         },
     );
@@ -161,6 +171,9 @@ const confirmarDesfazer = () => {
                     class="w-full rounded-md border bg-background px-3 py-2 text-sm resize-none"
                     placeholder="Ex.: cadastro incorreto, lançamento equivocado..."
                 />
+                <p v-if="erroDesfazer" class="mt-3 rounded-md border border-rose-300 bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-300">
+                    {{ erroDesfazer }}
+                </p>
                 <div class="mt-4 flex justify-end gap-2">
                     <Button variant="outline" :disabled="processing" @click="dialogOpen = false">Cancelar</Button>
                     <Button class="bg-rose-600 text-white hover:bg-rose-700" :disabled="processing" @click="confirmarDesfazer">

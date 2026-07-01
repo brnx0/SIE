@@ -7,6 +7,7 @@ use App\Http\Requests\Aluno\StoreAlunoRequest;
 use App\Http\Requests\Aluno\UpdateAlunoRequest;
 use App\Models\Aluno\Aluno;
 use App\Models\Parametro\ParametroEntidade;
+use App\Support\UserAccess;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
@@ -81,6 +82,8 @@ class AlunoController extends Controller
 
     public function edit(Aluno $aluno): Response
     {
+        abort_unless(UserAccess::alunoVisivel(request()->user(), $aluno->aln_id), 404);
+
         $aluno->load(['municipioNascimento:mun_id,mun_nome,mun_uf', 'saude']);
 
         $matriculas = $aluno->matriculas()
@@ -117,6 +120,8 @@ class AlunoController extends Controller
 
     public function update(UpdateAlunoRequest $request, Aluno $aluno): RedirectResponse
     {
+        abort_unless(UserAccess::alunoVisivel($request->user(), $aluno->aln_id), 404);
+
         $this->checkHomonimo($request, $aluno->aln_id);
 
         DB::transaction(function () use ($request, $aluno) {
@@ -144,6 +149,8 @@ class AlunoController extends Controller
 
     public function destroy(Aluno $aluno): RedirectResponse
     {
+        abort_unless(UserAccess::alunoVisivel(request()->user(), $aluno->aln_id), 404);
+
         if ($aluno->aln_foto) {
             Storage::disk('public')->delete($aluno->aln_foto);
         }
@@ -191,7 +198,7 @@ class AlunoController extends Controller
     {
         $search = $request->string('search')->toString();
 
-        return Aluno::query()
+        $query = Aluno::query()
             ->with('municipioNascimento:mun_id,mun_nome,mun_uf')
             ->when($search, function ($q) use ($search) {
                 $q->where(function ($q) use ($search) {
@@ -201,6 +208,9 @@ class AlunoController extends Controller
                 });
             })
             ->orderBy('aln_nome');
+
+        // Cadastro: perfis com lotação só veem alunos da sua escola ou sem matrícula.
+        return UserAccess::scopeAlunosVisiveis($query, $request->user());
     }
 
     private function exportCsv($alunos): StreamedResponse

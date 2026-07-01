@@ -115,4 +115,118 @@ class UserAccess
 
         return ['esc_id' => (int) $esc->esc_id, 'esc_nome' => $esc->esc_nome];
     }
+
+    /**
+     * Visibilidade de ALUNO por escola de lotação (telas de cadastro).
+     *
+     * Roles globais (admin/gestor/coord_interno) → sem filtro.
+     * Demais → vê o aluno se ele tiver matrícula REGULAR ATIVA em turma de uma das
+     * escolas de lotação do usuário, OU se não tiver matrícula REGULAR ativa em
+     * escola nenhuma ("sem lotação").
+     */
+    public static function scopeAlunosVisiveis($query, ?User $user)
+    {
+        if (self::semFiltroLotacao($user)) return $query;
+
+        $ids = self::escolasIds($user) ?: [];
+
+        return $query->where(function ($w) use ($ids) {
+            // Sem matrícula REGULAR ativa em escola nenhuma → visível.
+            $w->whereNotExists(function ($q) {
+                $q->selectRaw('1')
+                    ->from('edu_turma_aluno as tma')
+                    ->whereColumn('tma.tma_aln_id', 'edu_aluno.aln_id')
+                    ->where('tma.tma_situacao', 'ATIVA')
+                    ->where('tma.tma_modalidade', 'REGULAR')
+                    ->whereNull('tma.tma_deleted_at');
+            });
+
+            // OU matrícula REGULAR ativa em turma de escola do usuário.
+            if (! empty($ids)) {
+                $w->orWhereExists(function ($q) use ($ids) {
+                    $q->selectRaw('1')
+                        ->from('edu_turma_aluno as tma')
+                        ->join('edu_turma as tur', 'tur.tur_id', '=', 'tma.tma_tur_id')
+                        ->whereColumn('tma.tma_aln_id', 'edu_aluno.aln_id')
+                        ->where('tma.tma_situacao', 'ATIVA')
+                        ->where('tma.tma_modalidade', 'REGULAR')
+                        ->whereNull('tma.tma_deleted_at')
+                        ->whereNull('tur.tur_deleted_at')
+                        ->whereIn('tur.tur_esc_id', $ids);
+                });
+            }
+        });
+    }
+
+    /**
+     * Visibilidade de FUNCIONÁRIO por escola de lotação (telas de cadastro).
+     *
+     * Roles globais → sem filtro. Demais → vê o funcionário se ele tiver lotação
+     * ATIVA (lot_fl_ativo + vigente) em uma das escolas do usuário, OU se não
+     * tiver lotação ativa em escola nenhuma.
+     */
+    public static function scopeFuncionariosVisiveis($query, ?User $user)
+    {
+        if (self::semFiltroLotacao($user)) return $query;
+
+        $ids = self::escolasIds($user) ?: [];
+        $hoje = now()->toDateString();
+
+        $vigente = function ($q) use ($hoje) {
+            $q->whereNull('lot.lot_dt_fim')->orWhere('lot.lot_dt_fim', '>=', $hoje);
+        };
+
+        return $query->where(function ($w) use ($ids, $vigente) {
+            // Sem lotação ativa em escola nenhuma → visível.
+            $w->whereNotExists(function ($q) use ($vigente) {
+                $q->selectRaw('1')
+                    ->from('edu_funcionario_lotacao as lot')
+                    ->join('edu_funcionario_admissao as adm', 'adm.adm_id', '=', 'lot.lot_adm_id')
+                    ->whereColumn('adm.adm_fun_id', 'edu_funcionario.fun_id')
+                    ->whereNull('adm.adm_deleted_at')
+                    ->where('lot.lot_fl_ativo', true)
+                    ->where($vigente);
+            });
+
+            // OU lotação ativa em escola do usuário.
+            if (! empty($ids)) {
+                $w->orWhereExists(function ($q) use ($ids, $vigente) {
+                    $q->selectRaw('1')
+                        ->from('edu_funcionario_lotacao as lot')
+                        ->join('edu_funcionario_admissao as adm', 'adm.adm_id', '=', 'lot.lot_adm_id')
+                        ->whereColumn('adm.adm_fun_id', 'edu_funcionario.fun_id')
+                        ->whereNull('adm.adm_deleted_at')
+                        ->where('lot.lot_fl_ativo', true)
+                        ->whereIn('lot.lot_esc_id', $ids)
+                        ->where($vigente);
+                });
+            }
+        });
+    }
+
+    /**
+     * True se o usuário pode ver/editar o aluno (regra de cadastro acima).
+     */
+    public static function alunoVisivel(?User $user, int $alnId): bool
+    {
+        if (self::semFiltroLotacao($user)) return true;
+
+        $q = DB::table('edu_aluno')->where('aln_id', $alnId);
+        self::scopeAlunosVisiveis($q, $user);
+
+        return $q->exists();
+    }
+
+    /**
+     * True se o usuário pode ver/editar o funcionário (regra de cadastro acima).
+     */
+    public static function funcionarioVisivel(?User $user, int $funId): bool
+    {
+        if (self::semFiltroLotacao($user)) return true;
+
+        $q = DB::table('edu_funcionario')->where('fun_id', $funId);
+        self::scopeFuncionariosVisiveis($q, $user);
+
+        return $q->exists();
+    }
 }

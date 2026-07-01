@@ -42,6 +42,16 @@ class PermissaoTela
     }
 
     /**
+     * Sistema de permissão por tela está configurado (há telas cadastradas)?
+     * Se vazio (ex.: ambiente sem seed), o gate fica "fail-open" — nada é
+     * escondido/bloqueado — evitando travar o menu por falta de configuração.
+     */
+    public static function ativo(): bool
+    {
+        return ! empty(self::matriz());
+    }
+
+    /**
      * Rotas de tela registradas (chaves da matriz).
      */
     public static function rotasRegistradas(): array

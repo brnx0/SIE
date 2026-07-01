@@ -89,6 +89,11 @@ const form = useForm<TurmaFormData>({
     _method:                props.mode === 'edit' ? 'put' : undefined,
 });
 
+// Nome da turma sempre em maiúsculas
+watch(() => form.tur_nome, (v) => {
+    if (typeof v === 'string' && v !== v.toUpperCase()) form.tur_nome = v.toUpperCase();
+});
+
 // Bloqueio de campos estruturais quando turma ABERTA (apenas no edit)
 const estruturalLocked = computed(
     () => props.mode === 'edit' && props.initial?.tur_situacao === 'ABERTA',
@@ -293,7 +298,7 @@ const selectClass = (hasError: boolean) =>
                             <!-- Nome da Turma -->
                             <div class="grid gap-1.5 sm:col-span-2">
                                 <FormLabel :required="true">Nome da Turma</FormLabel>
-                                <Input v-model="form.tur_nome" maxlength="20" placeholder="A" :class="{ 'border-red-500': form.errors.tur_nome }" />
+                                <Input v-model="form.tur_nome" maxlength="20" placeholder="A" class="uppercase" :class="{ 'border-red-500': form.errors.tur_nome }" />
                                 <InputError :message="form.errors.tur_nome" />
                             </div>
 

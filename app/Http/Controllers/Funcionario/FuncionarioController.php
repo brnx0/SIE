@@ -7,6 +7,7 @@ use App\Http\Requests\Funcionario\StoreFuncionarioRequest;
 use App\Http\Requests\Funcionario\UpdateFuncionarioRequest;
 use App\Models\Funcionario\Funcionario;
 use App\Models\Parametro\ParametroEntidade;
+use App\Support\UserAccess;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
@@ -70,6 +71,8 @@ class FuncionarioController extends Controller
 
     public function edit(Funcionario $funcionario): Response
     {
+        abort_unless(UserAccess::funcionarioVisivel(request()->user(), $funcionario->fun_id), 404);
+
         $funcionario->load([
             'municipioNascimento:mun_id,mun_nome,mun_uf',
             'municipioCertidao:mun_id,mun_nome,mun_uf',
@@ -126,6 +129,8 @@ class FuncionarioController extends Controller
 
     public function update(UpdateFuncionarioRequest $request, Funcionario $funcionario): RedirectResponse
     {
+        abort_unless(UserAccess::funcionarioVisivel($request->user(), $funcionario->fun_id), 404);
+
         $this->checkHomonimo($request, $funcionario->fun_id);
 
         DB::transaction(function () use ($request, $funcionario) {
@@ -180,6 +185,8 @@ class FuncionarioController extends Controller
 
     public function destroy(Funcionario $funcionario): RedirectResponse
     {
+        abort_unless(UserAccess::funcionarioVisivel(request()->user(), $funcionario->fun_id), 404);
+
         if ($funcionario->fun_foto) {
             Storage::disk('public')->delete($funcionario->fun_foto);
         }
@@ -192,7 +199,7 @@ class FuncionarioController extends Controller
     {
         $search = $request->string('search')->toString();
 
-        return Funcionario::query()
+        $query = Funcionario::query()
             ->with('municipioNascimento:mun_id,mun_nome,mun_uf')
             ->when($search, function ($q) use ($search) {
                 $q->where(function ($q) use ($search) {
@@ -201,6 +208,9 @@ class FuncionarioController extends Controller
                 });
             })
             ->orderBy('fun_nome');
+
+        // Cadastro: perfis com lotação só veem funcionários da sua escola ou sem lotação.
+        return UserAccess::scopeFuncionariosVisiveis($query, $request->user());
     }
 
     private function exportCsv($funcionarios): StreamedResponse
