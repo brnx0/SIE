@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AlunoSaude extends Model
 {
+    use \App\Models\Concerns\Auditable;
     protected $table = 'edu_aluno_saude';
     protected $primaryKey = 'als_id';
 

@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class SabadoLetivo extends Model
 {
+    use \App\Models\Concerns\Auditable;
     protected $table = 'cfg_sabado_letivo';
     protected $primaryKey = 'sbl_id';
 

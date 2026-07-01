@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class TurmaProfessor extends Model
 {
+    use \App\Models\Concerns\Auditable;
     use SoftDeletes;
 
     protected $table = 'edu_turma_professor';

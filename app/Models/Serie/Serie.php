@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class Serie extends Model
 {
+    use \App\Models\Concerns\Auditable;
     use SoftDeletes;
 
     protected $table = 'edu_serie';

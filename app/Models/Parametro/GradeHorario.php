@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class GradeHorario extends Model
 {
+    use \App\Models\Concerns\Auditable;
     protected $table = 'edu_grade_horario';
     protected $primaryKey = 'grh_id';
 

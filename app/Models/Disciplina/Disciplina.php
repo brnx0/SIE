@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Disciplina extends Model
 {
+    use \App\Models\Concerns\Auditable;
     use SoftDeletes;
 
     protected $table = 'edu_disciplina';

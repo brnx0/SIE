@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class MotivoBaixaFrequencia extends Model
 {
+    use \App\Models\Concerns\Auditable;
     protected $table = 'cfg_motivo_baixa_frequencia';
     protected $primaryKey = 'mbf_id';
 

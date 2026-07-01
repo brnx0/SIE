@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class SituacaoBloqueio extends Model
 {
+    use \App\Models\Concerns\Auditable;
     protected $table = 'cfg_situacao_bloqueio';
     protected $primaryKey = 'sba_id';
 

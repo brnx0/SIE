@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Municipio extends Model
 {
+    use \App\Models\Concerns\Auditable;
     protected $table = 'edu_municipio';
     protected $primaryKey = 'mun_id';
 

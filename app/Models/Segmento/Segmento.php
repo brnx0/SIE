@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Segmento extends Model
 {
+    use \App\Models\Concerns\Auditable;
     use SoftDeletes;
 
     protected $table = 'edu_segmento';

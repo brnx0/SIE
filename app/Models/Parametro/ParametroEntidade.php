@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Storage;
 
 class ParametroEntidade extends Model
 {
+    use \App\Models\Concerns\Auditable;
     protected $table = 'cfg_parametros_entidade';
     protected $primaryKey = 'par_id';
 

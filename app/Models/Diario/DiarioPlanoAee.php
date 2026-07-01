@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class DiarioPlanoAee extends Model
 {
+    use \App\Models\Concerns\Auditable;
     use SoftDeletes;
 
     public static $snakeAttributes = false;

@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class GradeDisciplinar extends Model
 {
+    use \App\Models\Concerns\Auditable;
     protected $table = 'edu_grade_disciplinar';
     protected $primaryKey = 'grd_id';
 

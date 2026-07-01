@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class DiaNaoLetivo extends Model
 {
+    use \App\Models\Concerns\Auditable;
     protected $table = 'cfg_dia_nao_letivo';
     protected $primaryKey = 'dnl_id';
 

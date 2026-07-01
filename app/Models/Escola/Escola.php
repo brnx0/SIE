@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Storage;
 
 class Escola extends Model
 {
+    use \App\Models\Concerns\Auditable;
     use SoftDeletes;
 
     protected $table = 'edu_escola';

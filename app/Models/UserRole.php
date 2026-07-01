@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class UserRole extends Model
 {
+    use \App\Models\Concerns\Auditable;
     protected $fillable = ['user_id', 'role'];
 
     public function user(): BelongsTo

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class TelaPermissao extends Model
 {
+    use \App\Models\Concerns\Auditable;
     protected $table = 'cfg_tela_permissao';
     protected $primaryKey = 'tlp_id';
 

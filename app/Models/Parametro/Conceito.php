@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Conceito extends Model
 {
+    use \App\Models\Concerns\Auditable;
     protected $table = 'cfg_conceito';
     protected $primaryKey = 'cnc_id';
 

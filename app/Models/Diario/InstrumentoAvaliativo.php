@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class InstrumentoAvaliativo extends Model
 {
+    use \App\Models\Concerns\Auditable;
     protected $table = 'edu_instrumento_avaliativo';
     protected $primaryKey = 'iav_id';
 

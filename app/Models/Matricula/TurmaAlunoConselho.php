@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class TurmaAlunoConselho extends Model
 {
+    use \App\Models\Concerns\Auditable;
     protected $table = 'edu_turma_aluno_conselho';
     protected $primaryKey = 'tac_id';
 

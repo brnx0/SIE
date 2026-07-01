@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class DiasLetivos extends Model
 {
+    use \App\Models\Concerns\Auditable;
     protected $table = 'cfg_dias_letivos';
     protected $primaryKey = 'dlt_id';
 

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class TurmaProfessorApoio extends Model
 {
+    use \App\Models\Concerns\Auditable;
     protected $table = 'edu_turma_professor_apoio';
     protected $primaryKey = 'tpa_id';
 

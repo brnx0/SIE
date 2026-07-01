@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class DiarioPlanoIndicador extends Model
 {
+    use \App\Models\Concerns\Auditable;
     public static $snakeAttributes = false;
 
     protected $table = 'edu_diario_plano_indicador';

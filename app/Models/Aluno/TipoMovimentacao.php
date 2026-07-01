@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class TipoMovimentacao extends Model
 {
+    use \App\Models\Concerns\Auditable;
     protected $table = 'edu_tipo_movimentacao';
     protected $primaryKey = 'tmv_cod';
     public $incrementing = false;

@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Storage;
 
 class Aluno extends Model
 {
+    use \App\Models\Concerns\Auditable;
     use SoftDeletes;
 
     protected $table = 'edu_aluno';

@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Atividade extends Model
 {
+    use \App\Models\Concerns\Auditable;
     protected $table = 'cfg_atividade';
     protected $primaryKey = 'atv_id';
 

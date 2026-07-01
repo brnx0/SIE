@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Tela extends Model
 {
+    use \App\Models\Concerns\Auditable;
     protected $table = 'cfg_tela';
     protected $primaryKey = 'tla_id';
 

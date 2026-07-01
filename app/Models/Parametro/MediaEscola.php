@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class MediaEscola extends Model
 {
+    use \App\Models\Concerns\Auditable;
     protected $table = 'cfg_media_escola';
     protected $primaryKey = 'mde_id';
 

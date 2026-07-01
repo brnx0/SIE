@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class AtendimentoAee extends Model
 {
+    use \App\Models\Concerns\Auditable;
     protected $table = 'cfg_atendimento_aee';
     protected $primaryKey = 'ate_id';
 

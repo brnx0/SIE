@@ -27,7 +27,13 @@ class StoreSerieRequest extends FormRequest
         return [
             'seg_id'                  => ['required', 'integer', 'exists:edu_segmento,seg_id'],
             'ser_cd_referencia'       => ['nullable', 'string', 'max:20'],
-            'ser_nome'                => ['required', 'string', 'max:100'],
+            'ser_nome'                => [
+                'required', 'string', 'max:100',
+                // Nome único POR SEGMENTO (segmentos diferentes podem repetir).
+                Rule::unique('edu_serie', 'ser_nome')
+                    ->where(fn ($q) => $q->where('seg_id', $this->input('seg_id'))->whereNull('ser_deleted_at'))
+                    ->ignore($this->route('serie')?->ser_id, 'ser_id'),
+            ],
             'ser_carga_horaria'       => ['nullable', 'integer', 'min:0'],
             'ser_qt_aulas_semestrais' => ['nullable', 'integer', 'min:0'],
             'ser_qt_aulas_anuais'     => ['nullable', 'integer', 'min:0'],
@@ -53,6 +59,13 @@ class StoreSerieRequest extends FormRequest
             'ser_promo_ser_id_2' => ['nullable', 'integer', 'exists:edu_serie,ser_id'],
             'ser_cons_ser_id_1'  => ['nullable', 'integer', 'exists:edu_serie,ser_id'],
             'ser_cons_ser_id_2'  => ['nullable', 'integer', 'exists:edu_serie,ser_id'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'ser_nome.unique' => 'Já existe uma série com este nome neste segmento.',
         ];
     }
 

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Unidade extends Model
 {
+    use \App\Models\Concerns\Auditable;
     protected $table = 'cfg_unidade';
     protected $primaryKey = 'uni_id';
 

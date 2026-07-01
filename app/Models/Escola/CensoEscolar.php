@@ -9,6 +9,7 @@ use Illuminate\Support\Carbon;
 
 class CensoEscolar extends Model
 {
+    use \App\Models\Concerns\Auditable;
     protected $table = 'cfg_censo_escolar';
     protected $primaryKey = 'cen_id';
 
