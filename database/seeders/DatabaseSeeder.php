@@ -28,7 +28,7 @@ class DatabaseSeeder extends Seeder
             ['email' => 'admin@sie.local'],
             [
                 'name' => 'Administrador',
-                'login' => 'admin@sie.local',
+                'login' => 'admin',
                 'password' => Hash::make('123456'),
                 'active' => true,
             ],
