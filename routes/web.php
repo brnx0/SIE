@@ -86,6 +86,16 @@ Route::get('/', function () {
     return Inertia::render('Welcome');
 })->name('home');
 
+// Logout forçado quando a sessão/CSRF expira (GET → isento de CSRF, que já falhou).
+// Invalida a sessão de fato e leva ao login — evita voltar logado.
+Route::get('sessao-expirada', function (\Illuminate\Http\Request $request) {
+    \Illuminate\Support\Facades\Auth::guard('web')->logout();
+    $request->session()->invalidate();
+    $request->session()->regenerateToken();
+
+    return redirect()->route('login')->with('error', 'Sua sessão expirou. Faça login novamente.');
+})->name('sessao.expirada');
+
 Route::middleware(['auth', 'verified', 'tela'])->group(function () {
     Route::get('dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
 

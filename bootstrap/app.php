@@ -6,6 +6,7 @@ use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\VerificaPermissaoTela;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Session\TokenMismatchException;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
@@ -46,5 +47,15 @@ return Application::configure(basePath: dirname(__DIR__))
             $request->session()->regenerateToken();
             return redirect($request->url())
                 ->with('error', 'Sua sessão expirou. Por favor, tente novamente.');
+        });
+
+        // Sessão expirada → não autenticado: redireciona ao login COM aviso.
+        // (Sem isto, o usuário só é deslogado, sem mensagem.)
+        $exceptions->render(function (AuthenticationException $e, $request) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Sua sessão expirou.'], 401);
+            }
+            return redirect()->guest(route('login'))
+                ->with('error', 'Sua sessão expirou. Faça login novamente.');
         });
     })->create();

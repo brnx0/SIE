@@ -6,14 +6,18 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AuthBase from '@/layouts/AuthLayout.vue';
-import { Head, useForm } from '@inertiajs/vue3';
-import { LoaderCircle } from 'lucide-vue-next';
-import { watch } from 'vue';
+import { Head, useForm, usePage } from '@inertiajs/vue3';
+import { LoaderCircle, ShieldAlert } from 'lucide-vue-next';
+import { computed, watch } from 'vue';
 
 defineProps<{
     status?: string;
     canResetPassword: boolean;
 }>();
+
+// Mensagem de sessão expirada (flash error vindo do redirect de logout).
+const page = usePage();
+const flashError = computed(() => (page.props as any).flash?.error as string | undefined);
 
 const form = useForm({
     login: '',
@@ -40,6 +44,11 @@ const submit = () => {
 
         <div v-if="status" class="mb-4 rounded-md bg-emerald-50 px-4 py-3 text-center text-sm font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
             {{ status }}
+        </div>
+
+        <div v-if="flashError" class="mb-4 flex items-center gap-2 rounded-md border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700 dark:border-rose-900/50 dark:bg-rose-900/30 dark:text-rose-300">
+            <ShieldAlert class="size-4 shrink-0" />
+            {{ flashError }}
         </div>
 
         <form @submit.prevent="submit" class="flex flex-col gap-5">

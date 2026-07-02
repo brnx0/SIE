@@ -1,6 +1,7 @@
 import '../css/app.css';
 
-import { createInertiaApp } from '@inertiajs/vue3';
+import { createInertiaApp, router } from '@inertiajs/vue3';
+import { triggerSessionExpired } from './lib/session';
 import { vMaska } from 'maska/vue';
 import { createPinia } from 'pinia';
 import { markRaw, type Component, type DefineComponent } from 'vue';
@@ -62,6 +63,17 @@ createInertiaApp({
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') mark();
         }, { capture: true });
+
+        // Sessão/CSRF expirada em visitas Inertia (form posts): 419 devolve uma
+        // resposta não-Inertia. Em vez do modal padrão, mostra nosso aviso e
+        // desloga de fato. 401 = não autenticado → mesmo tratamento.
+        router.on('invalid', (event) => {
+            const status = (event as any).detail?.response?.status;
+            if (status === 419 || status === 401) {
+                event.preventDefault();
+                triggerSessionExpired();
+            }
+        });
     },
     progress: {
         color: '#4B5563',

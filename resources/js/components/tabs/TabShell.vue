@@ -6,6 +6,7 @@ import AppShell from '@/components/layout/AppShell.vue';
 import AppSidebar from '@/components/layout/AppSidebar.vue';
 import AppSidebarHeader from '@/components/layout/AppSidebarHeader.vue';
 import FlashToaster from '@/components/common/FlashToaster.vue';
+import SessionExpiredDialog from '@/components/common/SessionExpiredDialog.vue';
 import TabBar from './TabBar.vue';
 import TabPanel from './TabPanel.vue';
 import { useTabStore } from '@/stores/tabs';
@@ -90,4 +91,7 @@ watch(isAuthenticated, () => store.clear());
         </TabPanel>
         <FlashToaster />
     </template>
+
+    <!-- Aviso global de sessão expirada (419/401) -->
+    <SessionExpiredDialog />
 </template>

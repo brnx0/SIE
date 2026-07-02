@@ -16,6 +16,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/composables/useToast';
 import { useSeriesBySegmento, type SerieSegmentoItem } from '@/composables/useSeriesBySegmento';
 import { computed, nextTick, reactive, ref, watch } from 'vue';
+import { triggerSessionExpired } from '@/lib/session';
 import { usePage } from '@inertiajs/vue3';
 import { LoaderCircle, Save, X } from 'lucide-vue-next';
 
@@ -456,8 +457,8 @@ const submit = async () => {
             body: JSON.stringify(payload),
         });
 
-        if (res.status === 419) {
-            errors.value['_geral'] = 'Sua sessão expirou. Recarregue a página e tente novamente.';
+        if (res.status === 419 || res.status === 401) {
+            triggerSessionExpired();
             return;
         }
 
