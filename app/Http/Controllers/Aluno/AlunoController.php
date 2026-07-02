@@ -72,7 +72,7 @@ class AlunoController extends Controller
             }
 
             $aluno = Aluno::create($data);
-            $aluno->saude()->create($request->input('saude', []));
+            $aluno->saude()->create($this->saudeData($request));
 
             return $aluno;
         });
@@ -136,7 +136,7 @@ class AlunoController extends Controller
 
             $aluno->update($data);
 
-            $saudeData = $request->input('saude', []);
+            $saudeData = $this->saudeData($request);
             if ($aluno->saude) {
                 $aluno->saude->update($saudeData);
             } else {
@@ -157,6 +157,29 @@ class AlunoController extends Controller
 
         return $this->safeDelete($aluno)
             ?? to_route('alunos.index')->with('success', 'Aluno removido com sucesso.');
+    }
+
+    /** Campos array do quadro de saúde (checkboxes multi-seleção). */
+    private const SAUDE_ARRAY_FIELDS = [
+        'als_patologias', 'als_patologias_infancia', 'als_deficiencias',
+        'als_transtornos_globais', 'als_transtornos_aprendizagem',
+        'als_clinicas', 'als_recursos_inep',
+    ];
+
+    /**
+     * Dados do quadro de saúde com arrays normalizados.
+     *
+     * O form usa forceFormData (upload de foto) e o FormData DESCARTA arrays
+     * vazios — ao desmarcar o último item de um grupo, a chave some do payload
+     * e o update não limparia a coluna. Aqui garantimos [] para cada grupo.
+     */
+    private function saudeData(Request $request): array
+    {
+        $saude = $request->input('saude', []);
+        foreach (self::SAUDE_ARRAY_FIELDS as $f) {
+            $saude[$f] = $saude[$f] ?? [];
+        }
+        return $saude;
     }
 
     protected function checkHomonimo(Request $request, ?int $excludeId = null): void
