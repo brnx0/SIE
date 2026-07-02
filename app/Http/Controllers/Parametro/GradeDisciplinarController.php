@@ -18,10 +18,12 @@ class GradeDisciplinarController extends Controller
 {
     public function page(): Response
     {
-        $idsComGrade = GradeDisciplinar::distinct()->pluck('grd_anl_id')->all();
-
         return Inertia::render('grade-disciplinar/Index', [
-            'anosLetivos' => AnoLetivo::paraCadastro($idsComGrade)->orderByDesc('anl_ano')->get(['anl_id', 'anl_ano']),
+            // Todos os anos: a replicação de grade não exige que o ano de origem
+            // (nem o destino) esteja em exercício.
+            'anosLetivos'  => AnoLetivo::orderByDesc('anl_ano')->get(['anl_id', 'anl_ano']),
+            // Anos que já possuem grade — usados p/ escolher a origem da replicação.
+            'anosComGrade' => GradeDisciplinar::distinct()->pluck('grd_anl_id')->map(fn ($v) => (int) $v)->all(),
             'segmentos'   => Segmento::where('seg_fl_ativo', true)->orderBy('seg_ordem')->get(['seg_id', 'seg_nome_reduzido', 'seg_nome_completo']),
         ]);
     }
@@ -151,15 +153,18 @@ class GradeDisciplinarController extends Controller
             return back()->with('error', 'Ano de origem não possui disciplinas cadastradas.');
         }
 
-        // Status atual das disciplinas envolvidas: uma disciplina inativada não
-        // pode voltar como ativa na grade clonada (preserva a inativação).
+        // Status atual das disciplinas: disciplina inativada NÃO é replicada.
         $disAtivo = \App\Models\Disciplina\Disciplina::query()
             ->whereIn('dis_id', $origem->pluck('grd_dis_id'))
             ->pluck('dis_fl_ativo', 'dis_id');
 
-        DB::transaction(function () use ($origem, $data, $disAtivo) {
+        $clonadas = DB::transaction(function () use ($origem, $data, $disAtivo) {
+            $n = 0;
             foreach ($origem as $linha) {
-                $disciplinaAtiva = (bool) ($disAtivo[$linha->grd_dis_id] ?? true);
+                // Pula disciplinas inativas — não vão para o ano seguinte.
+                if (! (bool) ($disAtivo[$linha->grd_dis_id] ?? true)) {
+                    continue;
+                }
 
                 GradeDisciplinar::create([
                     'grd_anl_id'           => $data['destino_anl_id'],
@@ -168,12 +173,17 @@ class GradeDisciplinarController extends Controller
                     'grd_dis_id'           => $linha->grd_dis_id,
                     'grd_ordem'            => $linha->grd_ordem,
                     'grd_nome_alternativo' => $linha->grd_nome_alternativo,
-                    // Linha só fica ativa se estava ativa na origem E a disciplina segue ativa.
-                    'grd_fl_ativo'         => $linha->grd_fl_ativo && $disciplinaAtiva,
+                    'grd_fl_ativo'         => $linha->grd_fl_ativo,
                 ]);
+                $n++;
             }
+            return $n;
         });
 
-        return back()->with('success', "{$origem->count()} disciplina(s) clonada(s) do ano anterior.");
+        if ($clonadas === 0) {
+            return back()->with('error', 'Nenhuma disciplina ativa para replicar do ano anterior.');
+        }
+
+        return back()->with('success', "{$clonadas} disciplina(s) clonada(s) do ano anterior.");
     }
 }

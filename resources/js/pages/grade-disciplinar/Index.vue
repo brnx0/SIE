@@ -7,6 +7,7 @@ import { Head } from '@inertiajs/vue3';
 
 defineProps<{
     anosLetivos: AnoLetivo[];
+    anosComGrade: number[];
     segmentos: SegmentoResumo[];
 }>();
 
@@ -23,7 +24,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                 <h1 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">Grade Disciplinar</h1>
                 <p class="text-sm text-slate-500 dark:text-slate-400">Gerencie as disciplinas por segmento, série e ano letivo.</p>
             </div>
-            <GradeDisciplinarTab :anos-letivos="anosLetivos" :segmentos="segmentos" />
+            <GradeDisciplinarTab :anos-letivos="anosLetivos" :anos-com-grade="anosComGrade" :segmentos="segmentos" />
         </div>
     </AppLayout>
 </template>

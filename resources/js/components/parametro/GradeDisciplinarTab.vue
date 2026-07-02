@@ -12,6 +12,7 @@ import { computed, onMounted, reactive, ref, watch } from 'vue';
 
 const props = defineProps<{
     anosLetivos: AnoLetivo[];
+    anosComGrade: number[];
     segmentos: SegmentoResumo[];
 }>();
 
@@ -198,7 +199,10 @@ const anoAnterior = computed<AnoLetivo | null>(() => {
     if (!fAnlId.value) return null;
     const atual = props.anosLetivos.find((a) => a.anl_id === fAnlId.value);
     if (!atual) return null;
-    const candidatos = props.anosLetivos.filter((a) => a.anl_ano < atual.anl_ano);
+    // Origem = ano anterior mais próximo que JÁ possui grade (não precisa estar em execução).
+    const candidatos = props.anosLetivos.filter(
+        (a) => a.anl_ano < atual.anl_ano && props.anosComGrade.includes(a.anl_id),
+    );
     return candidatos.length ? candidatos.sort((a, b) => b.anl_ano - a.anl_ano)[0] : null;
 });
 
