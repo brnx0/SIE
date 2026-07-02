@@ -60,9 +60,13 @@ class SerieController extends Controller
         $ordemFim    = $esg->serieFim?->ser_ordem_no_segmento ?? PHP_INT_MAX;
 
         $query = Serie::where('seg_id', $segId)
-            ->where(function ($q) use ($ordemInicio, $ordemFim) {
+            ->where(function ($q) use ($ordemInicio, $ordemFim, $incluirIds) {
                 $q->whereBetween('ser_ordem_no_segmento', [$ordemInicio, $ordemFim])
                   ->orWhereRaw("ser_nome ILIKE '%MULTI%'");
+                // Série já salva na turma sempre visível, mesmo fora do range do segmento.
+                if (! empty($incluirIds)) {
+                    $q->orWhereIn('ser_id', $incluirIds);
+                }
             });
         $this->filtroAtivoOuIncluso($query, 'ser_fl_ativo', 'ser_id', $incluirIds);
 

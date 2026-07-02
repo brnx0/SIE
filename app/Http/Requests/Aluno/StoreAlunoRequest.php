@@ -130,7 +130,12 @@ class StoreAlunoRequest extends FormRequest
             ])],
             'saude.als_outra_doenca_infancia' => ['nullable', 'string', 'max:500'],
 
-            'saude.als_deficiencias' => ['nullable', 'array'],
+            // Marcou PCD/TGD/AH → exige ao menos 1 item na coluna Deficiência.
+            'saude.als_deficiencias' => Rule::when(
+                $this->boolean('saude.als_fl_pcd'),
+                ['required', 'array', 'min:1'],
+                ['nullable', 'array'],
+            ),
             'saude.als_deficiencias.*' => ['string', Rule::in([
                 'Cegueira', 'Baixa Visão', 'Visão Monocular', 'Surdez',
                 'Deficiência Auditiva', 'Surdocegueira', 'Deficiência Física',
@@ -209,6 +214,14 @@ class StoreAlunoRequest extends FormRequest
                 }
             }
         });
+    }
+
+    public function messages(): array
+    {
+        return [
+            'saude.als_deficiencias.required' => 'Marque ao menos uma deficiência quando o aluno é PCD / TGD / Altas Habilidades.',
+            'saude.als_deficiencias.min'      => 'Marque ao menos uma deficiência quando o aluno é PCD / TGD / Altas Habilidades.',
+        ];
     }
 
     public function attributes(): array

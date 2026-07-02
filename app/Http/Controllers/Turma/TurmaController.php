@@ -165,6 +165,22 @@ class TurmaController extends Controller
 
     public function destroy(Turma $turma): RedirectResponse
     {
+        // Bloqueia exclusão quando a turma tem vínculos — evita apagar
+        // professores/horários/matrículas junto (FK pode ter cascade).
+        $bloqueios = [];
+        if ($turma->professores()->exists())     $bloqueios[] = 'professores';
+        if ($turma->professoresApoio()->exists()) $bloqueios[] = 'professores de apoio';
+        if ($turma->horarios()->exists())         $bloqueios[] = 'horários';
+        if ($turma->matriculas()->withTrashed()->exists()) $bloqueios[] = 'alunos alocados';
+
+        if ($bloqueios) {
+            return back()->with(
+                'error',
+                'Não é possível excluir: a turma possui ' . implode(', ', $bloqueios)
+                . ' vinculados. Inative-a caso não queira mais utilizá-la.'
+            );
+        }
+
         return $this->safeDelete($turma)
             ?? to_route('turmas.index')->with('success', 'Turma removida com sucesso.');
     }

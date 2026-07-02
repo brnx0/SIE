@@ -87,7 +87,7 @@ const ehInicioGrupo = (i: number) => i === 0 || linhas[i].tla_grupo !== linhas[i
                 </Button>
             </div>
 
-            <div class="overflow-auto rounded-xl border bg-card shadow-sm">
+            <div class="w-full min-w-0 max-w-full overflow-x-auto rounded-xl border bg-card shadow-sm">
                 <table class="min-w-full border-separate border-spacing-0 text-sm">
                     <thead>
                         <tr class="bg-muted/60">

@@ -47,6 +47,13 @@ class StoreSegmentoRequest extends FormRequest
         ];
     }
 
+    public function messages(): array
+    {
+        return [
+            'seg_ds_prereq.required_if' => 'A descrição do pré-requisito é obrigatória quando o pré-requisito está ativo.',
+        ];
+    }
+
     public function attributes(): array
     {
         return [

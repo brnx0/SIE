@@ -114,7 +114,7 @@ const triggerSegmentos = () => {
 // Cascata: segmento → series
 const triggerSeries = () => {
     if (form.tur_esc_id && form.tur_anl_id && form.tur_seg_id) {
-        searchSeries(form.tur_esc_id, form.tur_anl_id, form.tur_seg_id);
+        searchSeries(form.tur_esc_id, form.tur_anl_id, form.tur_seg_id, form.tur_ser_id ? [form.tur_ser_id] : []);
     } else {
         clearSeries();
     }
@@ -130,7 +130,12 @@ if (props.mode === 'edit' && props.initial) {
     if (props.initial.tur_esc_id && props.initial.tur_anl_id) {
         searchSegmentos(props.initial.tur_esc_id, props.initial.tur_anl_id, props.initial.tur_seg_id ? [props.initial.tur_seg_id] : []).then(() => {
             if (props.initial!.tur_seg_id) {
-                searchSeries(props.initial!.tur_esc_id, props.initial!.tur_anl_id, props.initial!.tur_seg_id);
+                searchSeries(
+                    props.initial!.tur_esc_id,
+                    props.initial!.tur_anl_id,
+                    props.initial!.tur_seg_id,
+                    props.initial!.tur_ser_id ? [props.initial!.tur_ser_id] : [],
+                );
             }
         });
     }

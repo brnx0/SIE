@@ -7,7 +7,7 @@ export function useSeriesByEscolaSegmento() {
     const items = ref<SerieResumoTurma[]>([]);
     let controller: AbortController | null = null;
 
-    async function search(escId: number, anlId: number, segId: number): Promise<void> {
+    async function search(escId: number, anlId: number, segId: number, incluirIds: number[] = []): Promise<void> {
         if (!escId || !anlId || !segId) {
             items.value = [];
             return;
@@ -23,6 +23,8 @@ export function useSeriesByEscolaSegmento() {
                 anl_id: String(anlId),
                 seg_id: String(segId),
             });
+            // Mantém a série salva visível mesmo se inativada ou fora do range do segmento.
+            if (incluirIds.length) params.set('incluir_ids', incluirIds.join(','));
             const res = await apiFetch(`/api/series/by-escola-segmento?${params.toString()}`, {
                 signal: controller.signal,
                 headers: { Accept: 'application/json' },

@@ -141,6 +141,20 @@ class TurmaAtividadeController extends Controller
     {
         $turma = $this->guard($turmaAtividade);
 
+        $bloqueios = [];
+        if ($turma->professores()->exists())     $bloqueios[] = 'professores';
+        if ($turma->professoresApoio()->exists()) $bloqueios[] = 'professores de apoio';
+        if ($turma->horarios()->exists())         $bloqueios[] = 'horários';
+        if ($turma->matriculas()->withTrashed()->exists()) $bloqueios[] = 'alunos alocados';
+
+        if ($bloqueios) {
+            return back()->with(
+                'error',
+                'Não é possível excluir: a turma possui ' . implode(', ', $bloqueios)
+                . ' vinculados. Inative-a caso não queira mais utilizá-la.'
+            );
+        }
+
         return $this->safeDelete($turma)
             ?? to_route('turmas-atividade.index')->with('success', 'Turma de Atividade removida com sucesso.');
     }

@@ -1034,8 +1034,10 @@ const initials = computed(() => {
                         <!-- Conteúdo desabilitado quando flag inativa -->
                         <div :class="{ 'pointer-events-none opacity-40': !form.saude.als_fl_pcd }">
                             <div class="grid gap-6 sm:grid-cols-3">
-                                <div>
-                                    <h4 class="mb-2 text-xs font-semibold text-muted-foreground">Deficiência</h4>
+                                <div id="als_deficiencias" tabindex="-1" class="scroll-mt-24 outline-none">
+                                    <h4 class="mb-2 text-xs font-semibold text-muted-foreground">
+                                        Deficiência <span v-if="form.saude.als_fl_pcd" class="text-rose-500">*</span>
+                                    </h4>
                                     <div class="space-y-2">
                                         <label
                                             v-for="d in DEFICIENCIAS"
@@ -1051,6 +1053,7 @@ const initials = computed(() => {
                                             {{ d }}
                                         </label>
                                     </div>
+                                    <InputError :message="(form.errors as Record<string, string>)['saude.als_deficiencias']" />
                                 </div>
 
                                 <div>

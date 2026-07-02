@@ -151,8 +151,16 @@ class GradeDisciplinarController extends Controller
             return back()->with('error', 'Ano de origem não possui disciplinas cadastradas.');
         }
 
-        DB::transaction(function () use ($origem, $data) {
+        // Status atual das disciplinas envolvidas: uma disciplina inativada não
+        // pode voltar como ativa na grade clonada (preserva a inativação).
+        $disAtivo = \App\Models\Disciplina\Disciplina::query()
+            ->whereIn('dis_id', $origem->pluck('grd_dis_id'))
+            ->pluck('dis_fl_ativo', 'dis_id');
+
+        DB::transaction(function () use ($origem, $data, $disAtivo) {
             foreach ($origem as $linha) {
+                $disciplinaAtiva = (bool) ($disAtivo[$linha->grd_dis_id] ?? true);
+
                 GradeDisciplinar::create([
                     'grd_anl_id'           => $data['destino_anl_id'],
                     'grd_seg_id'           => $linha->grd_seg_id,
@@ -160,7 +168,8 @@ class GradeDisciplinarController extends Controller
                     'grd_dis_id'           => $linha->grd_dis_id,
                     'grd_ordem'            => $linha->grd_ordem,
                     'grd_nome_alternativo' => $linha->grd_nome_alternativo,
-                    'grd_fl_ativo'         => $linha->grd_fl_ativo,
+                    // Linha só fica ativa se estava ativa na origem E a disciplina segue ativa.
+                    'grd_fl_ativo'         => $linha->grd_fl_ativo && $disciplinaAtiva,
                 ]);
             }
         });

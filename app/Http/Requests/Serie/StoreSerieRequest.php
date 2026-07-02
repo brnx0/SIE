@@ -39,8 +39,23 @@ class StoreSerieRequest extends FormRequest
             'ser_qt_aulas_anuais'     => ['nullable', 'integer', 'min:0'],
             'ser_idade'               => ['required', 'integer', 'min:0'],
             'ser_serie_equivalente'   => ['nullable', 'string', 'max:100'],
-            'ser_nr_ordenacao'        => ['nullable', 'integer'],
-            'ser_ordem_no_segmento'   => ['required', 'integer'],
+            'ser_nr_ordenacao'        => [
+                'nullable', 'integer',
+                // Único POR SEGMENTO quando informado (ignora soft-deletadas e o próprio).
+                Rule::when(
+                    fn () => $this->filled('ser_nr_ordenacao'),
+                    [Rule::unique('edu_serie', 'ser_nr_ordenacao')
+                        ->where(fn ($q) => $q->where('seg_id', $this->input('seg_id'))->whereNull('ser_deleted_at'))
+                        ->ignore($this->route('serie')?->ser_id, 'ser_id')],
+                ),
+            ],
+            'ser_ordem_no_segmento'   => [
+                'required', 'integer',
+                // Único POR SEGMENTO (ignora soft-deletadas e o próprio).
+                Rule::unique('edu_serie', 'ser_ordem_no_segmento')
+                    ->where(fn ($q) => $q->where('seg_id', $this->input('seg_id'))->whereNull('ser_deleted_at'))
+                    ->ignore($this->route('serie')?->ser_id, 'ser_id'),
+            ],
             'ser_fl_ativo'            => ['boolean'],
             'ser_fl_multi'            => ['boolean'],
             'ser_fl_progressao_auto'  => ['boolean'],
@@ -65,7 +80,9 @@ class StoreSerieRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'ser_nome.unique' => 'Já existe uma série com este nome neste segmento.',
+            'ser_nome.unique'              => 'Já existe uma série com este nome neste segmento.',
+            'ser_nr_ordenacao.unique'      => 'Já existe outra série neste segmento com este nº para ordenação.',
+            'ser_ordem_no_segmento.unique' => 'Já existe outra série neste segmento com esta ordem no segmento.',
         ];
     }
 
