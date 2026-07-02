@@ -5,6 +5,7 @@ import { type BreadcrumbItem } from '@/types';
 import type { AnoLetivo } from '@/types/parametro';
 import type { DisciplinaResumo, EscolaResumo, GradeHorarioResumo, ProfessorResumo, Turma } from '@/types/turma';
 import { Head } from '@inertiajs/vue3';
+import { computed } from 'vue';
 
 import type { TurmaProfessorApoio } from '@/types/turma';
 
@@ -21,7 +22,7 @@ const props = defineProps<{
     gradeHorarios: GradeHorarioResumo[];
 }>();
 
-const turmaComTotal = { ...props.turma, total_matriculados: props.total_matriculados };
+const turmaComTotal = computed(() => ({ ...props.turma, total_matriculados: props.total_matriculados }));
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Turmas', href: '/turmas' },

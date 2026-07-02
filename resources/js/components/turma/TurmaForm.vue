@@ -99,6 +99,11 @@ const estruturalLocked = computed(
     () => props.mode === 'edit' && props.initial?.tur_situacao === 'ABERTA',
 );
 
+// Turma ENCERRADA: somente leitura total.
+const encerrada = computed(
+    () => props.mode === 'edit' && props.initial?.tur_situacao === 'ENCERRADA',
+);
+
 // Cascata: escola + ano → segmentos
 const triggerSegmentos = () => {
     if (form.tur_esc_id && form.tur_anl_id) {
@@ -155,7 +160,7 @@ const toggleDia = (dia: string) => {
 };
 
 const submit = () => {
-    if (isReadOnly.value) return;
+    if (isReadOnly.value || encerrada.value) return;
     form.transform((data) => ({
         ...data,
         tur_tipo_atendimento: data.tur_tipo_atendimento === '' ? null : data.tur_tipo_atendimento,
@@ -186,11 +191,20 @@ const selectClass = (hasError: boolean) =>
                     <ChevronLeft class="mr-1 size-4" /> Voltar à lista
                 </Button>
             </Link>
-            <Button v-if="!isReadOnly" type="button" :disabled="form.processing" class="bg-indigo-600 hover:bg-indigo-700" @click="submit">
+            <Button v-if="!isReadOnly && !encerrada" type="button" :disabled="form.processing" class="bg-indigo-600 hover:bg-indigo-700" @click="submit">
                 <LoaderCircle v-if="form.processing" class="mr-2 size-4 animate-spin" />
                 <Save v-else class="mr-2 size-4" />
                 {{ submitLabel }}
             </Button>
+        </div>
+
+        <!-- Aviso: turma encerrada é somente leitura -->
+        <div v-if="encerrada" class="flex items-start gap-3 rounded-lg border border-rose-300 bg-rose-50 p-4 text-sm text-rose-900 dark:border-rose-700 dark:bg-rose-900/30 dark:text-rose-200">
+            <Lock class="mt-0.5 size-4 shrink-0" />
+            <div>
+                <p class="font-semibold">Turma ENCERRADA — somente leitura</p>
+                <p class="mt-1 text-xs">Os dados de uma turma encerrada não podem ser alterados.</p>
+            </div>
         </div>
 
         <!-- Abas (edit) ou form direto (create) -->
@@ -202,7 +216,7 @@ const selectClass = (hasError: boolean) =>
                 <TabsTrigger value="alunos">Alunos</TabsTrigger>
             </TabsList>
 
-            <fieldset :disabled="isReadOnly" class="contents">
+            <fieldset :disabled="isReadOnly || encerrada" class="contents">
             <TabsContent value="dados">
                 <div class="grid gap-6">
                     <!-- Aviso de bloqueio quando turma já está ABERTA -->
@@ -318,6 +332,7 @@ const selectClass = (hasError: boolean) =>
                             <div v-if="mode === 'edit'" class="grid gap-1.5 sm:col-span-2">
                                 <FormLabel>Matriculados</FormLabel>
                                 <Input :model-value="initial?.total_matriculados ?? 0" readonly class="bg-muted cursor-default" />
+                                <InputError/>
                             </div>
 
                             <!-- Expansão -->
@@ -426,7 +441,7 @@ const selectClass = (hasError: boolean) =>
             </TabsContent>
             </fieldset>
 
-            <fieldset :disabled="bloqueiaComposicao" class="contents">
+            <fieldset :disabled="bloqueiaComposicao || encerrada" class="contents">
             <TabsContent v-if="mode === 'edit'" value="professores">
                 <TurmaProfessoresTab
                     :turma="initial!"

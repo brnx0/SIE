@@ -158,6 +158,10 @@ class TurmaController extends Controller
 
     public function update(StoreTurmaRequest $request, Turma $turma): RedirectResponse
     {
+        if ($turma->tur_situacao === 'ENCERRADA') {
+            return back()->with('error', 'Turma encerrada não pode ser alterada.');
+        }
+
         $turma->update($request->validated());
 
         return to_route('turmas.edit', $turma)->with('success', 'Turma atualizada com sucesso.');

@@ -132,6 +132,11 @@ class TurmaAeeController extends Controller
     public function update(StoreTurmaAeeRequest $request, Turma $turmaAee): RedirectResponse
     {
         $turma = $this->guardAee($turmaAee);
+
+        if ($turma->tur_situacao === 'ENCERRADA') {
+            return back()->with('error', 'Turma encerrada não pode ser alterada.');
+        }
+
         $turma->update($request->validated());
 
         return to_route('turmas-aee.edit', $turma)->with('success', 'Turma AEE atualizada com sucesso.');

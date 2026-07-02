@@ -149,6 +149,21 @@ class TurmaAeeAlunoController extends Controller
             ]);
         }
 
+        // Já matriculado em OUTRA turma AEE ativa (sem saída) no mesmo ano letivo.
+        $jaEmOutroAee = Matricula::where('tma_aln_id', $aluno->aln_id)
+            ->where('tma_modalidade', Turma::MODALIDADE_AEE)
+            ->where('tma_anl_id', $turma->tur_anl_id)
+            ->where('tma_tur_id', '!=', $turma->tur_id)
+            ->whereNull('tma_tas_cod_saida')
+            ->whereNull('tma_deleted_at')
+            ->exists();
+
+        if ($jaEmOutroAee) {
+            throw ValidationException::withMessages([
+                'aln_id' => 'Aluno já está matriculado em outra turma AEE ativa. Encerre a alocação atual antes de matricular em outra.',
+            ]);
+        }
+
         // Capacidade
         if ($turma->tur_capacidade) {
             $ativos = Matricula::where('tma_tur_id', $turma->tur_id)

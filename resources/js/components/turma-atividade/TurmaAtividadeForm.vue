@@ -15,7 +15,7 @@ import type { AnoLetivo } from '@/types/parametro';
 import type { EscolaResumo, ProfessorResumo, Turma, TurmaProfessor } from '@/types/turma';
 import { DIAS_SEMANA, SEMESTRES_TURMA, SITUACOES_TURMA, TIPOS_MEDIACAO, TURNOS } from '@/types/turma';
 import { Link, useForm } from '@inertiajs/vue3';
-import { ChevronLeft, LoaderCircle, Save } from 'lucide-vue-next';
+import { ChevronLeft, Lock, LoaderCircle, Save } from 'lucide-vue-next';
 import { computed, watch } from 'vue';
 import { usePermissao } from '@/composables/usePermissao';
 
@@ -64,6 +64,16 @@ watch(() => form.tur_nome, (v) => {
     if (typeof v === 'string' && v !== v.toUpperCase()) form.tur_nome = v.toUpperCase();
 });
 
+// Bloqueio de campos estruturais quando turma ABERTA (apenas no edit)
+const estruturalLocked = computed(
+    () => props.mode === 'edit' && props.initial?.tur_situacao === 'ABERTA',
+);
+
+// Turma ENCERRADA: somente leitura total.
+const encerrada = computed(
+    () => props.mode === 'edit' && props.initial?.tur_situacao === 'ENCERRADA',
+);
+
 const onEscolaChange = (v: number | null) => { form.tur_esc_id = v; };
 
 const toggleDia = (dia: string) => {
@@ -73,7 +83,7 @@ const toggleDia = (dia: string) => {
 };
 
 const submit = () => {
-    if (isReadOnly.value) return;
+    if (isReadOnly.value || encerrada.value) return;
     form.transform((data) => ({
         ...data,
         tur_mediacao: data.tur_mediacao === '' ? null : data.tur_mediacao,
@@ -102,11 +112,20 @@ const matriculados = computed(() => props.initial?.total_matriculados ?? 0);
                     <ChevronLeft class="mr-1 size-4" /> Voltar à lista
                 </Button>
             </Link>
-            <Button v-if="!isReadOnly" type="button" :disabled="form.processing" class="bg-teal-600 hover:bg-teal-700" @click="submit">
+            <Button v-if="!isReadOnly && !encerrada" type="button" :disabled="form.processing" class="bg-teal-600 hover:bg-teal-700" @click="submit">
                 <LoaderCircle v-if="form.processing" class="mr-2 size-4 animate-spin" />
                 <Save v-else class="mr-2 size-4" />
                 {{ submitLabel }}
             </Button>
+        </div>
+
+        <!-- Aviso: turma encerrada é somente leitura -->
+        <div v-if="encerrada" class="flex items-start gap-3 rounded-lg border border-rose-300 bg-rose-50 p-4 text-sm text-rose-900 dark:border-rose-700 dark:bg-rose-900/30 dark:text-rose-200">
+            <Lock class="mt-0.5 size-4 shrink-0" />
+            <div>
+                <p class="font-semibold">Turma ENCERRADA — somente leitura</p>
+                <p class="mt-1 text-xs">Os dados de uma turma encerrada não podem ser alterados.</p>
+            </div>
         </div>
 
         <Tabs default-value="dados">
@@ -117,16 +136,25 @@ const matriculados = computed(() => props.initial?.total_matriculados ?? 0);
                 <TabsTrigger value="itens">Atividades Oferecidas</TabsTrigger>
             </TabsList>
 
-            <fieldset :disabled="isReadOnly" class="contents">
+            <fieldset :disabled="isReadOnly || encerrada" class="contents">
 
             <TabsContent value="dados">
                 <div class="grid gap-6">
+                    <!-- Aviso de bloqueio quando turma já está ABERTA -->
+                    <div v-if="estruturalLocked" class="flex items-start gap-3 rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-200">
+                        <Lock class="mt-0.5 size-4 shrink-0" />
+                        <div>
+                            <p class="font-semibold">Turma ABERTA — campos estruturais bloqueados</p>
+                            <p class="mt-1 text-xs">Escola, ano letivo e semestre não podem ser alterados após a turma estar aberta.</p>
+                        </div>
+                    </div>
+
                     <div class="grid gap-4 rounded-xl border bg-card p-6 shadow-sm">
                         <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300">Identificação</h3>
                         <div class="grid gap-4 sm:grid-cols-12">
                             <div class="grid gap-1.5 sm:col-span-6">
                                 <FormLabel :required="true">Escola</FormLabel>
-                                <template v-if="isAdmin">
+                                <template v-if="isAdmin && !estruturalLocked">
                                     <EscolaCombobox
                                         :model-value="form.tur_esc_id"
                                         :initial="initialEscola as any"
@@ -142,7 +170,7 @@ const matriculados = computed(() => props.initial?.total_matriculados ?? 0);
 
                             <div class="grid gap-1.5 sm:col-span-3">
                                 <FormLabel :required="true">Ano Letivo</FormLabel>
-                                <select v-model="form.tur_anl_id" :class="selectClass(!!form.errors.tur_anl_id)">
+                                <select v-model="form.tur_anl_id" :disabled="estruturalLocked" :class="selectClass(!!form.errors.tur_anl_id)">
                                     <option :value="null">Selecione...</option>
                                     <option v-for="anl in anosLetivos" :key="anl.anl_id" :value="anl.anl_id">{{ anl.anl_ano }}</option>
                                 </select>
@@ -170,9 +198,10 @@ const matriculados = computed(() => props.initial?.total_matriculados ?? 0);
                                 <InputError :message="form.errors.tur_turno" />
                             </div>
 
-                            <div class="grid gap-1.5 sm:col-span-3">
+                            <div class="grid content-start gap-1.5 sm:col-span-3">
                                 <FormLabel>Sala / Local</FormLabel>
                                 <Input v-model="form.tur_aee_sala" maxlength="100" placeholder="Opcional" />
+                                <InputError />
                             </div>
 
                             <div class="grid gap-1.5 sm:col-span-1">
@@ -184,11 +213,13 @@ const matriculados = computed(() => props.initial?.total_matriculados ?? 0);
                             <div v-if="mode === 'edit'" class="grid gap-1.5 sm:col-span-1">
                                 <FormLabel>Cursando</FormLabel>
                                 <Input :model-value="matriculados" readonly class="bg-muted cursor-default" />
+                                 <InputError/>
+                                
                             </div>
 
                             <div class="grid gap-1.5 sm:col-span-2">
                                 <FormLabel :required="true">Semestre</FormLabel>
-                                <select v-model.number="form.tur_semestre" :class="selectClass(!!form.errors.tur_semestre)">
+                                <select v-model.number="form.tur_semestre" :disabled="estruturalLocked" :class="selectClass(!!form.errors.tur_semestre)">
                                     <option :value="''">Selecione...</option>
                                     <option v-for="s in SEMESTRES_TURMA" :key="s.value" :value="s.value">{{ s.label }}</option>
                                 </select>
@@ -222,6 +253,7 @@ const matriculados = computed(() => props.initial?.total_matriculados ?? 0);
                             <div class="grid gap-1.5 sm:col-span-6">
                                 <FormLabel>Tipo de Atendimento</FormLabel>
                                 <Input model-value="ATIVIDADE COMPLEMENTAR" disabled class="bg-muted cursor-not-allowed" />
+                                <InputError/>
                             </div>
 
                             <div class="grid gap-1.5 sm:col-span-4">
@@ -269,13 +301,13 @@ const matriculados = computed(() => props.initial?.total_matriculados ?? 0);
             </TabsContent>
             </fieldset>
 
-            <fieldset :disabled="bloqueiaAlocacaoAluno" class="contents">
+            <fieldset :disabled="bloqueiaAlocacaoAluno || encerrada" class="contents">
             <TabsContent v-if="mode === 'edit'" value="alunos">
                 <TurmaAtividadeAlunosTab :tur-id="initial!.tur_id" />
             </TabsContent>
             </fieldset>
 
-            <fieldset :disabled="bloqueiaComposicao" class="contents">
+            <fieldset :disabled="bloqueiaComposicao || encerrada" class="contents">
             <TabsContent v-if="mode === 'edit'" value="professores">
                 <TurmaAtividadeProfessoresTab
                     :turma="initial!"

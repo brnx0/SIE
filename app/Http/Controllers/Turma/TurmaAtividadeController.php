@@ -132,6 +132,11 @@ class TurmaAtividadeController extends Controller
     public function update(StoreTurmaAtividadeRequest $request, Turma $turmaAtividade): RedirectResponse
     {
         $turma = $this->guard($turmaAtividade);
+
+        if ($turma->tur_situacao === 'ENCERRADA') {
+            return back()->with('error', 'Turma encerrada não pode ser alterada.');
+        }
+
         $turma->update($request->validated());
 
         return to_route('turmas-atividade.edit', $turma)->with('success', 'Turma de Atividade atualizada com sucesso.');
@@ -142,6 +147,7 @@ class TurmaAtividadeController extends Controller
         $turma = $this->guard($turmaAtividade);
 
         $bloqueios = [];
+        if ($turma->atividades()->exists())       $bloqueios[] = 'atividades';
         if ($turma->professores()->exists())     $bloqueios[] = 'professores';
         if ($turma->professoresApoio()->exists()) $bloqueios[] = 'professores de apoio';
         if ($turma->horarios()->exists())         $bloqueios[] = 'horários';
