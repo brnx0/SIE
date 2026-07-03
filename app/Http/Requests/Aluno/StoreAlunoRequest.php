@@ -114,7 +114,7 @@ class StoreAlunoRequest extends FormRequest
             'saude.als_contato_emergencia' => ['nullable', 'string', 'max:150'],
             'saude.als_telefone_emergencia' => ['nullable', 'string', 'max:20'],
             'saude.als_plano_saude' => ['nullable', 'string', 'max:100'],
-            'saude.als_cartao_sus' => ['nullable', 'string', 'max:20'],
+            'saude.als_cartao_sus' => ['nullable', 'string', 'max:15', 'regex:/^\d+$/'],
             'saude.als_alergia_a' => ['nullable', 'string', 'max:500'],
             'saude.als_remedio_febre' => ['nullable', 'string', 'max:200'],
             'saude.als_remedio_cefaleia' => ['nullable', 'string', 'max:200'],

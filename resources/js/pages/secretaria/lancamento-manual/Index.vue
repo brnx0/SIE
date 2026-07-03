@@ -19,6 +19,7 @@ interface DisciplinaBloco {
     dis_nome: string;
     valores: Record<string, Record<string, { media: number | null; cnc_id: number | null; faltas: number | null; tipo: string | null }>>;
     calc: Record<string, Record<string, CalcCel>>;
+    recuperacoes: Record<string, number>;
 }
 // auto = média/conceito vindo do cálculo do diário (não é override salvo); vira override ao editar.
 interface CelVal { media: number | string | null; cnc_id: number | null; faltas: number | string | null; tipo: string | null; auto: boolean }
@@ -64,6 +65,16 @@ const calc = reactive<Record<string, CalcCel>>({});
 const status = reactive<Record<string, 'idle' | 'saving' | 'saved' | 'error'>>({});
 const timers: Record<string, number> = {};
 
+// Recuperação final por disciplina/aluno: recs[`${dis}|${aln}`] = valor.
+const recs = reactive<Record<string, number | string | null>>({});
+const rck = (dis: number, aln: number) => `${dis}|${aln}`;
+const recFinalNum = (dis: number, aln: number): number | null => {
+    const r = recs[rck(dis, aln)];
+    if (r === null || r === '' || r === undefined) return null;
+    const n = Number(r);
+    return Number.isNaN(n) ? null : n;
+};
+
 const csrf = (): Record<string, string> => {
     const m = document.cookie.match(/XSRF-TOKEN=([^;]+)/);
     return m ? { 'X-XSRF-TOKEN': decodeURIComponent(m[1]) } : {};
@@ -101,6 +112,7 @@ function resetGrade() {
     Object.keys(vals).forEach((k) => delete vals[k]);
     Object.keys(calc).forEach((k) => delete calc[k]);
     Object.keys(status).forEach((k) => delete status[k]);
+    Object.keys(recs).forEach((k) => delete recs[k]);
 }
 
 // Cálculo aplicável à célula: completo E do mesmo tipo selecionado (numérica × conceitual).
@@ -153,6 +165,11 @@ async function carregar() {
         alunos.value = data.alunos ?? [];
         conceitos.value = data.conceitos ?? [];
         disciplinas.value = data.disciplinas ?? [];
+        // Recuperações finais lançadas.
+        for (const d of disciplinas.value) {
+            const rmap = (d.recuperacoes ?? {}) as Record<string, number>;
+            for (const aln of Object.keys(rmap)) recs[rck(d.dis_id, Number(aln))] = rmap[aln];
+        }
         // Médias calculadas do diário (apenas células completas). Independem do tipo selecionado.
         for (const d of disciplinas.value) {
             const cmap = d.calc ?? {};
@@ -249,7 +266,12 @@ const mediaFinal = (dis: number, aln: number): string | null => {
         if (Number.isNaN(n)) return null;
         notas.push(n);
     }
-    const media = roundMeio(notas.reduce((s, v) => s + v, 0) / us.length);
+    let media = roundMeio(notas.reduce((s, v) => s + v, 0) / us.length);
+    // Recuperação final (só numérica): vale como MF se lançada e MAIOR que a média obtida.
+    if (entrada.value === 'numerica') {
+        const rec = recFinalNum(dis, aln);
+        if (rec !== null && rec > media) media = roundMeio(rec);
+    }
     return entrada.value === 'faixa' ? faixaSigla(media) : media.toFixed(1);
 };
 
@@ -370,6 +392,38 @@ function onInputMedia(dis: number, aln: number, uni: number) {
     onInput(dis, aln, uni);
 }
 
+// Recuperação final: bloqueia > 10 (mesma regra) + salva com debounce.
+function onRecInput(dis: number, aln: number, e: Event) {
+    const el = e.target as HTMLInputElement;
+    const v = el.value;
+    if (v !== '' && !Number.isNaN(Number(v)) && (Number(v) > 10 || Number(v) < 0)) {
+        const s = String(v).slice(0, -1);
+        el.value = (s === '' || s === '-' || s === '.') ? '' : s;
+    }
+    recs[rck(dis, aln)] = el.value === '' ? null : el.value;
+    const key = `rec|${rck(dis, aln)}`;
+    if (timers[key]) clearTimeout(timers[key]);
+    timers[key] = window.setTimeout(() => salvarRecuperacao(dis, aln), 1000);
+}
+
+async function salvarRecuperacao(dis: number, aln: number) {
+    const raw = recs[rck(dis, aln)];
+    const valor = raw === '' || raw === null || raw === undefined ? null : Math.round(Number(raw) * 100) / 100;
+    const key = `rec|${rck(dis, aln)}`;
+    status[key] = 'saving';
+    try {
+        const r = await fetch('/secretaria/lancamento-manual/salvar-recuperacao', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json', ...csrf() },
+            credentials: 'same-origin',
+            body: JSON.stringify({ tur_id: turId.value, dis_id: dis, aln_id: aln, valor }),
+        });
+        status[key] = r.ok ? 'saved' : 'error';
+    } catch {
+        status[key] = 'error';
+    }
+}
+
 const pronto = computed(() => !!turId.value);
 const stKey = (dis: number, aln: number, uni: number) => `${dis}|${aln}|${uni}`;
 
@@ -468,6 +522,7 @@ const toggleTodas = () => {
                                 <tr>
                                     <th rowspan="2" class="sticky left-0 top-0 z-30 min-w-[220px] border-b bg-muted/90 px-3 py-1.5 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground backdrop-blur">Aluno</th>
                                     <th v-for="u in unidades" :key="u.uni_id" colspan="2" class="border-b border-l bg-muted/90 px-2 py-1 text-center text-xs font-semibold backdrop-blur">{{ u.label }}</th>
+                                    <th v-if="entrada === 'numerica'" rowspan="2" class="sticky top-0 z-20 border-b border-l bg-amber-500 px-2 py-1.5 text-center text-xs font-semibold uppercase tracking-wide text-white backdrop-blur">Rec.<br />Final</th>
                                     <th rowspan="2" class="sticky right-0 top-0 z-30 border-b border-l bg-indigo-600 px-3 py-1.5 text-center text-xs font-semibold uppercase tracking-wide text-white backdrop-blur">Média<br />Final</th>
                                 </tr>
                                 <tr>
@@ -479,7 +534,7 @@ const toggleTodas = () => {
                             </thead>
                             <tbody>
                                 <tr v-if="!alunosFiltrados.length">
-                                    <td :colspan="unidades.length * 2 + 2" class="px-4 py-8 text-center text-sm text-muted-foreground">Nenhum aluno encontrado.</td>
+                                    <td :colspan="unidades.length * 2 + 2 + (entrada === 'numerica' ? 1 : 0)" class="px-4 py-8 text-center text-sm text-muted-foreground">Nenhum aluno encontrado.</td>
                                 </tr>
                                 <tr v-for="(a, i) in alunosFiltrados" :key="a.aln_id" class="group">
                                     <td :class="['sticky left-0 z-10 border-b px-3 py-1.5', i % 2 ? 'bg-muted/30' : 'bg-card', 'group-hover:bg-indigo-50/70 dark:group-hover:bg-indigo-950/40']">
@@ -492,7 +547,7 @@ const toggleTodas = () => {
                                         </div>
                                     </td>
                                     <template v-if="bloqueado(bloco.dis_id, a.aln_id)">
-                                        <td :colspan="unidades.length * 2 + 1" :class="['border-b border-l px-3 py-2 text-center', i % 2 ? 'bg-muted/10' : '']">
+                                        <td :colspan="unidades.length * 2 + 1 + (entrada === 'numerica' ? 1 : 0)" :class="['border-b border-l px-3 py-2 text-center', i % 2 ? 'bg-muted/10' : '']">
                                             <span class="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-xs font-medium text-amber-800 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
                                                 <Lock class="size-3.5" />
                                                 Aluno tem notas {{ tipoLancadoLabel(bloco.dis_id, a.aln_id) }} lançadas
@@ -536,6 +591,17 @@ const toggleTodas = () => {
                                             />
                                         </td>
                                     </template>
+                                    <td v-if="entrada === 'numerica'" :class="['relative border-b border-l px-1.5 py-1 text-center', i % 2 ? 'bg-amber-50/40 dark:bg-amber-950/10' : 'bg-amber-50/20 dark:bg-amber-950/5']">
+                                        <input
+                                            :value="recs[rck(bloco.dis_id, a.aln_id)] ?? ''"
+                                            type="number" step="0.01" min="0" max="10"
+                                            :disabled="bloqueado(bloco.dis_id, a.aln_id)"
+                                            title="Recuperação final — vale como Média Final se maior que a média obtida."
+                                            class="h-8 w-16 rounded-md border border-amber-300 bg-background px-1.5 text-center text-sm tabular-nums focus:outline-none focus:ring-1 focus:ring-amber-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-amber-800"
+                                            @input="onRecInput(bloco.dis_id, a.aln_id, $event)"
+                                        />
+                                        <span v-if="status[`rec|${rck(bloco.dis_id, a.aln_id)}`] === 'saving'" class="absolute right-0.5 top-0.5"><Loader2 class="size-3 animate-spin text-amber-500" /></span>
+                                    </td>
                                     <td :class="['sticky right-0 z-10 border-b border-l px-3 py-1.5 text-center text-sm font-semibold tabular-nums', i % 2 ? 'bg-muted/30' : 'bg-card', 'group-hover:bg-indigo-50/70 dark:group-hover:bg-indigo-950/40']">
                                         <span v-if="mediaFinal(bloco.dis_id, a.aln_id) !== null" class="text-indigo-700 dark:text-indigo-300">{{ mediaFinal(bloco.dis_id, a.aln_id) }}</span>
                                         <span v-else class="text-muted-foreground">—</span>

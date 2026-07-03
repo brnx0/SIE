@@ -98,6 +98,9 @@ class BoletimController extends Controller
             }
         }
 
+        // Recuperação final: [dis][aln] => valor (vale como MF se maior).
+        $recs = CalculoNota::recuperacoesFinais((int) $turma->tur_id);
+
         $alunos = Matricula::query()
             ->where('tma_tur_id', $turma->tur_id)
             ->where('tma_situacao', Matricula::SITUACAO_ATIVA)
@@ -108,12 +111,12 @@ class BoletimController extends Controller
             ->filter(fn ($m) => $m->aluno)
             ->sortBy(fn ($m) => Str::ascii(mb_strtolower((string) $m->aluno->aln_nome)))
             ->values()
-            ->map(function (Matricula $m) use ($disciplinas, $unidades, $res, $faltas) {
+            ->map(function (Matricula $m) use ($disciplinas, $unidades, $res, $faltas, $recs) {
                 $alnId = (int) $m->aluno->aln_id;
                 $totaisFaltas = [];
                 $totalFaltasGeral = 0;
 
-                $linhas = $disciplinas->map(function ($d) use ($alnId, $unidades, $res, $faltas, &$totaisFaltas, &$totalFaltasGeral) {
+                $linhas = $disciplinas->map(function ($d) use ($alnId, $unidades, $res, $faltas, $recs, &$totaisFaltas, &$totalFaltasGeral) {
                     $valores = [];
                     $porUnidade = [];
                     $totalDis = 0;
@@ -127,7 +130,7 @@ class BoletimController extends Controller
                         $totaisFaltas[$uid] = ($totaisFaltas[$uid] ?? 0) + $f;
                     }
                     $totalFaltasGeral += $totalDis;
-                    $anual = $this->celula(CalculoNota::consolidar($porUnidade));
+                    $anual = $this->celula(CalculoNota::consolidar($porUnidade, $recs[$d->dis_id][$alnId] ?? null));
 
                     return [
                         'dis_nome'     => $d->dis_nome,

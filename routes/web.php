@@ -532,6 +532,7 @@ Route::middleware(['auth', 'verified', 'tela'])->group(function () {
         Route::get('lancamento-manual/disciplinas', [LancamentoManualController::class, 'disciplinas'])->name('lancamento-manual.disciplinas');
         Route::get('lancamento-manual/contexto', [LancamentoManualController::class, 'contexto'])->name('lancamento-manual.contexto');
         Route::post('lancamento-manual/salvar', [LancamentoManualController::class, 'salvar'])->name('lancamento-manual.salvar');
+        Route::post('lancamento-manual/salvar-recuperacao', [LancamentoManualController::class, 'salvarRecuperacao'])->name('lancamento-manual.salvar-recuperacao');
 
         // Interesse de renovação de matrícula
         Route::get('renovacao-matricula', [RenovacaoMatriculaController::class, 'index'])->name('renovacao-matricula.index');

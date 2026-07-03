@@ -142,8 +142,10 @@ class BoletimAvaliativoController extends Controller
 
             // Faltas totais na matéria (todas as unidades): aln => qtd (manual tem precedência).
             $faltas = FaltasAluno::totaisDisciplina((int) $turma->tur_id, $disId, $unidades->pluck('uni_id')->all());
+            // Recuperação final desta disciplina: [aln] => valor (vale como MF se maior).
+            $recRow = CalculoNota::recuperacoesFinais((int) $turma->tur_id)[$disId] ?? [];
 
-            $linhas = $alunos->map(function (Matricula $m) use ($unidades, $res, $faltas, $mediaAprov) {
+            $linhas = $alunos->map(function (Matricula $m) use ($unidades, $res, $faltas, $mediaAprov, $recRow) {
                 $alnId = (int) $m->aluno->aln_id;
                 $saiu = $m->tma_situacao !== Matricula::SITUACAO_ATIVA;
 
@@ -155,7 +157,7 @@ class BoletimAvaliativoController extends Controller
                     $texto = $this->celula($r)['texto'];
                     $medias[$u['uni_id']] = ($saiu || $texto === '—') ? '' : $texto;
                 }
-                $consol = CalculoNota::consolidar($porUnidade);
+                $consol = CalculoNota::consolidar($porUnidade, $recRow[$alnId] ?? null);
                 $mfTexto = $this->celula($consol)['texto'];
 
                 // Resultado: saída => situação; numérica => compara com a média; senão placeholder.

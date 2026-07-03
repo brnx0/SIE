@@ -273,6 +273,14 @@ ALUNO_FILIACAO_FIELDS.forEach((field) => {
     );
 });
 
+// Cartão do SUS: só dígitos, máx. 15.
+const onCartaoSusInput = (e: Event) => {
+    const el = e.target as HTMLInputElement;
+    const v = el.value.replace(/\D/g, '').slice(0, 15);
+    if (el.value !== v) el.value = v;
+    form.saude.als_cartao_sus = v;
+};
+
 const activeTab = ref<TabId>('dados-pessoais');
 
 const tabHasError = (tab: TabId): boolean => {
@@ -950,7 +958,7 @@ const initials = computed(() => {
                             </div>
                             <div class="grid gap-2 sm:col-span-2">
                                 <Label for="als_cartao_sus">Número do Cartão do SUS</Label>
-                                <Input id="als_cartao_sus" v-model="form.saude.als_cartao_sus" maxlength="20" />
+                                <Input id="als_cartao_sus" v-model="form.saude.als_cartao_sus" maxlength="15" inputmode="numeric" @input="onCartaoSusInput" />
                                 <InputError :message="(form.errors as Record<string, string>)['saude.als_cartao_sus']" />
                             </div>
 

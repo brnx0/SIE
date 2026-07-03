@@ -107,6 +107,9 @@ class AtaFinalController extends Controller
             }
         }
 
+        // Recuperação final: [dis][aln] => valor (vale como MF se maior).
+        $recs = CalculoNota::recuperacoesFinais((int) $turma->tur_id);
+
         $alunos = Matricula::query()
             ->where('tma_tur_id', $turma->tur_id)
             ->whereNull('tma_deleted_at')
@@ -119,7 +122,7 @@ class AtaFinalController extends Controller
             ->unique(fn ($m) => $m->aluno->aln_id)
             ->sortBy(fn ($m) => $m->aluno->aln_nome, SORT_FLAG_CASE | SORT_NATURAL)
             ->values()
-            ->map(function (Matricula $m) use ($disciplinas, $uniIds, $res, $mediaRef) {
+            ->map(function (Matricula $m) use ($disciplinas, $uniIds, $res, $mediaRef, $recs) {
                 $alnId     = (int) $m->aluno->aln_id;
                 $ativo     = $m->tma_situacao === Matricula::SITUACAO_ATIVA;
                 $encerrado = $ativo && $m->tma_dt_encerramento !== null;
@@ -134,13 +137,13 @@ class AtaFinalController extends Controller
                     ? ($m->situacaoSaida?->tas_descricao_enturmacao ?: $m->situacaoSaida?->tas_descricao)
                     : null;
 
-                $celulas = $disciplinas->map(function ($d) use ($alnId, $uniIds, $res, $conselho, $mediaRef) {
+                $celulas = $disciplinas->map(function ($d) use ($alnId, $uniIds, $res, $conselho, $mediaRef, $recs) {
                     $porUni = [];
                     foreach ($uniIds as $u) {
                         $porUni[$u] = $res[$d->dis_id][$u][$alnId] ?? ['tipo' => null, 'valor' => null, 'conceito' => null];
                     }
 
-                    $consol = CalculoNota::consolidar($porUni);
+                    $consol = CalculoNota::consolidar($porUni, $recs[$d->dis_id][$alnId] ?? null);
                     // Aprovado pelo Conselho: MF mínima = média da escola/rede nas disciplinas abaixo dela.
                     if ($conselho && $consol['tipo'] === 'numerica' && $consol['valor'] !== null && (float) $consol['valor'] < $mediaRef) {
                         $consol['valor'] = $mediaRef;

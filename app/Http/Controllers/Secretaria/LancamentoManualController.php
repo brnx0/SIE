@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Secretaria;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Relatorio\Concerns\NotaLookups;
 use App\Models\Diario\NotaManual;
+use App\Models\Diario\RecuperacaoFinal;
 use App\Models\Matricula\Matricula;
 use App\Models\Parametro\AnoLetivo;
 use App\Models\Parametro\Conceito;
@@ -118,11 +119,18 @@ class LancamentoManualController extends Controller
         $disIds  = $grade->pluck('dis_id')->map(fn ($v) => (int) $v)->unique()->values()->all();
         $calcAll = CalculoNota::calculadoTurma($turId, $disIds, $uniIds);
 
+        // Recuperação final lançada: [dis_id][aln_id] => valor.
+        $recByDis = [];
+        foreach (RecuperacaoFinal::where('rcf_tur_id', $turId)->when($disId, fn ($q) => $q->where('rcf_dis_id', $disId))->get(['rcf_dis_id', 'rcf_aln_id', 'rcf_valor']) as $r) {
+            $recByDis[(int) $r->rcf_dis_id][(int) $r->rcf_aln_id] = (float) $r->rcf_valor;
+        }
+
         $disciplinas = $grade->map(fn ($d) => [
-            'dis_id'   => (int) $d->dis_id,
-            'dis_nome' => $d->dis_nome,
-            'valores'  => $valByDis[(int) $d->dis_id] ?? (object) [],
-            'calc'     => $calcAll[(int) $d->dis_id] ?? (object) [],
+            'dis_id'        => (int) $d->dis_id,
+            'dis_nome'      => $d->dis_nome,
+            'valores'       => $valByDis[(int) $d->dis_id] ?? (object) [],
+            'calc'          => $calcAll[(int) $d->dis_id] ?? (object) [],
+            'recuperacoes'  => $recByDis[(int) $d->dis_id] ?? (object) [],
         ])->values();
 
         return response()->json([
@@ -223,6 +231,38 @@ class LancamentoManualController extends Controller
             'nmn_cnc_id'  => $cncId,
             'nmn_faltas'  => $faltas,
             'nmn_user_id' => (int) $request->user()->id,
+        ]);
+
+        return response()->json(['ok' => true]);
+    }
+
+    /** Upsert da recuperação final (turma, disciplina, aluno). Vazio → remove. */
+    public function salvarRecuperacao(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'tur_id' => ['required', 'integer', 'exists:edu_turma,tur_id'],
+            'dis_id' => ['required', 'integer', 'exists:edu_disciplina,dis_id'],
+            'aln_id' => ['required', 'integer', 'exists:edu_aluno,aln_id'],
+            'valor'  => ['nullable', 'numeric', 'min:0', 'max:10'],
+        ]);
+
+        $this->autorizarTurma((int) $data['tur_id']);
+        $turma = DB::table('edu_turma')->where('tur_id', $data['tur_id'])->first(['tur_esc_id', 'tur_anl_id']);
+        abort_unless($turma, 404);
+
+        $chave = ['rcf_tur_id' => $data['tur_id'], 'rcf_dis_id' => $data['dis_id'], 'rcf_aln_id' => $data['aln_id']];
+
+        if (($data['valor'] ?? null) === null || $data['valor'] === '') {
+            RecuperacaoFinal::where($chave)->delete();
+
+            return response()->json(['ok' => true, 'removido' => true]);
+        }
+
+        RecuperacaoFinal::updateOrCreate($chave, [
+            'rcf_anl_id'  => $turma->tur_anl_id,
+            'rcf_esc_id'  => $turma->tur_esc_id,
+            'rcf_valor'   => round((float) $data['valor'], 2),
+            'rcf_user_id' => (int) $request->user()->id,
         ]);
 
         return response()->json(['ok' => true]);

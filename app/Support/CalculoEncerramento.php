@@ -79,11 +79,14 @@ class CalculoEncerramento
             }
         }
 
+        // Recuperação final lançada: [dis][aln] => valor (vale como MF se maior).
+        $recs = CalculoNota::recuperacoesFinais($turId);
+
         // Disciplinas reprovadas em NOTA por aluno.
-        $reprovDis = function (int $aln) use ($disIds, $byDis, $mediaRef, $pesoMin): array {
+        $reprovDis = function (int $aln) use ($disIds, $byDis, $mediaRef, $pesoMin, $recs): array {
             $lista = [];
             foreach ($disIds as $dis) {
-                $final = CalculoNota::consolidar($byDis[$dis][$aln] ?? []);
+                $final = CalculoNota::consolidar($byDis[$dis][$aln] ?? [], $recs[$dis][$aln] ?? null);
                 if ($final['tipo'] === null) {
                     $lista[] = $dis; // sem nota → não atingiu a média
                 } elseif ($final['tipo'] === 'numerica') {

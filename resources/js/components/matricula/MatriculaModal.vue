@@ -138,6 +138,14 @@ const alertarAcentos     = computed(() => !!params.value.alertar_acentos_nomes);
 const tabSaudeDisponivel = computed(() => possuiDeficiencia.value);
 
 const stripAccents = (str: string) => str.normalize('NFD').replace(/[̀-ͯ]/g, '');
+
+// Cartão do SUS: só dígitos, máx. 15.
+const onCartaoSusInput = (e: Event) => {
+    const el = e.target as HTMLInputElement;
+    const v = el.value.replace(/\D/g, '').slice(0, 15);
+    if (el.value !== v) el.value = v;
+    formSaude.als_cartao_sus = v;
+};
 const municipioNascimentoSelecionado = ref<Municipio | null>(null);
 
 const municipioNascimentoInicial = computed(() =>
@@ -853,7 +861,7 @@ const selectClass = 'flex h-10 w-full rounded-md border border-input bg-backgrou
                             </div>
                             <div class="grid gap-2 sm:col-span-2">
                                 <Label for="als_cartao_sus">Nº Cartão do SUS</Label>
-                                <Input id="als_cartao_sus" v-model="formSaude.als_cartao_sus" maxlength="20" />
+                                <Input id="als_cartao_sus" v-model="formSaude.als_cartao_sus" maxlength="15" inputmode="numeric" @input="onCartaoSusInput" />
                             </div>
                             <div class="grid gap-2 sm:col-span-2">
                                 <Label for="als_alergia_a">Alergia a</Label>

@@ -164,7 +164,7 @@ class CalculoNota
      * @param  array<int, array{tipo:?string, valor:?float, conceito:?array}>  $porUnidade  resultados [uni_id => result] de UM aluno
      * @return array{tipo:?string, valor:?float, conceito:?array}
      */
-    public static function consolidar(array $porUnidade): array
+    public static function consolidar(array $porUnidade, ?float $recFinal = null): array
     {
         $validos = array_filter($porUnidade, fn ($r) => $r['tipo'] !== null);
         if (empty($validos)) {
@@ -202,7 +202,25 @@ class CalculoNota
         // Numérica: arredonda a média final ao 0,5 mais próximo.
         $media = self::roundMeio(array_sum($valores) / count($valores));
 
+        // Recuperação final: vale como MF se lançada e MAIOR que a média obtida.
+        if ($recFinal !== null && $recFinal > $media) {
+            $media = self::roundMeio($recFinal);
+        }
+
         return ['tipo' => $tipo, 'valor' => $media, 'conceito' => null];
+    }
+
+    /**
+     * Recuperações finais lançadas na turma: [dis_id][aln_id] => valor.
+     */
+    public static function recuperacoesFinais(int $turId): array
+    {
+        $out = [];
+        foreach (\App\Models\Diario\RecuperacaoFinal::where('rcf_tur_id', $turId)->get(['rcf_dis_id', 'rcf_aln_id', 'rcf_valor']) as $r) {
+            $out[(int) $r->rcf_dis_id][(int) $r->rcf_aln_id] = (float) $r->rcf_valor;
+        }
+
+        return $out;
     }
 
     // ───────────────────────────── internals ─────────────────────────────
