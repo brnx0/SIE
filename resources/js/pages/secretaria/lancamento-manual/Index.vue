@@ -305,9 +305,9 @@ async function salvar(dis: number, aln: number, uni: number) {
     // Célula "auto" (média calculada não editada) NÃO vira override: envia média/conceito nulos,
     // preservando só as faltas. A secretaria editar a média/conceito desmarca o auto.
     let media = c.auto || entrada.value === 'conceito' ? null : norm(c.media);
-    // Média final arredondada ao 0,5 (mesma regra do diário).
+    // Período: numérica NÃO arredonda (só a média final ao 0,5); conceitual-faixa mantém 0,5.
     if (media !== null && media !== '') {
-        media = Math.round(Number(media) * 2) / 2;
+        media = entrada.value === 'faixa' ? Math.round(Number(media) * 2) / 2 : Math.round(Number(media) * 100) / 100;
         c.media = media;
     }
     const cncId = !c.auto && entrada.value === 'conceito' ? norm(c.cnc_id) : null;
@@ -357,7 +357,16 @@ function onInput(dis: number, aln: number, uni: number) {
 
 // Edição da média/conceito desmarca o auto (passa a ser override salvo).
 function onInputMedia(dis: number, aln: number, uni: number) {
-    cel(dis, aln, uni).auto = false;
+    const c = cel(dis, aln, uni);
+    // Não deixa passar de 10 (nem negativo). NÃO clampa: rejeita o excesso removendo o
+    // último dígito digitado (ex.: "40" volta a "4").
+    const v = c.media;
+    if (v !== null && (v as any) !== '' && !Number.isNaN(Number(v)) && (Number(v) > 10 || Number(v) < 0)) {
+        const s = String(v).slice(0, -1);
+        c.media = (s === '' || s === '-' || s === '.') ? null : s;
+        return;
+    }
+    c.auto = false;
     onInput(dis, aln, uni);
 }
 

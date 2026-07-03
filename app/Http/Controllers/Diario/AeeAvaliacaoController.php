@@ -38,7 +38,7 @@ class AeeAvaliacaoController extends Controller
             ->where('tma_tur_id', $turId)
             ->where(function ($q) {
                 $q->where('tma_situacao', Matricula::SITUACAO_ATIVA)
-                  ->orWhereNotNull('tma_tas_cod_saida');
+                  ->orWhere(fn ($s) => $s->whereNotNull('tma_tas_cod_saida')->where('tma_tas_cod_saida', '!=', Matricula::TAS_REMANEJADO));
             })
             ->whereNull('tma_deleted_at')
             ->with('aluno:aln_id,aln_nome,aln_nr_matricula')

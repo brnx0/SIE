@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
-class MapaNotasController extends Controller
+class NotasPorUnidadeController extends Controller
 {
     use NotaLookups;
 
@@ -25,7 +25,7 @@ class MapaNotasController extends Controller
     {
         $user = auth()->user();
 
-        return Inertia::render('relatorios/MapaNotas/Form', [
+        return Inertia::render('relatorios/NotasPorUnidade/Form', [
             'anosLetivos' => AnoLetivo::orderByDesc('anl_ano')->get(['anl_id', 'anl_ano']),
             'escolas'     => UserAccess::escolasVisiveis($user),
             'userEscola'  => UserAccess::escolaDefault($user),
@@ -131,7 +131,7 @@ class MapaNotasController extends Controller
             ? trim(($fmt($uniSel->uni_dt_inicio) ?? '') . ($uniSel->uni_dt_fim ? ' até ' . $fmt($uniSel->uni_dt_fim) : ''))
             : null;
 
-        return Inertia::render('relatorios/MapaNotas/Resultado', [
+        return Inertia::render('relatorios/NotasPorUnidade/Resultado', [
             'parametros'  => $p ? [
                 'nome_entidade'      => $p->par_nome_entidade,
                 'msg_cab_secretaria' => $p->par_msg_cab_secretaria,

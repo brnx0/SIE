@@ -173,8 +173,15 @@ class LancamentoManualController extends Controller
             if (($data['media'] ?? null) !== null && (float) $data['media'] > 10) {
                 throw ValidationException::withMessages(['media' => 'A média não pode passar de 10.']);
             }
-            // Média final arredondada ao 0,5 mais próximo (mesma regra do diário).
-            $media = ($data['media'] ?? null) !== null ? round(((float) $data['media']) * 2) / 2 : null;
+            // Média do PERÍODO: numérica NÃO arredonda (só a média final arredonda ao 0,5);
+            // conceitual-faixa mantém 0,5 p/ mapear na faixa.
+            if (($data['media'] ?? null) === null) {
+                $media = null;
+            } elseif ($tipo === 'numerica') {
+                $media = round((float) $data['media'], 2);
+            } else {
+                $media = round(((float) $data['media']) * 2) / 2;
+            }
         }
         $faltas = ($data['faltas'] ?? null) !== null ? (int) $data['faltas'] : null;
 

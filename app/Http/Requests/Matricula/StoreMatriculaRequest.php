@@ -30,6 +30,14 @@ class StoreMatriculaRequest extends FormRequest
                 $aluno['aln_nome'] = mb_strtoupper($nome, 'UTF-8');
             }
 
+            // Filiação segue o parâmetro de caixa alta: marcado → MAIÚSCULO, senão → minúsculo.
+            $caixaAlta = fn ($v) => is_string($v) && $v !== ''
+                ? ($params->par_fl_nome_pessoa_caixa_alta ? mb_strtoupper($v, 'UTF-8') : mb_strtolower($v, 'UTF-8'))
+                : $v;
+            foreach (['aln_filiacao_1', 'aln_filiacao_2'] as $f) {
+                if (!empty($aluno[$f])) $aluno[$f] = $caixaAlta($aluno[$f]);
+            }
+
             if (!empty($aluno['aln_cpf'])) $aluno['aln_cpf'] = $strip($aluno['aln_cpf']);
             if (!empty($aluno['aln_cep'])) $aluno['aln_cep'] = $strip($aluno['aln_cep']);
             if (!empty($aluno['aln_nis'])) $aluno['aln_nis'] = $strip($aluno['aln_nis']);

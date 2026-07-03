@@ -29,6 +29,9 @@ class AtaFinalController extends Controller
     /** Situações de saída = APROVAÇÃO (para destaque). */
     private const APROVADO = [6, 7];
 
+    /** Aprovado pelo Conselho. */
+    private const CONSELHO = 7;
+
     public function form(): Response
     {
         $user = auth()->user();
@@ -83,6 +86,11 @@ class AtaFinalController extends Controller
 
         $uniIds = DB::table('cfg_unidade')->where('uni_anl_id', $data['anl_id'])->orderBy('uni_numero')->pluck('uni_id')->map(fn ($v) => (int) $v)->all();
 
+        // Média mínima de aprovação: da ESCOLA (cfg_media_escola) ou, na falta, a da REDE (ano).
+        // Usada como MF dos aprovados pelo Conselho nas disciplinas em que ficaram abaixo dela.
+        $mdeMedia = DB::table('cfg_media_escola')->where('mde_anl_id', $data['anl_id'])->where('mde_esc_id', $data['esc_id'])->value('mde_media');
+        $mediaRef = $mdeMedia !== null ? (float) $mdeMedia : (float) $ano->anl_media_geral;
+
         $disciplinas = DB::table('edu_grade_disciplinar as gd')
             ->join('edu_disciplina as d', 'd.dis_id', '=', 'gd.grd_dis_id')
             ->where('gd.grd_ser_id', $turma->tur_ser_id)
@@ -102,6 +110,7 @@ class AtaFinalController extends Controller
         $alunos = Matricula::query()
             ->where('tma_tur_id', $turma->tur_id)
             ->whereNull('tma_deleted_at')
+            ->semRemanejado()
             ->with('aluno:aln_id,aln_nome,aln_nr_matricula', 'situacaoSaida:tas_cod,tas_descricao,tas_descricao_enturmacao')
             ->get()
             ->filter(fn ($m) => $m->aluno)
@@ -110,12 +119,13 @@ class AtaFinalController extends Controller
             ->unique(fn ($m) => $m->aluno->aln_id)
             ->sortBy(fn ($m) => $m->aluno->aln_nome, SORT_FLAG_CASE | SORT_NATURAL)
             ->values()
-            ->map(function (Matricula $m) use ($disciplinas, $uniIds, $res) {
+            ->map(function (Matricula $m) use ($disciplinas, $uniIds, $res, $mediaRef) {
                 $alnId     = (int) $m->aluno->aln_id;
                 $ativo     = $m->tma_situacao === Matricula::SITUACAO_ATIVA;
                 $encerrado = $ativo && $m->tma_dt_encerramento !== null;
                 $cod       = $m->tma_tas_cod_saida !== null ? (int) $m->tma_tas_cod_saida : null;
                 $aprovado  = $encerrado && $cod !== null && in_array($cod, self::APROVADO, true);
+                $conselho  = $encerrado && $cod === self::CONSELHO;
 
                 // Label da situação de saída pela coluna de ENTURMAÇÃO (edu_turma_aluno_situacao).
                 // Cobre tanto o resultado do encerramento (Aprovado/Reprovado) quanto a saída da
@@ -124,13 +134,19 @@ class AtaFinalController extends Controller
                     ? ($m->situacaoSaida?->tas_descricao_enturmacao ?: $m->situacaoSaida?->tas_descricao)
                     : null;
 
-                $celulas = $disciplinas->map(function ($d) use ($alnId, $uniIds, $res) {
+                $celulas = $disciplinas->map(function ($d) use ($alnId, $uniIds, $res, $conselho, $mediaRef) {
                     $porUni = [];
                     foreach ($uniIds as $u) {
                         $porUni[$u] = $res[$d->dis_id][$u][$alnId] ?? ['tipo' => null, 'valor' => null, 'conceito' => null];
                     }
 
-                    return $this->celula(CalculoNota::consolidar($porUni));
+                    $consol = CalculoNota::consolidar($porUni);
+                    // Aprovado pelo Conselho: MF mínima = média da escola/rede nas disciplinas abaixo dela.
+                    if ($conselho && $consol['tipo'] === 'numerica' && $consol['valor'] !== null && (float) $consol['valor'] < $mediaRef) {
+                        $consol['valor'] = $mediaRef;
+                    }
+
+                    return $this->celula($consol);
                 })->values();
 
                 return [

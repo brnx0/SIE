@@ -205,9 +205,10 @@ const destinoLabel = computed(() => {
 });
 
 function submit() {
+    // Backend redireciona para movimentacoes.show do registro salvo — deixa a
+    // navegação seguir o redirect (não forçar volta pra listagem).
     form.post('/movimentacoes', {
         preserveScroll: true,
-        onSuccess: () => router.visit('/movimentacoes'),
     });
 }
 </script>

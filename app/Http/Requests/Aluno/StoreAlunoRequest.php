@@ -38,9 +38,16 @@ class StoreAlunoRequest extends FormRequest
             $nomeSocial = mb_strtoupper($nomeSocial, 'UTF-8');
         }
 
+        // Filiação segue o parâmetro de caixa alta: marcado → MAIÚSCULO, senão → minúsculo.
+        $caixaAlta = fn ($v) => is_string($v) && $v !== ''
+            ? ($params->par_fl_nome_pessoa_caixa_alta ? mb_strtoupper($v, 'UTF-8') : mb_strtolower($v, 'UTF-8'))
+            : $v;
+
         $this->merge([
             'aln_nome'        => $nome,
             'aln_nome_social' => $this->filled('aln_nome_social') ? $nomeSocial : null,
+            'aln_filiacao_1'  => $caixaAlta($this->input('aln_filiacao_1')),
+            'aln_filiacao_2'  => $this->filled('aln_filiacao_2') ? $caixaAlta($this->input('aln_filiacao_2')) : null,
             'aln_cpf' => $this->filled('aln_cpf') ? $strip($this->input('aln_cpf')) : null,
             'aln_cep' => $this->filled('aln_cep') ? $strip($this->input('aln_cep')) : null,
             'aln_telefone' => $this->filled('aln_telefone') ? $strip($this->input('aln_telefone')) : null,

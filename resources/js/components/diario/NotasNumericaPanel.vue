@@ -194,12 +194,17 @@ const salvarNota = async (row: AlunoRow, ava: Avaliacao) => {
 
 const aoDigitarNota = (row: AlunoRow, ava: Avaliacao) => {
     if (!periodoAberto.value || !turmaAberta.value || isFutura(ava) || row.bloqueado || saiuAntes(row, ava)) return;
-    // Não deixa passar do valor máximo da avaliação (nem negativo).
+    // Não deixa passar do valor máximo da avaliação (nem negativo). NÃO clampa pro
+    // máximo: rejeita o excesso removendo o último dígito digitado (ex.: "40" volta a "4").
     const v = row.notas[ava.ava_id];
     if (v !== null && (v as any) !== '' && !Number.isNaN(Number(v))) {
         const max = Number(ava.ava_valor);
-        if (Number(v) > max) row.notas[ava.ava_id] = max;
-        else if (Number(v) < 0) row.notas[ava.ava_id] = 0;
+        const n = Number(v);
+        if (n > max || n < 0) {
+            const s = String(v).slice(0, -1);
+            row.notas[ava.ava_id] = (s === '' || s === '-' || s === '.') ? null : (s as any);
+            return; // não agenda salvamento de valor inválido
+        }
     }
     const key = ck(row.aln_id, ava.ava_id);
     const st = ensureCell(key);

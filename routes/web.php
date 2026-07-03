@@ -18,7 +18,8 @@ use App\Http\Controllers\Relatorio\ParecerDescritivoController;
 use App\Http\Controllers\Relatorio\BoletimController;
 use App\Http\Controllers\Relatorio\ConteudoMinistradoController;
 use App\Http\Controllers\Relatorio\BoletimAvaliativoController;
-use App\Http\Controllers\Relatorio\MapaNotasController;
+use App\Http\Controllers\Relatorio\NotasPorUnidadeController;
+use App\Http\Controllers\Relatorio\MapaNotasDisciplinaController;
 use App\Http\Controllers\Relatorio\AtaFinalController;
 use App\Http\Controllers\Relatorio\DiagnosticoRelatorioController;
 use App\Http\Controllers\Relatorio\FinalEducacaoInfantilController;
@@ -224,10 +225,15 @@ Route::middleware(['auth', 'verified', 'tela'])->group(function () {
     Route::get('relatorios/boletim/gerar', [BoletimController::class, 'gerar'])->name('relatorios.boletim.gerar');
 
     // Mapa de notas da turma
-    Route::get('relatorios/mapa-notas', [MapaNotasController::class, 'form'])->name('relatorios.mapa-notas.form');
-    Route::get('relatorios/mapa-notas/turmas', [MapaNotasController::class, 'turmas'])->name('relatorios.mapa-notas.turmas');
-    Route::get('relatorios/mapa-notas/unidades', [MapaNotasController::class, 'unidades'])->name('relatorios.mapa-notas.unidades');
-    Route::get('relatorios/mapa-notas/gerar', [MapaNotasController::class, 'gerar'])->name('relatorios.mapa-notas.gerar');
+    Route::get('relatorios/notas-por-unidade', [NotasPorUnidadeController::class, 'form'])->name('relatorios.notas-por-unidade.form');
+    Route::get('relatorios/notas-por-unidade/turmas', [NotasPorUnidadeController::class, 'turmas'])->name('relatorios.notas-por-unidade.turmas');
+    Route::get('relatorios/notas-por-unidade/unidades', [NotasPorUnidadeController::class, 'unidades'])->name('relatorios.notas-por-unidade.unidades');
+    Route::get('relatorios/notas-por-unidade/gerar', [NotasPorUnidadeController::class, 'gerar'])->name('relatorios.notas-por-unidade.gerar');
+    Route::get('relatorios/mapa-notas-disciplina', [MapaNotasDisciplinaController::class, 'form'])->name('relatorios.mapa-notas-disciplina.form');
+    Route::get('relatorios/mapa-notas-disciplina/turmas', [MapaNotasDisciplinaController::class, 'turmas'])->name('relatorios.mapa-notas-disciplina.turmas');
+    Route::get('relatorios/mapa-notas-disciplina/disciplinas', [MapaNotasDisciplinaController::class, 'disciplinas'])->name('relatorios.mapa-notas-disciplina.disciplinas');
+    Route::get('relatorios/mapa-notas-disciplina/unidades', [MapaNotasDisciplinaController::class, 'unidades'])->name('relatorios.mapa-notas-disciplina.unidades');
+    Route::get('relatorios/mapa-notas-disciplina/gerar', [MapaNotasDisciplinaController::class, 'gerar'])->name('relatorios.mapa-notas-disciplina.gerar');
     Route::get('relatorios/ata-final', [AtaFinalController::class, 'form'])->name('relatorios.ata-final.form');
     Route::get('relatorios/ata-final/turmas', [AtaFinalController::class, 'turmas'])->name('relatorios.ata-final.turmas');
     Route::get('relatorios/ata-final/gerar', [AtaFinalController::class, 'gerar'])->name('relatorios.ata-final.gerar');

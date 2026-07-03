@@ -78,6 +78,7 @@ const localData = () => {
                     <div v-if="parametros?.msg_cab_estado" class="cab-linha">{{ parametros.msg_cab_estado }}</div>
                     <div v-if="parametros?.msg_cab_secretaria" class="cab-linha">{{ parametros.msg_cab_secretaria }}</div>
                     <div class="cab-entidade">{{ parametros?.nome_entidade ?? '—' }}</div>
+                    <div v-if="filtros.esc_nome" class="cab-escola">{{ filtros.esc_nome }}</div>
                     <div v-if="parametros?.endereco" class="cab-end">{{ parametros.endereco }}</div>
                 </div>
                 <div class="brasao">
@@ -187,6 +188,12 @@ const localData = () => {
     }
     .cab-entidade {
         font-size: 12pt;
+        font-weight: 700;
+        text-transform: uppercase;
+        margin: 1px 0;
+    }
+    .cab-escola {
+        font-size: 10.5pt;
         font-weight: 700;
         text-transform: uppercase;
         margin: 1px 0;

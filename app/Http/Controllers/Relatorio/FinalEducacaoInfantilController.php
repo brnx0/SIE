@@ -115,6 +115,7 @@ class FinalEducacaoInfantilController extends Controller
         return Matricula::query()
             ->where('tma_tur_id', $turId)
             ->whereNull('tma_deleted_at')
+            ->semRemanejado()
             ->with('aluno:aln_id,aln_nome,aln_nr_matricula,aln_dt_nascimento', 'situacaoSaida:tas_cod,tas_descricao,tas_descricao_enturmacao')
             ->get()
             ->filter(fn ($m) => $m->aluno)

@@ -254,8 +254,8 @@ class CalculoNota
             }
             $total = ($recNota !== null && $recNota > $soma) ? $recNota : $soma;
 
-            // Numérica: média final arredondada ao 0,5.
-            return ['tipo' => $tipo, 'valor' => self::roundMeio($total), 'conceito' => null, 'completo' => $completo];
+            // Numérica: média do PERÍODO sem arredondar (só a média final/anual arredonda ao 0,5).
+            return ['tipo' => $tipo, 'valor' => round($total, 2), 'conceito' => null, 'completo' => $completo];
         }
 
         // conceitual

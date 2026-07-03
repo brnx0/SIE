@@ -104,6 +104,7 @@ class FrequenciaMensalController extends Controller
         $matriculas = Matricula::query()
             ->where('tma_tur_id', $turma->tur_id)
             ->where('tma_situacao', '!=', Matricula::SITUACAO_CANCELADA)
+            ->semRemanejado()
             ->whereNull('tma_deleted_at')
             ->with('aluno:aln_id,aln_nome,aln_nr_matricula')
             ->get()

@@ -29,6 +29,8 @@ class Matricula extends Model
 
     const TAS_ENTRADA_NOVO = 1;
 
+    /** Saída p/ outra turma da mesma escola (aplica-se à turma de origem). Não deve listar no diário/relatórios. */
+    const TAS_REMANEJADO = 15;
 
     protected $fillable = [
         'tma_aln_id',
@@ -61,6 +63,18 @@ class Matricula extends Model
         'tma_dt_encerramento' => 'datetime',
         'tma_created_by_id'          => 'integer',
     ];
+
+    /**
+     * Exclui alunos REMANEJADOS (saíram p/ outra turma da mesma escola). Mantém
+     * ativos (saída nula) e demais saídas (transferido, evadido, etc.).
+     */
+    public function scopeSemRemanejado($query)
+    {
+        return $query->where(function ($w) {
+            $w->whereNull('tma_tas_cod_saida')
+              ->orWhere('tma_tas_cod_saida', '!=', self::TAS_REMANEJADO);
+        });
+    }
 
     public function aluno(): BelongsTo
     {

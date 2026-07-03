@@ -97,7 +97,7 @@ class BoletimAvaliativoController extends Controller
             ->where('tma_tur_id', $turma->tur_id)
             ->where(function ($q) {
                 $q->where('tma_situacao', Matricula::SITUACAO_ATIVA)
-                  ->orWhereNotNull('tma_tas_cod_saida');
+                  ->orWhere(fn ($s) => $s->whereNotNull('tma_tas_cod_saida')->where('tma_tas_cod_saida', '!=', Matricula::TAS_REMANEJADO));
             })
             ->whereNull('tma_deleted_at')
             ->with(['aluno:aln_id,aln_nome', 'situacaoSaida:tas_cod,tas_descricao'])

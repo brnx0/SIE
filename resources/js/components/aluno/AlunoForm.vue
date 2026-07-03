@@ -244,7 +244,7 @@ watch(
 );
 
 const ALUNO_TEXT_FIELDS_ACCENT = [
-    'aln_nome_social', 'aln_filiacao_1', 'aln_filiacao_2',
+    'aln_nome_social',
     'aln_logradouro', 'aln_bairro', 'aln_cidade', 'aln_complemento',
 ] as const;
 ALUNO_TEXT_FIELDS_ACCENT.forEach((field) => {
@@ -253,6 +253,21 @@ ALUNO_TEXT_FIELDS_ACCENT.forEach((field) => {
         (v) => {
             if (!alertarAcentos.value || typeof v !== 'string') return;
             const next = stripAccents(v);
+            if (next !== v) (form as any)[field] = next;
+        },
+    );
+});
+
+// Filiação segue o parâmetro de caixa alta do nome: marcado → MAIÚSCULO, senão → minúsculo.
+const ALUNO_FILIACAO_FIELDS = ['aln_filiacao_1', 'aln_filiacao_2'] as const;
+ALUNO_FILIACAO_FIELDS.forEach((field) => {
+    watch(
+        () => form[field] as string,
+        (v) => {
+            if (typeof v !== 'string') return;
+            let next = v;
+            if (alertarAcentos.value) next = stripAccents(next);
+            next = nomeUppercase.value ? next.toLocaleUpperCase('pt-BR') : next.toLocaleLowerCase('pt-BR');
             if (next !== v) (form as any)[field] = next;
         },
     );
