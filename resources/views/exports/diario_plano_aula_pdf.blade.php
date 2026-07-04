@@ -75,8 +75,8 @@
         </tr>
         <tr>
             <td style="padding-top:3mm">
-                <div class="label" style="font-size:8.5px; color:#6b7280; text-transform:uppercase; letter-spacing:.05em">Turma</div>
-                <div style="font-size:10.5px">{{ ($plano->turma->serie->ser_nome ?? '') }} / {{ $plano->turma->tur_nome ?? '—' }}</div>
+                <div class="label" style="font-size:8.5px; color:#6b7280; text-transform:uppercase; letter-spacing:.05em">Série</div>
+                <div style="font-size:10.5px">{{ $plano->serie->ser_nome ?? '—' }}</div>
             </td>
             <td style="padding-top:3mm">
                 <div class="label" style="font-size:8.5px; color:#6b7280; text-transform:uppercase; letter-spacing:.05em">Componente</div>

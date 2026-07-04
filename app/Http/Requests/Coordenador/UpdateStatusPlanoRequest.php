@@ -56,7 +56,7 @@ class UpdateStatusPlanoRequest extends FormRequest
                 return;
             }
 
-            $escId = (int) DB::table('edu_turma')->where('tur_id', $plano->dpa_tur_id)->value('tur_esc_id');
+            $escId = (int) $plano->dpa_esc_id;
 
             $temLotacao = DB::table('edu_funcionario_lotacao as l')
                 ->join('edu_funcionario_admissao as a', 'a.adm_id', '=', 'l.lot_adm_id')

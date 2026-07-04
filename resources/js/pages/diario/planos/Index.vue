@@ -14,7 +14,7 @@ import { ref, watch } from 'vue';
 
 const props = defineProps<{
     planos: Paginated<PlanoAula>;
-    filters: { search: string; status: string; tur_id: string; dis_id: string; uni_id: string; per_page: number };
+    filters: { search: string; status: string; ser_id: string; dis_id: string; uni_id: string; per_page: number };
     statuses: PlanoStatus[];
 }>();
 
@@ -116,7 +116,7 @@ const fmtDate = (d: string) => {
                     <thead class="bg-muted/50 text-left text-xs uppercase tracking-wide text-muted-foreground">
                         <tr>
                             <th class="px-4 py-3">Tema</th>
-                            <th class="px-4 py-3">Turma / Disciplina</th>
+                            <th class="px-4 py-3">Série / Disciplina</th>
                             <th class="px-4 py-3">Unidade</th>
                             <th class="px-4 py-3">Período</th>
                             <th class="px-4 py-3 text-center">Status</th>
@@ -137,7 +137,7 @@ const fmtDate = (d: string) => {
                                 </div>
                             </td>
                             <td class="px-4 py-3 text-muted-foreground">
-                                <div>{{ p.turma?.serie?.ser_nome }} / {{ p.turma?.tur_nome }}</div>
+                                <div>{{ p.serie?.ser_nome ?? '—' }}</div>
                                 <div class="text-xs">{{ p.disciplina?.dis_nome }}</div>
                             </td>
                             <td class="px-4 py-3 text-muted-foreground">
@@ -175,9 +175,9 @@ const fmtDate = (d: string) => {
                         <template v-else>Nenhum registro</template>
                     </span>
                     <div v-if="planos.last_page > 1" class="flex flex-wrap gap-1">
-                        <Link v-for="(link, i) in planos.links" :key="i" :href="link.url ?? '#'" v-html="link.label"
+                        <Link v-for="(link, i) in planos.links" :key="i" :href="link.url ?? '#'"
                             :class="['rounded-md px-3 py-1 text-xs', link.active ? 'bg-indigo-600 text-white' : 'border bg-background hover:bg-muted', !link.url && 'pointer-events-none opacity-40']"
-                            preserve-scroll />
+                            preserve-scroll><span v-html="link.label"></span></Link>
                     </div>
                 </div>
             </div>

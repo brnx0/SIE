@@ -54,10 +54,7 @@
             @if($mostraProfessor)<td>{{ $p->funcionario?->fun_nome ?? '—' }}</td>@endif
             <td>{{ $p->escola?->esc_nome ?? '—' }}</td>
             <td>
-                <strong>{{ $p->turma?->tur_nome ?? '—' }}</strong>
-                @if($p->turma?->serie?->ser_nome)
-                    <div style="font-size:9px;color:#64748b">{{ $p->turma->serie->ser_nome }}</div>
-                @endif
+                <strong>{{ $p->serie?->ser_nome ?? '—' }}</strong>
             </td>
             <td>{{ $p->disciplina?->dis_nome ?? '—' }}</td>
             <td>{{ optional($p->unidade)->uni_numero }}º {{ \Illuminate\Support\Str::lower($p->unidade?->uni_tipo ?? '') }}</td>

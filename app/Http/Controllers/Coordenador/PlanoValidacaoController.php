@@ -37,25 +37,16 @@ class PlanoValidacaoController extends Controller
         if ($anlId && $escId && ($request->user()->isAdmin() || ($funId && $this->coordenadorLotadoNaEscola($funId, $escId)))) {
             $planos = DiarioPlanoAula::query()
                 ->with([
-                    'turma:tur_id,tur_nome,tur_ser_id',
-                    'turma.serie:ser_id,ser_nome',
+                    'serie:ser_id,ser_nome',
                     'disciplina:dis_id,dis_nome',
                     'unidade:uni_id,uni_numero,uni_tipo',
                     'funcionario:edu_funcionario.fun_id,edu_funcionario.fun_nome',
                     'escola:esc_id,esc_nome',
                 ])
-                ->whereHas('turma', function ($q) use ($anlId, $escId, $segId, $serId, $turId) {
-                    $q->where('tur_esc_id', $escId)
-                        ->where('tur_anl_id', $anlId)
-                        ->where('tur_modalidade', 'REGULAR');
-                    if ($turId) {
-                        $q->where('tur_id', $turId);
-                    } elseif ($serId) {
-                        $q->where('tur_ser_id', $serId);
-                    } elseif ($segId) {
-                        $q->whereHas('serie', fn ($qq) => $qq->where('seg_id', $segId));
-                    }
-                })
+                ->where('dpa_esc_id', $escId)
+                ->where('dpa_anl_id', $anlId)
+                ->when($serId, fn ($q) => $q->where('dpa_ser_id', $serId))
+                ->when(! $serId && $segId, fn ($q) => $q->whereHas('serie', fn ($qq) => $qq->where('seg_id', $segId)))
                 ->when($disId, fn ($q) => $q->where('dpa_dis_id', $disId))
                 ->when($status, fn ($q) => $q->where('dpa_status', $status))
                 ->when($search, function ($q) use ($search) {
@@ -82,14 +73,13 @@ class PlanoValidacaoController extends Controller
         return response()->streamDownload(function () use ($planos) {
             $out = fopen('php://output', 'w');
             fprintf($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
-            fputcsv($out, ['Status', 'Professor', 'Escola', 'Turma', 'Série', 'Disciplina', 'Unidade', 'Tema', 'Data Inicial', 'Data Final'], ';');
+            fputcsv($out, ['Status', 'Professor', 'Escola', 'Série', 'Disciplina', 'Unidade', 'Tema', 'Data Inicial', 'Data Final'], ';');
             foreach ($planos as $p) {
                 fputcsv($out, [
                     ucfirst($p->dpa_status ?? ''),
                     $p->funcionario?->fun_nome ?? '',
                     $p->escola?->esc_nome ?? '',
-                    $p->turma?->tur_nome ?? '',
-                    $p->turma?->serie?->ser_nome ?? '',
+                    $p->serie?->ser_nome ?? '',
                     $p->disciplina?->dis_nome ?? '',
                     $p->unidade ? ($p->unidade->uni_numero . 'º ' . $p->unidade->uni_tipo) : '',
                     $p->dpa_tema,
@@ -164,26 +154,17 @@ class PlanoValidacaoController extends Controller
             if ($temLotacao) {
                 $query = DiarioPlanoAula::query()
                     ->with([
-                        'turma:tur_id,tur_nome,tur_ser_id,tur_esc_id,tur_anl_id',
-                        'turma.serie:ser_id,seg_id,ser_nome',
-                        'turma.serie.segmento:seg_id,seg_nome_reduzido,seg_nome_completo',
+                        'serie:ser_id,seg_id,ser_nome',
+                        'serie.segmento:seg_id,seg_nome_reduzido,seg_nome_completo',
                         'disciplina:dis_id,dis_nome',
                         'unidade:uni_id,uni_numero,uni_tipo',
                         'funcionario:edu_funcionario.fun_id,edu_funcionario.fun_nome',
                         'escola:esc_id,esc_nome',
                     ])
-                    ->whereHas('turma', function ($q) use ($anlId, $escId, $segId, $serId, $turId) {
-                        $q->where('tur_esc_id', $escId)
-                            ->where('tur_anl_id', $anlId)
-                            ->where('tur_modalidade', 'REGULAR');
-                        if ($turId) {
-                            $q->where('tur_id', $turId);
-                        } elseif ($serId) {
-                            $q->where('tur_ser_id', $serId);
-                        } elseif ($segId) {
-                            $q->whereHas('serie', fn ($qq) => $qq->where('seg_id', $segId));
-                        }
-                    })
+                    ->where('dpa_esc_id', $escId)
+                    ->where('dpa_anl_id', $anlId)
+                    ->when($serId, fn ($q) => $q->where('dpa_ser_id', $serId))
+                    ->when(! $serId && $segId, fn ($q) => $q->whereHas('serie', fn ($qq) => $qq->where('seg_id', $segId)))
                     ->when($disId, fn ($q) => $q->where('dpa_dis_id', $disId))
                     ->when($status, fn ($q) => $q->where('dpa_status', $status))
                     ->when($search, function ($q) use ($search) {
@@ -238,8 +219,7 @@ class PlanoValidacaoController extends Controller
             'funcionario:edu_funcionario.fun_id,edu_funcionario.fun_nome',
             'escola:esc_id,esc_nome',
             'anoLetivo:anl_id,anl_ano',
-            'turma:tur_id,tur_nome,tur_ser_id',
-            'turma.serie:ser_id,ser_nome',
+            'serie:ser_id,ser_nome',
             'disciplina:dis_id,dis_nome',
             'unidade:uni_id,uni_numero,uni_tipo',
         ]);
@@ -282,9 +262,8 @@ class PlanoValidacaoController extends Controller
         $this->abortIfNotLotadoNaEscolaDoPlano($plano, $request);
 
         $plano->load([
-            'turma:tur_id,tur_nome,tur_ser_id',
-            'turma.serie:ser_id,seg_id,ser_nome',
-            'turma.serie.segmento:seg_id,seg_nome_reduzido',
+            'serie:ser_id,seg_id,ser_nome',
+            'serie.segmento:seg_id,seg_nome_reduzido',
             'disciplina:dis_id,dis_nome',
             'unidade:uni_id,uni_numero,uni_tipo',
             'funcionario:edu_funcionario.fun_id,edu_funcionario.fun_nome',
@@ -483,7 +462,7 @@ class PlanoValidacaoController extends Controller
         if (! $funId) {
             abort(403, 'Seu usuário não possui vínculo de funcionário.');
         }
-        $escId = (int) DB::table('edu_turma')->where('tur_id', $plano->dpa_tur_id)->value('tur_esc_id');
+        $escId = (int) $plano->dpa_esc_id;
         abort_unless($this->coordenadorLotadoNaEscola($funId, $escId), 403);
     }
 }

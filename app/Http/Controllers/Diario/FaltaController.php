@@ -159,10 +159,11 @@ class FaltaController extends Controller
                 'dpa_id'          => $r->dco_dpa_id !== null ? (int) $r->dco_dpa_id : null,
             ]);
 
-        // Planos de aula elegíveis (pendente/aprovado) da turma — base do "planejamento executado".
+        // Planos de aula elegíveis (pendente/aprovado) da SÉRIE da turma — base do "planejamento executado".
         // Frontend casa por disciplina + data dentro do período do plano.
+        $serId = (int) DB::table('edu_turma')->where('tur_id', $turId)->value('tur_ser_id');
         $planosQ = DB::table('edu_diario_plano_aula')
-            ->where('dpa_tur_id', $turId)
+            ->where('dpa_ser_id', $serId)
             ->whereIn('dpa_status', [DiarioPlanoAula::STATUS_PENDENTE, DiarioPlanoAula::STATUS_APROVADO])
             ->whereNull('dpa_deleted_at');
         if (! $user->isAdmin()) {
@@ -451,9 +452,10 @@ class FaltaController extends Controller
     {
         $user = $request->user();
         $d = Carbon::parse($dt)->toDateString();
+        $serId = (int) DB::table('edu_turma')->where('tur_id', $turId)->value('tur_ser_id');
 
         $plano = DB::table('edu_diario_plano_aula')
-            ->where('dpa_tur_id', $turId)
+            ->where('dpa_ser_id', $serId)
             ->where('dpa_dis_id', $disId)
             ->whereIn('dpa_status', [DiarioPlanoAula::STATUS_PENDENTE, DiarioPlanoAula::STATUS_APROVADO])
             ->whereDate('dpa_dt_inicio', '<=', $d)

@@ -44,7 +44,7 @@ export interface PlanoAula {
     dpa_user_id: number;
     dpa_esc_id: number;
     dpa_anl_id: number;
-    dpa_tur_id: number;
+    dpa_ser_id: number;
     dpa_dis_id: number;
     dpa_uni_id: number;
     dpa_tema: string;
@@ -58,7 +58,7 @@ export interface PlanoAula {
     dpa_objetivos_complementares: string | null;
     dpa_obs_coordenador: string | null;
     dpa_status: PlanoStatus;
-    turma?: PlanoTurmaResumo & { serie?: { ser_id: number; ser_nome: string } };
+    serie?: { ser_id: number; ser_nome: string };
     disciplina?: PlanoDisciplinaResumo;
     unidade?: PlanoUnidade;
     escola?: { esc_id: number; esc_nome: string };

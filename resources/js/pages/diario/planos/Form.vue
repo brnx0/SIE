@@ -13,11 +13,10 @@ import type {
     PlanoAula,
     PlanoDisciplinaResumo,
     PlanoStatus,
-    PlanoTurmaResumo,
     PlanoUnidade,
     ProfessorResumoDiario,
 } from '@/types/diario';
-import { Head, router, useForm, usePage } from '@inertiajs/vue3';
+import { Head, router, useForm } from '@inertiajs/vue3';
 import { ArrowLeft, Printer, Save, Search } from 'lucide-vue-next';
 import { computed, onMounted, ref, watch } from 'vue';
 
@@ -29,9 +28,6 @@ const props = defineProps<{
 }>();
 
 const isEdit = computed(() => !!props.plano);
-
-const page = usePage();
-const params = computed<any>(() => (page.props as any).params ?? {});
 
 // Status -> readonly se aprovado/reprovado
 const statusAtual = computed<PlanoStatus>(() => props.plano?.dpa_status ?? 'pendente');
@@ -48,7 +44,7 @@ const anlInicial = computed<number | null>(() => {
 const form = useForm({
     dpa_esc_id: props.plano?.dpa_esc_id ?? null,
     dpa_anl_id: anlInicial.value,
-    dpa_tur_id: props.plano?.dpa_tur_id ?? null,
+    dpa_ser_id: props.plano?.dpa_ser_id ?? null,
     dpa_dis_id: props.plano?.dpa_dis_id ?? null,
     dpa_uni_id: props.plano?.dpa_uni_id ?? null,
     dpa_tema: props.plano?.dpa_tema ?? '',
@@ -63,7 +59,7 @@ const form = useForm({
     indicadores: [...props.indicadoresSelecionados] as number[],
 });
 
-const turmas = ref<PlanoTurmaResumo[]>([]);
+const series = ref<{ ser_id: number; ser_nome: string }[]>([]);
 const disciplinas = ref<PlanoDisciplinaResumo[]>([]);
 const unidades = ref<PlanoUnidade[]>([]);
 const indicadores = ref<IndicadorResumo[]>([]);
@@ -80,25 +76,27 @@ const fetchEscolas = async () => {
     if (r.ok) escolas.value = await r.json();
 };
 
-const fetchTurmas = async () => {
+const fetchSeries = async () => {
     if (!form.dpa_anl_id || !form.dpa_esc_id) {
-        turmas.value = [];
+        series.value = [];
         return;
     }
-    const url = new URL('/api/diario/planos/turmas', window.location.origin);
+    const url = new URL('/api/diario/planos/series', window.location.origin);
     url.searchParams.set('anl_id', String(form.dpa_anl_id));
     url.searchParams.set('esc_id', String(form.dpa_esc_id));
     const r = await fetch(url, { headers: { Accept: 'application/json' } });
-    if (r.ok) turmas.value = await r.json();
+    if (r.ok) series.value = await r.json();
 };
 
 const fetchDisciplinas = async () => {
-    if (!form.dpa_tur_id) {
+    if (!form.dpa_ser_id) {
         disciplinas.value = [];
         return;
     }
     const url = new URL('/api/diario/planos/disciplinas', window.location.origin);
-    url.searchParams.set('tur_id', String(form.dpa_tur_id));
+    url.searchParams.set('ser_id', String(form.dpa_ser_id));
+    if (form.dpa_esc_id) url.searchParams.set('esc_id', String(form.dpa_esc_id));
+    if (form.dpa_anl_id) url.searchParams.set('anl_id', String(form.dpa_anl_id));
     const r = await fetch(url, { headers: { Accept: 'application/json' } });
     if (r.ok) disciplinas.value = await r.json();
 };
@@ -116,12 +114,12 @@ const fetchUnidades = async () => {
 
 const filtroIndicador = ref('');
 const fetchIndicadores = async () => {
-    if (!form.dpa_tur_id) {
+    if (!form.dpa_ser_id) {
         indicadores.value = [];
         return;
     }
     const url = new URL('/api/diario/planos/indicadores', window.location.origin);
-    url.searchParams.set('tur_id', String(form.dpa_tur_id));
+    url.searchParams.set('ser_id', String(form.dpa_ser_id));
     if (form.dpa_dis_id) url.searchParams.set('dis_id', String(form.dpa_dis_id));
     if (form.dpa_anl_id) url.searchParams.set('anl_id', String(form.dpa_anl_id));
     if (filtroIndicador.value) url.searchParams.set('search', filtroIndicador.value);
@@ -140,22 +138,22 @@ watch(filtroIndicador, () => {
 watch(() => form.dpa_anl_id, () => {
     if (!isEdit.value) {
         form.dpa_esc_id = null;
-        form.dpa_tur_id = null;
+        form.dpa_ser_id = null;
         form.dpa_dis_id = null;
         form.dpa_uni_id = null;
-        turmas.value = [];
+        series.value = [];
     }
     fetchEscolas();
     fetchUnidades();
 });
 watch(() => form.dpa_esc_id, () => {
     if (!isEdit.value) {
-        form.dpa_tur_id = null;
+        form.dpa_ser_id = null;
         form.dpa_dis_id = null;
     }
-    fetchTurmas();
+    fetchSeries();
 });
-watch(() => form.dpa_tur_id, () => {
+watch(() => form.dpa_ser_id, () => {
     if (!isEdit.value) form.dpa_dis_id = null;
     fetchDisciplinas();
     fetchIndicadores();
@@ -164,9 +162,9 @@ watch(() => form.dpa_dis_id, fetchIndicadores);
 
 onMounted(async () => {
     await Promise.all([fetchEscolas(), fetchUnidades()]);
-    if (form.dpa_esc_id) await fetchTurmas();
-    if (form.dpa_tur_id) await fetchDisciplinas();
-    if (form.dpa_tur_id) await fetchIndicadores();
+    if (form.dpa_esc_id) await fetchSeries();
+    if (form.dpa_ser_id) await fetchDisciplinas();
+    if (form.dpa_ser_id) await fetchIndicadores();
 });
 
 const labelUnidade = computed(() => {
@@ -191,14 +189,11 @@ const fmtDate = (d: string) => {
 
 // Garante que o valor salvo no registro sempre apareça no lookup, mesmo
 // que o filtro (vínculo do professor) não o retorne — padrão incluir_ids.
-const itemsTurma = computed(() => {
-    const list = turmas.value.map((t) => ({
-        id: t.tur_id,
-        label: t.ser_nome ? `${t.ser_nome} / ${t.tur_nome}` : t.tur_nome,
-    }));
-    const s = props.plano?.turma;
-    if (s && !list.some((i) => i.id === s.tur_id)) {
-        list.unshift({ id: s.tur_id, label: s.serie?.ser_nome ? `${s.serie.ser_nome} / ${s.tur_nome}` : s.tur_nome });
+const itemsSerie = computed(() => {
+    const list = series.value.map((s) => ({ id: s.ser_id, label: s.ser_nome }));
+    const p = (props.plano as any)?.serie;
+    if (p && !list.some((i) => i.id === p.ser_id)) {
+        list.unshift({ id: p.ser_id, label: p.ser_nome });
     }
     return list;
 });
@@ -338,10 +333,10 @@ const breadcrumbs: BreadcrumbItem[] = [
                         <InputError :message="form.errors.dpa_esc_id" />
                     </div>
                     <div class="md:col-span-2">
-                        <Label>Turma <span class="text-rose-600">*</span></Label>
-                        <LocalCombobox v-model="form.dpa_tur_id" :items="itemsTurma"
-                            placeholder="Selecione..." :invalid="!!form.errors.dpa_tur_id" />
-                        <InputError :message="form.errors.dpa_tur_id" />
+                        <Label>Série <span class="text-rose-600">*</span></Label>
+                        <LocalCombobox v-model="form.dpa_ser_id" :items="itemsSerie"
+                            placeholder="Selecione..." :invalid="!!form.errors.dpa_ser_id" />
+                        <InputError :message="form.errors.dpa_ser_id" />
                     </div>
                     <div class="md:col-span-3">
                         <Label>Componente Curricular <span class="text-rose-600">*</span></Label>
@@ -371,7 +366,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                 </div>
                 <div class="max-h-80 overflow-y-auto rounded-md border">
                     <div v-if="indicadores.length === 0" class="px-4 py-8 text-center text-sm text-muted-foreground">
-                        {{ form.dpa_tur_id ? 'Nenhum indicador encontrado.' : 'Selecione uma turma para listar indicadores.' }}
+                        {{ form.dpa_ser_id ? 'Nenhum indicador encontrado.' : 'Selecione uma série para listar indicadores.' }}
                     </div>
                     <label v-for="ind in indicadores" :key="ind.ind_id"
                         class="flex cursor-pointer items-start gap-3 border-b px-4 py-2 hover:bg-muted/40 last:border-b-0"

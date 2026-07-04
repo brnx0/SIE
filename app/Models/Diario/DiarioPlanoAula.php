@@ -7,7 +7,7 @@ use App\Models\Escola\Escola;
 use App\Models\Funcionario\Funcionario;
 use App\Models\Parametro\AnoLetivo;
 use App\Models\Parametro\Unidade;
-use App\Models\Turma\Turma;
+use App\Models\Serie\Serie;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -45,7 +45,7 @@ class DiarioPlanoAula extends Model
         'dpa_user_id',
         'dpa_esc_id',
         'dpa_anl_id',
-        'dpa_tur_id',
+        'dpa_ser_id',
         'dpa_dis_id',
         'dpa_uni_id',
         'dpa_tema',
@@ -105,9 +105,9 @@ class DiarioPlanoAula extends Model
         return $this->belongsTo(AnoLetivo::class, 'dpa_anl_id', 'anl_id');
     }
 
-    public function turma(): BelongsTo
+    public function serie(): BelongsTo
     {
-        return $this->belongsTo(Turma::class, 'dpa_tur_id', 'tur_id');
+        return $this->belongsTo(Serie::class, 'dpa_ser_id', 'ser_id');
     }
 
     public function disciplina(): BelongsTo

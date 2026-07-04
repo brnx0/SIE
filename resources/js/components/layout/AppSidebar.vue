@@ -174,7 +174,7 @@ const relatoriosF = computed(() => filtrarMenu(relatoriosMenu));
 const administracaoF = computed(() => filtrarMenu(administracao));
 
 const footerNavItems = [
-    { title: 'Suporte', href: '#', icon: LifeBuoy },
+    { title: 'Ajuda', href: '/ajuda', icon: LifeBuoy },
 ];
 
 // Busca no menu

@@ -30,8 +30,7 @@ class PlanoAulaController extends Controller
         $planos = DiarioPlanoAula::query()
             ->when(! $user->isAdmin() && ! $this->soVisualizacaoTela($request), fn ($q) => $q->where('dpa_user_id', (int) $user->id))
             ->with([
-                'turma:tur_id,tur_nome,tur_ser_id',
-                'turma.serie:ser_id,ser_nome',
+                'serie:ser_id,ser_nome',
                 'disciplina:dis_id,dis_nome',
                 'unidade:uni_id,uni_numero,uni_tipo',
                 'escola:esc_id,esc_nome',
@@ -39,7 +38,7 @@ class PlanoAulaController extends Controller
             ])
             ->when($request->input('search'), fn ($q, $s) => $q->where('dpa_tema', 'ilike', "%{$s}%"))
             ->when($request->input('status'), fn ($q, $st) => $q->where('dpa_status', $st))
-            ->when($request->input('tur_id'), fn ($q, $t) => $q->where('dpa_tur_id', (int) $t))
+            ->when($request->input('ser_id'), fn ($q, $s) => $q->where('dpa_ser_id', (int) $s))
             ->when($request->input('dis_id'), fn ($q, $d) => $q->where('dpa_dis_id', (int) $d))
             ->when($request->input('uni_id'), fn ($q, $u) => $q->where('dpa_uni_id', (int) $u))
             ->orderByDesc('dpa_dt_inicio')
@@ -59,14 +58,13 @@ class PlanoAulaController extends Controller
         return response()->streamDownload(function () use ($planos) {
             $out = fopen('php://output', 'w');
             fprintf($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
-            fputcsv($out, ['Status', 'Professor', 'Escola', 'Turma', 'Série', 'Disciplina', 'Unidade', 'Tema', 'Data Inicial', 'Data Final'], ';');
+            fputcsv($out, ['Status', 'Professor', 'Escola', 'Série', 'Disciplina', 'Unidade', 'Tema', 'Data Inicial', 'Data Final'], ';');
             foreach ($planos as $p) {
                 fputcsv($out, [
                     ucfirst($p->dpa_status ?? ''),
                     $p->funcionario?->fun_nome ?? '',
                     $p->escola?->esc_nome ?? '',
-                    $p->turma?->tur_nome ?? '',
-                    $p->turma?->serie?->ser_nome ?? '',
+                    $p->serie?->ser_nome ?? '',
                     $p->disciplina?->dis_nome ?? '',
                     $p->unidade ? ($p->unidade->uni_numero . 'º ' . $p->unidade->uni_tipo) : '',
                     $p->dpa_tema,
@@ -120,8 +118,7 @@ class PlanoAulaController extends Controller
         $planos = DiarioPlanoAula::query()
             ->when(! $user->isAdmin() && ! $this->soVisualizacaoTela($request), fn ($q) => $q->where('dpa_user_id', (int) $user->id))
             ->with([
-                'turma:tur_id,tur_nome,tur_ser_id',
-                'turma.serie:ser_id,ser_nome',
+                'serie:ser_id,ser_nome',
                 'disciplina:dis_id,dis_nome',
                 'unidade:uni_id,uni_numero,uni_tipo',
                 'escola:esc_id,esc_nome',
@@ -130,7 +127,7 @@ class PlanoAulaController extends Controller
                 $q->where('dpa_tema', 'ilike', "%{$s}%");
             })
             ->when($request->input('status'), fn ($q, $st) => $q->where('dpa_status', $st))
-            ->when($request->input('tur_id'), fn ($q, $t) => $q->where('dpa_tur_id', (int) $t))
+            ->when($request->input('ser_id'), fn ($q, $s) => $q->where('dpa_ser_id', (int) $s))
             ->when($request->input('dis_id'), fn ($q, $d) => $q->where('dpa_dis_id', (int) $d))
             ->when($request->input('uni_id'), fn ($q, $u) => $q->where('dpa_uni_id', (int) $u))
             ->orderByDesc('dpa_dt_inicio')
@@ -142,7 +139,7 @@ class PlanoAulaController extends Controller
             'filters' => [
                 'search'   => $request->input('search', ''),
                 'status'   => $request->input('status', ''),
-                'tur_id'   => $request->input('tur_id', ''),
+                'ser_id'   => $request->input('ser_id', ''),
                 'dis_id'   => $request->input('dis_id', ''),
                 'uni_id'   => $request->input('uni_id', ''),
                 'per_page' => $perPage,
@@ -193,8 +190,7 @@ class PlanoAulaController extends Controller
         $this->abortIfNotOwner($plano, $request);
 
         $plano->load([
-            'turma:tur_id,tur_nome,tur_ser_id,tur_esc_id,tur_anl_id',
-            'turma.serie:ser_id,ser_nome',
+            'serie:ser_id,ser_nome',
             'disciplina:dis_id,dis_nome',
             'unidade:uni_id,uni_numero,uni_tipo,uni_dt_inicio,uni_dt_fim,uni_anl_id',
             'escola:esc_id,esc_nome',
@@ -262,8 +258,7 @@ class PlanoAulaController extends Controller
             'funcionario:edu_funcionario.fun_id,edu_funcionario.fun_nome',
             'escola:esc_id,esc_nome',
             'anoLetivo:anl_id,anl_ano',
-            'turma:tur_id,tur_nome,tur_ser_id',
-            'turma.serie:ser_id,ser_nome',
+            'serie:ser_id,ser_nome',
             'disciplina:dis_id,dis_nome',
             'unidade:uni_id,uni_numero,uni_tipo',
         ]);
@@ -340,7 +335,8 @@ class PlanoAulaController extends Controller
         return response()->json($escolas);
     }
 
-    public function lookupTurmas(Request $request): JsonResponse
+    /** Séries do professor no ano/escola (baseadas nas turmas em que ele leciona). */
+    public function lookupSeries(Request $request): JsonResponse
     {
         $this->abortIfNotProfessor();
 
@@ -356,35 +352,40 @@ class PlanoAulaController extends Controller
                 ->whereNull('tp.tup_deleted_at')
             : DB::table('edu_turma as t');
 
-        $turmas = $base
-            ->join('edu_escola as e', 'e.esc_id', '=', 't.tur_esc_id')
-            ->leftJoin('edu_serie as s', 's.ser_id', '=', 't.tur_ser_id')
+        $series = $base
+            ->join('edu_serie as s', 's.ser_id', '=', 't.tur_ser_id')
             ->whereNull('t.tur_deleted_at')
             ->where('t.tur_modalidade', 'REGULAR')
             ->when($anlId, fn ($q) => $q->where('t.tur_anl_id', $anlId))
             ->when($escId, fn ($q) => $q->where('t.tur_esc_id', $escId))
-            ->select('t.tur_id', 't.tur_nome', 't.tur_esc_id', 't.tur_anl_id', 't.tur_ser_id', 'e.esc_nome', 's.ser_nome')
+            ->select('s.ser_id', 's.ser_nome')
             ->distinct()
             ->orderBy('s.ser_nome')
-            ->orderBy('t.tur_nome')
             ->get();
 
-        return response()->json($turmas);
+        return response()->json($series);
     }
 
+    /** Disciplinas que o professor leciona em turmas da série (ou toda a grade, se admin). */
     public function lookupDisciplinas(Request $request): JsonResponse
     {
         $this->abortIfNotProfessor();
 
         $user = $request->user();
         $funId = (int) $user->fun_id;
-        $turId = (int) $request->input('tur_id');
+        $serId = (int) $request->input('ser_id');
+        $escId = (int) $request->input('esc_id');
+        $anlId = (int) $request->input('anl_id');
+
+        if (! $serId) {
+            return response()->json([]);
+        }
 
         if (! $funId || $user->isAdmin()) {
-            $serId = DB::table('edu_turma')->where('tur_id', $turId)->value('tur_ser_id');
             $disciplinas = DB::table('edu_grade_disciplinar as gd')
                 ->join('edu_disciplina as d', 'd.dis_id', '=', 'gd.grd_dis_id')
                 ->where('gd.grd_ser_id', $serId)
+                ->where('gd.grd_fl_ativo', true)
                 ->select('d.dis_id', 'd.dis_nome')
                 ->distinct()
                 ->orderBy('d.dis_nome')
@@ -394,10 +395,14 @@ class PlanoAulaController extends Controller
         }
 
         $disciplinas = DB::table('edu_turma_professor as tp')
+            ->join('edu_turma as t', 't.tur_id', '=', 'tp.tup_tur_id')
             ->join('edu_disciplina as d', 'd.dis_id', '=', 'tp.tup_dis_id')
             ->where('tp.tup_fun_id', $funId)
-            ->where('tp.tup_tur_id', $turId)
+            ->where('t.tur_ser_id', $serId)
+            ->when($escId, fn ($q) => $q->where('t.tur_esc_id', $escId))
+            ->when($anlId, fn ($q) => $q->where('t.tur_anl_id', $anlId))
             ->whereNull('tp.tup_deleted_at')
+            ->whereNull('t.tur_deleted_at')
             ->select('d.dis_id', 'd.dis_nome')
             ->distinct()
             ->orderBy('d.dis_nome')
@@ -424,18 +429,12 @@ class PlanoAulaController extends Controller
     {
         $this->abortIfNotProfessor();
 
-        $turId = (int) $request->input('tur_id');
+        $serId = (int) $request->input('ser_id');
         $disId = (int) $request->input('dis_id');
-        $anlId = (int) $request->input('anl_id');
         $search = (string) $request->input('search', '');
         $incluirIds = $this->incluirIds($request);
 
-        if (! $turId || ! $disId) {
-            return response()->json([]);
-        }
-
-        $serId = DB::table('edu_turma')->where('tur_id', $turId)->value('tur_ser_id');
-        if (! $serId) {
+        if (! $serId || ! $disId) {
             return response()->json([]);
         }
 

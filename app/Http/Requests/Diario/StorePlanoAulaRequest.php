@@ -26,7 +26,7 @@ class StorePlanoAulaRequest extends FormRequest
         return [
             'dpa_esc_id'              => ['required', 'integer', 'exists:edu_escola,esc_id'],
             'dpa_anl_id'              => ['required', 'integer', 'exists:cfg_ano_letivo,anl_id'],
-            'dpa_tur_id'              => ['required', 'integer', 'exists:edu_turma,tur_id'],
+            'dpa_ser_id'              => ['required', 'integer', 'exists:edu_serie,ser_id'],
             'dpa_dis_id'              => ['required', 'integer', 'exists:edu_disciplina,dis_id'],
             'dpa_uni_id'              => ['required', 'integer', 'exists:cfg_unidade,uni_id'],
             'dpa_tema'                => ['required', 'string', 'max:255'],
@@ -48,32 +48,46 @@ class StorePlanoAulaRequest extends FormRequest
         $validator->after(function (Validator $v) {
             $user = $this->user();
             $funId = (int) $user->fun_id;
-            $turId = (int) $this->input('dpa_tur_id');
+            $serId = (int) $this->input('dpa_ser_id');
             $disId = (int) $this->input('dpa_dis_id');
+            $escId = (int) $this->input('dpa_esc_id');
+            $anlId = (int) $this->input('dpa_anl_id');
             $dtIni = $this->input('dpa_dt_inicio');
             $dtFim = $this->input('dpa_dt_fim');
 
-            $turma = Turma::find($turId);
-            if (! $turma || $turma->tur_modalidade !== Turma::MODALIDADE_REGULAR) {
-                $v->errors()->add('dpa_tur_id', 'Apenas turmas regulares são permitidas.');
+            // A série precisa ter turma REGULAR nesta escola/ano (o plano é por série vinculada às turmas).
+            $temTurmaRegular = \DB::table('edu_turma')
+                ->where('tur_ser_id', $serId)
+                ->where('tur_esc_id', $escId)
+                ->where('tur_anl_id', $anlId)
+                ->where('tur_modalidade', Turma::MODALIDADE_REGULAR)
+                ->whereNull('tur_deleted_at')
+                ->exists();
+            if (! $temTurmaRegular) {
+                $v->errors()->add('dpa_ser_id', 'Série sem turma regular nesta escola/ano.');
                 return;
             }
 
             if (! $user->isAdmin()) {
                 if (! $funId) {
-                    $v->errors()->add('dpa_tur_id', 'Seu usuário não possui vínculo de funcionário.');
+                    $v->errors()->add('dpa_ser_id', 'Seu usuário não possui vínculo de funcionário.');
                     return;
                 }
 
-                $regente = \DB::table('edu_turma_professor')
-                    ->where('tup_tur_id', $turId)
-                    ->where('tup_fun_id', $funId)
-                    ->where('tup_dis_id', $disId)
-                    ->whereNull('tup_deleted_at')
+                $regente = \DB::table('edu_turma_professor as tp')
+                    ->join('edu_turma as t', 't.tur_id', '=', 'tp.tup_tur_id')
+                    ->where('tp.tup_fun_id', $funId)
+                    ->where('tp.tup_dis_id', $disId)
+                    ->where('t.tur_ser_id', $serId)
+                    ->where('t.tur_esc_id', $escId)
+                    ->where('t.tur_anl_id', $anlId)
+                    ->where('t.tur_modalidade', Turma::MODALIDADE_REGULAR)
+                    ->whereNull('tp.tup_deleted_at')
+                    ->whereNull('t.tur_deleted_at')
                     ->exists();
 
                 if (! $regente) {
-                    $v->errors()->add('dpa_tur_id', 'Você não é regente desta disciplina nesta turma.');
+                    $v->errors()->add('dpa_ser_id', 'Você não leciona esta disciplina em turmas desta série.');
                 }
             }
 
@@ -82,7 +96,7 @@ class StorePlanoAulaRequest extends FormRequest
             // No cadastro: autor é o usuário logado. Na edição: mantém o autor original do plano.
             $checkUserId = $planoModel ? (int) $planoModel->dpa_user_id : (int) $user->id;
             $duplicado = DiarioPlanoAula::where('dpa_user_id', $checkUserId)
-                ->where('dpa_tur_id', $turId)
+                ->where('dpa_ser_id', $serId)
                 ->where('dpa_dis_id', $disId)
                 ->where('dpa_dt_inicio', $dtIni)
                 ->where('dpa_dt_fim', $dtFim)
@@ -90,7 +104,7 @@ class StorePlanoAulaRequest extends FormRequest
                 ->exists();
 
             if ($duplicado) {
-                $v->errors()->add('dpa_dt_inicio', 'Já existe plano para esta turma/disciplina no mesmo período.');
+                $v->errors()->add('dpa_dt_inicio', 'Já existe plano para esta série/disciplina no mesmo período.');
             }
         });
     }
@@ -100,7 +114,7 @@ class StorePlanoAulaRequest extends FormRequest
         return [
             'dpa_esc_id'              => 'escola',
             'dpa_anl_id'              => 'ano letivo',
-            'dpa_tur_id'              => 'turma',
+            'dpa_ser_id'              => 'série',
             'dpa_dis_id'              => 'componente curricular',
             'dpa_uni_id'              => 'unidade',
             'dpa_tema'                => 'tema',

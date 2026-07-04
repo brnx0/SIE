@@ -10,7 +10,7 @@ import SessionExpiredDialog from '@/components/common/SessionExpiredDialog.vue';
 import TabBar from './TabBar.vue';
 import TabPanel from './TabPanel.vue';
 import { useTabStore } from '@/stores/tabs';
-import { TAB_CONTEXT } from '@/lib/tabRegistry';
+import { TAB_CONTEXT, pageCache } from '@/lib/tabRegistry';
 
 // App + props vêm do createInertiaApp.setup (motor de roteamento do Inertia).
 defineProps<{ inertiaApp: Component; inertiaProps: Record<string, unknown> }>();
@@ -19,6 +19,18 @@ provide(TAB_CONTEXT, true);
 
 const page = usePage();
 const isAuthenticated = computed(() => !!(page.props as { auth?: { user?: unknown } })?.auth?.user);
+
+// Páginas públicas de tela cheia (ex.: Central de Ajuda) renderizam SEM o chrome
+// de app (sidebar/abas), mesmo com usuário logado — elas têm layout próprio.
+const STANDALONE_COMPONENTS = ['ajuda/Index'];
+const isStandalone = computed(() => STANDALONE_COMPONENTS.includes(page.component));
+// Renderiza a página standalone DIRETO do cache — fora do sistema de abas/store.
+// Assim não depende de openTab nem sofre com o store.clear() disparado na
+// hidratação autenticada (auth null→user), que era o que zerava a aba e deixava
+// a tela branca quando logado.
+const standalonePage = computed<Component | null>(() =>
+    isStandalone.value ? (pageCache.get(page.component) ?? null) : null,
+);
 
 const store = useTabStore();
 const activeBreadcrumbs = computed(() => store.activeTab?.breadcrumbs ?? []);
@@ -60,7 +72,11 @@ watch(isAuthenticated, () => store.clear());
         <component :is="inertiaApp" v-bind="inertiaProps" />
     </div>
 
-    <AppShell v-if="isAuthenticated" variant="sidebar">
+    <!-- Página pública standalone (Ajuda): layout próprio, sem chrome de app nem
+         abas, mesmo logado. Renderizada direto do cache do Inertia. -->
+    <component :is="standalonePage" v-if="isStandalone && standalonePage" v-bind="page.props" />
+
+    <AppShell v-else-if="isAuthenticated" variant="sidebar">
         <AppSidebar />
         <AppContent variant="sidebar">
             <AppSidebarHeader :breadcrumbs="activeBreadcrumbs" />
@@ -79,7 +95,8 @@ watch(isAuthenticated, () => store.clear());
         <FlashToaster />
     </AppShell>
 
-    <!-- Deslogado: sem chrome de app. Página (Login/Register) usa AuthLayout próprio. -->
+    <!-- Sem chrome de app: deslogado (Login/Register com AuthLayout próprio) ou
+         página pública standalone (Ajuda) com layout próprio, mesmo logado. -->
     <template v-else>
         <TabPanel
             v-for="tab in store.tabs"

@@ -360,16 +360,16 @@ class DashboardController extends Controller
     private function panelPlanosProprios(?User $user, ?int $anlId): ?array
     {
         $items = DB::table('edu_diario_plano_aula as p')
-            ->leftJoin('edu_turma as t', 't.tur_id', '=', 'p.dpa_tur_id')
+            ->leftJoin('edu_serie as s', 's.ser_id', '=', 'p.dpa_ser_id')
             ->where('p.dpa_user_id', $user?->id)
             ->when($anlId, fn ($q) => $q->where('p.dpa_anl_id', $anlId))
             ->where('p.dpa_status', 'correcao')
             ->orderByDesc('p.dpa_id')
             ->limit(5)
-            ->get(['p.dpa_id', 'p.dpa_tema', 't.tur_nome'])
+            ->get(['p.dpa_id', 'p.dpa_tema', 's.ser_nome'])
             ->map(fn ($r) => [
                 'title' => $r->dpa_tema ?: 'Plano de aula',
-                'meta'  => $r->tur_nome ? "Turma {$r->tur_nome}" : null,
+                'meta'  => $r->ser_nome ? "Série {$r->ser_nome}" : null,
                 'href'  => '/diario/planos',
                 'tone'  => 'red',
             ])->all();
@@ -407,16 +407,16 @@ class DashboardController extends Controller
     {
         $items = DB::table('edu_diario_plano_aula as p')
             ->join('users as u', 'u.id', '=', 'p.dpa_user_id')
-            ->leftJoin('edu_turma as t', 't.tur_id', '=', 'p.dpa_tur_id')
+            ->leftJoin('edu_serie as s', 's.ser_id', '=', 'p.dpa_ser_id')
             ->where('p.dpa_status', 'pendente')
             ->when($anlId, fn ($q) => $q->where('p.dpa_anl_id', $anlId))
             ->when($escolaIds !== null, fn ($q) => $q->whereIn('p.dpa_esc_id', $escolaIds ?? []))
             ->orderByDesc('p.dpa_id')
             ->limit(6)
-            ->get(['u.name as professor', 't.tur_nome', 'p.dpa_tema'])
+            ->get(['u.name as professor', 's.ser_nome', 'p.dpa_tema'])
             ->map(fn ($r) => [
                 'title' => $r->professor ?: 'Professor',
-                'meta'  => trim(($r->tur_nome ? "Turma {$r->tur_nome}" : '') . ($r->dpa_tema ? " · {$r->dpa_tema}" : '')) ?: null,
+                'meta'  => trim(($r->ser_nome ? "Série {$r->ser_nome}" : '') . ($r->dpa_tema ? " · {$r->dpa_tema}" : '')) ?: null,
                 'href'  => '/coordenador/planos',
                 'tone'  => 'amber',
             ])->all();
