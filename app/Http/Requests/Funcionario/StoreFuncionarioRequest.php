@@ -158,6 +158,13 @@ class StoreFuncionarioRequest extends FormRequest
         });
     }
 
+    public function messages(): array
+    {
+        return [
+            'fun_dt_nascimento.before' => 'A data de nascimento deve ser anterior à data de hoje.',
+        ];
+    }
+
     public function attributes(): array
     {
         return [

@@ -83,7 +83,10 @@ class Aluno extends Model
 
     protected function alnFotoUrl(): Attribute
     {
-        return Attribute::get(fn () => $this->aln_foto ? Storage::disk('public')->url($this->aln_foto) : null);
+        // Servida via rota PHP (evita 403 do symlink /storage em alguns ambientes).
+        return Attribute::get(fn () => $this->aln_foto && $this->aln_id
+            ? route('midia.aluno.foto', $this->aln_id)
+            : null);
     }
 
     public function saude(): HasOne

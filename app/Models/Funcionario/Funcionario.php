@@ -96,7 +96,10 @@ class Funcionario extends Model
 
     protected function funFotoUrl(): Attribute
     {
-        return Attribute::get(fn () => $this->fun_foto ? Storage::disk('public')->url($this->fun_foto) : null);
+        // Servida via rota PHP (evita 403 do symlink /storage em alguns ambientes).
+        return Attribute::get(fn () => $this->fun_foto && $this->fun_id
+            ? route('midia.funcionario.foto', $this->fun_id)
+            : null);
     }
 
     public function municipioNascimento(): BelongsTo

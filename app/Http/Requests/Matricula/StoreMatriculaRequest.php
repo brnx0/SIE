@@ -241,6 +241,8 @@ class StoreMatriculaRequest extends FormRequest
 
     public function messages(): array
     {
-        return [];
+        return [
+            'aluno.aln_dt_nascimento.before' => 'A data de nascimento deve ser anterior à data de hoje.',
+        ];
     }
 }

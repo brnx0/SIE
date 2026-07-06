@@ -113,6 +113,10 @@ Route::middleware(['auth', 'verified', 'tela'])->group(function () {
     // Auditoria — trilha de quem alterou o quê e quando (governado pela matriz: admin)
     Route::get('auditoria', [\App\Http\Controllers\AuditoriaController::class, 'index'])->name('auditoria.index');
 
+    // Fotos servidas via PHP (evita 403 do symlink /storage em alguns ambientes)
+    Route::get('midia/aluno/{aluno}/foto', [\App\Http\Controllers\MidiaController::class, 'alunoFoto'])->name('midia.aluno.foto');
+    Route::get('midia/funcionario/{funcionario}/foto', [\App\Http\Controllers\MidiaController::class, 'funcionarioFoto'])->name('midia.funcionario.foto');
+
     Route::get('alunos/export', [AlunoController::class, 'export'])->name('alunos.export');
     Route::resource('alunos', AlunoController::class)->except(['show']);
     Route::get('escolas/export', [EscolaController::class, 'export'])->name('escolas.export');

@@ -35,14 +35,12 @@ export function useBairros() {
 
     async function create(munId: number, nome: string): Promise<Bairro | null> {
         try {
-            const csrf = document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content;
+            // CSRF é injetado pelo apiFetch (X-XSRF-TOKEN do cookie, sempre atual).
             const res = await apiFetch('/api/bairros', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     Accept: 'application/json',
-                    'X-CSRF-TOKEN': csrf ?? '',
-                    'X-Requested-With': 'XMLHttpRequest',
                 },
                 body: JSON.stringify({ bai_mun_id: munId, bai_nome: nome }),
             });
