@@ -3,7 +3,9 @@
 namespace App\Http\Requests\Escola;
 
 use App\Models\Parametro\ParametroEntidade;
+use App\Rules\Cnpj;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class StoreEscolaRequest extends FormRequest
@@ -16,10 +18,14 @@ class StoreEscolaRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $strip = fn ($v) => is_string($v) ? preg_replace('/\D/', '', $v) : $v;
+        // CNPJ pode ser alfanumérico (novo formato jul/2026): mantém [0-9A-Z], sem máscara.
+        $stripCnpj = fn ($v) => is_string($v) ? strtoupper(preg_replace('/[^0-9A-Za-z]/', '', $v)) : $v;
+        // Nome/apelido da escola nunca aceitam acentos — removidos sempre.
+        $semAcento = fn ($v) => is_string($v) ? Str::ascii($v) : $v;
         $params = ParametroEntidade::current();
 
-        $nome = $this->input('esc_nome');
-        $apelido = $this->input('esc_apelido');
+        $nome = $semAcento($this->input('esc_nome'));
+        $apelido = $semAcento($this->input('esc_apelido'));
         if ($params->par_fl_nome_escola_caixa_alta) {
             if (is_string($nome)) {
                 $nome = mb_strtoupper($nome, 'UTF-8');
@@ -32,7 +38,7 @@ class StoreEscolaRequest extends FormRequest
         $this->merge([
             'esc_nome' => $nome,
             'esc_apelido' => $apelido,
-            'esc_cnpj' => $this->filled('esc_cnpj') ? $strip($this->input('esc_cnpj')) : null,
+            'esc_cnpj' => $this->filled('esc_cnpj') ? $stripCnpj($this->input('esc_cnpj')) : null,
             'esc_cd_inep' => $this->filled('esc_cd_inep') ? $strip($this->input('esc_cd_inep')) : null,
             'esc_cep' => $this->filled('esc_cep') ? $strip($this->input('esc_cep')) : null,
             'esc_telefone_fixo' => $this->filled('esc_telefone_fixo') ? $strip($this->input('esc_telefone_fixo')) : null,
@@ -51,7 +57,7 @@ class StoreEscolaRequest extends FormRequest
         return [
             // Identificação
             'esc_cd_inep' => ['required', 'digits:8', Rule::unique('edu_escola', 'esc_cd_inep')->ignore($escolaId, 'esc_id')->whereNull('esc_deleted_at')],
-            'esc_cnpj' => ['required', 'digits:14', Rule::unique('edu_escola', 'esc_cnpj')->ignore($escolaId, 'esc_id')->whereNull('esc_deleted_at')],
+            'esc_cnpj' => ['required', 'string', 'size:14', new Cnpj(), Rule::unique('edu_escola', 'esc_cnpj')->ignore($escolaId, 'esc_id')->whereNull('esc_deleted_at')],
             'esc_nome' => ['required', 'string', 'max:150'],
             'esc_apelido' => ['required', 'string', 'max:100'],
             'esc_cd_escola' => ['nullable', 'string', 'max:20'],

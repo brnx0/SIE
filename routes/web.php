@@ -87,6 +87,12 @@ Route::get('/', function () {
     return Inertia::render('Welcome');
 })->name('home');
 
+// Fallback público p/ arquivos do disco "public" (logos, fotos) quando o symlink
+// public/storage não alcança os uploads no deploy (nginx no host + storage/app em
+// volume do container). Controller (não closure) p/ funcionar com route:cache.
+Route::get('storage/{path}', \App\Http\Controllers\PublicStorageController::class)
+    ->where('path', '.*')->name('storage.public');
+
 // Central de Ajuda — pública (sem login). Conteúdo em resources/ajuda/**.md.
 Route::get('ajuda', [\App\Http\Controllers\AjudaController::class, 'index'])->name('ajuda.index');
 
@@ -118,6 +124,9 @@ Route::middleware(['auth', 'verified', 'tela'])->group(function () {
     Route::get('midia/funcionario/{funcionario}/foto', [\App\Http\Controllers\MidiaController::class, 'funcionarioFoto'])->name('midia.funcionario.foto');
 
     Route::get('alunos/export', [AlunoController::class, 'export'])->name('alunos.export');
+    // Histórico Escolar / Certificado (só secretaria/diretor/admin — guard no controller)
+    Route::get('alunos/{aluno}/historico/escolas', [\App\Http\Controllers\Aluno\HistoricoEscolarController::class, 'escolas'])->name('alunos.historico.escolas');
+    Route::get('alunos/{aluno}/historico', [\App\Http\Controllers\Aluno\HistoricoEscolarController::class, 'pdf'])->name('alunos.historico.pdf');
     Route::resource('alunos', AlunoController::class)->except(['show']);
     Route::get('escolas/export', [EscolaController::class, 'export'])->name('escolas.export');
     Route::resource('escolas', EscolaController::class)->except(['show']);

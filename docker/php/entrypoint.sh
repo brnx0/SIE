@@ -10,8 +10,11 @@ if [ "$1" = "php-fpm" ]; then
         cp -ru /opt/public-dist/. /var/www/html/public/
     fi
 
-    # storage link (ignora se ja existe)
-    php artisan storage:link 2>/dev/null || true
+    # NAO cria public/storage aqui: storage/app fica em VOLUME do container e o
+    # public e bind-mount do host, entao o symlink apontaria p/ um caminho que o
+    # nginx do host nao alcanca (403). Remove qualquer symlink antigo p/ o nginx
+    # cair no index.php -> rota PublicStorageController serve o arquivo do volume.
+    rm -f /var/www/html/public/storage 2>/dev/null || true
 
     # Migrations: default OFF (prod = controlado no deploy). Ligue RUN_MIGRATIONS=true
     # so se quiser migrar no boot. Fluxo prod recomendado (manual, antes do up):

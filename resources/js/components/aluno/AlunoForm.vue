@@ -29,7 +29,7 @@ import { UFS } from '@/lib/ufs';
 import type { SharedData, SystemParams } from '@/types';
 import type { Aluno, AlunoFormData, Municipio } from '@/types/aluno';
 import { Link, useForm, usePage } from '@inertiajs/vue3';
-import { Camera, ChevronLeft, ChevronRight, Loader2, LoaderCircle, Save, Trash2, Upload } from 'lucide-vue-next';
+import { Camera, ChevronLeft, ChevronRight, Loader2, LoaderCircle, Save, ScrollText, Trash2, Upload } from 'lucide-vue-next';
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 
 interface MatriculaResumo {
@@ -351,7 +351,52 @@ const handleErrors = (errors: Record<string, string>) => {
     goToFirstErrorTab();
 };
 
-const { isReadOnly } = usePermissao();
+const { isReadOnly, hasRole } = usePermissao();
+
+// ── Histórico Escolar / Certificado ─────────────────────────────────────────
+const podeEmitirHistorico = computed(() =>
+    props.mode === 'edit' && !!props.initial?.aln_id &&
+    (hasRole('admin') || hasRole('secretaria_escola') || hasRole('diretor')),
+);
+const historicoDialog = ref(false);
+const historicoEscolas = ref<{ esc_id: number; esc_nome: string }[]>([]);
+const historicoEscId = ref<number | null>(null);
+const historicoLoading = ref(false);
+
+const abrirHistoricoPdf = (escId: number) => {
+    window.open(`/alunos/${props.initial!.aln_id}/historico?esc_id=${escId}`, '_blank');
+};
+
+const emitirHistorico = async () => {
+    if (!props.initial?.aln_id) return;
+    historicoLoading.value = true;
+    try {
+        const res = await fetch(`/alunos/${props.initial.aln_id}/historico/escolas`, {
+            headers: { Accept: 'application/json' },
+        });
+        if (!res.ok) { push('error', 'Não foi possível carregar as escolas.'); return; }
+        const escolas = await res.json();
+        if (!escolas.length) {
+            push('error', 'Aluno não possui anos aprovados para gerar histórico.');
+            return;
+        }
+        if (escolas.length === 1) {
+            abrirHistoricoPdf(escolas[0].esc_id);
+            return;
+        }
+        historicoEscolas.value = escolas;
+        historicoEscId.value = escolas[0].esc_id;
+        historicoDialog.value = true;
+    } finally {
+        historicoLoading.value = false;
+    }
+};
+
+const confirmarHistorico = () => {
+    if (!historicoEscId.value) return;
+    abrirHistoricoPdf(historicoEscId.value);
+    historicoDialog.value = false;
+};
 
 const submit = () => {
     if (isReadOnly.value) return;
@@ -454,16 +499,48 @@ const initials = computed(() => {
             <Link href="/alunos">
                 <Button type="button" variant="outline">Voltar para listagem</Button>
             </Link>
-            <Button
-                v-if="!isReadOnly"
-                type="submit"
-                :disabled="form.processing"
-                class="bg-sky-600 text-white hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-400"
-            >
-                <LoaderCircle v-if="form.processing" class="mr-2 size-4 animate-spin" />
-                <Save v-else class="mr-2 size-4" />
-                {{ submitLabel }}
-            </Button>
+            <div class="flex items-center gap-2">
+                <Button
+                    v-if="podeEmitirHistorico"
+                    type="button"
+                    variant="outline"
+                    :disabled="historicoLoading"
+                    @click="emitirHistorico"
+                >
+                    <LoaderCircle v-if="historicoLoading" class="mr-2 size-4 animate-spin" />
+                    <ScrollText v-else class="mr-2 size-4" />
+                    Histórico Escolar
+                </Button>
+                <Button
+                    v-if="!isReadOnly"
+                    type="submit"
+                    :disabled="form.processing"
+                    class="bg-sky-600 text-white hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-400"
+                >
+                    <LoaderCircle v-if="form.processing" class="mr-2 size-4 animate-spin" />
+                    <Save v-else class="mr-2 size-4" />
+                    {{ submitLabel }}
+                </Button>
+            </div>
+        </div>
+
+        <!-- Dialog: escolher escola emissora quando o aluno estudou em várias -->
+        <div v-if="historicoDialog" class="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4" @click.self="historicoDialog = false">
+            <div class="w-full max-w-md rounded-xl border bg-card p-6 shadow-xl">
+                <h2 class="mb-1 text-lg font-semibold">Emitir Histórico Escolar</h2>
+                <p class="mb-4 text-sm text-muted-foreground">
+                    Escolha a escola emissora. O histórico incluirá os anos cursados nela e anteriores.
+                </p>
+                <select v-model.number="historicoEscId" class="mb-4 h-10 w-full rounded-md border border-input bg-background px-3 text-sm">
+                    <option v-for="e in historicoEscolas" :key="e.esc_id" :value="e.esc_id">{{ e.esc_nome }}</option>
+                </select>
+                <div class="flex justify-end gap-2">
+                    <Button type="button" variant="outline" @click="historicoDialog = false">Cancelar</Button>
+                    <Button type="button" class="bg-indigo-600 text-white hover:bg-indigo-700" @click="confirmarHistorico">
+                        <ScrollText class="mr-2 size-4" /> Gerar PDF
+                    </Button>
+                </div>
+            </div>
         </div>
 
         <Tabs v-model="activeTab">

@@ -166,21 +166,35 @@ const form = useForm<EscolaFormData>({
     _method: props.mode === 'edit' ? 'put' : 'post',
 });
 
-// Uppercase em tempo real conforme parâmetros.
+// Nome/apelido da escola nunca aceitam acentos — removidos em tempo real.
+const stripAccents = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '');
+const normalizaNome = (v: unknown): string | null => {
+    if (typeof v !== 'string') return null;
+    let out = stripAccents(v);
+    if (escolaUppercase.value) out = out.toLocaleUpperCase('pt-BR');
+    return out;
+};
 watch(
     () => form.esc_nome,
     (v) => {
-        if (!escolaUppercase.value || typeof v !== 'string') return;
-        const up = v.toLocaleUpperCase('pt-BR');
-        if (up !== v) form.esc_nome = up;
+        const out = normalizaNome(v);
+        if (out !== null && out !== v) form.esc_nome = out;
     },
 );
 watch(
     () => form.esc_apelido,
     (v) => {
-        if (!escolaUppercase.value || typeof v !== 'string') return;
-        const up = v.toLocaleUpperCase('pt-BR');
-        if (up !== v) form.esc_apelido = up;
+        const out = normalizaNome(v);
+        if (out !== null && out !== v) form.esc_apelido = out;
+    },
+);
+// CNPJ alfanumérico (novo formato jul/2026): letras sempre em maiúsculo.
+watch(
+    () => form.esc_cnpj,
+    (v) => {
+        if (typeof v !== 'string') return;
+        const up = v.toUpperCase();
+        if (up !== v) form.esc_cnpj = up;
     },
 );
 
@@ -411,7 +425,7 @@ const isLast = computed(() => activeTab.value === TABS.value[TABS.value.length -
 
                     <div class="grid gap-2">
                         <FormLabel :for="'esc_cnpj'" :required="true">CNPJ</FormLabel>
-                        <Input id="esc_cnpj" v-model="form.esc_cnpj" v-maska="'##.###.###/####-##'" :required="true" inputmode="numeric" placeholder="00.000.000/0000-00" maxlength="18" />
+                        <Input id="esc_cnpj" v-model="form.esc_cnpj" v-maska="'**.***.***/****-##'" :required="true" placeholder="00.000.000/0000-00" maxlength="18" />
                         <InputError :message="form.errors.esc_cnpj" />
                     </div>
 
