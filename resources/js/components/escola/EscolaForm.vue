@@ -291,8 +291,11 @@ const goToFirstErrorTab = () => {
 
 const submitLabel = computed(() => (props.mode === 'create' ? 'Cadastrar escola' : 'Salvar alterações'));
 
+// Bloqueia o salvar da escola enquanto um sub-registro (segmento) está sendo editado.
+const segmentoEditando = ref(false);
+
 const submit = () => {
-    if (isReadOnly.value) return;
+    if (isReadOnly.value || segmentoEditando.value) return;
     const opts = {
         onError: () => goToFirstErrorTab(),
         preserveScroll: true,
@@ -320,16 +323,22 @@ const isLast = computed(() => activeTab.value === TABS.value[TABS.value.length -
             <Link href="/escolas">
                 <Button type="button" variant="outline">Voltar para listagem</Button>
             </Link>
-            <Button
-                v-if="!isReadOnly"
-                type="submit"
-                :disabled="form.processing"
-                class="bg-sky-600 text-white hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-400"
-            >
-                <LoaderCircle v-if="form.processing" class="mr-2 size-4 animate-spin" />
-                <Save v-else class="mr-2 size-4" />
-                {{ submitLabel }}
-            </Button>
+            <div class="flex items-center gap-3">
+                <span v-if="segmentoEditando" class="text-xs font-medium text-amber-600 dark:text-amber-400">
+                    Finalize o segmento antes de salvar a escola.
+                </span>
+                <Button
+                    v-if="!isReadOnly"
+                    type="submit"
+                    :disabled="form.processing || segmentoEditando"
+                    :title="segmentoEditando ? 'Finalize a edição do segmento primeiro' : ''"
+                    class="bg-sky-600 text-white hover:bg-sky-700 disabled:cursor-not-allowed dark:bg-sky-500 dark:hover:bg-sky-400"
+                >
+                    <LoaderCircle v-if="form.processing" class="mr-2 size-4 animate-spin" />
+                    <Save v-else class="mr-2 size-4" />
+                    {{ submitLabel }}
+                </Button>
+            </div>
         </div>
 
         <Tabs v-model="activeTab">
@@ -727,6 +736,7 @@ const isLast = computed(() => activeTab.value === TABS.value[TABS.value.length -
                     :escola-segmentos="escolaSegmentos ?? []"
                     :segmentos="segmentos ?? []"
                     :anos-letivos="anosLetivos ?? []"
+                    @update:editando="segmentoEditando = $event"
                 />
             </TabsContent>
 

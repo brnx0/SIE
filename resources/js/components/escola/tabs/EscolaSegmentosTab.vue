@@ -8,7 +8,7 @@ import type { AnoLetivoOption, EscolaSegmento, EscolaSegmentoFormData, SerieOpti
 import type { Segmento } from '@/types/segmento';
 import { router, useForm } from '@inertiajs/vue3';
 import { BookOpen, Check, Pencil, Plus, Trash2, X } from 'lucide-vue-next';
-import { ref, watch } from 'vue';
+import { onBeforeUnmount, ref, watch } from 'vue';
 
 const props = defineProps<{
     escId: number;
@@ -17,7 +17,13 @@ const props = defineProps<{
     anosLetivos: AnoLetivoOption[];
 }>();
 
+// Informa o form pai que há um sub-registro em edição → bloqueia o salvar principal.
+const emit = defineEmits<{ (e: 'update:editando', v: boolean): void }>();
+
 const showForm = ref(false);
+watch(showForm, (v) => emit('update:editando', v));
+// Ao desmontar (troca de aba), libera o salvar principal.
+onBeforeUnmount(() => emit('update:editando', false));
 const editingId = ref<number | null>(null);
 const series = ref<SerieOption[]>([]);
 const loadingSeries = ref(false);
@@ -192,11 +198,29 @@ const remove = (esg: EscolaSegmento) => {
             </table>
         </div>
 
-        <!-- Formulário inline -->
-        <div v-if="showForm" class="rounded-xl border bg-card p-6 shadow-sm">
-            <h3 class="mb-4 text-sm font-semibold text-slate-800 dark:text-slate-200">
-                {{ editingId ? 'Editar segmento' : 'Adicionar segmento' }}
-            </h3>
+        <!-- Formulário inline (sub-registro) — borda indigo p/ diferenciar do form principal -->
+        <div v-if="showForm" class="rounded-xl border-2 border-indigo-200 bg-indigo-50/30 p-6 shadow-sm dark:border-indigo-900/50 dark:bg-indigo-950/20">
+            <!-- Cabeçalho do sub-form COM as ações (visível no topo) -->
+            <div class="mb-4 flex flex-col gap-3 border-b border-indigo-100 pb-4 dark:border-indigo-900/40 sm:flex-row sm:items-center sm:justify-between">
+                <h3 class="flex items-center gap-2 text-sm font-semibold text-indigo-800 dark:text-indigo-200">
+                    <BookOpen class="size-4" />
+                    {{ editingId ? 'Editar segmento da escola' : 'Novo segmento da escola' }}
+                </h3>
+                <div class="flex items-center gap-2">
+                    <Button type="button" variant="outline" @click="cancel">
+                        <X class="mr-1.5 size-4" /> Cancelar
+                    </Button>
+                    <Button
+                        type="button"
+                        @click="submit"
+                        :disabled="form.processing"
+                        class="bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
+                    >
+                        <Check class="mr-1.5 size-4" />
+                        {{ editingId ? 'Salvar segmento' : 'Adicionar segmento' }}
+                    </Button>
+                </div>
+            </div>
 
             <div class="grid gap-4 sm:grid-cols-4">
                 <!-- Segmento -->
@@ -302,19 +326,6 @@ const remove = (esg: EscolaSegmento) => {
                         class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     />
                     <InputError :message="form.errors.esg_motivo" />
-                </div>
-
-                <!-- Ações do formulário -->
-                <div class="flex gap-2 sm:col-span-4">
-                    <Button
-                        type="button"
-                        @click="submit"
-                        :disabled="form.processing"
-                        class="bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
-                    >
-                        {{ editingId ? 'Salvar alterações' : 'Adicionar' }}
-                    </Button>
-                    <Button type="button" variant="outline" @click="cancel">Cancelar</Button>
                 </div>
             </div>
         </div>
