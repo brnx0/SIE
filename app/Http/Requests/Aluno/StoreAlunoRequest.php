@@ -226,6 +226,7 @@ class StoreAlunoRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'aln_dt_nascimento.before'        => 'A data de nascimento deve ser anterior à data de hoje.',
             'saude.als_deficiencias.required' => 'Marque ao menos uma deficiência quando o aluno é PCD / TGD / Altas Habilidades.',
             'saude.als_deficiencias.min'      => 'Marque ao menos uma deficiência quando o aluno é PCD / TGD / Altas Habilidades.',
         ];
