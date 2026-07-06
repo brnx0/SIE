@@ -5,11 +5,15 @@
 ###############################
 FROM composer:2 AS vendor
 WORKDIR /app
+ENV COMPOSER_CACHE_DIR=/tmp/composer-cache
 COPY composer.json composer.lock ./
 # sem scripts: artisan ainda nao tem app completa aqui.
 # --ignore-platform-reqs: imagem composer nao tem gd/pgsql, mas o runtime
 # (php:8.3-fpm) tem. So resolvemos deps aqui; extensoes reais existem la.
-RUN composer install \
+# cache mount: pacotes ja baixados sao reaproveitados entre builds -> mesmo
+# quando o composer.lock muda, nao re-baixa tudo (so resolve o que faltou).
+RUN --mount=type=cache,target=/tmp/composer-cache \
+    composer install \
       --no-dev \
       --no-interaction \
       --prefer-dist \
@@ -23,9 +27,15 @@ RUN composer install \
 FROM node:20-bookworm-slim AS assets
 WORKDIR /app
 COPY package.json package-lock.json* ./
-# usa lockfile se existir; senao install normal
-RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
-COPY . .
+# usa lockfile se existir; senao install normal.
+# cache mount do ~/.npm: reaproveita downloads entre builds.
+RUN --mount=type=cache,target=/root/.npm \
+    if [ -f package-lock.json ]; then npm ci; else npm install; fi
+# So o necessario p/ o build do front (resources + configs). Mudancas em
+# backend (app/, routes/, database/, composer) NAO invalidam este layer ->
+# o `npm run build` so re-roda quando o front realmente muda.
+COPY resources ./resources
+COPY vite.config.ts tsconfig.json tailwind.config.js ./
 # app.ts importa de vendor/tightenco/ziggy -> traz do stage vendor antes do build
 COPY --from=vendor /app/vendor/tightenco/ziggy ./vendor/tightenco/ziggy
 RUN npm run build
