@@ -136,9 +136,11 @@ class StoreMatriculaRequest extends FormRequest
                 function ($attribute, $value, $fail) {
                     $temItem = !empty($value)
                         || !empty($this->input('saude.als_transtornos_globais'))
-                        || !empty($this->input('saude.als_transtornos_aprendizagem'));
+                        || !empty($this->input('saude.als_transtornos_aprendizagem'))
+                        || $this->boolean('saude.als_fl_altas_habilidades')
+                        || filled($this->input('saude.als_deficiencia_outro'));
                     if (!$temItem) {
-                        $fail('Informe ao menos uma deficiência ou transtorno.');
+                        $fail('Informe ao menos um item (deficiência, transtorno global/de aprendizagem, altas habilidades ou outra).');
                     }
                 },
             ];

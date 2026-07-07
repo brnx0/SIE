@@ -19,6 +19,14 @@ class StoreTurmaRequest extends FormRequest
         if (is_string($this->input('tur_nome'))) {
             $this->merge(['tur_nome' => mb_strtoupper($this->input('tur_nome'), 'UTF-8')]);
         }
+
+        // Horas salvas como HH:MM:SS não devem falhar no date_format:H:i — corta os segundos.
+        foreach (['tur_hora_inicio', 'tur_hora_fim'] as $campo) {
+            $v = $this->input($campo);
+            if (is_string($v) && preg_match('/^\d{2}:\d{2}:\d{2}$/', $v)) {
+                $this->merge([$campo => substr($v, 0, 5)]);
+            }
+        }
     }
 
     public function rules(): array
