@@ -7,7 +7,7 @@ import LancamentoNotasModal from '@/components/encerramento/LancamentoNotasModal
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue';
 import type { BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
-import { Archive, ArrowLeft, CheckCircle2, Loader2, Lock, PencilLine, ScrollText, Search, Users } from 'lucide-vue-next';
+import { Archive, ArrowLeft, CheckCircle2, Loader2, Lock, PencilLine, ScrollText, Search, TriangleAlert, Users } from 'lucide-vue-next';
 import { computed, reactive, ref } from 'vue';
 
 interface AnoLetivo { anl_id: number; anl_ano: number; anl_fl_em_exercicio: boolean }
@@ -26,7 +26,7 @@ interface AlunoLinha {
     situacao_final: string | null;
     elegivel_conselho: boolean;
 }
-interface TurmaLinha { tur_id: number; turma: string; serie: string | null; seg_id: number | null; segmento: string | null; avaliativa: boolean; encerrada: boolean; alunos: AlunoLinha[] }
+interface TurmaLinha { tur_id: number; turma: string; serie: string | null; seg_id: number | null; segmento: string | null; avaliativa: boolean; encerrada: boolean; config_erro: string | null; alunos: AlunoLinha[] }
 interface SegmentoOpc { seg_id: number; seg_nome: string }
 
 const props = defineProps<{
@@ -231,7 +231,7 @@ const abrirAtaFinal = () => {
 const podeEncerrar = (a: AlunoLinha) => a.status === 'completo' || a.status === 'nao_avaliativa';
 const completos = (t: TurmaLinha) => t.alunos.filter((a) => podeEncerrar(a)).length;
 // Encerramento é da turma inteira: só libera se todos os alunos estiverem aptos.
-const podeEncerrarTurma = (t: TurmaLinha) => t.alunos.length > 0 && t.alunos.every((a) => podeEncerrar(a));
+const podeEncerrarTurma = (t: TurmaLinha) => t.alunos.length > 0 && !t.config_erro && t.alunos.every((a) => podeEncerrar(a));
 const pendentesTurma = (t: TurmaLinha) => t.alunos.filter((a) => !podeEncerrar(a)).length;
 </script>
 
@@ -344,6 +344,10 @@ const pendentesTurma = (t: TurmaLinha) => t.alunos.filter((a) => !podeEncerrar(a
 
             <!-- ===== Detalhe da turma: legenda + alunos ===== -->
             <template v-else-if="turmaSel">
+                <div v-if="turmaSel.config_erro" class="mb-4 flex items-start gap-2 rounded-lg border border-rose-300 bg-rose-50 p-3 text-sm text-rose-800 dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-200">
+                    <TriangleAlert class="mt-0.5 size-4 shrink-0" />
+                    <span>{{ turmaSel.config_erro }}</span>
+                </div>
                 <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
                     <div class="flex items-center gap-2">
                         <Button variant="ghost" size="sm" @click="voltar"><ArrowLeft class="mr-1 size-4" /> Turmas</Button>

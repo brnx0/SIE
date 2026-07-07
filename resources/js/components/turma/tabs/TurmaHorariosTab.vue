@@ -250,7 +250,7 @@ const remove = (trh: TurmaHorario) => {
                                         <select
                                             v-model="form.trh_hora"
                                             :disabled="horasOpts.length === 0"
-                                            class="flex h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 w-36"
+                                            class="h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
                                         >
                                             <option value="">{{ horasOpts.length === 0 ? 'Sem grade cadastrada' : '—' }}</option>
                                             <option v-for="h in horasOpts" :key="h" :value="h">{{ h }}</option>
