@@ -45,7 +45,7 @@ class TelaPermissaoSeeder extends Seeder
         ['/turmas-aee', 'Turmas AEE', 'Gestão', 10, [1, 1, 0, 0, 0, 2, 2, 2, 2, 0, 2]],
         ['/turmas-atividade', 'Turmas Atividades', 'Gestão', 11, [1, 1, 0, 0, 0, 2, 2, 2, 2, 0, 0]],
         ['/atendimentos-aee', 'Atendimentos AEE', 'Gestão', 12, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
-        ['/atividades', 'Atividades', 'Gestão', 13, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
+        ['/atividades', 'Atividades', 'Gestão', 13, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
 
         ['/matriculas', 'Matrículas', 'Matrículas', 14, [1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 1]],
         ['/matriculas-aee', 'Matrículas AEE', 'Matrículas', 15, [1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0]],

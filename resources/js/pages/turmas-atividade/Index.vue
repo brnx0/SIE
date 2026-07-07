@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import ExportMenu from '@/components/common/ExportMenu.vue';
 import PerPageSelect from '@/components/common/PerPageSelect.vue';
+import LocalCombobox from '@/components/common/LocalCombobox.vue';
 import RefreshButton from '@/components/common/RefreshButton.vue';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -10,7 +11,7 @@ import type { EscolaResumo, Turma } from '@/types/turma';
 import { TURNOS } from '@/types/turma';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { Activity, Pencil, Plus, Trash2 } from 'lucide-vue-next';
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { usePermissao } from '@/composables/usePermissao';
 
 const { isReadOnly } = usePermissao();
@@ -62,6 +63,10 @@ const remove = (t: Turma) => {
 
 const turnoLabel = (t: string) => TURNOS[t as keyof typeof TURNOS] ?? t;
 
+const escolaItems = computed(() =>
+    props.escolas.map((e) => ({ id: e.esc_id, label: e.esc_nome })),
+);
+
 const exportFilters = () => ({
     esc_id:   fEscId.value || undefined,
     anl_id:   fAnlId.value || undefined,
@@ -88,10 +93,14 @@ const exportFilters = () => ({
 
             <div class="flex flex-wrap items-center gap-3">
                 <template v-if="isAdmin">
-                    <select v-model="fEscId" class="h-9 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring">
-                        <option value="">Todas as escolas</option>
-                        <option v-for="e in escolas" :key="e.esc_id" :value="e.esc_id">{{ e.esc_nome }}</option>
-                    </select>
+                    <div class="w-72">
+                        <LocalCombobox
+                            :model-value="fEscId === '' ? null : fEscId"
+                            :items="escolaItems"
+                            placeholder="Todas as escolas"
+                            @update:model-value="(v) => (fEscId = v ?? '')"
+                        />
+                    </div>
                 </template>
                 <template v-else-if="userEscola">
                     <span class="flex h-9 items-center rounded-md border bg-muted px-3 text-sm text-muted-foreground">{{ userEscola.esc_nome }}</span>

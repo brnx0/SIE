@@ -137,12 +137,8 @@ class StoreAlunoRequest extends FormRequest
             ])],
             'saude.als_outra_doenca_infancia' => ['nullable', 'string', 'max:500'],
 
-            // Marcou PCD/TGD/AH → exige ao menos 1 item na coluna Deficiência.
-            'saude.als_deficiencias' => Rule::when(
-                $this->boolean('saude.als_fl_pcd'),
-                ['required', 'array', 'min:1'],
-                ['nullable', 'array'],
-            ),
+            // Marcou PCD/TGD/AH → exige ao menos 1 item em QUALQUER coluna (validado no withValidator).
+            'saude.als_deficiencias' => ['nullable', 'array'],
             'saude.als_deficiencias.*' => ['string', Rule::in([
                 'Cegueira', 'Baixa Visão', 'Visão Monocular', 'Surdez',
                 'Deficiência Auditiva', 'Surdocegueira', 'Deficiência Física',
@@ -194,6 +190,19 @@ class StoreAlunoRequest extends FormRequest
                 $nome = (string) $this->input('aln_nome', '');
                 if ($nome !== '' && preg_match('/[\x{0300}-\x{036f}]|[À-ÖØ-öø-ÿ]/u', $nome)) {
                     $v->errors()->add('aln_nome', 'O nome contém acentos. Conforme parâmetros do sistema, cadastre nomes sem acentuação.');
+                }
+            }
+
+            // PCD / TGD / AH marcado → exige ao menos 1 item em QUALQUER coluna do quadro
+            // de saúde (deficiência, transtorno global/aprendizagem, altas habilidades ou outra).
+            if ($this->boolean('saude.als_fl_pcd')) {
+                $temItem = ! empty($this->input('saude.als_deficiencias'))
+                    || ! empty($this->input('saude.als_transtornos_globais'))
+                    || ! empty($this->input('saude.als_transtornos_aprendizagem'))
+                    || $this->boolean('saude.als_fl_altas_habilidades')
+                    || filled($this->input('saude.als_deficiencia_outro'));
+                if (! $temItem) {
+                    $v->errors()->add('saude.als_deficiencias', 'Marque ao menos um item (deficiência, transtorno global/de aprendizagem, altas habilidades ou outra) quando o aluno é PCD / TGD / AH.');
                 }
             }
 

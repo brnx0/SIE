@@ -57,7 +57,11 @@ class MovimentacaoController extends Controller
                 ->orderBy('tmv_descricao')
                 ->get(['tmv_cod', 'tmv_descricao', 'tmv_tas_cod_entrada', 'tmv_tas_cod_saida']),
             'anosLetivos' => AnoLetivo::orderByDesc('anl_ano')->get(['anl_id', 'anl_ano']),
-            'escolas'     => Escola::where('esc_fl_ativo', true)->orderBy('esc_nome')->get(['esc_id', 'esc_nome']),
+            // Só escolas ativas no sistema E em funcionamento (exclui Paralisada/Extinta).
+            'escolas'     => Escola::where('esc_fl_ativo', true)
+                ->where(fn ($q) => $q->whereNull('esc_situacao_func')->orWhereNotIn('esc_situacao_func', [2, 3]))
+                ->orderBy('esc_nome')
+                ->get(['esc_id', 'esc_nome']),
         ]);
     }
 

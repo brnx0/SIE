@@ -7,6 +7,7 @@ const props = defineProps<{
     items: { id: number; label: string }[];
     placeholder?: string;
     invalid?: boolean;
+    disabled?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -74,6 +75,7 @@ const clear = () => {
 };
 
 const openPanel = () => {
+    if (props.disabled) return;
     updatePosition();
     open.value = true;
     query.value = '';
@@ -106,9 +108,11 @@ onBeforeUnmount(() => {
         <button
             ref="triggerEl"
             type="button"
+            :disabled="disabled"
             :class="[
                 'flex h-9 w-full items-center justify-between rounded-md border bg-background px-3 py-1 text-sm shadow-sm transition focus:outline-none focus-visible:ring-1 focus-visible:ring-ring',
                 invalid ? 'border-red-500 ring-1 ring-red-500' : 'border-input',
+                disabled ? 'cursor-not-allowed opacity-60' : '',
             ]"
             @click="openPanel"
         >
@@ -116,7 +120,7 @@ onBeforeUnmount(() => {
             <span v-else class="min-w-0 truncate text-muted-foreground">{{ placeholder ?? 'Selecione...' }}</span>
 
             <span
-                v-if="selected"
+                v-if="selected && !disabled"
                 role="button"
                 tabindex="0"
                 class="ml-2 shrink-0 rounded p-0.5 hover:bg-muted"
