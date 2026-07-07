@@ -35,6 +35,24 @@ const horasOpts = computed(() =>
     (props.gradeHorarios ?? []).map(g => g.grh_hora.substring(0, 5)),
 );
 
+// Horas já atribuídas por dia — uma vez usada, não fica mais disponível no dia.
+const horasUsadasPorDia = computed(() => {
+    const m = new Map<string, Set<string>>();
+    for (const trh of list.value) {
+        const h = trh.trh_hora?.substring(0, 5);
+        if (!h) continue;
+        if (!m.has(trh.trh_dia)) m.set(trh.trh_dia, new Set());
+        m.get(trh.trh_dia)!.add(h);
+    }
+    return m;
+});
+
+// Opções de horário disponíveis para o dia sendo preenchido (exclui as já usadas).
+const horasDisponiveis = computed(() => {
+    const usadas = horasUsadasPorDia.value.get(form.trh_dia) ?? new Set<string>();
+    return horasOpts.value.filter(h => !usadas.has(h) || h === form.trh_hora);
+});
+
 const TEMPOS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const;
 
 const list = computed<TurmaHorario[]>(() => props.horarios ?? []);
@@ -253,11 +271,14 @@ const remove = (trh: TurmaHorario) => {
                                             class="h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
                                         >
                                             <option value="">{{ horasOpts.length === 0 ? 'Sem grade cadastrada' : '—' }}</option>
-                                            <option v-for="h in horasOpts" :key="h" :value="h">{{ h }}</option>
+                                            <option v-for="h in horasDisponiveis" :key="h" :value="h">{{ h }}</option>
                                         </select>
                                         <InputError :message="errors.trh_hora" />
                                         <p v-if="horasOpts.length === 0" class="text-xs text-amber-600">
                                             Cadastre a grade de horários do segmento em Parâmetros.
+                                        </p>
+                                        <p v-else-if="horasDisponiveis.length === 0" class="text-xs text-amber-600">
+                                            Todos os horários deste dia já foram utilizados.
                                         </p>
                                     </div>
 

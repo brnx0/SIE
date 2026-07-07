@@ -98,6 +98,21 @@ class TurmaHorarioController extends Controller
             ]);
         }
 
+        // Horário já utilizado neste dia — a mesma hora não pode repetir em outro tempo.
+        if (! empty($data['trh_hora'])) {
+            $horaUsada = TurmaHorario::where('trh_tur_id', $turma->tur_id)
+                ->where('trh_dia', $data['trh_dia'])
+                ->where('trh_tempo', '!=', $data['trh_tempo'])
+                ->where('trh_hora', $data['trh_hora'])
+                ->exists();
+
+            if ($horaUsada) {
+                return back()->withErrors([
+                    'trh_hora' => 'Este horário já foi utilizado neste dia.',
+                ]);
+            }
+        }
+
         $conflito = TurmaHorario::with('turma')
             ->where('trh_tempo', $data['trh_tempo'])
             ->where('trh_dia', $data['trh_dia'])

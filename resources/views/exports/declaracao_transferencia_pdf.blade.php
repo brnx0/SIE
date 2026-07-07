@@ -51,8 +51,16 @@
             : ($aluno?->aln_filiacao_2_tipo === 'PAI' ? $aluno?->aln_filiacao_2 : null);
 
         $nomeAluno = mb_strtoupper($aluno?->aln_nome ?? '—', 'UTF-8');
-        $nomeMae   = mb_strtoupper($filiacaoMae ?? 'FILIAÇÃO NÃO INFORMADA', 'UTF-8');
-        $nomePai   = mb_strtoupper($filiacaoPai ?? 'FILIAÇÃO NÃO INFORMADA', 'UTF-8');
+
+        // Só monta a filiação que foi informada (evita "Sra." / "Sr." vazios).
+        $partesFiliacao = [];
+        if (filled($filiacaoMae)) {
+            $partesFiliacao[] = 'da Sra. <b>' . e(mb_strtoupper($filiacaoMae, 'UTF-8')) . '</b>';
+        }
+        if (filled($filiacaoPai)) {
+            $partesFiliacao[] = 'do Sr. <b>' . e(mb_strtoupper($filiacaoPai, 'UTF-8')) . '</b>';
+        }
+        $filiacaoTexto = $partesFiliacao ? 'filho(a) ' . implode(' e ', $partesFiliacao) : '';
         $modalidadeMap = ['PRESENCIAL' => 'Presencial', 'EAD' => 'EAD', 'HIBRIDA' => 'Híbrida', 'SEMIPRESENCIAL' => 'Semipresencial'];
         $modalidade = $modalidadeMap[strtoupper($turma?->tur_mediacao ?? 'PRESENCIAL')] ?? 'Presencial';
     @endphp
@@ -75,9 +83,7 @@
     <p class="declaracao">
         Declaramos que <b>{{ $nomeAluno }}</b>, matrícula nº
         <b>{{ $aluno?->aln_nr_matricula ?? '—' }}</b>, nascido(a) em
-        <b>{{ $formatDate($aluno?->aln_dt_nascimento) }}</b>, filho(a) da Sra.
-        <b>{{ $nomeMae }}</b> e do Sr.
-        <b>{{ $nomePai }}</b>, estava regularmente matriculado(a) no ano letivo de
+        <b>{{ $formatDate($aluno?->aln_dt_nascimento) }}</b>@if ($filiacaoTexto), {!! $filiacaoTexto !!}@endif, estava regularmente matriculado(a) no ano letivo de
         @php
             $dtMov = $movimentacao->mva_dt_movimentacao ? $formatDate($movimentacao->mva_dt_movimentacao) : '—';
             $hrMov = $movimentacao->mva_created_at ? $movimentacao->mva_created_at->format('H:i') : null;
