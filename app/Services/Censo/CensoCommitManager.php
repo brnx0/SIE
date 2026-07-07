@@ -76,6 +76,7 @@ class CensoCommitManager
             'lotacoes_criadas'     => 0,
             'lotacoes_ignoradas'   => 0,
             'lotacoes_sem_dep'     => 0,
+            'lotacoes_sem_cargo'   => 0,
             'admissoes_criadas'    => 0,
             'turma_prof_criados'   => 0,
             'turma_prof_bloqueados' => 0,
@@ -177,6 +178,9 @@ class CensoCommitManager
 
                 $nome = $this->col($campos, 6) ?: 'ESCOLA SEM NOME';
                 $baiId = $this->findOrCreateBairro($munId, $this->col($campos, 13) ?: 'NÃO INFORMADO');
+                // Situação de funcionamento (censo): 1=Em atividade, 2=Paralisada, 3=Extinta.
+                // Só "Em atividade" entra como ativa no sistema.
+                $situacao = (int) ($this->col($campos, 3) ?: 1);
                 $now = now();
 
                 DB::table('edu_escola')->insert([
@@ -196,9 +200,9 @@ class CensoCommitManager
                     'esc_telefone_fixo'         => mb_substr($this->col($campos, 15), 0, 11) ?: null,
                     'esc_email'                 => mb_substr($this->col($campos, 17), 0, 150),
                     'esc_dep_administrativa'    => (int) ($this->col($campos, 21) ?: 0),
-                    'esc_situacao_func'         => (int) ($this->col($campos, 3) ?: 1),
+                    'esc_situacao_func'         => $situacao,
                     'esc_regulamentada_conselho' => $this->col($campos, 36) === '1',
-                    'esc_fl_ativo'              => true,
+                    'esc_fl_ativo'              => $situacao === 1,
                     'esc_created_at'            => $now,
                     'esc_updated_at'            => $now,
                 ]);
@@ -260,8 +264,17 @@ class CensoCommitManager
                 $resumo['turmas_ignoradas']++; // atividade complementar/AEE — não vira turma regular aqui
                 continue;
             }
-            if (! $etapa->ced_seg_id || ! $etapa->ced_ser_id) {
-                $this->marcarErro($reg, "Etapa {$codEtapa} sem segmento/série mapeados.");
+            if (! $etapa->ced_ser_id) {
+                $this->marcarErro($reg, "Etapa {$codEtapa} sem série mapeada.");
+                $resumo['turmas_bloqueadas']++;
+                continue;
+            }
+
+            // Segmento sai do de-para se informado, senão da própria série (edu_serie.seg_id).
+            $segId = $etapa->ced_seg_id
+                ?: DB::table('edu_serie')->where('ser_id', $etapa->ced_ser_id)->value('seg_id');
+            if (! $segId) {
+                $this->marcarErro($reg, "Série {$etapa->ced_ser_id} sem segmento (edu_serie.seg_id).");
                 $resumo['turmas_bloqueadas']++;
                 continue;
             }
@@ -273,7 +286,7 @@ class CensoCommitManager
                 DB::table('edu_turma')->insert([
                     'tur_esc_id'             => $escId,
                     'tur_anl_id'             => $lote->icl_anl_id,
-                    'tur_seg_id'             => $etapa->ced_seg_id,
+                    'tur_seg_id'             => $segId,
                     'tur_ser_id'             => $etapa->ced_ser_id,
                     'tur_cd_inep'            => $inepTurma,
                     'tur_nome'               => mb_substr($this->col($campos, 5) ?: 'TURMA', 0, 20),
@@ -371,8 +384,10 @@ class CensoCommitManager
             'aln_mun_id_nasc'   => $munId,
             'aln_cpf'           => $cpf,
             'aln_cd_inep'       => $inep,
-            'aln_filiacao_1'    => mb_substr($this->col($campos, 9), 0, 100) ?: null,
-            'aln_filiacao_2'    => mb_substr($this->col($campos, 10), 0, 100) ?: null,
+            'aln_filiacao_1'      => mb_substr($this->col($campos, 9), 0, 100) ?: null,
+            'aln_filiacao_1_tipo' => $this->col($campos, 9) !== '' ? 'MAE' : null,
+            'aln_filiacao_2'      => mb_substr($this->col($campos, 10), 0, 100) ?: null,
+            'aln_filiacao_2_tipo' => $this->col($campos, 10) !== '' ? 'PAI' : null,
             'aln_cep'           => $this->cepOuNull($this->col($campos, 52)),
             'aln_cidade'        => $cidade,
             'aln_uf'            => $uf,
@@ -558,6 +573,9 @@ class CensoCommitManager
             $this->cargoCache[$d->cfd_origem.'|'.$d->cfd_codigo] = (int) $d->cfd_crg_id;
         }
 
+        // Cargos docentes → marcam função em sala de aula "Docente" na lotação.
+        $docenteIds = array_flip(\App\Support\CargoDocente::ids());
+
         $admPorFun = DB::table('edu_funcionario_admissao')
             ->pluck('adm_id', 'adm_fun_id')->map(fn ($v) => (int) $v)->all();
         $lotExistente = [];
@@ -571,7 +589,7 @@ class CensoCommitManager
         foreach ([['40', 'gestor', 5], ['50', 'docente', 7]] as [$tipo, $origem, $posCargo]) {
             CensoRegistro::query()
                 ->where('icr_icl_id', $lote->icl_id)->where('icr_tipo', $tipo)
-                ->chunkById(2000, function ($registros) use (&$resumo, $funcId, $escId, &$admPorFun, &$lotExistente, $dtInicio, $origem, $posCargo) {
+                ->chunkById(2000, function ($registros) use (&$resumo, $funcId, $escId, &$admPorFun, &$lotExistente, $dtInicio, $origem, $posCargo, $docenteIds) {
                     foreach ($registros as $reg) {
                         $campos = $reg->icr_campos;
                         $fid = $funcId[$this->col($campos, 4)] ?? null;
@@ -584,6 +602,10 @@ class CensoCommitManager
 
                         try {
                             $crg = $this->resolverCargo($origem, (int) ($this->col($campos, $posCargo) ?: 0));
+                            if ($crg === null) {
+                                $resumo['lotacoes_sem_cargo']++;
+                                continue; // função sem de-para → não inventa cargo
+                            }
 
                             $adm = $admPorFun[$fid] ?? null;
                             if ($adm === null) {
@@ -612,6 +634,8 @@ class CensoCommitManager
                                 'lot_vinculo'  => 'CENSO',
                                 'lot_dt_inicio' => $dtInicio,
                                 'lot_fl_ativo' => true,
+                                'lot_funcoes_sala_aula' => isset($docenteIds[$crg])
+                                    ? json_encode(['Docente'], JSON_UNESCAPED_UNICODE) : null,
                                 'lot_created_at' => now(),
                                 'lot_updated_at' => now(),
                             ]);
@@ -626,35 +650,14 @@ class CensoCommitManager
         }
     }
 
-    /** De-para de cargo com find-or-create em edu_cargo. */
-    private function resolverCargo(string $origem, int $codigo): int
+    /**
+     * De-para função→cargo: retorna o crg_id mapeado em cfg_censo_funcao_depara,
+     * ou null se a função não estiver mapeada. NÃO cria cargo (o cargo é cadastro
+     * do cliente — ex.: "Docente I/II/III"). Função sem de-para bloqueia a lotação.
+     */
+    private function resolverCargo(string $origem, int $codigo): ?int
     {
-        $key = $origem.'|'.$codigo;
-        if (isset($this->cargoCache[$key])) {
-            return $this->cargoCache[$key];
-        }
-
-        $depara = DB::table('cfg_censo_funcao_depara')
-            ->where('cfd_origem', $origem)->where('cfd_codigo', $codigo)->first();
-
-        $nome = $depara->cfd_cargo_nome ?? ('Função Censo '.ucfirst($origem).' '.$codigo);
-
-        $crgId = DB::table('edu_cargo')->where('crg_nome', $nome)->value('crg_id');
-        if (! $crgId) {
-            $crgId = DB::table('edu_cargo')->insertGetId([
-                'crg_nome'       => $nome,
-                'crg_fl_ativo'   => true,
-                'crg_created_at' => now(),
-                'crg_updated_at' => now(),
-            ], 'crg_id');
-        }
-
-        if ($depara) {
-            DB::table('cfg_censo_funcao_depara')->where('cfd_id', $depara->cfd_id)
-                ->update(['cfd_crg_id' => $crgId, 'cfd_updated_at' => now()]);
-        }
-
-        return $this->cargoCache[$key] = (int) $crgId;
+        return $this->cargoCache[$origem.'|'.$codigo] ?? null;
     }
 
     // ---------- Turma-professor (reg 50) ----------
@@ -872,13 +875,17 @@ class CensoCommitManager
         return $hm.':00';
     }
 
-    /** Dias de funcionamento (cols 7..13 = dom..sáb, flags). */
+    /**
+     * Dias de funcionamento. No reg20 as cols 7..13 (dom..sáb) trazem o HORÁRIO
+     * do dia (ex. "13:30-17:30") quando há aula, ou vazio quando não há — não é flag.
+     * Dia ativo = coluna não-vazia. Valores casam com Turma::DIAS_SEMANA (3 letras).
+     */
     private function dias(array $campos): array
     {
-        $labels = ['domingo', 'segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado'];
+        $labels = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sab'];
         $dias = [];
         foreach ($labels as $i => $label) {
-            if ($this->col($campos, 7 + $i) === '1') {
+            if ($this->col($campos, 7 + $i) !== '') {
                 $dias[] = $label;
             }
         }
