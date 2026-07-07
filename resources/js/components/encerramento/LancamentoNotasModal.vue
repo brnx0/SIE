@@ -19,6 +19,7 @@ interface DisciplinaBloco {
     dis_nome: string;
     valores: Record<string, Record<string, Cel>>;
     calc: Record<string, Record<string, CalcCel>>;
+    recuperacoes?: Record<string, number>;
 }
 
 const carregando = ref(true);
@@ -35,6 +36,15 @@ const disciplinas = ref<DisciplinaBloco[]>([]);
 interface EditCel { media: number | string | null; cnc_id: number | null; faltas: number | string | null; tipo: string | null; auto: boolean; status: 'idle' | 'saving' | 'saved' | 'error' }
 const cels = reactive<Record<string, EditCel>>({});
 const ck = (dis: number, uni: number) => `${dis}|${uni}`;
+
+// Recuperação final por disciplina (aluno único do modal): recs[dis] = valor.
+const recs = reactive<Record<number, number | string | null>>({});
+const recFinalNum = (dis: number): number | null => {
+    const r = recs[dis];
+    if (r === null || r === '' || r === undefined) return null;
+    const n = Number(r);
+    return Number.isNaN(n) ? null : n;
+};
 
 // Tipo já lançado (manual) por DISCIPLINA: o aluno pode ter numérica numa e conceitual noutra.
 // Bloqueia só inserir o tipo diferente do já lançado naquela disciplina — o toggle fica livre.
@@ -122,7 +132,12 @@ const mediaFinal = (dis: number): string | null => {
         if (Number.isNaN(n)) return null;
         notas.push(n);
     }
-    const media = roundMeio(notas.reduce((s, v) => s + v, 0) / us.length);
+    let media = roundMeio(notas.reduce((s, v) => s + v, 0) / us.length);
+    // Recuperação final (só numérica): vale como MF se lançada e MAIOR que a média obtida.
+    if (entrada.value === 'numerica') {
+        const rec = recFinalNum(dis);
+        if (rec !== null && rec > media) media = roundMeio(rec);
+    }
     return entrada.value === 'faixa' ? faixaSigla(media) : media.toFixed(1);
 };
 
@@ -150,7 +165,10 @@ const carregar = async () => {
 
         const aln = String(props.aluno.aln_id);
         Object.keys(cels).forEach((k) => delete cels[k]);
+        Object.keys(recs).forEach((k) => delete recs[Number(k)]);
         for (const d of disciplinas.value) {
+            const rmap = (d.recuperacoes ?? {}) as Record<string, number>;
+            if (rmap[aln] != null) recs[d.dis_id] = rmap[aln];
             for (const u of unidades.value) {
                 const val = d.valores?.[aln]?.[u.uni_id];
                 const calc = d.calc?.[aln]?.[u.uni_id];
@@ -170,21 +188,63 @@ const carregar = async () => {
     }
 };
 
-// Mesma regra do diário/secretaria: média final termina em 0,5 ou 0 e no máximo 10.
-const normalizarMedia = (v: number | string | null): number | null => {
+// Clampa 0..10; arredonda período: numérica 0,01 / faixa 0,5 (igual à tela Notas e Faltas).
+const clamp10 = (n: number) => Math.min(10, Math.max(0, n));
+const arredondarPeriodo = (v: number | string | null): number | null => {
     if (v === null || v === '') return null;
     let n = Number(v);
     if (Number.isNaN(n)) return null;
-    n = Math.min(10, Math.max(0, n));
-    return Math.round(n * 2) / 2;
+    n = clamp10(n);
+    return entrada.value === 'faixa' ? Math.round(n * 2) / 2 : Math.round(n * 100) / 100;
 };
 
-// Edita a nota: arredonda ao 0,5 e salva.
+// Bloqueia > 10 / < 0 ao vivo: NÃO clampa, remove o último dígito digitado (ex.: "40" → "4").
+const onMediaInput = (dis: number, uni: number) => {
+    const c = cels[ck(dis, uni)];
+    if (!c) return;
+    const v = c.media;
+    if (v !== null && (v as any) !== '' && !Number.isNaN(Number(v)) && (Number(v) > 10 || Number(v) < 0)) {
+        const s = String(v).slice(0, -1);
+        c.media = (s === '' || s === '-' || s === '.') ? null : s;
+        return;
+    }
+    c.auto = false;
+};
+
+// Ao sair do campo: arredonda e salva.
 const onMediaChange = (dis: number, uni: number) => {
     const c = cels[ck(dis, uni)];
     if (!c) return;
-    c.media = normalizarMedia(c.media);
+    c.media = arredondarPeriodo(c.media);
     salvar(dis, uni);
+};
+
+// Recuperação final (numérica): bloqueia > 10 ao vivo + salva com debounce.
+const recTimer: Record<number, ReturnType<typeof setTimeout>> = {};
+const onRecInput = (dis: number, e: Event) => {
+    const el = e.target as HTMLInputElement;
+    const v = el.value;
+    if (v !== '' && !Number.isNaN(Number(v)) && (Number(v) > 10 || Number(v) < 0)) {
+        const s = String(v).slice(0, -1);
+        el.value = (s === '' || s === '-' || s === '.') ? '' : s;
+    }
+    recs[dis] = el.value === '' ? null : el.value;
+    if (recTimer[dis]) clearTimeout(recTimer[dis]);
+    recTimer[dis] = setTimeout(() => salvarRecuperacao(dis), 1000);
+};
+
+const salvarRecuperacao = async (dis: number) => {
+    const raw = recs[dis];
+    const valor = raw === '' || raw === null || raw === undefined ? null : Math.round(Number(raw) * 100) / 100;
+    try {
+        await fetch('/secretaria/lancamento-manual/salvar-recuperacao', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json', ...csrf() },
+            credentials: 'same-origin',
+            body: JSON.stringify({ tur_id: props.turId, dis_id: dis, aln_id: props.aluno.aln_id, valor }),
+        });
+        emit('saved');
+    } catch { /* ignora — status visual não crítico aqui */ }
 };
 
 const mensagemErro = async (r: Response): Promise<string> => {
@@ -202,7 +262,7 @@ const mensagemErro = async (r: Response): Promise<string> => {
 const salvar = async (dis: number, uni: number) => {
     const c = cels[ck(dis, uni)];
     if (!c) return;
-    c.media = normalizarMedia(c.media);
+    c.media = arredondarPeriodo(c.media);
     c.auto = false;
     const temValor = (c.media !== null && c.media !== '') || c.cnc_id !== null;
     c.status = 'saving';
@@ -323,6 +383,7 @@ onMounted(carregar);
                                     {{ u.label }}
                                     <div class="mt-0.5 text-[10px] font-normal normal-case text-muted-foreground/70">nota · faltas</div>
                                 </th>
+                                <th v-if="entrada === 'numerica'" class="sticky top-0 z-10 border-b border-l bg-amber-500 px-3 py-3 text-center text-xs font-semibold uppercase text-white backdrop-blur">Rec.<br />Final</th>
                                 <th class="sticky right-0 top-0 z-20 border-b border-l bg-indigo-600 px-3 py-3 text-center text-xs font-semibold uppercase text-white backdrop-blur">Média<br />Final</th>
                             </tr>
                         </thead>
@@ -330,7 +391,7 @@ onMounted(carregar);
                             <tr v-for="(d, i) in disciplinas" :key="d.dis_id" :class="i % 2 ? 'bg-muted/20' : ''">
                                 <td class="sticky left-0 z-10 border-b px-4 py-3 font-medium" :class="i % 2 ? 'bg-muted/40' : 'bg-card'">{{ d.dis_nome }}</td>
                                 <template v-if="bloqueadoDisc(d.dis_id)">
-                                    <td :colspan="unidades.length + 1" class="border-b border-l px-4 py-3 text-center">
+                                    <td :colspan="unidades.length + 1 + (entrada === 'numerica' ? 1 : 0)" class="border-b border-l px-4 py-3 text-center">
                                         <span class="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-xs font-medium text-amber-800 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
                                             <Lock class="size-3.5" /> Notas {{ bloqLabel(d.dis_id) }} lançadas nesta disciplina
                                         </span>
@@ -353,9 +414,10 @@ onMounted(carregar);
                                         <input
                                             v-else
                                             v-model="cels[ck(d.dis_id, u.uni_id)].media"
-                                            type="number" min="0" max="10" step="0.5"
+                                            type="number" min="0" max="10" step="0.01"
                                             :class="['h-10 w-20 rounded-md border bg-background px-2 text-center text-sm', cels[ck(d.dis_id, u.uni_id)]?.auto ? 'text-muted-foreground' : '']"
                                             placeholder="—"
+                                            @input="onMediaInput(d.dis_id, u.uni_id)"
                                             @change="onMediaChange(d.dis_id, u.uni_id)"
                                         />
                                         <input
@@ -370,6 +432,16 @@ onMounted(carregar);
                                         <span v-else-if="cels[ck(d.dis_id, u.uni_id)]?.status === 'error'" class="text-[11px] text-rose-600">erro</span>
                                     </div>
                                 </td>
+                                <td v-if="entrada === 'numerica'" class="border-b border-l px-3 py-2.5 text-center" :class="i % 2 ? 'bg-amber-50/40 dark:bg-amber-950/10' : 'bg-amber-50/20 dark:bg-amber-950/5'">
+                                    <input
+                                        :value="recs[d.dis_id] ?? ''"
+                                        type="number" min="0" max="10" step="0.01"
+                                        class="h-10 w-20 rounded-md border border-amber-300 bg-background px-2 text-center text-sm tabular-nums focus:outline-none focus:ring-1 focus:ring-amber-500 dark:border-amber-800"
+                                        placeholder="—"
+                                        title="Recuperação final — vale como Média Final se maior que a média obtida."
+                                        @input="onRecInput(d.dis_id, $event)"
+                                    />
+                                </td>
                                 <td class="sticky right-0 z-10 border-b border-l px-3 py-2.5 text-center text-sm font-semibold tabular-nums" :class="i % 2 ? 'bg-muted/40' : 'bg-card'">
                                     <span v-if="mediaFinal(d.dis_id) !== null" class="text-indigo-700 dark:text-indigo-300">{{ mediaFinal(d.dis_id) }}</span>
                                     <span v-else class="text-muted-foreground">—</span>
@@ -377,7 +449,7 @@ onMounted(carregar);
                                 </template>
                             </tr>
                             <tr v-if="!disciplinas.length">
-                                <td :colspan="unidades.length + 2" class="px-3 py-8 text-center text-muted-foreground">Sem disciplinas na grade.</td>
+                                <td :colspan="unidades.length + 2 + (entrada === 'numerica' ? 1 : 0)" class="px-3 py-8 text-center text-muted-foreground">Sem disciplinas na grade.</td>
                             </tr>
                         </tbody>
                     </table>

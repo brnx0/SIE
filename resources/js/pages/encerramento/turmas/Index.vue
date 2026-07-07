@@ -2,12 +2,13 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Button } from '@/components/ui/button';
 import FormLabel from '@/components/common/FormLabel.vue';
+import LocalCombobox from '@/components/common/LocalCombobox.vue';
 import Switch from '@/components/common/Switch.vue';
 import LancamentoNotasModal from '@/components/encerramento/LancamentoNotasModal.vue';
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue';
 import type { BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
-import { Archive, ArrowLeft, CheckCircle2, Loader2, Lock, PencilLine, ScrollText, Search, Users } from 'lucide-vue-next';
+import { Archive, ArrowLeft, CheckCircle2, Loader2, Lock, PencilLine, ScrollText, Search, TriangleAlert, Users } from 'lucide-vue-next';
 import { computed, reactive, ref } from 'vue';
 
 interface AnoLetivo { anl_id: number; anl_ano: number; anl_fl_em_exercicio: boolean }
@@ -26,7 +27,7 @@ interface AlunoLinha {
     situacao_final: string | null;
     elegivel_conselho: boolean;
 }
-interface TurmaLinha { tur_id: number; turma: string; serie: string | null; seg_id: number | null; segmento: string | null; avaliativa: boolean; encerrada: boolean; alunos: AlunoLinha[] }
+interface TurmaLinha { tur_id: number; turma: string; serie: string | null; seg_id: number | null; segmento: string | null; avaliativa: boolean; encerrada: boolean; config_erro: string | null; alunos: AlunoLinha[] }
 interface SegmentoOpc { seg_id: number; seg_nome: string }
 
 const props = defineProps<{
@@ -42,6 +43,7 @@ const breadcrumbs: BreadcrumbItem[] = [{ title: 'Encerramento de Turmas', href: 
 const anoDefault = [...props.anosLetivos].filter((a) => a.anl_fl_em_exercicio).sort((a, b) => b.anl_ano - a.anl_ano)[0] ?? props.anosLetivos[0];
 const anlId = ref<number | ''>(anoDefault?.anl_id ?? '');
 const escId = ref<number | ''>(props.userEscola?.esc_id ?? '');
+const escolaItems = computed(() => props.escolas.map((e) => ({ id: e.esc_id, label: e.esc_nome })));
 
 const carregando = ref(false);
 const carregado = ref(false);
@@ -231,7 +233,7 @@ const abrirAtaFinal = () => {
 const podeEncerrar = (a: AlunoLinha) => a.status === 'completo' || a.status === 'nao_avaliativa';
 const completos = (t: TurmaLinha) => t.alunos.filter((a) => podeEncerrar(a)).length;
 // Encerramento é da turma inteira: só libera se todos os alunos estiverem aptos.
-const podeEncerrarTurma = (t: TurmaLinha) => t.alunos.length > 0 && t.alunos.every((a) => podeEncerrar(a));
+const podeEncerrarTurma = (t: TurmaLinha) => t.alunos.length > 0 && !t.config_erro && t.alunos.every((a) => podeEncerrar(a));
 const pendentesTurma = (t: TurmaLinha) => t.alunos.filter((a) => !podeEncerrar(a)).length;
 </script>
 
@@ -259,10 +261,13 @@ const pendentesTurma = (t: TurmaLinha) => t.alunos.filter((a) => !podeEncerrar(a
                 </div>
                 <div class="grid gap-1.5">
                     <FormLabel :required="true">Escola</FormLabel>
-                    <select v-model="escId" :disabled="!isAdmin && !!userEscola" class="rounded-md border bg-background px-3 py-2 text-sm">
-                        <option value="">Selecione...</option>
-                        <option v-for="e in escolas" :key="e.esc_id" :value="e.esc_id">{{ e.esc_nome }}</option>
-                    </select>
+                    <LocalCombobox
+                        :model-value="escId === '' ? null : escId"
+                        :items="escolaItems"
+                        :disabled="!isAdmin && !!userEscola"
+                        placeholder="Selecione..."
+                        @update:model-value="(v) => (escId = v ?? '')"
+                    />
                 </div>
                 <div class="flex items-end">
                     <Button :disabled="!anlId || !escId || carregando" class="bg-indigo-600 text-white hover:bg-indigo-700" @click="listar">
@@ -344,6 +349,10 @@ const pendentesTurma = (t: TurmaLinha) => t.alunos.filter((a) => !podeEncerrar(a
 
             <!-- ===== Detalhe da turma: legenda + alunos ===== -->
             <template v-else-if="turmaSel">
+                <div v-if="turmaSel.config_erro" class="mb-4 flex items-start gap-2 rounded-lg border border-rose-300 bg-rose-50 p-3 text-sm text-rose-800 dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-200">
+                    <TriangleAlert class="mt-0.5 size-4 shrink-0" />
+                    <span>{{ turmaSel.config_erro }}</span>
+                </div>
                 <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
                     <div class="flex items-center gap-2">
                         <Button variant="ghost" size="sm" @click="voltar"><ArrowLeft class="mr-1 size-4" /> Turmas</Button>

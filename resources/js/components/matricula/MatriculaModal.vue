@@ -136,6 +136,15 @@ const params             = computed(() => (page.props as any).params ?? {});
 const cpfObrigatorio     = computed(() => !!params.value.cpf_obrigatorio);
 const alertarAcentos     = computed(() => !!params.value.alertar_acentos_nomes);
 const tabSaudeDisponivel = computed(() => possuiDeficiencia.value);
+// PCD marcado mas nenhum item de deficiência/transtorno/altas habilidades assinalado.
+const pcdSemItem = computed(() =>
+    possuiDeficiencia.value
+    && formSaude.als_deficiencias.length === 0
+    && formSaude.als_transtornos_globais.length === 0
+    && formSaude.als_transtornos_aprendizagem.length === 0
+    && !formSaude.als_fl_altas_habilidades
+    && formSaude.als_deficiencia_outro.trim() === '',
+);
 
 const stripAccents = (str: string) => str.normalize('NFD').replace(/[̀-ͯ]/g, '');
 
@@ -303,7 +312,7 @@ const SAUDE_TEXT_FIELDS = [
     'als_ds_alergias', 'als_contato_emergencia', 'als_plano_saude',
     'als_alergia_a', 'als_remedio_febre', 'als_remedio_cefaleia',
     'als_outra_doenca', 'als_outra_doenca_infancia',
-    'als_deficiencia_outro', 'als_observacao',
+    'als_deficiencia_outro', 'als_cid', 'als_observacao',
 ] as const;
 SAUDE_TEXT_FIELDS.forEach((field) => {
     watch(() => formSaude[field], (v) => {
@@ -417,11 +426,9 @@ const submit = async () => {
     }
 
     // Valida aba de saúde se necessário
-    const temItemPcd = formSaude.als_deficiencias.length > 0
-        || formSaude.als_transtornos_globais.length > 0
-        || formSaude.als_transtornos_aprendizagem.length > 0;
-    if (possuiDeficiencia.value && !temItemPcd) {
-        errors.value = { 'saude.als_deficiencias': 'Informe ao menos uma deficiência ou transtorno.' };
+    if (pcdSemItem.value) {
+        errors.value = { 'saude.als_deficiencias': 'Marque ao menos um item em Tipo de Deficiência, Transtorno Global do Desenvolvimento ou Altas Habilidades/Superdotação.' };
+        activeTab.value = 'saude';
         focusFirstError();
         return;
     }
@@ -591,7 +598,7 @@ const selectClass = 'flex h-10 w-full rounded-md border border-input bg-backgrou
                     @click="tabSaudeDisponivel && (activeTab = 'saude')"
                 >
                     Quadro de Saúde
-                    <span v-if="possuiDeficiencia && !formSaude.als_deficiencias.length && !formSaude.als_transtornos_globais.length && !formSaude.als_transtornos_aprendizagem.length" class="ml-1 text-rose-500">*</span>
+                    <span v-if="pcdSemItem" class="ml-1 text-rose-500">*</span>
                 </button>
             </div>
 
@@ -924,7 +931,7 @@ const selectClass = 'flex h-10 w-full rounded-md border border-input bg-backgrou
                             <Label for="als_fl_pcd" class="text-sm font-medium">Aluno com Deficiência (PCD), TGD ou Altas Habilidades</Label>
                         </div>
 
-                        <div :class="{ 'pointer-events-none opacity-40': !possuiDeficiencia }">
+                        <div id="als_deficiencias" tabindex="-1" class="scroll-mt-20 rounded-lg outline-none focus:ring-2 focus:ring-rose-400" :class="[{ 'pointer-events-none opacity-40': !possuiDeficiencia }, pcdSemItem ? 'ring-2 ring-rose-400' : '']">
                             <InputError :message="err('saude.als_deficiencias')" />
                             <div class="grid gap-6 sm:grid-cols-3">
                                 <div>

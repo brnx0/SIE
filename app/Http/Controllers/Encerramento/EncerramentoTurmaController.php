@@ -72,7 +72,8 @@ class EncerramentoTurmaController extends Controller
             ->map(fn ($t) => ['seg_id' => (int) $t->seg_id, 'seg_nome' => $t->seg_nome_reduzido])
             ->values();
 
-        $linhas = $turmas->map(function ($t) use ($uniIds, $uniLabel) {
+        $anlId = (int) $data['anl_id'];
+        $linhas = $turmas->map(function ($t) use ($uniIds, $uniLabel, $anlId) {
             $tipos = json_decode((string) $t->ser_tipo_avaliacao, true) ?: [];
             $tipos = is_array($tipos) ? $tipos : [];
             // Avaliativa (notas numérica/conceitual) tem precedência: se a série lança notas,
@@ -84,6 +85,7 @@ class EncerramentoTurmaController extends Controller
             $disciplinas = DB::table('edu_grade_disciplinar as gd')
                 ->join('edu_disciplina as d', 'd.dis_id', '=', 'gd.grd_dis_id')
                 ->where('gd.grd_ser_id', $t->tur_ser_id)
+                ->where('gd.grd_anl_id', $anlId)
                 ->where('gd.grd_fl_ativo', true)
                 ->orderBy('gd.grd_ordem')
                 ->orderBy('d.dis_nome')
@@ -129,8 +131,11 @@ class EncerramentoTurmaController extends Controller
             // Elegível ao conselho = aluno que NÃO seria aprovado (reprova em nota ou frequência).
             // Calcula a prévia da situação (sem conselho); o front só libera o toggle para esses.
             $reprovaria = [];
+            $configErro = null;
             if ($avaliativa) {
-                foreach (CalculoEncerramento::calcular((int) $t->tur_id, [])['resultados'] as $aln => $r) {
+                $calcPrevia = CalculoEncerramento::calcular((int) $t->tur_id, []);
+                $configErro = $calcPrevia['config_erro'] ?? null;
+                foreach ($calcPrevia['resultados'] as $aln => $r) {
                     $reprovaria[(int) $aln] = $r['reprovou_nota'] || $r['reprovou_falta'];
                 }
             }
@@ -216,6 +221,7 @@ class EncerramentoTurmaController extends Controller
                 'segmento'    => $t->seg_nome_reduzido,
                 'avaliativa'  => $avaliativa,
                 'encerrada'   => $encerrada,
+                'config_erro' => $configErro,
                 'alunos'      => $alunos,
             ];
         })->values();
@@ -241,6 +247,10 @@ class EncerramentoTurmaController extends Controller
         $this->autorizarEscola((int) $turma->tur_esc_id);
 
         $calc = CalculoEncerramento::calcular((int) $data['tur_id'], array_map('intval', $data['conselho'] ?? []));
+
+        if (! empty($calc['config_erro'])) {
+            return response()->json(['ok' => false, 'message' => $calc['config_erro']], 422);
+        }
 
         if (! empty($calc['erros'])) {
             $nomes = DB::table('edu_aluno')->whereIn('aln_id', array_keys($calc['erros']))->pluck('aln_nome', 'aln_id');

@@ -9,6 +9,7 @@ import { AlertCircle, CheckCircle2, Loader2, RefreshCw, Search, UserPlus, X } fr
 import { computed, ref, watch } from 'vue';
 import { Button } from '@/components/ui/button';
 import FormLabel from '@/components/common/FormLabel.vue';
+import LocalCombobox from '@/components/common/LocalCombobox.vue';
 import Switch from '@/components/common/Switch.vue';
 
 const props = defineProps<{
@@ -18,6 +19,13 @@ const props = defineProps<{
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Matrículas', href: '/matriculas' }];
+
+const escolaItems = computed(() =>
+    props.escolas.map((e) => ({
+        id: e.esc_id,
+        label: (e.esc_cd_escola ? `${e.esc_cd_escola} — ` : '') + e.esc_nome,
+    })),
+);
 
 // ── Filtros ──────────────────────────────────────────────────────────────────
 const fAnlId    = ref<number | ''>(props.anosLetivos[0]?.anl_id ?? '');
@@ -293,12 +301,12 @@ const formatarNomeAluno = (a: AlunoResumo) => {
                     <!-- Escola (obrigatória) -->
                     <div class="grid gap-1.5 lg:col-span-2">
                         <FormLabel :required="true">Escola</FormLabel>
-                        <select v-model.number="fEscId" :class="selectClass">
-                            <option value="">Selecione uma escola...</option>
-                            <option v-for="esc in escolas" :key="esc.esc_id" :value="esc.esc_id">
-                                {{ esc.esc_cd_escola ? `${esc.esc_cd_escola} — ` : '' }}{{ esc.esc_nome }}
-                            </option>
-                        </select>
+                        <LocalCombobox
+                            :model-value="fEscId === '' ? null : fEscId"
+                            :items="escolaItems"
+                            placeholder="Selecione uma escola..."
+                            @update:model-value="(v) => (fEscId = v ?? '')"
+                        />
                     </div>
 
                     <!-- Segmento (obrigatório) -->

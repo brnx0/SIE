@@ -273,6 +273,23 @@ ALUNO_FILIACAO_FIELDS.forEach((field) => {
     );
 });
 
+// Quadro de saúde: campos de texto livre nunca aceitam acentuação (strip sempre aplicado).
+const SAUDE_TEXT_FIELDS_ACCENT = [
+    'als_contato_emergencia', 'als_plano_saude', 'als_alergia_a', 'als_ds_alergias',
+    'als_remedio_febre', 'als_remedio_cefaleia', 'als_outra_doenca', 'als_outra_doenca_infancia',
+    'als_deficiencia_outro', 'als_cid', 'als_observacao',
+] as const;
+SAUDE_TEXT_FIELDS_ACCENT.forEach((field) => {
+    watch(
+        () => form.saude[field] as string,
+        (v) => {
+            if (typeof v !== 'string') return;
+            const next = stripAccents(v);
+            if (next !== v) (form.saude as any)[field] = next;
+        },
+    );
+});
+
 // Cartão do SUS: só dígitos, máx. 15.
 const onCartaoSusInput = (e: Event) => {
     const el = e.target as HTMLInputElement;

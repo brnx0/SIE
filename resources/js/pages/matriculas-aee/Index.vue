@@ -3,6 +3,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import MatricularAlunoAeeModal from '@/components/turma-aee/MatricularAlunoAeeModal.vue';
 import { Button } from '@/components/ui/button';
 import FormLabel from '@/components/common/FormLabel.vue';
+import LocalCombobox from '@/components/common/LocalCombobox.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
 import { Loader2, Search, UserPlus, Users } from 'lucide-vue-next';
@@ -30,6 +31,7 @@ const breadcrumbs: BreadcrumbItem[] = [{ title: 'Matrículas AEE', href: '/matri
 
 const fAnlId = ref<number | ''>(props.anosLetivos[0]?.anl_id ?? '');
 const fEscId = ref<number | ''>('');
+const escolaItems = computed(() => props.escolas.map((e) => ({ id: e.esc_id, label: e.esc_nome })));
 const search = ref('');
 
 const turmas  = ref<TurmaAee[]>([]);
@@ -104,10 +106,12 @@ const aposMatricular = async () => {
                 </div>
                 <div class="grid gap-1">
                     <FormLabel>Escola</FormLabel>
-                    <select v-model="fEscId" class="rounded-md border bg-background px-3 py-2 text-sm">
-                        <option value="">Todas</option>
-                        <option v-for="e in escolas" :key="e.esc_id" :value="e.esc_id">{{ e.esc_nome }}</option>
-                    </select>
+                    <LocalCombobox
+                        :model-value="fEscId === '' ? null : fEscId"
+                        :items="escolaItems"
+                        placeholder="Todas"
+                        @update:model-value="(v) => (fEscId = v ?? '')"
+                    />
                 </div>
                 <div class="grid gap-1">
                     <FormLabel>Filtrar turma</FormLabel>

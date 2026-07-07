@@ -333,7 +333,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                         <InputError :message="form.errors.dpa_esc_id" />
                     </div>
                     <div class="md:col-span-2">
-                        <Label>Série <span class="text-rose-600">*</span></Label>
+                        <Label>Ano Escolar <span class="text-rose-600">*</span></Label>
                         <LocalCombobox v-model="form.dpa_ser_id" :items="itemsSerie"
                             placeholder="Selecione..." :invalid="!!form.errors.dpa_ser_id" />
                         <InputError :message="form.errors.dpa_ser_id" />

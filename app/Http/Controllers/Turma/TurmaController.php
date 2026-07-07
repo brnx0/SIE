@@ -45,8 +45,9 @@ class TurmaController extends Controller
 
         $anosLetivos = AnoLetivo::orderByDesc('anl_ano')->get(['anl_id', 'anl_ano']);
 
-        // Sem filtro de ano letivo explícito → usa o maior ano cadastrado
-        if (! $request->filled('anl_id') && $anosLetivos->isNotEmpty()) {
+        // 'all' = usuário escolheu "Todos os anos" → não filtra por ano.
+        // Sem anl_id (1ª carga) → usa o maior ano cadastrado como padrão.
+        if ($request->input('anl_id') !== 'all' && ! $request->filled('anl_id') && $anosLetivos->isNotEmpty()) {
             $request->merge(['anl_id' => $anosLetivos->first()->anl_id]);
         }
 
@@ -71,7 +72,7 @@ class TurmaController extends Controller
     {
         $user = auth()->user();
 
-        if (! $request->filled('anl_id')) {
+        if ($request->input('anl_id') !== 'all' && ! $request->filled('anl_id')) {
             $anlId = AnoLetivo::orderByDesc('anl_ano')->value('anl_id');
             if ($anlId) {
                 $request->merge(['anl_id' => $anlId]);
