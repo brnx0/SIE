@@ -24,6 +24,12 @@ class DatabaseSeeder extends Seeder
         $this->call(MotivoBaixaFrequenciaSeeder::class);
         $this->call(TelaPermissaoSeeder::class);
 
+        // Importação do Censo — de-para (códigos INEP). Mapeamento p/ série/cargo/
+        // disciplina é por base (feito na tela de importação). Ver docs/regras/importacao_censo.md.
+        $this->call(CensoEtapaDeparaSeeder::class);
+        $this->call(CensoFuncaoDeparaSeeder::class);
+        $this->call(CensoDisciplinaDeparaSeeder::class);
+
         $admin = User::updateOrCreate(
             ['email' => 'admin@sie.local'],
             [
