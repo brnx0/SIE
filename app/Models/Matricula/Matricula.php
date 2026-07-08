@@ -96,6 +96,15 @@ class Matricula extends Model
         return $this->tma_ser_id ?? $this->turma?->tur_ser_id;
     }
 
+    /**
+     * Série efetiva da matrícula: a própria (tma_ser_id) ou, quando nula, a da
+     * turma. Requer as relações `serie` e/ou `turma.serie` carregadas.
+     */
+    public function getSerieEfetivaAttribute(): ?Serie
+    {
+        return $this->serie ?? $this->turma?->serie;
+    }
+
     public function situacaoEntrada(): BelongsTo
     {
         return $this->belongsTo(TurmaAlunoSituacao::class, 'tma_tas_cod_entrada', 'tas_cod');

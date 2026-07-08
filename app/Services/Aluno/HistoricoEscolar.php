@@ -41,11 +41,13 @@ class HistoricoEscolar
                 'turma.escola:esc_id,esc_nome,esc_mun_id',
                 'turma.segmento:seg_id,seg_nome_completo,seg_nome_reduzido',
                 'turma.anoLetivo:anl_id,anl_ano',
+                'turma.serie:ser_id,ser_nome,ser_ordem_no_segmento,ser_carga_horaria',
                 'serie:ser_id,ser_nome,ser_ordem_no_segmento,ser_carga_horaria',
                 'situacaoSaida:tas_cod,tas_descricao',
             ])
             ->get()
-            ->filter(fn (Matricula $m) => $m->turma && $m->serie && $m->turma->anoLetivo);
+            // Série efetiva: matrícula (tma_ser_id) ou, quando nula, a da turma.
+            ->filter(fn (Matricula $m) => $m->turma && $m->serieEfetiva && $m->turma->anoLetivo);
 
         // Corte pela escola emissora: último ano (anl_ano) do aluno nessa escola.
         $anoCorte = $matriculas
@@ -58,7 +60,7 @@ class HistoricoEscolar
 
         // Ordena por ordem da série no segmento, depois ano letivo.
         $matriculas = $matriculas
-            ->sortBy(fn (Matricula $m) => sprintf('%04d-%04d', $m->serie->ser_ordem_no_segmento ?? 0, $m->turma->anoLetivo->anl_ano))
+            ->sortBy(fn (Matricula $m) => sprintf('%04d-%04d', $m->serieEfetiva->ser_ordem_no_segmento ?? 0, $m->turma->anoLetivo->anl_ano))
             ->values();
 
         // Colunas (anos escolares) + matriz de componentes.
@@ -82,15 +84,15 @@ class HistoricoEscolar
             }
 
             $colunas[] = [
-                'ano_escolar'  => $m->serie->ser_nome,
+                'ano_escolar'  => $m->serieEfetiva->ser_nome,
                 'frequencia'   => $dados['frequencia'],
                 'dias_letivos' => $dados['dias_letivos'],
-                'carga_horaria' => $m->serie->ser_carga_horaria,
+                'carga_horaria' => $m->serieEfetiva->ser_carga_horaria,
                 'situacao'     => $m->situacaoSaida?->tas_descricao ?? 'Aprovado(a)',
             ];
 
             $relacao[] = [
-                'etapa'          => $m->serie->ser_nome,
+                'etapa'          => $m->serieEfetiva->ser_nome,
                 'ano_conclusao'  => (int) $m->turma->anoLetivo->anl_ano,
                 'curso'          => $m->turma->segmento?->seg_nome_completo ?? $m->turma->segmento?->seg_nome_reduzido,
                 'estabelecimento' => $m->turma->escola?->esc_nome,
@@ -123,7 +125,7 @@ class HistoricoEscolar
                 'filiacao_2'   => $aluno->aln_filiacao_2,
             ],
             'conclusao' => [
-                'ano_escolar' => $ultima?->serie->ser_nome,
+                'ano_escolar' => $ultima?->serieEfetiva->ser_nome,
                 'segmento'    => $ultima?->turma->segmento?->seg_nome_completo,
             ],
             'colunas'     => $colunas,
@@ -152,7 +154,7 @@ class HistoricoEscolar
         // de ano p/ ano — sem o filtro por ano, mistura grades de anos diferentes).
         $disciplinas = DB::table('edu_grade_disciplinar as gd')
             ->join('edu_disciplina as d', 'd.dis_id', '=', 'gd.grd_dis_id')
-            ->where('gd.grd_ser_id', $m->serie->ser_id)
+            ->where('gd.grd_ser_id', $m->serieEfetiva->ser_id)
             ->where('gd.grd_anl_id', $anlId)
             ->where('gd.grd_fl_ativo', true)
             ->distinct()
