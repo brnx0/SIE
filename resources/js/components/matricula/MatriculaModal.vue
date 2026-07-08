@@ -135,6 +135,7 @@ const formSaude = reactive({
 const params             = computed(() => (page.props as any).params ?? {});
 const cpfObrigatorio     = computed(() => !!params.value.cpf_obrigatorio);
 const alertarAcentos     = computed(() => !!params.value.alertar_acentos_nomes);
+const validarIdade       = computed(() => !!params.value.validar_idade_serie);
 const tabSaudeDisponivel = computed(() => possuiDeficiencia.value);
 // PCD marcado mas nenhum item de deficiência/transtorno/altas habilidades assinalado.
 const pcdSemItem = computed(() =>
@@ -399,8 +400,9 @@ const submit = async () => {
         return;
     }
 
-    // Valida idade — usa série selecionada (multi) ou série da turma (regular)
-    {
+    // Valida idade — usa série selecionada (multi) ou série da turma (regular).
+    // Só quando o parâmetro validar_idade_serie está ativo.
+    if (validarIdade.value) {
         const dtNasc   = formAluno.aln_dt_nascimento;
         const dtCorte  = props.turma.ano_letivo?.anl_dt_corte;
         const serIdade = isMulti.value
