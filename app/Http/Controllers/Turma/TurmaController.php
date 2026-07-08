@@ -209,6 +209,14 @@ class TurmaController extends Controller
         if ($turno = $request->string('turno')->toString())       $query->where('tur_turno', $turno);
         if ($sit   = $request->string('situacao')->toString())    $query->where('tur_situacao', $sit);
 
+        // Busca livre: nome da turma OU nome da série.
+        if ($search = trim((string) $request->input('search', ''))) {
+            $query->where(function ($q) use ($search) {
+                $q->where('tur_nome', 'ilike', "%{$search}%")
+                  ->orWhereHas('serie', fn ($s) => $s->where('ser_nome', 'ilike', "%{$search}%"));
+            });
+        }
+
         return $query
             ->orderBy('tur_anl_id', 'desc')
             ->orderBy('tur_esc_id')

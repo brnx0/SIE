@@ -24,6 +24,7 @@ const props = defineProps<{
         seg_id?: number | null;
         turno?: string;
         situacao?: string;
+        search?: string;
         per_page?: number;
     };
     anosLetivos: AnoLetivo[];
@@ -41,6 +42,7 @@ const fAnlId    = ref<number | ''>(
 );
 const fTurno    = ref(props.filters.turno ?? '');
 const fSituacao = ref(props.filters.situacao ?? '');
+const fSearch   = ref(props.filters.search ?? '');
 const perPage   = ref(props.filters.per_page ?? 10);
 
 let timer: ReturnType<typeof setTimeout> | null = null;
@@ -53,12 +55,13 @@ const apply = (resetPage = false) => {
         params.anl_id = fAnlId.value === '' ? 'all' : fAnlId.value;
         if (fTurno.value)    params.turno    = fTurno.value;
         if (fSituacao.value) params.situacao = fSituacao.value;
+        if (fSearch.value.trim()) params.search = fSearch.value.trim();
         if (!resetPage)      params.page     = props.turmas.current_page;
         router.get('/turmas', params, { preserveState: true, replace: true });
     }, 100);
 };
 
-watch([fEscId, fAnlId, fTurno, fSituacao], () => apply(true));
+watch([fEscId, fAnlId, fTurno, fSituacao, fSearch], () => apply(true));
 watch(perPage, () => apply(true));
 
 const remove = (t: Turma) => {
@@ -77,6 +80,7 @@ const exportFilters = () => ({
     anl_id:   fAnlId.value === '' ? 'all' : fAnlId.value,
     turno:    fTurno.value || undefined,
     situacao: fSituacao.value || undefined,
+    search:   fSearch.value.trim() || undefined,
 });
 </script>
 
@@ -111,6 +115,12 @@ const exportFilters = () => ({
                 <template v-else-if="userEscola">
                     <span class="flex h-9 items-center rounded-md border bg-muted px-3 text-sm text-muted-foreground">{{ userEscola.esc_nome }}</span>
                 </template>
+                <input
+                    v-model="fSearch"
+                    type="text"
+                    placeholder="Buscar por série ou nome da turma..."
+                    class="h-9 w-64 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                />
                 <select v-model="fAnlId" class="h-9 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring">
                     <option value="">Todos os anos</option>
                     <option v-for="anl in anosLetivos" :key="anl.anl_id" :value="anl.anl_id">{{ anl.anl_ano }}</option>
@@ -192,7 +202,7 @@ const exportFilters = () => ({
                         <template v-else>Nenhum registro</template>
                     </span>
                     <div v-if="turmas.last_page > 1" class="flex flex-wrap gap-1">
-                        <Link v-for="(link, i) in turmas.links" :key="i" :href="link.url ?? '#'" v-html="link.label" :class="['rounded-md px-3 py-1 text-xs', link.active ? 'bg-indigo-600 text-white' : 'border bg-background hover:bg-muted', !link.url && 'pointer-events-none opacity-40']" preserve-scroll />
+                        <Link v-for="(link, i) in turmas.links" :key="i" :href="link.url ?? '#'" :class="['rounded-md px-3 py-1 text-xs', link.active ? 'bg-indigo-600 text-white' : 'border bg-background hover:bg-muted', !link.url && 'pointer-events-none opacity-40']" preserve-scroll><span v-html="link.label" /></Link>
                     </div>
                 </div>
             </div>

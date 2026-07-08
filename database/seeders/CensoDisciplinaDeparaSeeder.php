@@ -6,9 +6,11 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Semeia de-para de componente curricular Educacenso → disciplina do SIE.
- * cdd_dis_id fica nulo — o admin mapeia por base (disciplina exige área de
- * conhecimento). Nomes conforme dicionário INEP. Idempotente (upsert por codigo).
+ * De-para componente curricular Educacenso → disciplina do SIE.
+ * Códigos/nomes conforme a Tabela oficial INEP "Áreas do conhecimento /
+ * Componentes Curriculares 2025". cdd_dis_id fica nulo até o mapeamento por base
+ * (disciplina exige área de conhecimento). Idempotente (upsert por cdd_codigo).
+ * Ver docs/regras/importacao_censo.md.
  */
 class CensoDisciplinaDeparaSeeder extends Seeder
 {
@@ -16,32 +18,40 @@ class CensoDisciplinaDeparaSeeder extends Seeder
     {
         $now = now();
 
+        // Códigos EXATOS da tabela INEP (não são sequenciais!).
         $componentes = [
-            1  => 'Língua/Literatura Portuguesa',
-            2  => 'Língua/Literatura Estrangeira - Inglês',
-            3  => 'Língua/Literatura Estrangeira - Espanhol',
-            4  => 'Língua/Literatura Estrangeira - Outra',
-            5  => 'Educação Física',
-            6  => 'Arte',
-            7  => 'História',
-            8  => 'Geografia',
-            9  => 'Filosofia',
-            10 => 'Matemática',
-            11 => 'Física',
-            12 => 'Química',
-            13 => 'Biologia',
-            14 => 'Ciências',
-            15 => 'Ensino Religioso',
-            16 => 'Língua Indígena',
-            17 => 'Estudos Sociais',
-            18 => 'Sociologia',
-            19 => 'Informática/Computação',
-            20 => 'Estágio Curricular Supervisionado',
-            21 => 'Ética e Cidadania',
-            22 => 'Disciplinas Profissionalizantes',
+            // Linguagens
+            6  => 'Língua/Literatura Portuguesa',
+            7  => 'Língua/Literatura Estrangeira - Inglês',
+            8  => 'Língua/Literatura Estrangeira - Espanhol',
+            30 => 'Língua/Literatura Estrangeira - Francês',
+            9  => 'Língua/Literatura Estrangeira - Outra',
+            27 => 'Língua Indígena',
             23 => 'Libras',
-            24 => 'Projeto de Vida',
-            25 => 'Outras disciplinas',
+            31 => 'Língua Portuguesa como Segunda Língua',
+            10 => 'Arte',
+            11 => 'Educação Física',
+            // Matemática
+            3  => 'Matemática',
+            // Ciências da Natureza
+            1  => 'Química',
+            2  => 'Física',
+            4  => 'Biologia',
+            5  => 'Ciências',
+            // Ciências Humanas e Sociais
+            12 => 'História',
+            13 => 'Geografia',
+            14 => 'Filosofia',
+            28 => 'Estudos Sociais',
+            29 => 'Sociologia',
+            // Outras áreas
+            16 => 'Informática/Computação',
+            17 => 'Áreas do conhecimento profissionalizantes',
+            25 => 'Áreas do conhecimento pedagógicas',
+            26 => 'Ensino Religioso',
+            32 => 'Estágio Curricular Supervisionado',
+            33 => 'Projeto de Vida',
+            99 => 'Outras áreas do conhecimento',
         ];
 
         foreach ($componentes as $cod => $nome) {

@@ -59,12 +59,25 @@ class CensoEtapaDeparaSeeder extends Seeder
 
             // 306 EJA
             [69, 'EJA - Ensino Fundamental - Anos Iniciais (1º segmento)', false, 'TAP I'],
-            [70, 'EJA - Ensino Fundamental - Anos Finais (2º segmento)', false, null],
+            [70, 'EJA - Ensino Fundamental - Anos Finais (2º segmento)', false, 'TAP IV'],
             [72, 'EJA - Ensino Fundamental - Multietapas', false, 'EJAMULTI I'],
             [71, 'EJA - Ensino Médio (3º segmento)', false, null],
             [74, 'Curso Técnico Integrado na modalidade EJA', false, null],
             [73, 'Curso FIC Integrado na modalidade EJA - Fundamental', false, null],
             [67, 'Curso FIC Integrado na modalidade EJA - Médio', false, null],
+
+            // 307 Educação Profissional Técnica de Nível Médio - Integrada
+            [30, 'Curso Técnico Integrado (médio integrado) - 1ª série', false, null],
+            [31, 'Curso Técnico Integrado (médio integrado) - 2ª série', false, null],
+            [32, 'Curso Técnico Integrado (médio integrado) - 3ª série', false, null],
+            [33, 'Curso Técnico Integrado (médio integrado) - 4ª série', false, null],
+            [34, 'Curso Técnico Integrado (médio integrado) - Não seriada', false, null],
+
+            // 308 Técnica de Nível Médio - Concomitante/Subsequente
+            [39, 'Curso Técnico - Concomitante', false, null],
+            [40, 'Curso Técnico - Subsequente', false, null],
+            [64, 'Curso Técnico Misto', false, null],
+            [68, 'Curso FIC Concomitante', false, null],
         ];
 
         foreach ($etapas as [$codigo, $descricao, $ignorar, $nomeSerie]) {
