@@ -41,9 +41,21 @@ class CensoEtapaDeparaSeeder extends Seeder
         ];
 
         foreach ($etapas as [$codigo, $descricao, $ignorar, $nomeSerie]) {
-            $serId = $nomeSerie
-                ? DB::table('edu_serie')->where('ser_nome', $nomeSerie)->value('ser_id')
-                : null;
+            $serId = null;
+
+            if ($nomeSerie) {
+                $serId = DB::table('edu_serie')->where('ser_nome', $nomeSerie)->value('ser_id');
+
+                if (! $serId) {
+                    // Série esperada não encontrada em edu_serie (nome divergente ou tabela
+                    // ainda não populada). Gravaria ced_ser_id = NULL e bloquearia as turmas
+                    // dessa etapa no commit — avisa em vez de falhar em silêncio.
+                    // Rode o SerieSeeder antes e reexecute este seeder.
+                    $this->command?->warn(
+                        "CensoEtapaDeparaSeeder: série '{$nomeSerie}' (etapa {$codigo}) não encontrada em edu_serie — ced_ser_id ficará NULL."
+                    );
+                }
+            }
 
             DB::table('cfg_censo_etapa_depara')->updateOrInsert(
                 ['ced_codigo' => $codigo],
