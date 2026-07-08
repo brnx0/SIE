@@ -45,6 +45,9 @@ class CensoCommitManager
     /** @var array<string,bool> CPFs já usados (funcionário) */
     private array $cpfFuncUsado = [];
 
+    /** @var array<string,bool> pares "esc:seg" cujo vínculo edu_escola_segmento já foi garantido */
+    private array $escolaSegmentoCache = [];
+
     /** @return array<string,int> resumo */
     public function commit(CensoLote $lote): array
     {
@@ -283,6 +286,10 @@ class CensoCommitManager
                 $horario = $this->col($campos, 8);
                 $now = now();
 
+                // Sem vínculo escola↔segmento, os lookups da tela de turma ficam vazios
+                // (série/segmento "em branco" ao editar). Garante o vínculo do segmento.
+                $this->garantirEscolaSegmento((int) $escId, (int) $segId, (int) $lote->icl_anl_id, $now);
+
                 DB::table('edu_turma')->insert([
                     'tur_esc_id'             => $escId,
                     'tur_anl_id'             => $lote->icl_anl_id,
@@ -309,6 +316,51 @@ class CensoCommitManager
                 $resumo['turmas_erro']++;
             }
         }
+    }
+
+    /**
+     * Garante o vínculo escola↔segmento (edu_escola_segmento) para o ano.
+     * Sem ele, os lookups da tela de turma (segmento → série) ficam vazios.
+     * Cobre a faixa completa de séries do segmento (primeira à última).
+     */
+    private function garantirEscolaSegmento(int $escId, int $segId, int $anlId, $now): void
+    {
+        $chave = "{$escId}:{$segId}";
+        if (isset($this->escolaSegmentoCache[$chave])) {
+            return;
+        }
+        $this->escolaSegmentoCache[$chave] = true;
+
+        $existe = DB::table('edu_escola_segmento')
+            ->where('esc_id', $escId)
+            ->where('seg_id', $segId)
+            ->whereNull('esg_deleted_at')
+            ->exists();
+        if ($existe) {
+            return;
+        }
+
+        // Faixa de séries do segmento (ordenadas). ser_id_inicio/fim são NOT NULL.
+        $series = DB::table('edu_serie')
+            ->where('seg_id', $segId)
+            ->orderBy('ser_ordem_no_segmento')
+            ->pluck('ser_id');
+        if ($series->isEmpty()) {
+            return;
+        }
+
+        DB::table('edu_escola_segmento')->insert([
+            'esc_id'        => $escId,
+            'seg_id'        => $segId,
+            'anl_id_inicio' => $anlId,
+            'anl_id_fim'    => null,
+            'ser_id_inicio' => (int) $series->first(),
+            'ser_id_fim'    => (int) $series->last(),
+            'esg_fl_ativo'  => true,
+            'esg_motivo'    => 'Vínculo criado automaticamente pela importação do Censo.',
+            'esg_created_at' => $now,
+            'esg_updated_at' => $now,
+        ]);
     }
 
     // ---------- Pessoas (reg 30) ----------

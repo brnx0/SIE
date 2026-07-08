@@ -26,7 +26,12 @@ declare module 'vite/client' {
     }
 }
 
-const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+// Nome do app vem do servidor (meta app-name = config('app.name')), não do
+// valor embutido no build do Vite — evita ficar preso ao fallback antigo do bundle.
+const appName =
+    document.querySelector('meta[name="app-name"]')?.getAttribute('content') ||
+    import.meta.env.VITE_APP_NAME ||
+    'SIE';
 
 const pageModules = import.meta.glob<DefineComponent>('./pages/**/*.vue');
 
