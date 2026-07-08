@@ -54,6 +54,7 @@ use App\Http\Controllers\Escola\EscolaSegmentoController;
 use App\Http\Controllers\Segmento\SegmentoController;
 use App\Http\Controllers\Serie\SerieController;
 use App\Http\Controllers\Escola\EscolaController;
+use App\Http\Controllers\Censo\CensoImportacaoController;
 use App\Http\Controllers\Api\CargoController as CargoApiController;
 use App\Http\Controllers\Api\EscolaController as EscolaApiController;
 use App\Http\Controllers\Api\FuncionarioController as FuncionarioApiController;
@@ -108,6 +109,14 @@ Route::get('sessao-expirada', function (\Illuminate\Http\Request $request) {
 
 Route::middleware(['auth', 'verified', 'tela'])->group(function () {
     Route::get('dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
+
+    // Importação do Censo (migração INEP) — governada pela matriz cfg_tela (/censo/importacao).
+    Route::prefix('censo/importacao')->name('censo.importacao.')->group(function () {
+        Route::get('/', [CensoImportacaoController::class, 'index'])->name('index');
+        Route::post('/', [CensoImportacaoController::class, 'store'])->name('store');
+        Route::post('/{lote}/commit', [CensoImportacaoController::class, 'commit'])->name('commit');
+        Route::delete('/{lote}', [CensoImportacaoController::class, 'destroy'])->name('destroy');
+    });
 
     Route::get('users/export', [UsersController::class, 'export'])->name('users.export');
     Route::resource('users', UsersController::class)->except(['show']);

@@ -158,6 +158,7 @@ const administracao = [
             { title: 'Parâmetros', href: '/parametros' },
             { title: 'Permissões de Telas', href: '/permissoes' },
             { title: 'Auditoria', href: '/auditoria' },
+            { title: 'Importar Censo', href: '/censo/importacao' },
         ],
     },
 ];

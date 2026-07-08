@@ -42,6 +42,28 @@ services:
       driver: json-file
       options: { max-size: "10m", max-file: "5" }
 
+  # Worker de fila (queue:work). Processa os Jobs (ex.: importação do Censo).
+  # Mesma imagem do app; o entrypoint pula o prep de php-fpm e só executa o comando.
+  # IMPORTANTE: compartilha app_storage p/ enxergar o arquivo enviado no upload.
+  # Após deploy de código novo: docker compose -f docker-compose.app.yml restart worker
+  worker:
+    image: sie_matricula_app:${MUNICIPIO:-homolog}
+    container_name: sie_worker_${MUNICIPIO:-homolog}
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+    # --timeout=1900 > timeout do CommitCensoLoteJob (1800); --max-time recicla de hora em hora.
+    command: php artisan queue:work --sleep=3 --tries=3 --max-time=3600 --timeout=1900
+    volumes:
+      - app_storage:/var/www/html/storage/app
+    depends_on: [app]
+    networks: [sie_net]
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "5" }
+
 networks:
   sie_net:
     name: sie_net_${MUNICIPIO:-homolog}
