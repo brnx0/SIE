@@ -26,3 +26,6 @@ yarn-error.log
 .github/
 .claude/
 CLAUDE.md
+# Tela de Mapeamentos do Censo (local-only, não versionar)
+app/Http/Controllers/Censo/CensoMapeamentoController.php
+resources/js/pages/censo-mapeamentos/
