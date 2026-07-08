@@ -148,10 +148,12 @@ class HistoricoEscolar
         $uniIds = DB::table('cfg_unidade')->where('uni_anl_id', $anlId)
             ->orderBy('uni_numero')->pluck('uni_id')->map(fn ($v) => (int) $v)->all();
 
-        // Disciplinas da grade da série.
+        // Disciplinas da grade da série NO ANO LETIVO da matrícula (a grade muda
+        // de ano p/ ano — sem o filtro por ano, mistura grades de anos diferentes).
         $disciplinas = DB::table('edu_grade_disciplinar as gd')
             ->join('edu_disciplina as d', 'd.dis_id', '=', 'gd.grd_dis_id')
             ->where('gd.grd_ser_id', $m->serie->ser_id)
+            ->where('gd.grd_anl_id', $anlId)
             ->where('gd.grd_fl_ativo', true)
             ->distinct()
             ->orderBy('gd.grd_ordem')->orderBy('d.dis_nome')
