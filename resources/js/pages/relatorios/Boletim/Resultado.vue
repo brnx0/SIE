@@ -36,6 +36,7 @@ defineProps<{
     cabecalho: { anl_ano: number; tipo_ensino: string | null; turma: string | null; turno: string | null; serie: string | null };
     unidades: Unidade[];
     alunos: Aluno[];
+    avisos?: string[];
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Boletim do Aluno', href: '/relatorios/boletim' }];
@@ -168,6 +169,13 @@ const isActiveTab = computed(() => !tabId || tabId === tabStore.activeId);
                 <div><strong>Escola:</strong> {{ escola.nome }}</div>
                 <div><strong>Turma:</strong> {{ cabecalho.serie }} <span v-if="cabecalho.turno" class="text-muted-foreground">· {{ cabecalho.turno }}</span></div>
                 <div><strong>Ano Letivo:</strong> {{ cabecalho.anl_ano }}</div>
+            </div>
+
+            <div v-if="avisos?.length" class="mb-4 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
+                <p class="mb-1 font-semibold">O boletim sai em branco porque falta configuração:</p>
+                <ul class="list-disc pl-5">
+                    <li v-for="(a, i) in avisos" :key="i">{{ a }}</li>
+                </ul>
             </div>
 
             <div v-if="!alunos.length" class="rounded-xl border bg-card py-12 text-center text-muted-foreground">Nenhum aluno ativo nesta turma.</div>

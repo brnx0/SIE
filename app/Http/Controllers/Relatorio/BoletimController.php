@@ -155,6 +155,15 @@ class BoletimController extends Controller
 
         $p = ParametroEntidade::first();
 
+        // Avisos de configuração incompleta — sem isso o boletim sai "em branco".
+        $avisos = [];
+        if ($unidades->isEmpty()) {
+            $avisos[] = 'Nenhuma unidade/período avaliativo cadastrado para o ano letivo. Cadastre em Parâmetros → Ano Letivo.';
+        }
+        if ($disciplinas->isEmpty()) {
+            $avisos[] = 'Grade disciplinar não cadastrada para esta série neste ano letivo. Cadastre em Parâmetros → Grade Disciplinar.';
+        }
+
         return Inertia::render('relatorios/Boletim/Resultado', [
             'parametros' => $p ? [
                 'estado'        => $p->par_msg_cab_estado,
@@ -178,6 +187,7 @@ class BoletimController extends Controller
             ],
             'unidades' => $unidades,
             'alunos'   => $alunos,
+            'avisos'   => $avisos,
         ]);
     }
 }
