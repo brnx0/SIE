@@ -2,10 +2,11 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Button } from '@/components/ui/button';
 import FormLabel from '@/components/common/FormLabel.vue';
+import LocalCombobox from '@/components/common/LocalCombobox.vue';
 import type { BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
 import { Accessibility, Loader2 } from 'lucide-vue-next';
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 interface AnoLetivo { anl_id: number; anl_ano: number; anl_fl_em_exercicio: boolean }
 interface Escola { esc_id: number; esc_nome: string }
@@ -25,7 +26,8 @@ const breadcrumbs: BreadcrumbItem[] = [
 const anoDefault = props.anosLetivos.find((a) => a.anl_fl_em_exercicio) ?? props.anosLetivos[0];
 
 const anlId = ref<number | ''>(anoDefault?.anl_id ?? '');
-const escId = ref<number | ''>(props.userEscola?.esc_id ?? '');
+const escId = ref<number | null>(props.userEscola?.esc_id ?? null);
+const itemsEscola = computed(() => props.escolas.map((e) => ({ id: e.esc_id, label: e.esc_nome })));
 const turId = ref<number | ''>('');
 const turmas = ref<TurmaAee[]>([]);
 const gerando = ref(false);
@@ -81,10 +83,7 @@ function gerar() {
 
                 <div class="grid gap-1.5">
                     <FormLabel>Escola</FormLabel>
-                    <select v-model="escId" :disabled="!isAdmin && !!userEscola" class="rounded-md border bg-background px-3 py-2 text-sm">
-                        <option value="">Todas</option>
-                        <option v-for="e in escolas" :key="e.esc_id" :value="e.esc_id">{{ e.esc_nome }}</option>
-                    </select>
+                    <LocalCombobox v-model="escId" :items="itemsEscola" :disabled="!isAdmin && !!userEscola" placeholder="Todas as escolas" />
                 </div>
 
                 <div class="grid gap-1.5">

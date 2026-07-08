@@ -2,11 +2,12 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Button } from '@/components/ui/button';
 import FormLabel from '@/components/common/FormLabel.vue';
+import LocalCombobox from '@/components/common/LocalCombobox.vue';
 import Switch from '@/components/common/Switch.vue';
 import type { BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
 import { FileBarChart, Loader2 } from 'lucide-vue-next';
-import { onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 
 interface AnoLetivo { anl_id: number; anl_ano: number }
 interface Escola { esc_id: number; esc_nome: string }
@@ -24,7 +25,8 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 const anlId = ref<number | ''>(props.anosLetivos[0]?.anl_id ?? '');
-const escId = ref<number | ''>(props.userEscola?.esc_id ?? '');
+const escId = ref<number | null>(props.userEscola?.esc_id ?? null);
+const itemsEscola = computed(() => props.escolas.map((e) => ({ id: e.esc_id, label: e.esc_nome })));
 const turId = ref<number | ''>('');
 const incluirSaidas = ref<boolean>(false);
 const turmas = ref<Turma[]>([]);
@@ -91,10 +93,7 @@ function gerar() {
 
                 <div class="grid gap-1.5">
                     <FormLabel :required="true">Escola</FormLabel>
-                    <select v-model="escId" :disabled="!isAdmin && !!userEscola" class="rounded-md border bg-background px-3 py-2 text-sm">
-                        <option value="">—</option>
-                        <option v-for="e in escolas" :key="e.esc_id" :value="e.esc_id">{{ e.esc_nome }}</option>
-                    </select>
+                    <LocalCombobox v-model="escId" :items="itemsEscola" :disabled="!isAdmin && !!userEscola" placeholder="Selecione a escola..." />
                 </div>
 
                 <div class="grid gap-1.5 sm:col-span-2">
