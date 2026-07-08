@@ -84,6 +84,7 @@ class TelaPermissaoSeeder extends Seeder
         ['/parametros', 'Parâmetros', 'Sistema', 42, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
         ['/permissoes', 'Permissões de Telas', 'Sistema', 43, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
         ['/auditoria', 'Auditoria', 'Sistema', 44, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
+        ['/censo/importacao', 'Importar Censo', 'Sistema', 45, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1]],
     ];
 
     public function run(): void
