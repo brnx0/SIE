@@ -50,6 +50,19 @@ export const DEFICIENCIAS = [
 
 export const TRANSTORNOS_GLOBAIS = [
     'Autismo Infantil - TEA',
+    'Outros',
+] as const;
+
+// Valor sentinela na coluna TGD que revela as subopções e o campo de texto "Outro(a)".
+export const TGD_OUTROS = 'Outros';
+
+// Subopções mostradas somente quando "Outros" está marcado na coluna TGD.
+export const TRANSTORNOS_GLOBAIS_OUTROS = [
+    'Síndrome de Asperger',
+    'Síndrome de Rett',
+    'Transt. Des. da Infância',
+    'Síndrome de Down',
+    'Microcefalia',
 ] as const;
 
 export const TRANSTORNOS_APRENDIZAGEM = [

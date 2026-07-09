@@ -43,7 +43,12 @@ class StoreAlunoRequest extends FormRequest
             ? ($params->par_fl_nome_pessoa_caixa_alta ? mb_strtoupper($v, 'UTF-8') : mb_strtolower($v, 'UTF-8'))
             : $v;
 
+        // Povo indígena só se aplica quando cor/raça = Indígena (5); demais casos zeram.
+        $indigena = (int) $this->input('aln_cor_raca') === 5;
+
         $this->merge([
+            'aln_fl_indigena' => $indigena,
+            'aln_pin_id'      => $indigena ? ($this->input('aln_pin_id') ?: null) : null,
             'aln_nome'        => $nome,
             'aln_nome_social' => $this->filled('aln_nome_social') ? $nomeSocial : null,
             'aln_filiacao_1'  => $caixaAlta($this->input('aln_filiacao_1')),
@@ -64,13 +69,15 @@ class StoreAlunoRequest extends FormRequest
         $cpfRule = $params->par_fl_cpf_obrigatorio ? 'required' : 'nullable';
 
         return [
-            'aln_nome'        => ['required', 'string', 'max:100'],
+            'aln_nome'        => ['required', 'string', 'max:50'],
             'aln_nome_social' => ['nullable', 'string', 'max:100'],
             'aln_dt_nascimento' => ['required', 'date', 'before:today'],
             'aln_sexo' => ['required', Rule::in(['M', 'F'])],
             'aln_cor_raca' => ['required', 'integer', Rule::in([0, 1, 2, 3, 4, 5])],
             'aln_pais_origem' => ['required', 'string', 'max:60'],
             'aln_mun_id_nasc' => ['required', 'integer', 'exists:edu_municipio,mun_id'],
+            'aln_pin_id' => ['nullable', 'integer', 'exists:edu_povo_indigena,pin_id', 'required_if:aln_cor_raca,5'],
+            'aln_fl_indigena' => ['boolean'],
 
             'aln_cpf' => [$cpfRule, 'nullable', 'digits:11', new Cpf, Rule::unique('edu_aluno', 'aln_cpf')->ignore($alunoId, 'aln_id')->whereNull('aln_deleted_at')],
             'aln_cd_inep' => ['nullable', 'digits:12', Rule::unique('edu_aluno', 'aln_cd_inep')->ignore($alunoId, 'aln_id')->whereNull('aln_deleted_at')],
@@ -86,9 +93,9 @@ class StoreAlunoRequest extends FormRequest
             'aln_fl_usa_transporte'        => ['boolean'],
             'aln_fl_usa_biblioteca'        => ['boolean'],
 
-            'aln_filiacao_1'      => ['required', 'string', 'max:100'],
+            'aln_filiacao_1'      => ['required', 'string', 'max:50'],
             'aln_filiacao_1_tipo' => ['required', Rule::in(['PAI', 'MAE'])],
-            'aln_filiacao_2'      => ['nullable', 'string', 'max:100'],
+            'aln_filiacao_2'      => ['nullable', 'string', 'max:50'],
             'aln_filiacao_2_tipo' => ['nullable', Rule::in(['PAI', 'MAE'])],
 
             'aln_cep' => ['required', 'digits:8'],
@@ -146,7 +153,10 @@ class StoreAlunoRequest extends FormRequest
             ])],
 
             'saude.als_transtornos_globais' => ['nullable', 'array'],
-            'saude.als_transtornos_globais.*' => ['string', Rule::in(['Autismo Infantil - TEA'])],
+            'saude.als_transtornos_globais.*' => ['string', Rule::in([
+                'Autismo Infantil - TEA', 'Síndrome de Asperger', 'Síndrome de Rett',
+                'Transt. Des. da Infância', 'Síndrome de Down', 'Microcefalia', 'Outros',
+            ])],
 
             'saude.als_transtornos_aprendizagem' => ['nullable', 'array'],
             'saude.als_transtornos_aprendizagem.*' => ['string', Rule::in([
@@ -160,6 +170,7 @@ class StoreAlunoRequest extends FormRequest
 
             'saude.als_deficiencia_outro' => ['nullable', 'string', 'max:500'],
             'saude.als_fl_altas_habilidades' => ['boolean'],
+            'saude.als_fl_necessita_adi' => ['boolean'],
             'saude.als_cid' => ['nullable', 'string', 'max:20'],
             'saude.als_observacao' => ['nullable', 'string', 'max:2000'],
 
@@ -236,6 +247,7 @@ class StoreAlunoRequest extends FormRequest
     {
         return [
             'aln_dt_nascimento.before'        => 'A data de nascimento deve ser anterior à data de hoje.',
+            'aln_pin_id.required_if'          => 'Selecione o povo indígena quando a cor/raça for Indígena.',
             'saude.als_deficiencias.required' => 'Marque ao menos uma deficiência quando o aluno é PCD / TGD / Altas Habilidades.',
             'saude.als_deficiencias.min'      => 'Marque ao menos uma deficiência quando o aluno é PCD / TGD / Altas Habilidades.',
         ];
@@ -251,6 +263,7 @@ class StoreAlunoRequest extends FormRequest
             'aln_cor_raca' => 'cor / raça',
             'aln_pais_origem' => 'país de origem',
             'aln_mun_id_nasc' => 'município de nascimento',
+            'aln_pin_id' => 'povo indígena',
             'aln_cpf' => 'CPF',
             'aln_cd_inep' => 'identificação INEP',
             'aln_nr_matricula' => 'número de matrícula',

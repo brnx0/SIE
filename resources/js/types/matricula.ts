@@ -61,6 +61,7 @@ export interface AlunoResumo {
         als_transtornos_aprendizagem: string[] | null;
         als_deficiencia_outro: string | null;
         als_fl_altas_habilidades: boolean;
+        als_fl_necessita_adi: boolean;
         als_cid: string | null;
         als_observacao: string | null;
         als_clinicas: string[] | null;

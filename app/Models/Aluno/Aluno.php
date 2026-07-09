@@ -4,6 +4,7 @@ namespace App\Models\Aluno;
 
 use App\Models\Matricula\Matricula;
 use App\Models\Municipio;
+use App\Models\PovoIndigena;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -32,6 +33,7 @@ class Aluno extends Model
         'aln_cor_raca',
         'aln_pais_origem',
         'aln_mun_id_nasc',
+        'aln_pin_id',
         'aln_cpf',
         'aln_cd_inep',
         'aln_nr_matricula',
@@ -97,6 +99,11 @@ class Aluno extends Model
     public function municipioNascimento(): BelongsTo
     {
         return $this->belongsTo(Municipio::class, 'aln_mun_id_nasc', 'mun_id');
+    }
+
+    public function povoIndigena(): BelongsTo
+    {
+        return $this->belongsTo(PovoIndigena::class, 'aln_pin_id', 'pin_id');
     }
 
     public function matriculas(): HasMany

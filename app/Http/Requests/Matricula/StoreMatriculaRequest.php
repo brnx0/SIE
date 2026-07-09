@@ -41,6 +41,7 @@ class StoreMatriculaRequest extends FormRequest
             if (!empty($aluno['aln_cpf'])) $aluno['aln_cpf'] = $strip($aluno['aln_cpf']);
             if (!empty($aluno['aln_cep'])) $aluno['aln_cep'] = $strip($aluno['aln_cep']);
             if (!empty($aluno['aln_nis'])) $aluno['aln_nis'] = $strip($aluno['aln_nis']);
+            if (!empty($aluno['aln_telefone'])) $aluno['aln_telefone'] = $strip($aluno['aln_telefone']);
 
             $this->merge(['aluno' => $aluno]);
         }
@@ -61,21 +62,21 @@ class StoreMatriculaRequest extends FormRequest
             'tma_ser_id'                   => ['nullable', 'integer', 'exists:edu_serie,ser_id'],
 
             'tma_dt_matricula'             => ['required', 'date'],
-            'tma_obs'                      => ['nullable', 'string'],
+            'tma_obs'                      => ['nullable', 'string', 'max:500'],
             'possui_deficiencia'           => ['boolean'],
         ];
 
         if ($validarAluno) {
             $rules += [
-                'aluno.aln_nome'          => ['required', 'string', 'max:100'],
+                'aluno.aln_nome'          => ['required', 'string', 'max:50'],
                 'aluno.aln_dt_nascimento' => ['required', 'date', 'before:today'],
                 'aluno.aln_sexo'          => ['required', Rule::in(['M', 'F'])],
                 'aluno.aln_cor_raca'      => ['required', 'integer', Rule::in([0, 1, 2, 3, 4, 5])],
                 'aluno.aln_pais_origem'   => ['required', 'string', 'max:60'],
                 'aluno.aln_mun_id_nasc'   => ['required', 'integer', 'exists:edu_municipio,mun_id'],
-                'aluno.aln_filiacao_1'      => ['required', 'string', 'max:100'],
+                'aluno.aln_filiacao_1'      => ['required', 'string', 'max:50'],
                 'aluno.aln_filiacao_1_tipo' => ['required', Rule::in(['PAI', 'MAE'])],
-                'aluno.aln_filiacao_2'      => ['nullable', 'string', 'max:100'],
+                'aluno.aln_filiacao_2'      => ['nullable', 'string', 'max:50'],
                 'aluno.aln_filiacao_2_tipo' => ['nullable', Rule::in(['PAI', 'MAE'])],
                 'aluno.aln_cpf'           => [$cpfRule, 'nullable', 'digits:11', new Cpf,
                     Rule::unique('edu_aluno', 'aln_cpf')->ignore($alunoId, 'aln_id')->whereNull('aln_deleted_at')],
@@ -124,6 +125,7 @@ class StoreMatriculaRequest extends FormRequest
             'saude.als_transtornos_aprendizagem' => ['nullable', 'array'],
             'saude.als_deficiencia_outro'     => ['nullable', 'string', 'max:500'],
             'saude.als_fl_altas_habilidades'  => ['boolean'],
+            'saude.als_fl_necessita_adi'      => ['boolean'],
             'saude.als_cid'                   => ['nullable', 'string', 'max:20'],
             'saude.als_observacao'            => ['nullable', 'string', 'max:2000'],
             'saude.als_clinicas'              => ['nullable', 'array'],

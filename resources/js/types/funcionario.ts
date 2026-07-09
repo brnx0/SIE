@@ -1,4 +1,4 @@
-import type { Municipio, Sexo, CorRaca } from '@/types/aluno';
+import type { Municipio, PovoIndigena, Sexo, CorRaca } from '@/types/aluno';
 
 export interface Cargo {
     crg_id: number;
@@ -74,6 +74,7 @@ export interface Funcionario {
     fun_escolaridade: number | null;
     fun_estado_civil: number | null;
     fun_povo_indigena: string | null;
+    fun_pin_id: number | null;
     fun_cd_censo: string | null;
 
     // Documentação
@@ -120,6 +121,7 @@ export interface Funcionario {
 
     municipio_nascimento?: Municipio | null;
     municipio_certidao?: Municipio | null;
+    povo_indigena?: PovoIndigena | null;
     admissoes?: FuncionarioAdmissao[];
 }
 
@@ -137,6 +139,7 @@ export interface FuncionarioFormData {
     fun_escolaridade: number | '' | null;
     fun_estado_civil: number | '' | null;
     fun_povo_indigena: string;
+    fun_pin_id: number | null;
     fun_cd_censo: string;
 
     // Documentação

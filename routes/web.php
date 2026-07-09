@@ -37,6 +37,7 @@ use App\Http\Controllers\Matricula\MatriculaController;
 use App\Http\Controllers\Api\DisciplinaController as DisciplinaApiController;
 use App\Http\Controllers\Api\GerenciaRegionalController;
 use App\Http\Controllers\Api\MunicipioController;
+use App\Http\Controllers\Api\PovoIndigenaController;
 use App\Http\Controllers\Api\SegmentoController as SegmentoApiController;
 use App\Http\Controllers\Api\SerieController as SerieApiController;
 use App\Http\Controllers\Disciplina\DisciplinaController;
@@ -140,6 +141,7 @@ Route::middleware(['auth', 'verified', 'tela'])->group(function () {
     Route::get('alunos/{aluno}/historico-manual', [\App\Http\Controllers\Aluno\HistoricoManualController::class, 'listar'])->name('alunos.historico-manual.listar');
     Route::post('alunos/{aluno}/historico-manual', [\App\Http\Controllers\Aluno\HistoricoManualController::class, 'salvar'])->name('alunos.historico-manual.salvar');
     Route::delete('alunos/{aluno}/historico-manual/{historicoManual}', [\App\Http\Controllers\Aluno\HistoricoManualController::class, 'remover'])->name('alunos.historico-manual.remover');
+    Route::post('alunos/{aluno}/gerar-matricula', [AlunoController::class, 'gerarMatricula'])->name('alunos.gerar-matricula');
     Route::resource('alunos', AlunoController::class)->except(['show']);
     Route::get('escolas/export', [EscolaController::class, 'export'])->name('escolas.export');
     Route::resource('escolas', EscolaController::class)->except(['show']);
@@ -389,6 +391,7 @@ Route::middleware(['auth', 'verified', 'tela'])->group(function () {
     Route::get('api/segmentos/by-escola', [SegmentoApiController::class, 'byEscola'])->name('api.segmentos.byEscola');
     Route::get('api/municipios', [MunicipioController::class, 'search'])->name('api.municipios.search');
     Route::get('api/municipios/by-ibge/{codigo}', [MunicipioController::class, 'byIbge'])->name('api.municipios.byIbge');
+    Route::get('api/povos-indigenas', [PovoIndigenaController::class, 'search'])->name('api.povos-indigenas.search');
     Route::get('api/bairros', [BairroController::class, 'search'])->name('api.bairros.search');
     Route::post('api/bairros', [BairroController::class, 'store'])->name('api.bairros.store');
     Route::get('api/gerencias', [GerenciaRegionalController::class, 'search'])->name('api.gerencias.search');

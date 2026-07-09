@@ -7,6 +7,7 @@ import FuncionarioHomonimoDialog, { type FuncionarioHomonimoMatch } from '@/comp
 import FormLabel from '@/components/common/FormLabel.vue';
 import InputError from '@/components/common/InputError.vue';
 import MunicipioCombobox from '@/components/aluno/MunicipioCombobox.vue';
+import PovoIndigenaCombobox from '@/components/aluno/PovoIndigenaCombobox.vue';
 import Switch from '@/components/common/Switch.vue';
 import Tabs from '@/components/common/Tabs.vue';
 import TabsContent from '@/components/common/TabsContent.vue';
@@ -33,7 +34,7 @@ import {
     TIPOS_CERTIDAO_CIVIL,
 } from '@/lib/funcionarioEnums';
 import type { SharedData, SystemParams } from '@/types';
-import type { Municipio } from '@/types/aluno';
+import type { Municipio, PovoIndigena } from '@/types/aluno';
 import type { Funcionario, FuncionarioFormData } from '@/types/funcionario';
 import { Link, useForm, usePage } from '@inertiajs/vue3';
 import { Camera, ChevronLeft, ChevronRight, Loader2, LoaderCircle, Save, Trash2, Upload } from 'lucide-vue-next';
@@ -86,7 +87,7 @@ const TAB_FIELDS: Record<TabId, string[]> = {
         'fun_nome', 'fun_nome_social', 'fun_dt_nascimento', 'fun_sexo', 'fun_cor_raca',
         'fun_nacionalidade', 'fun_pais_origem', 'fun_mun_id_nasc',
         'fun_cpf', 'fun_religiao', 'fun_escolaridade', 'fun_estado_civil',
-        'fun_povo_indigena', 'fun_cd_censo',
+        'fun_pin_id', 'fun_cd_censo',
     ],
     documentacao: [
         'fun_rg_numero', 'fun_rg_dt_emissao', 'fun_rg_uf', 'fun_rg_orgao_emissor',
@@ -124,6 +125,9 @@ const initialMunicipio = computed<Municipio | null>(
 const initialMunicipioCertidao = computed<Municipio | null>(
     () => props.initial?.municipio_certidao ?? null,
 );
+const initialPovo = computed<PovoIndigena | null>(
+    () => props.initial?.povo_indigena ?? null,
+);
 
 const dataNascBR = ref(formatDateBR(props.initial?.fun_dt_nascimento));
 const dataRgBR = ref(formatDateBR(props.initial?.fun_rg_dt_emissao));
@@ -144,6 +148,7 @@ const form = useForm<FuncionarioFormData>({
     fun_escolaridade: props.initial?.fun_escolaridade ?? '',
     fun_estado_civil: props.initial?.fun_estado_civil ?? '',
     fun_povo_indigena: props.initial?.fun_povo_indigena ?? '',
+    fun_pin_id: props.initial?.fun_pin_id ?? null,
     fun_cd_censo: props.initial?.fun_cd_censo ?? '',
 
     // Documentação
@@ -193,6 +198,13 @@ const form = useForm<FuncionarioFormData>({
 // Date watchers
 watch(dataNascBR, (v) => {
     form.fun_dt_nascimento = v && v.length === 10 ? parseDateBR(v) : '';
+});
+
+// Etnia/Cor/Raça = Indígena (5) → povo indígena obrigatório; ao trocar de raça, limpa o povo.
+const isIndigena = computed(() => Number(form.fun_cor_raca) === 5);
+
+watch(isIndigena, (v) => {
+    if (!v) form.fun_pin_id = null;
 });
 watch(dataRgBR, (v) => {
     form.fun_rg_dt_emissao = v && v.length === 10 ? parseDateBR(v) : '';
@@ -604,10 +616,15 @@ const initials = computed(() => {
                         <InputError :message="form.errors.fun_cor_raca" />
                     </div>
 
-                    <div class="grid gap-2">
-                        <Label for="fun_povo_indigena">Povo Indígena</Label>
-                        <Input id="fun_povo_indigena" v-model="form.fun_povo_indigena" maxlength="60" />
-                        <InputError :message="form.errors.fun_povo_indigena" />
+                    <div v-if="isIndigena" id="fun_pin_id" tabindex="-1" class="grid gap-2 scroll-mt-24 outline-none">
+                        <FormLabel :required="true">Povo Indígena</FormLabel>
+                        <PovoIndigenaCombobox
+                            :model-value="form.fun_pin_id"
+                            :initial="initialPovo"
+                            :invalid="!!form.errors.fun_pin_id"
+                            @update:model-value="(v) => (form.fun_pin_id = v)"
+                        />
+                        <InputError :message="form.errors.fun_pin_id" />
                     </div>
 
                     <div class="grid gap-2">

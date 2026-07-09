@@ -9,12 +9,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import type { Municipio } from '@/types/aluno';
 import type { AlunoResumo, TurmaMatricula } from '@/types/matricula';
 import { COR_RACA } from '@/lib/corRaca';
-import { DEFICIENCIAS, TRANSTORNOS_GLOBAIS, TRANSTORNOS_APRENDIZAGEM, PATOLOGIAS, PATOLOGIAS_INFANCIA, CLINICAS, RECURSOS_INEP } from '@/lib/alunoSaudeEnums';
+import { DEFICIENCIAS, TRANSTORNOS_GLOBAIS, TRANSTORNOS_APRENDIZAGEM, PATOLOGIAS, PATOLOGIAS_INFANCIA, CLINICAS, RECURSOS_INEP, TGD_OUTROS, TRANSTORNOS_GLOBAIS_OUTROS } from '@/lib/alunoSaudeEnums';
 import { TIPOS_SANGUINEOS } from '@/lib/tiposSanguineos';
 import Switch from '@/components/common/Switch.vue';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/composables/useToast';
 import { useSeriesBySegmento, type SerieSegmentoItem } from '@/composables/useSeriesBySegmento';
+import { useViaCep } from '@/composables/useViaCep';
 import { computed, nextTick, reactive, ref, watch } from 'vue';
 import { triggerSessionExpired } from '@/lib/session';
 import { usePage } from '@inertiajs/vue3';
@@ -125,6 +126,7 @@ const formSaude = reactive({
     als_transtornos_aprendizagem: [] as string[],
     als_deficiencia_outro:        '',
     als_fl_altas_habilidades:     false,
+    als_fl_necessita_adi:         false,
     als_cid:                      '',
     als_observacao:               '',
     als_clinicas:                 [] as string[],
@@ -147,6 +149,9 @@ const pcdSemItem = computed(() =>
     && formSaude.als_deficiencia_outro.trim() === '',
 );
 
+// "Outros" na coluna TGD revela o campo de texto "Outro(a)".
+const tgdOutrosSelecionado = computed(() => formSaude.als_transtornos_globais.includes(TGD_OUTROS));
+
 const stripAccents = (str: string) => str.normalize('NFD').replace(/[̀-ͯ]/g, '');
 
 // Cartão do SUS: só dígitos, máx. 15.
@@ -156,6 +161,41 @@ const onCartaoSusInput = (e: Event) => {
     if (el.value !== v) el.value = v;
     formSaude.als_cartao_sus = v;
 };
+
+// Máscara de telefone: (00) 00000-0000 (armazena mascarado; backend tira os dígitos).
+const maskTelefone = (v: string): string => {
+    const d = (v ?? '').replace(/\D/g, '').slice(0, 11);
+    if (d.length <= 2) return d.length ? `(${d}` : '';
+    if (d.length <= 6) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
+    if (d.length <= 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
+    return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
+};
+const onTelefoneInput = (e: Event, set: (v: string) => void) => {
+    const el = e.target as HTMLInputElement;
+    const m = maskTelefone(el.value);
+    if (el.value !== m) el.value = m;
+    set(m);
+};
+const onTelAlunoInput = (e: Event) => onTelefoneInput(e, (v) => { formAluno.aln_telefone = v; });
+const onTelEmergInput = (e: Event) => onTelefoneInput(e, (v) => { formSaude.als_telefone_emergencia = v; });
+
+// CEP → endereço (ViaCEP). Campos preenchidos pelo CEP ficam travados p/ edição.
+const { loading: cepLoading, error: cepError, lookup: cepLookup } = useViaCep();
+const cepLock = reactive({ logradouro: false, bairro: false, cidade: false, uf: false });
+const liberarEnderecoCep = () => {
+    cepLock.logradouro = false; cepLock.bairro = false; cepLock.cidade = false; cepLock.uf = false;
+};
+watch(() => formAluno.aln_cep, async (v) => {
+    const digits = (v ?? '').replace(/\D/g, '');
+    liberarEnderecoCep(); // CEP mudou → reabre edição
+    if (digits.length !== 8) return;
+    const r = await cepLookup(digits);
+    if (!r) return;
+    if (r.logradouro) { formAluno.aln_logradouro = r.logradouro; cepLock.logradouro = true; }
+    if (r.bairro)     { formAluno.aln_bairro = r.bairro; cepLock.bairro = true; }
+    if (r.cidade)     { formAluno.aln_cidade = r.cidade; cepLock.cidade = true; }
+    if (r.uf)         { formAluno.aln_uf = (r.uf || '').toUpperCase(); cepLock.uf = true; }
+});
 const municipioNascimentoSelecionado = ref<Municipio | null>(null);
 
 const municipioNascimentoInicial = computed(() =>
@@ -184,6 +224,7 @@ const limparFormAluno = () => {
     formAluno.aln_bairro = '';
     formAluno.aln_cidade = '';
     formAluno.aln_uf = '';
+    liberarEnderecoCep();
     formAluno.aln_telefone = '';
     formAluno.aln_email = '';
     formAluno.aln_fl_trouxe_transferencia  = false;
@@ -217,7 +258,7 @@ const preencherFormAluno = (aluno: AlunoResumo) => {
     formAluno.aln_bairro = aluno.aln_bairro ?? '';
     formAluno.aln_cidade = aluno.aln_cidade ?? '';
     formAluno.aln_uf = aluno.aln_uf ?? '';
-    formAluno.aln_telefone = aluno.aln_telefone ?? '';
+    formAluno.aln_telefone = maskTelefone(aluno.aln_telefone ?? '');
     formAluno.aln_email = aluno.aln_email ?? '';
     formAluno.aln_fl_trouxe_transferencia  = (aluno as any).aln_fl_trouxe_transferencia  ?? false;
     formAluno.aln_fl_trouxe_rg             = (aluno as any).aln_fl_trouxe_rg             ?? false;
@@ -233,7 +274,7 @@ const preencherFormAluno = (aluno: AlunoResumo) => {
     formSaude.als_tipo_sanguineo           = s?.als_tipo_sanguineo ?? '';
     formSaude.als_ds_alergias              = s?.als_ds_alergias ?? '';
     formSaude.als_contato_emergencia       = s?.als_contato_emergencia ?? '';
-    formSaude.als_telefone_emergencia      = s?.als_telefone_emergencia ?? '';
+    formSaude.als_telefone_emergencia      = maskTelefone(s?.als_telefone_emergencia ?? '');
     formSaude.als_plano_saude              = s?.als_plano_saude ?? '';
     formSaude.als_cartao_sus               = s?.als_cartao_sus ?? '';
     formSaude.als_alergia_a                = s?.als_alergia_a ?? '';
@@ -248,6 +289,7 @@ const preencherFormAluno = (aluno: AlunoResumo) => {
     formSaude.als_transtornos_aprendizagem = s?.als_transtornos_aprendizagem ?? [];
     formSaude.als_deficiencia_outro        = s?.als_deficiencia_outro ?? '';
     formSaude.als_fl_altas_habilidades     = s?.als_fl_altas_habilidades ?? false;
+    formSaude.als_fl_necessita_adi         = s?.als_fl_necessita_adi ?? false;
     formSaude.als_cid                      = s?.als_cid ?? '';
     formSaude.als_observacao               = s?.als_observacao ?? '';
     formSaude.als_clinicas                 = s?.als_clinicas ?? [];
@@ -284,6 +326,7 @@ const reset = () => {
     formSaude.als_transtornos_aprendizagem = [];
     formSaude.als_deficiencia_outro        = '';
     formSaude.als_fl_altas_habilidades     = false;
+    formSaude.als_fl_necessita_adi         = false;
     formSaude.als_cid                      = '';
     formSaude.als_observacao               = '';
     formSaude.als_clinicas                 = [];
@@ -326,7 +369,17 @@ SAUDE_TEXT_FIELDS.forEach((field) => {
 watch(possuiDeficiencia, (v) => {
     if (!v) {
         formSaude.als_deficiencias = [];
+        formSaude.als_recursos_inep = [];
         activeTab.value = 'dados';
+    }
+});
+
+watch(tgdOutrosSelecionado, (v) => {
+    if (!v) {
+        formSaude.als_deficiencia_outro = '';
+        formSaude.als_transtornos_globais = formSaude.als_transtornos_globais.filter(
+            (t) => !(TRANSTORNOS_GLOBAIS_OUTROS as readonly string[]).includes(t),
+        );
     }
 });
 
@@ -633,7 +686,7 @@ const selectClass = 'flex h-10 w-full rounded-md border border-input bg-backgrou
                         <div class="grid gap-4 sm:grid-cols-2">
                             <div class="grid gap-1.5 sm:col-span-2">
                                 <FormLabel for="aln_nome" :required="true">Nome</FormLabel>
-                                <Input id="aln_nome" v-model="formAluno.aln_nome" maxlength="100" class="uppercase" />
+                                <Input id="aln_nome" v-model="formAluno.aln_nome" maxlength="50" class="uppercase" />
                                 <InputError :message="err('aluno.aln_nome')" />
                             </div>
 
@@ -663,7 +716,7 @@ const selectClass = 'flex h-10 w-full rounded-md border border-input bg-backgrou
                                         </label>
                                     </div>
                                 </div>
-                                <Input id="aln_filiacao_1" v-model="formAluno.aln_filiacao_1" maxlength="100" class="uppercase" />
+                                <Input id="aln_filiacao_1" v-model="formAluno.aln_filiacao_1" maxlength="50" class="uppercase" />
                                 <InputError :message="err('aluno.aln_filiacao_1')" />
                                 <InputError :message="err('aluno.aln_filiacao_1_tipo')" />
                             </div>
@@ -682,7 +735,7 @@ const selectClass = 'flex h-10 w-full rounded-md border border-input bg-backgrou
                                         </label>
                                     </div>
                                 </div>
-                                <Input id="aln_filiacao_2" v-model="formAluno.aln_filiacao_2" maxlength="100" class="uppercase" />
+                                <Input id="aln_filiacao_2" v-model="formAluno.aln_filiacao_2" maxlength="50" class="uppercase" />
                                 <InputError :message="err('aluno.aln_filiacao_2')" />
                                 <InputError :message="err('aluno.aln_filiacao_2_tipo')" />
                             </div>
@@ -746,15 +799,16 @@ const selectClass = 'flex h-10 w-full rounded-md border border-input bg-backgrou
                             <div class="grid gap-1.5 sm:col-span-1">
                                 <FormLabel for="aln_cep" :required="true">CEP</FormLabel>
                                 <Input id="aln_cep" v-model="formAluno.aln_cep" maxlength="9" placeholder="00000-000" />
-                                <InputError :message="err('aluno.aln_cep')" />
+                                <p v-if="cepLoading" class="text-xs text-muted-foreground">Buscando endereço...</p>
+                                <InputError :message="err('aluno.aln_cep') || cepError" />
                             </div>
                             <div class="grid gap-1.5 sm:col-span-3">
                                 <FormLabel for="aln_logradouro">Logradouro</FormLabel>
-                                <Input id="aln_logradouro" v-model="formAluno.aln_logradouro" maxlength="150" />
+                                <Input id="aln_logradouro" v-model="formAluno.aln_logradouro" maxlength="150" :readonly="cepLock.logradouro" :class="cepLock.logradouro ? 'bg-muted' : ''" />
                             </div>
                             <div class="grid gap-1.5 sm:col-span-2">
                                 <FormLabel for="aln_bairro">Bairro</FormLabel>
-                                <Input id="aln_bairro" v-model="formAluno.aln_bairro" maxlength="100" />
+                                <Input id="aln_bairro" v-model="formAluno.aln_bairro" maxlength="100" :readonly="cepLock.bairro" :class="cepLock.bairro ? 'bg-muted' : ''" />
                             </div>
                             <div class="grid gap-1.5">
                                 <FormLabel for="aln_numero">Número</FormLabel>
@@ -762,11 +816,11 @@ const selectClass = 'flex h-10 w-full rounded-md border border-input bg-backgrou
                             </div>
                             <div class="grid gap-1.5">
                                 <FormLabel for="aln_uf">UF</FormLabel>
-                                <Input id="aln_uf" v-model="formAluno.aln_uf" maxlength="2" class="uppercase" />
+                                <Input id="aln_uf" v-model="formAluno.aln_uf" maxlength="2" :readonly="cepLock.uf" :class="['uppercase', cepLock.uf ? 'bg-muted' : '']" />
                             </div>
                             <div class="grid gap-1.5 sm:col-span-3">
                                 <FormLabel for="aln_cidade">Cidade</FormLabel>
-                                <Input id="aln_cidade" v-model="formAluno.aln_cidade" maxlength="100" />
+                                <Input id="aln_cidade" v-model="formAluno.aln_cidade" maxlength="100" :readonly="cepLock.cidade" :class="cepLock.cidade ? 'bg-muted' : ''" />
                             </div>
                             <div class="grid gap-1.5 sm:col-span-1">
                                 <FormLabel for="aln_complemento">Complemento</FormLabel>
@@ -779,7 +833,7 @@ const selectClass = 'flex h-10 w-full rounded-md border border-input bg-backgrou
                         <div class="grid gap-4 sm:grid-cols-2">
                             <div class="grid gap-1.5">
                                 <FormLabel for="aln_telefone">Telefone</FormLabel>
-                                <Input id="aln_telefone" v-model="formAluno.aln_telefone" maxlength="11" />
+                                <Input id="aln_telefone" v-model="formAluno.aln_telefone" maxlength="15" inputmode="numeric" placeholder="(00) 00000-0000" @input="onTelAlunoInput" />
                             </div>
                             <div class="grid gap-1.5">
                                 <FormLabel for="aln_email">E-mail</FormLabel>
@@ -827,6 +881,7 @@ const selectClass = 'flex h-10 w-full rounded-md border border-input bg-backgrou
                             id="tma_obs"
                             v-model="formMatricula.tma_obs"
                             rows="2"
+                            maxlength="500"
                             class="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
                             placeholder="Observações sobre a matrícula..."
                         />
@@ -847,7 +902,7 @@ const selectClass = 'flex h-10 w-full rounded-md border border-input bg-backgrou
                             </div>
                             <div class="grid gap-2">
                                 <Label for="als_telefone_emergencia">Telefone (Emergência)</Label>
-                                <Input id="als_telefone_emergencia" v-model="formSaude.als_telefone_emergencia" maxlength="20" placeholder="(00) 00000-0000" />
+                                <Input id="als_telefone_emergencia" v-model="formSaude.als_telefone_emergencia" maxlength="15" inputmode="numeric" placeholder="(00) 00000-0000" @input="onTelEmergInput" />
                                 <InputError :message="err('saude.als_telefone_emergencia')" />
                             </div>
                         </div>
@@ -935,6 +990,11 @@ const selectClass = 'flex h-10 w-full rounded-md border border-input bg-backgrou
 
                         <div id="als_deficiencias" tabindex="-1" class="scroll-mt-20 rounded-lg outline-none focus:ring-2 focus:ring-rose-400" :class="[{ 'pointer-events-none opacity-40': !possuiDeficiencia }, pcdSemItem ? 'ring-2 ring-rose-400' : '']">
                             <InputError :message="err('saude.als_deficiencias')" />
+                            <!-- Necessita de ADI em destaque, no topo -->
+                            <div class="mb-5 flex items-center gap-3 rounded-lg border border-fuchsia-300 bg-fuchsia-50 px-4 py-3 dark:border-fuchsia-800 dark:bg-fuchsia-950/30">
+                                <Switch id="als_fl_necessita_adi" v-model="formSaude.als_fl_necessita_adi" />
+                                <Label for="als_fl_necessita_adi" class="text-sm font-semibold">Necessita de ADI (Auxiliar de Desenvolvimento Infantil)</Label>
+                            </div>
                             <div class="grid gap-6 sm:grid-cols-3">
                                 <div>
                                     <h4 class="mb-2 text-xs font-semibold text-muted-foreground">Deficiência </h4>
@@ -952,6 +1012,13 @@ const selectClass = 'flex h-10 w-full rounded-md border border-input bg-backgrou
                                             <input type="checkbox" :checked="formSaude.als_transtornos_globais.includes(t)" @change="toggleArrayItem(formSaude.als_transtornos_globais, t)" class="size-4 rounded border-gray-300 text-sky-600 focus:ring-sky-500" />
                                             {{ t }}
                                         </label>
+                                        <!-- Subopções reveladas ao marcar "Outros" -->
+                                        <div v-if="tgdOutrosSelecionado" class="ml-6 space-y-2 border-l pl-3">
+                                            <label v-for="t in TRANSTORNOS_GLOBAIS_OUTROS" :key="t" class="flex items-center gap-2 text-sm">
+                                                <input type="checkbox" :checked="formSaude.als_transtornos_globais.includes(t)" @change="toggleArrayItem(formSaude.als_transtornos_globais, t)" class="size-4 rounded border-gray-300 text-sky-600 focus:ring-sky-500" />
+                                                {{ t }}
+                                            </label>
+                                        </div>
                                     </div>
                                 </div>
                                 <div>
@@ -964,21 +1031,24 @@ const selectClass = 'flex h-10 w-full rounded-md border border-input bg-backgrou
                                     </div>
                                 </div>
                             </div>
-                            <div class="mt-4 grid gap-4 sm:grid-cols-2">
-                                <div class="grid gap-2">
-                                    <Label for="als_deficiencia_outro">Outro(a)</Label>
-                                    <Input id="als_deficiencia_outro" v-model="formSaude.als_deficiencia_outro" maxlength="500" />
-                                    <InputError :message="err('saude.als_deficiencia_outro')" />
-                                </div>
+                            <!-- Altas Habilidades como opção (checkbox) -->
+                            <div class="mt-4">
+                                <label class="flex items-center gap-2 text-sm">
+                                    <input type="checkbox" v-model="formSaude.als_fl_altas_habilidades" class="size-4 rounded border-gray-300 text-sky-600 focus:ring-sky-500" />
+                                    Altas Habilidades/Superdotação
+                                </label>
                             </div>
-                            <div class="mt-4 grid items-end gap-x-8 gap-y-4 sm:grid-cols-2">
-                                <div class="flex items-center gap-3 sm:h-10">
-                                    <Switch id="als_fl_altas_habilidades" v-model="formSaude.als_fl_altas_habilidades" />
-                                    <Label for="als_fl_altas_habilidades" class="text-sm font-normal">Altas Habilidades/Superdotação</Label>
+
+                            <!-- Outro(a) largo + CID logo abaixo, ambos à esquerda -->
+                            <div class="mt-4 grid gap-4">
+                                <div v-if="tgdOutrosSelecionado" class="grid gap-2">
+                                    <Label for="als_deficiencia_outro">Outro(a)</Label>
+                                    <Input id="als_deficiencia_outro" v-model="formSaude.als_deficiencia_outro" maxlength="500" class="w-full" />
+                                    <InputError :message="err('saude.als_deficiencia_outro')" />
                                 </div>
                                 <div class="grid gap-2">
                                     <Label for="als_cid">CID</Label>
-                                    <Input id="als_cid" v-model="formSaude.als_cid" maxlength="20" />
+                                    <Input id="als_cid" v-model="formSaude.als_cid" maxlength="20" class="w-full max-w-xs" />
                                     <InputError :message="err('saude.als_cid')" />
                                 </div>
                             </div>
@@ -1000,10 +1070,13 @@ const selectClass = 'flex h-10 w-full rounded-md border border-input bg-backgrou
                         </div>
                     </fieldset>
 
-                    <!-- Recursos INEP -->
+                    <!-- Recursos INEP — só habilitado quando aluno com deficiência (PCD) marcado -->
                     <fieldset class="rounded-xl border bg-card p-5 shadow-sm">
                         <legend class="px-2 text-sm font-semibold">Recursos necessários para a participação do aluno em avaliações do INEP</legend>
-                        <div class="grid gap-x-6 gap-y-2 sm:grid-cols-2">
+                        <div
+                            class="grid gap-x-6 gap-y-2 sm:grid-cols-2"
+                            :class="{ 'pointer-events-none opacity-40': !possuiDeficiencia }"
+                        >
                             <label v-for="r in RECURSOS_INEP" :key="r" class="flex items-center gap-2 text-sm">
                                 <input type="checkbox" :checked="formSaude.als_recursos_inep.includes(r)" @change="toggleArrayItem(formSaude.als_recursos_inep, r)" class="size-4 rounded border-gray-300 text-sky-600 focus:ring-sky-500" />
                                 {{ r }}

@@ -35,6 +35,7 @@ class AlunoSaude extends Model
         'als_transtornos_aprendizagem',
         'als_deficiencia_outro',
         'als_fl_altas_habilidades',
+        'als_fl_necessita_adi',
         'als_cid',
         'als_observacao',
         'als_clinicas',
@@ -44,6 +45,7 @@ class AlunoSaude extends Model
     protected $casts = [
         'als_fl_pcd' => 'boolean',
         'als_fl_altas_habilidades' => 'boolean',
+        'als_fl_necessita_adi' => 'boolean',
         'als_patologias' => 'array',
         'als_patologias_infancia' => 'array',
         'als_deficiencias' => 'array',

@@ -5,6 +5,7 @@ import InputError from '@/components/common/InputError.vue';
 import RefreshButton from '@/components/common/RefreshButton.vue';
 import HomonimoDialog, { type HomonimoMatch } from '@/components/aluno/HomonimoDialog.vue';
 import MunicipioCombobox from '@/components/aluno/MunicipioCombobox.vue';
+import PovoIndigenaCombobox from '@/components/aluno/PovoIndigenaCombobox.vue';
 import HistoricoManualModal from '@/components/aluno/HistoricoManualModal.vue';
 import Switch from '@/components/common/Switch.vue';
 import Tabs from '@/components/common/Tabs.vue';
@@ -24,14 +25,14 @@ import { PAISES } from '@/lib/paises';
 import { TIPOS_SANGUINEOS } from '@/lib/tiposSanguineos';
 import {
     PATOLOGIAS, PATOLOGIAS_INFANCIA, DEFICIENCIAS, TRANSTORNOS_GLOBAIS,
-    TRANSTORNOS_APRENDIZAGEM, CLINICAS, RECURSOS_INEP,
+    TRANSTORNOS_APRENDIZAGEM, CLINICAS, RECURSOS_INEP, TGD_OUTROS, TRANSTORNOS_GLOBAIS_OUTROS,
 } from '@/lib/alunoSaudeEnums';
 import { UFS } from '@/lib/ufs';
 import type { SharedData, SystemParams } from '@/types';
-import type { Aluno, AlunoFormData, Municipio } from '@/types/aluno';
-import { Link, useForm, usePage } from '@inertiajs/vue3';
+import type { Aluno, AlunoFormData, Municipio, PovoIndigena } from '@/types/aluno';
+import { Link, router, useForm, usePage } from '@inertiajs/vue3';
 import { Camera, ChevronLeft, ChevronRight, Loader2, LoaderCircle, Save, ScrollText, Trash2, Upload } from 'lucide-vue-next';
-import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, reactive, ref, watch } from 'vue';
 
 interface MatriculaResumo {
     tma_id: number;
@@ -86,6 +87,20 @@ const matriculasAtividade = computed(() =>
     (props.matriculas ?? []).filter((m) => m.tur_modalidade === 'ATIVIDADE'),
 );
 
+// Matrícula: número imutável, lido direto dos props (não é campo editável do form).
+const matriculaAtual = computed(() => props.initial?.aln_nr_matricula ?? null);
+const gerandoMatricula = ref(false);
+
+const gerarMatricula = () => {
+    if (props.mode !== 'edit' || !props.initial || matriculaAtual.value) return;
+    gerandoMatricula.value = true;
+    router.post(`/alunos/${props.initial.aln_id}/gerar-matricula`, {}, {
+        preserveScroll: true,
+        preserveState: true,
+        onFinish: () => (gerandoMatricula.value = false),
+    });
+};
+
 const TABS = ['dados-pessoais', 'documentacao', 'filiacao-contato', 'complementares', 'turmas'] as const;
 type TabId = (typeof TABS)[number];
 
@@ -93,9 +108,9 @@ type TabId = (typeof TABS)[number];
 const NAV_TABS = TABS.filter(t => t !== 'turmas') as unknown as typeof TABS;
 
 const TAB_FIELDS: Record<TabId, string[]> = {
-    'dados-pessoais': ['aln_nome', 'aln_nome_social', 'aln_dt_nascimento', 'aln_sexo', 'aln_cor_raca', 'aln_pais_origem', 'aln_mun_id_nasc'],
+    'dados-pessoais': ['aln_nome', 'aln_nome_social', 'aln_dt_nascimento', 'aln_sexo', 'aln_cor_raca', 'aln_pais_origem', 'aln_mun_id_nasc', 'aln_pin_id'],
     documentacao: [
-        'aln_cpf', 'aln_cd_inep', 'aln_nr_matricula', 'aln_nr_certidao', 'aln_nis',
+        'aln_cpf', 'aln_cd_inep', 'aln_nr_certidao', 'aln_nis',
         'aln_fl_trouxe_transferencia', 'aln_fl_trouxe_rg', 'aln_fl_trouxe_reg_nascimento',
         'aln_fl_bolsa_familia', 'aln_fl_recebe_merenda', 'aln_fl_usa_transporte', 'aln_fl_usa_biblioteca',
     ],
@@ -143,6 +158,10 @@ const initialMunicipio = computed<Municipio | null>(
     () => props.initial?.municipio_nascimento ?? null,
 );
 
+const initialPovo = computed<PovoIndigena | null>(
+    () => props.initial?.povo_indigena ?? null,
+);
+
 const dataBR = ref(formatDateBR(props.initial?.aln_dt_nascimento));
 
 const form = useForm<AlunoFormData>({
@@ -153,10 +172,10 @@ const form = useForm<AlunoFormData>({
     aln_cor_raca: props.initial?.aln_cor_raca ?? null,
     aln_pais_origem: props.initial?.aln_pais_origem ?? 'Brasil',
     aln_mun_id_nasc: props.initial?.aln_mun_id_nasc ?? null,
+    aln_pin_id: props.initial?.aln_pin_id ?? null,
 
     aln_cpf: props.initial?.aln_cpf ?? '',
     aln_cd_inep: props.initial?.aln_cd_inep ?? '',
-    aln_nr_matricula: props.initial?.aln_nr_matricula ?? null,
     aln_nr_certidao: props.initial?.aln_nr_certidao ?? '',
     aln_nis: props.initial?.aln_nis ?? '',
     aln_fl_trouxe_transferencia:  props.initial?.aln_fl_trouxe_transferencia  ?? false,
@@ -207,6 +226,7 @@ const form = useForm<AlunoFormData>({
         als_transtornos_aprendizagem: props.initial?.saude?.als_transtornos_aprendizagem ?? [],
         als_deficiencia_outro: props.initial?.saude?.als_deficiencia_outro ?? '',
         als_fl_altas_habilidades: props.initial?.saude?.als_fl_altas_habilidades ?? false,
+        als_fl_necessita_adi: props.initial?.saude?.als_fl_necessita_adi ?? false,
         als_cid: props.initial?.saude?.als_cid ?? '',
         als_observacao: props.initial?.saude?.als_observacao ?? '',
         als_clinicas: props.initial?.saude?.als_clinicas ?? [],
@@ -218,6 +238,25 @@ watch(dataBR, (v) => {
     form.aln_dt_nascimento = v && v.length === 10 ? parseDateBR(v) : '';
 });
 
+// Cor/Raça = Indígena (5) → povo indígena obrigatório; ao trocar de raça, limpa o povo.
+const isIndigena = computed(() => Number(form.aln_cor_raca) === 5);
+
+watch(isIndigena, (v) => {
+    if (!v) form.aln_pin_id = null;
+});
+
+// "Outros" na coluna TGD revela o campo de texto "Outro(a)".
+const tgdOutrosSelecionado = computed(() => form.saude.als_transtornos_globais.includes(TGD_OUTROS));
+
+watch(tgdOutrosSelecionado, (v) => {
+    if (!v) {
+        form.saude.als_deficiencia_outro = '';
+        form.saude.als_transtornos_globais = form.saude.als_transtornos_globais.filter(
+            (t) => !(TRANSTORNOS_GLOBAIS_OUTROS as readonly string[]).includes(t),
+        );
+    }
+});
+
 watch(
     () => form.saude.als_fl_pcd,
     (v) => {
@@ -227,8 +266,10 @@ watch(
             form.saude.als_transtornos_aprendizagem = [];
             form.saude.als_deficiencia_outro = '';
             form.saude.als_fl_altas_habilidades = false;
+            form.saude.als_fl_necessita_adi = false;
             form.saude.als_cid = '';
             form.saude.als_observacao = '';
+            form.saude.als_recursos_inep = [];
         }
     },
 );
@@ -309,21 +350,25 @@ const tabHasError = (tab: TabId): boolean => {
 const numeroInput = ref<HTMLInputElement | null>(null);
 const { loading: cepLoading, error: cepError, lookup: cepLookup } = useViaCep();
 
+// Campos preenchidos pelo CEP ficam travados p/ edição (liberam ao trocar o CEP).
+const cepLock = reactive({ logradouro: false, bairro: false, cidade: false, uf: false });
+const liberarEnderecoCep = () => {
+    cepLock.logradouro = false; cepLock.bairro = false; cepLock.cidade = false; cepLock.uf = false;
+};
 watch(
     () => form.aln_cep,
     async (v) => {
         const digits = (v ?? '').replace(/\D/g, '');
-        if (digits.length === 8) {
-            const result = await cepLookup(digits);
-            if (result) {
-                form.aln_logradouro = result.logradouro || form.aln_logradouro;
-                form.aln_bairro = result.bairro || form.aln_bairro;
-                form.aln_cidade = result.cidade || form.aln_cidade;
-                form.aln_uf = result.uf || form.aln_uf;
-                await nextTick();
-                numeroInput.value?.focus();
-            }
-        }
+        liberarEnderecoCep();
+        if (digits.length !== 8) return;
+        const result = await cepLookup(digits);
+        if (!result) return;
+        if (result.logradouro) { form.aln_logradouro = result.logradouro; cepLock.logradouro = true; }
+        if (result.bairro)     { form.aln_bairro = result.bairro; cepLock.bairro = true; }
+        if (result.cidade)     { form.aln_cidade = result.cidade; cepLock.cidade = true; }
+        if (result.uf)         { form.aln_uf = (result.uf || '').toUpperCase(); cepLock.uf = true; }
+        await nextTick();
+        numeroInput.value?.focus();
     },
 );
 
@@ -592,7 +637,7 @@ const initials = computed(() => {
                         <Input
                             id="aln_nome"
                             v-model="form.aln_nome"
-                            maxlength="100"
+                            maxlength="50"
                             :required="true"
                             autofocus
                             placeholder="Ex.: Maria da Silva Santos"
@@ -686,6 +731,17 @@ const initials = computed(() => {
                         />
                         <InputError :message="form.errors.aln_mun_id_nasc" />
                     </div>
+
+                    <div v-if="isIndigena" id="aln_pin_id" tabindex="-1" class="grid gap-2 scroll-mt-24 outline-none sm:col-span-2">
+                        <FormLabel :required="true">Povo indígena</FormLabel>
+                        <PovoIndigenaCombobox
+                            :model-value="form.aln_pin_id"
+                            :initial="initialPovo"
+                            :invalid="!!form.errors.aln_pin_id"
+                            @update:model-value="(v) => (form.aln_pin_id = v)"
+                        />
+                        <InputError :message="form.errors.aln_pin_id" />
+                    </div>
                 </div>
             </TabsContent>
 
@@ -693,21 +749,37 @@ const initials = computed(() => {
             <TabsContent value="documentacao">
                 <div class="grid gap-4 rounded-xl border bg-card p-6 shadow-sm sm:grid-cols-2">
                     <div class="grid gap-2 sm:col-span-2">
-                        <Label for="aln_nr_matricula">Matrícula</Label>
-                        <Input
-                            id="aln_nr_matricula"
-                            type="number"
-                            min="1"
-                            step="1"
-                            inputmode="numeric"
-                            v-model.number="form.aln_nr_matricula"
-                            placeholder="Deixe vazio para gerar automaticamente"
-                            class="font-mono tracking-wider"
-                        />
+                        <Label>Matrícula</Label>
+                        <div class="flex items-center gap-3">
+                            <Input
+                                :model-value="matriculaAtual ?? ''"
+                                readonly
+                                disabled
+                                placeholder="Ainda não gerada"
+                                class="max-w-[220px] font-mono tracking-wider"
+                            />
+                            <Button
+                                v-if="mode === 'edit' && !matriculaAtual"
+                                type="button"
+                                variant="outline"
+                                :disabled="gerandoMatricula"
+                                @click="gerarMatricula"
+                            >
+                                <Loader2 v-if="gerandoMatricula" class="mr-2 h-4 w-4 animate-spin" />
+                                Gerar matrícula
+                            </Button>
+                        </div>
                         <p class="text-xs text-muted-foreground">
-                            Em branco: gerada automaticamente. Editável, mas não pode ser duplicada.
+                            <template v-if="mode === 'create'">
+                                Gerada automaticamente ao salvar.
+                            </template>
+                            <template v-else-if="matriculaAtual">
+                                Número definitivo — não pode ser alterado.
+                            </template>
+                            <template v-else>
+                                Sem matrícula. Clique em “Gerar matrícula” para atribuir um número único.
+                            </template>
                         </p>
-                        <InputError :message="form.errors.aln_nr_matricula" />
                     </div>
 
                     <div class="grid gap-2">
@@ -770,15 +842,15 @@ const initials = computed(() => {
                     <div class="grid gap-3 sm:grid-cols-3">
                         <div class="flex items-center gap-3">
                             <Switch id="aln_fl_trouxe_transferencia" v-model="form.aln_fl_trouxe_transferencia" />
-                            <Label for="aln_fl_trouxe_transferencia" class="text-sm font-normal">Trouxe declaração de transferência</Label>
+                            <Label for="aln_fl_trouxe_transferencia" class="text-sm font-normal">Declaração de transferência</Label>
                         </div>
                         <div class="flex items-center gap-3">
                             <Switch id="aln_fl_trouxe_rg" v-model="form.aln_fl_trouxe_rg" />
-                            <Label for="aln_fl_trouxe_rg" class="text-sm font-normal">Trouxe RG</Label>
+                            <Label for="aln_fl_trouxe_rg" class="text-sm font-normal">RG</Label>
                         </div>
                         <div class="flex items-center gap-3">
                             <Switch id="aln_fl_trouxe_reg_nascimento" v-model="form.aln_fl_trouxe_reg_nascimento" />
-                            <Label for="aln_fl_trouxe_reg_nascimento" class="text-sm font-normal">Trouxe registro de nascimento</Label>
+                            <Label for="aln_fl_trouxe_reg_nascimento" class="text-sm font-normal">Registro de nascimento</Label>
                         </div>
                     </div>
 
@@ -787,10 +859,6 @@ const initials = computed(() => {
                         <div class="flex items-center gap-3">
                             <Switch id="aln_fl_bolsa_familia" v-model="form.aln_fl_bolsa_familia" />
                             <Label for="aln_fl_bolsa_familia" class="text-sm font-normal">Bolsa Família</Label>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <Switch id="aln_fl_recebe_merenda" v-model="form.aln_fl_recebe_merenda" />
-                            <Label for="aln_fl_recebe_merenda" class="text-sm font-normal">Recebe merenda escolar</Label>
                         </div>
                         <div class="flex items-center gap-3">
                             <Switch id="aln_fl_usa_transporte" v-model="form.aln_fl_usa_transporte" />
@@ -825,7 +893,7 @@ const initials = computed(() => {
                                     </label>
                                 </div>
                             </div>
-                            <Input id="aln_filiacao_1" v-model="form.aln_filiacao_1" maxlength="100" />
+                            <Input id="aln_filiacao_1" v-model="form.aln_filiacao_1" maxlength="50" />
                             <div class="flex justify-between gap-2">
                                 <div>
                                     <InputError :message="(form.errors as any).aln_filiacao_1" />
@@ -848,7 +916,7 @@ const initials = computed(() => {
                                     </label>
                                 </div>
                             </div>
-                            <Input id="aln_filiacao_2" v-model="form.aln_filiacao_2" maxlength="100" />
+                            <Input id="aln_filiacao_2" v-model="form.aln_filiacao_2" maxlength="50" />
                             <div class="flex justify-between gap-2">
                                 <div>
                                     <InputError :message="(form.errors as any).aln_filiacao_2" />
@@ -885,7 +953,7 @@ const initials = computed(() => {
 
                         <div class="grid gap-2 sm:col-span-3">
                             <Label for="aln_logradouro">Rua / Logradouro</Label>
-                            <Input id="aln_logradouro" v-model="form.aln_logradouro" maxlength="150" />
+                            <Input id="aln_logradouro" v-model="form.aln_logradouro" maxlength="150" :readonly="cepLock.logradouro" :class="cepLock.logradouro ? 'bg-muted' : ''" />
                             <InputError :message="form.errors.aln_logradouro" />
                         </div>
 
@@ -903,13 +971,13 @@ const initials = computed(() => {
 
                         <div class="grid gap-2 sm:col-span-3">
                             <Label for="aln_bairro">Bairro</Label>
-                            <Input id="aln_bairro" v-model="form.aln_bairro" maxlength="100" />
+                            <Input id="aln_bairro" v-model="form.aln_bairro" maxlength="100" :readonly="cepLock.bairro" :class="cepLock.bairro ? 'bg-muted' : ''" />
                             <InputError :message="form.errors.aln_bairro" />
                         </div>
 
                         <div class="grid gap-2 sm:col-span-4">
                             <Label for="aln_cidade">Cidade</Label>
-                            <Input id="aln_cidade" v-model="form.aln_cidade" maxlength="100" />
+                            <Input id="aln_cidade" v-model="form.aln_cidade" maxlength="100" :readonly="cepLock.cidade" :class="cepLock.cidade ? 'bg-muted' : ''" />
                             <InputError :message="form.errors.aln_cidade" />
                         </div>
 
@@ -918,7 +986,8 @@ const initials = computed(() => {
                             <select
                                 id="aln_uf"
                                 v-model="form.aln_uf"
-                                class="h-10 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                                :disabled="cepLock.uf"
+                                class="h-10 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500 disabled:cursor-not-allowed disabled:bg-muted"
                             >
                                 <option value="">—</option>
                                 <option v-for="uf in UFS" :key="uf" :value="uf">{{ uf }}</option>
@@ -1100,6 +1169,17 @@ const initials = computed(() => {
 
                         <!-- Conteúdo desabilitado quando flag inativa -->
                         <div :class="{ 'pointer-events-none opacity-40': !form.saude.als_fl_pcd }">
+                            <!-- Necessita de ADI em destaque, no topo -->
+                            <div class="mb-5 flex items-center gap-3 rounded-lg border border-fuchsia-300 bg-fuchsia-50 px-4 py-3 dark:border-fuchsia-800 dark:bg-fuchsia-950/30">
+                                <Switch
+                                    id="als_fl_necessita_adi"
+                                    v-model="form.saude.als_fl_necessita_adi"
+                                />
+                                <Label for="als_fl_necessita_adi" class="text-sm font-semibold">
+                                    Necessita de ADI (Auxiliar de Desenvolvimento Infantil)
+                                </Label>
+                            </div>
+
                             <div class="grid gap-6 sm:grid-cols-3">
                                 <div id="als_deficiencias" tabindex="-1" class="scroll-mt-24 outline-none">
                                     <h4 class="mb-2 text-xs font-semibold text-muted-foreground">
@@ -1139,6 +1219,22 @@ const initials = computed(() => {
                                             />
                                             {{ t }}
                                         </label>
+                                        <!-- Subopções reveladas ao marcar "Outros" -->
+                                        <div v-if="tgdOutrosSelecionado" class="ml-6 space-y-2 border-l pl-3">
+                                            <label
+                                                v-for="t in TRANSTORNOS_GLOBAIS_OUTROS"
+                                                :key="t"
+                                                class="flex items-center gap-2 text-sm"
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    :checked="form.saude.als_transtornos_globais.includes(t)"
+                                                    @change="toggleArrayItem(form.saude.als_transtornos_globais, t)"
+                                                    class="size-4 rounded border-gray-300 text-sky-600 focus:ring-sky-500"
+                                                />
+                                                {{ t }}
+                                            </label>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -1162,27 +1258,28 @@ const initials = computed(() => {
                                 </div>
                             </div>
 
-                            <div class="mt-4 grid gap-4 sm:grid-cols-2">
-                                <div class="grid gap-2">
-                                    <Label for="als_deficiencia_outro">Outro(a)</Label>
-                                    <Input id="als_deficiencia_outro" v-model="form.saude.als_deficiencia_outro" maxlength="500" />
-                                    <InputError :message="(form.errors as Record<string, string>)['saude.als_deficiencia_outro']" />
-                                </div>
+                            <!-- Altas Habilidades como opção (checkbox) -->
+                            <div class="mt-4">
+                                <label class="flex items-center gap-2 text-sm">
+                                    <input
+                                        type="checkbox"
+                                        v-model="form.saude.als_fl_altas_habilidades"
+                                        class="size-4 rounded border-gray-300 text-sky-600 focus:ring-sky-500"
+                                    />
+                                    Altas Habilidades/Superdotação
+                                </label>
                             </div>
 
-                            <div class="mt-4 grid gap-4 sm:grid-cols-3">
-                                <div class="flex items-center gap-3">
-                                    <Switch
-                                        id="als_fl_altas_habilidades"
-                                        v-model="form.saude.als_fl_altas_habilidades"
-                                    />
-                                    <Label for="als_fl_altas_habilidades" class="text-sm font-normal">
-                                        Altas Habilidades/Superdotação
-                                    </Label>
+                            <!-- Outro(a) largo + CID logo abaixo, ambos à esquerda -->
+                            <div class="mt-4 grid gap-4">
+                                <div v-if="tgdOutrosSelecionado" class="grid gap-2">
+                                    <Label for="als_deficiencia_outro">Outro(a)</Label>
+                                    <Input id="als_deficiencia_outro" v-model="form.saude.als_deficiencia_outro" maxlength="500" class="w-full" />
+                                    <InputError :message="(form.errors as Record<string, string>)['saude.als_deficiencia_outro']" />
                                 </div>
                                 <div class="grid gap-2">
                                     <Label for="als_cid">CID</Label>
-                                    <Input id="als_cid" v-model="form.saude.als_cid" maxlength="20" />
+                                    <Input id="als_cid" v-model="form.saude.als_cid" maxlength="20" class="w-full max-w-xs" />
                                     <InputError :message="(form.errors as Record<string, string>)['saude.als_cid']" />
                                 </div>
                             </div>
@@ -1221,10 +1318,13 @@ const initials = computed(() => {
                         </div>
                     </fieldset>
 
-                    <!-- Recursos INEP -->
+                    <!-- Recursos INEP — só habilitado quando aluno com deficiência (PCD) marcado -->
                     <fieldset class="rounded-xl border bg-card p-6 shadow-sm">
                         <legend class="px-2 text-sm font-semibold">Recursos necessários para a participação do aluno em avaliações do INEP (Prova Brasil, SAEB, outros)</legend>
-                        <div class="grid gap-x-6 gap-y-2 sm:grid-cols-2">
+                        <div
+                            class="grid gap-x-6 gap-y-2 sm:grid-cols-2"
+                            :class="{ 'pointer-events-none opacity-40': !form.saude.als_fl_pcd }"
+                        >
                             <label
                                 v-for="r in RECURSOS_INEP"
                                 :key="r"

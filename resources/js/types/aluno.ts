@@ -5,6 +5,12 @@ export interface Municipio {
     mun_codigo_ibge?: string;
 }
 
+export interface PovoIndigena {
+    pin_id: number;
+    pin_cd_censo: number;
+    pin_nome: string;
+}
+
 export type TipoSanguineo = 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | 'O+' | 'O-';
 
 export interface AlunoSaude {
@@ -29,6 +35,7 @@ export interface AlunoSaude {
     als_transtornos_aprendizagem: string[] | null;
     als_deficiencia_outro: string | null;
     als_fl_altas_habilidades: boolean;
+    als_fl_necessita_adi: boolean;
     als_cid: string | null;
     als_observacao: string | null;
     als_clinicas: string[] | null;
@@ -47,6 +54,7 @@ export interface Aluno {
     aln_cor_raca: CorRaca;
     aln_pais_origem: string;
     aln_mun_id_nasc: number;
+    aln_pin_id: number | null;
     aln_cpf: string | null;
     aln_cd_inep: string | null;
     aln_nr_matricula: number | null;
@@ -74,6 +82,7 @@ export interface Aluno {
     aln_foto_url: string | null;
     aln_fl_ativo: boolean;
     municipio_nascimento?: Municipio | null;
+    povo_indigena?: PovoIndigena | null;
     saude?: AlunoSaude | null;
 }
 
@@ -85,6 +94,7 @@ export interface AlunoFormData {
     aln_cor_raca: CorRaca | null;
     aln_pais_origem: string;
     aln_mun_id_nasc: number | null;
+    aln_pin_id: number | null;
     aln_cpf: string;
     aln_cd_inep: string;
     aln_nr_matricula: number | string | null;
@@ -131,6 +141,7 @@ export interface AlunoFormData {
         als_transtornos_aprendizagem: string[];
         als_deficiencia_outro: string;
         als_fl_altas_habilidades: boolean;
+        als_fl_necessita_adi: boolean;
         als_cid: string;
         als_observacao: string;
         als_clinicas: string[];

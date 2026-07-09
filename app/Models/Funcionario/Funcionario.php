@@ -3,6 +3,7 @@
 namespace App\Models\Funcionario;
 
 use App\Models\Municipio;
+use App\Models\PovoIndigena;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -37,6 +38,7 @@ class Funcionario extends Model
         'fun_escolaridade',
         'fun_estado_civil',
         'fun_povo_indigena',
+        'fun_pin_id',
         'fun_cd_censo',
 
         // Documentação
@@ -105,6 +107,11 @@ class Funcionario extends Model
     public function municipioNascimento(): BelongsTo
     {
         return $this->belongsTo(Municipio::class, 'fun_mun_id_nasc', 'mun_id');
+    }
+
+    public function povoIndigena(): BelongsTo
+    {
+        return $this->belongsTo(PovoIndigena::class, 'fun_pin_id', 'pin_id');
     }
 
     public function municipioCertidao(): BelongsTo

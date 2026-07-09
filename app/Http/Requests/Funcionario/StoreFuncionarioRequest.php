@@ -39,7 +39,15 @@ class StoreFuncionarioRequest extends FormRequest
             $nomeSocial = mb_strtoupper($nomeSocial, 'UTF-8');
         }
 
+        // Povo indígena só se aplica quando etnia/cor/raça = Indígena (5).
+        // Mantém a string legada fun_povo_indigena (censo/relatórios) sincronizada com o povo escolhido.
+        $indigena = (int) $this->input('fun_cor_raca') === 5;
+        $pinId    = $indigena ? ($this->input('fun_pin_id') ?: null) : null;
+        $povoNome = $pinId ? \App\Models\PovoIndigena::whereKey($pinId)->value('pin_nome') : null;
+
         $this->merge([
+            'fun_pin_id'        => $pinId,
+            'fun_povo_indigena' => $povoNome,
             'fun_nome'        => $nome,
             'fun_nome_social' => $this->filled('fun_nome_social') ? $nomeSocial : null,
             'fun_cpf' => $this->filled('fun_cpf') ? $strip($this->input('fun_cpf')) : null,
@@ -71,6 +79,7 @@ class StoreFuncionarioRequest extends FormRequest
             'fun_escolaridade' => ['required', 'integer', Rule::in([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])],
             'fun_estado_civil' => ['required', 'integer', Rule::in([1, 2, 3, 4, 5])],
             'fun_povo_indigena' => ['nullable', 'string', 'max:60'],
+            'fun_pin_id' => ['nullable', 'integer', 'exists:edu_povo_indigena,pin_id', 'required_if:fun_cor_raca,5'],
             'fun_cd_censo' => ['nullable', 'digits:12', Rule::unique('edu_funcionario', 'fun_cd_censo')->ignore($funId, 'fun_id')->whereNull('fun_deleted_at')],
 
             // Documentação
@@ -162,6 +171,7 @@ class StoreFuncionarioRequest extends FormRequest
     {
         return [
             'fun_dt_nascimento.before' => 'A data de nascimento deve ser anterior à data de hoje.',
+            'fun_pin_id.required_if'   => 'Selecione o povo indígena quando a etnia/cor/raça for Indígena.',
         ];
     }
 
@@ -181,6 +191,7 @@ class StoreFuncionarioRequest extends FormRequest
             'fun_escolaridade' => 'escolaridade',
             'fun_estado_civil' => 'estado civil',
             'fun_povo_indigena' => 'povo indígena',
+            'fun_pin_id' => 'povo indígena',
             'fun_cd_censo' => 'código CENSO',
             'fun_rg_numero' => 'número do RG',
             'fun_rg_dt_emissao' => 'data de emissão do RG',

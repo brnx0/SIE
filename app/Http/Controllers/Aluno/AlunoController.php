@@ -66,9 +66,7 @@ class AlunoController extends Controller
 
             $params = ParametroEntidade::firstOrFail();
             if ($params->par_fl_gerar_matricula_auto && empty($data['aln_nr_matricula'])) {
-                DB::statement('SELECT pg_advisory_xact_lock(?)', [727301]);
-                $maxMatricula = (int) DB::table('edu_aluno')->max('aln_nr_matricula');
-                $data['aln_nr_matricula'] = max($maxMatricula + 1, 1000);
+                $data['aln_nr_matricula'] = $this->proximaMatricula();
             }
 
             $aluno = Aluno::create($data);
@@ -84,7 +82,7 @@ class AlunoController extends Controller
     {
         abort_unless(UserAccess::alunoVisivel(request()->user(), $aluno->aln_id), 404);
 
-        $aluno->load(['municipioNascimento:mun_id,mun_nome,mun_uf', 'saude']);
+        $aluno->load(['municipioNascimento:mun_id,mun_nome,mun_uf', 'povoIndigena:pin_id,pin_cd_censo,pin_nome', 'saude']);
 
         $matriculas = $aluno->matriculas()
             ->with([
@@ -145,6 +143,40 @@ class AlunoController extends Controller
         });
 
         return to_route('alunos.edit', $aluno)->with('success', 'Aluno atualizado com sucesso.');
+    }
+
+    /**
+     * Gera um número de matrícula único para o aluno que ainda não possui.
+     *
+     * Uma vez definido, o número é imutável — não há edição posterior.
+     */
+    public function gerarMatricula(Aluno $aluno): RedirectResponse
+    {
+        abort_unless(UserAccess::alunoVisivel(request()->user(), $aluno->aln_id), 404);
+
+        if ($aluno->aln_nr_matricula) {
+            return back()->with('error', 'Este aluno já possui matrícula. O número não pode ser alterado.');
+        }
+
+        DB::transaction(function () use ($aluno) {
+            $aluno->update(['aln_nr_matricula' => $this->proximaMatricula()]);
+        });
+
+        return back()->with('success', 'Matrícula gerada com sucesso.');
+    }
+
+    /**
+     * Próximo número de matrícula livre (>= 1000).
+     *
+     * Deve rodar dentro de uma transação: o advisory lock serializa a leitura
+     * do máximo entre requisições concorrentes, evitando números duplicados.
+     */
+    private function proximaMatricula(): int
+    {
+        DB::statement('SELECT pg_advisory_xact_lock(?)', [727301]);
+        $max = (int) DB::table('edu_aluno')->max('aln_nr_matricula');
+
+        return max($max + 1, 1000);
     }
 
     public function destroy(Aluno $aluno): RedirectResponse
