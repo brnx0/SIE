@@ -21,7 +21,9 @@
     .matriz td.val { text-align: center; }
     .matriz tr.resumo td { background: #f5f5f5; font-weight: bold; }
     .rel th, .rel td { border: 0.5px solid #333; padding: 2px 4px; font-size: 7pt; text-align: center; }
-    .rel th { background: #eee; text-align: left; width: 130px; white-space: nowrap; }
+    .rel th { background: #eee; text-align: center; font-weight: bold; white-space: nowrap; }
+    .rel td { text-align: left; }
+    .rel td.val { text-align: center; }
     .legenda { font-size: 7pt; margin-top: 6px; }
     .assin { margin-top: 26px; }
     .assin td { text-align: center; padding-top: 18px; font-size: 8pt; }
@@ -102,11 +104,26 @@
 {{-- Relação por ano --}}
 <h2>Dados por Ano Escolar</h2>
 <table class="rel">
-    <tr><th>Etapa / Equivalência</th>@foreach($h['relacao'] as $r)<td>{{ $r['etapa'] }}</td>@endforeach</tr>
-    <tr><th>Ano Conclusão</th>@foreach($h['relacao'] as $r)<td>{{ $r['ano_conclusao'] }}</td>@endforeach</tr>
-    <tr><th>Curso</th>@foreach($h['relacao'] as $r)<td>{{ $r['curso'] }}</td>@endforeach</tr>
-    <tr><th>Estabelecimento de Ensino</th>@foreach($h['relacao'] as $r)<td>{{ $r['estabelecimento'] }}</td>@endforeach</tr>
-    <tr><th>Município / UF</th>@foreach($h['relacao'] as $r)<td>{{ $r['municipio_uf'] }}</td>@endforeach</tr>
+    <thead>
+        <tr>
+            <th>Etapa / Equivalência</th>
+            <th>Ano Conclusão</th>
+            <th>Curso</th>
+            <th>Estabelecimento de Ensino</th>
+            <th>Município / UF</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach($h['relacao'] as $r)
+            <tr>
+                <td>{{ $r['etapa'] }}</td>
+                <td class="val">{{ $r['ano_conclusao'] }}</td>
+                <td>{{ $r['curso'] }}</td>
+                <td>{{ $r['estabelecimento'] }}</td>
+                <td>{{ $r['municipio_uf'] }}</td>
+            </tr>
+        @endforeach
+    </tbody>
 </table>
 
 {{-- Legenda de conceitos (parametrizados) --}}

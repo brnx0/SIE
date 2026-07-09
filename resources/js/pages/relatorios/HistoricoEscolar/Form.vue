@@ -1,0 +1,61 @@
+<script setup lang="ts">
+import AppLayout from '@/layouts/AppLayout.vue';
+import { Button } from '@/components/ui/button';
+import FormLabel from '@/components/common/FormLabel.vue';
+import RemoteCombobox from '@/components/common/RemoteCombobox.vue';
+import type { BreadcrumbItem } from '@/types';
+import { Head } from '@inertiajs/vue3';
+import { ScrollText } from 'lucide-vue-next';
+import { ref } from 'vue';
+
+const breadcrumbs: BreadcrumbItem[] = [{ title: 'Histórico Escolar', href: '/relatorios/historico-escolar' }];
+
+const alnId = ref<number | null>(null);
+const escId = ref<number | null>(null);
+
+const gerar = () => {
+    if (!alnId.value || !escId.value) return;
+    window.open(`/alunos/${alnId.value}/historico?esc_id=${escId.value}`, '_blank');
+};
+</script>
+
+<template>
+    <Head title="Histórico Escolar" />
+    <AppLayout :breadcrumbs="breadcrumbs">
+        <div class="mx-auto w-[95%] py-6">
+            <h1 class="mb-1 flex items-center gap-2 text-xl font-semibold">
+                <ScrollText class="size-5 text-indigo-600" /> Histórico Escolar / Certificado
+            </h1>
+            <p class="mb-6 text-sm text-muted-foreground">
+                Busque o aluno e escolha a escola emissora. O histórico inclui os anos do sistema e os lançados manualmente (até o último ano do aluno na escola emissora).
+            </p>
+
+            <div class="grid gap-4 rounded-xl border bg-card p-6 shadow-sm sm:grid-cols-2">
+                <div class="grid gap-1.5">
+                    <FormLabel :required="true">Aluno</FormLabel>
+                    <RemoteCombobox
+                        v-model="alnId"
+                        fetch-url="/api/alunos/search"
+                        id-key="aln_id" label-key="aln_nome"
+                        :min-chars="2"
+                        placeholder="Digite o nome, matrícula ou CPF..."
+                    />
+                </div>
+                <div class="grid gap-1.5">
+                    <FormLabel :required="true">Escola emissora</FormLabel>
+                    <RemoteCombobox
+                        v-model="escId"
+                        fetch-url="/api/escolas"
+                        id-key="esc_id" label-key="esc_nome"
+                        placeholder="Buscar escola..."
+                    />
+                </div>
+                <div class="flex items-end justify-end sm:col-span-2">
+                    <Button :disabled="!alnId || !escId" class="bg-indigo-600 text-white hover:bg-indigo-700" @click="gerar">
+                        <ScrollText class="mr-1 size-4" /> Gerar PDF
+                    </Button>
+                </div>
+            </div>
+        </div>
+    </AppLayout>
+</template>

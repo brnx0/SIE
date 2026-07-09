@@ -471,19 +471,20 @@ const formatarNomeAluno = (a: AlunoResumo) => {
                         Nenhuma turma encontrada para os filtros selecionados.
                     </div>
 
-                    <div v-else class="overflow-x-auto">
+                    <!-- >10 turmas: rola dentro do card (cabeçalho fixo) em vez de esticar a página. -->
+                    <div v-else class="overflow-x-auto" :class="turmas.length > 10 ? 'max-h-[30rem] overflow-y-auto' : ''">
                         <table class="w-full table-fixed text-sm">
                             <colgroup>
                                 <col style="width:8%" />
                                 <col style="width:9%" />
-                                <col style="width:24%" />
-                                <col style="width:7%" />
+                                <col style="width:16%" />
+                                <col style="width:15%" />
                                 <col style="width:12%" />
                                 <col style="width:10%" />
                                 <col style="width:12%" />
-                                <col style="width:18%" />
+                                <col style="width:5%" />
                             </colgroup>
-                            <thead class="bg-indigo-600 text-white">
+                            <thead class="sticky top-0 z-10 bg-indigo-600 text-white">
                                 <tr>
                                     <th class="px-3 py-2.5 text-center font-semibold">Semestre</th>
                                     <th class="px-3 py-2.5 text-center font-semibold">Situação</th>
@@ -492,7 +493,7 @@ const formatarNomeAluno = (a: AlunoResumo) => {
                                     <th class="px-3 py-2.5 font-semibold">Turno</th>
                                     <th class="px-3 py-2.5 text-center font-semibold">Vagas disp.</th>
                                     <th class="px-3 py-2.5 text-center font-semibold">Matriculados</th>
-                                    <th class="px-3 py-2.5 text-right font-semibold">Ação</th>
+                                    <th class="px-3 py-2.5 text-center font-semibold">Ação</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y">
@@ -509,9 +510,9 @@ const formatarNomeAluno = (a: AlunoResumo) => {
                                             {{ labelSituacao(turma.tur_situacao).text }}
                                         </span>
                                     </td>
-                                    <td class="px-3 py-2.5 font-medium truncate">{{ turma.serie?.ser_nome ?? '—' }}</td>
+                                    <td class="px-3 py-2.5 text-center font-medium truncate">{{ turma.serie?.ser_nome ?? '—' }}</td>
                                     <td class="px-3 py-2.5 text-center font-semibold">{{ turma.tur_nome }}</td>
-                                    <td class="px-3 py-2.5 capitalize text-muted-foreground truncate">{{ turma.tur_turno.toLowerCase() }}</td>
+                                    <td class="px-3 py-2.5 text-center capitalize text-muted-foreground truncate">{{ turma.tur_turno.toLowerCase() }}</td>
                                     <td class="px-3 py-2.5 text-center">
                                         <span
                                             v-if="turma.vagas_disponiveis !== null"
@@ -527,7 +528,7 @@ const formatarNomeAluno = (a: AlunoResumo) => {
                                     <td class="px-3 py-2.5 text-center tabular-nums text-muted-foreground">
                                         {{ turma.total_matriculados }}
                                     </td>
-                                    <td class="px-3 py-2.5 text-right">
+                                    <td class="px-3 py-2.5 text-center">
                                         <Button
                                             type="button"
                                             size="sm"

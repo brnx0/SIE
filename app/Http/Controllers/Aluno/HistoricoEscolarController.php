@@ -26,6 +26,14 @@ class HistoricoEscolarController extends Controller
         );
     }
 
+    /** Tela do relatório (Relatórios → Secretaria): busca aluno e emite o PDF. */
+    public function form(): \Inertia\Response
+    {
+        $this->autorizar();
+
+        return \Inertia\Inertia::render('relatorios/HistoricoEscolar/Form');
+    }
+
     /** Escolas em que o aluno teve ano APROVADO — opções de escola emissora. */
     public function escolas(Aluno $aluno): JsonResponse
     {

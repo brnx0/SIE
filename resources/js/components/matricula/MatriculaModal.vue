@@ -937,7 +937,7 @@ const selectClass = 'flex h-10 w-full rounded-md border border-input bg-backgrou
                             <InputError :message="err('saude.als_deficiencias')" />
                             <div class="grid gap-6 sm:grid-cols-3">
                                 <div>
-                                    <h4 class="mb-2 text-xs font-semibold text-muted-foreground">Deficiência <span class="text-rose-500">*</span></h4>
+                                    <h4 class="mb-2 text-xs font-semibold text-muted-foreground">Deficiência </h4>
                                     <div class="space-y-2">
                                         <label v-for="d in DEFICIENCIAS" :key="d" class="flex items-center gap-2 text-sm">
                                             <input type="checkbox" :checked="formSaude.als_deficiencias.includes(d)" @change="toggleArrayItem(formSaude.als_deficiencias, d)" class="size-4 rounded border-gray-300 text-sky-600 focus:ring-sky-500" />

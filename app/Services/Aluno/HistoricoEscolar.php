@@ -3,6 +3,7 @@
 namespace App\Services\Aluno;
 
 use App\Models\Aluno\Aluno;
+use App\Models\Aluno\HistoricoManual;
 use App\Models\Escola\Escola;
 use App\Models\Matricula\Matricula;
 use App\Models\Turma\Turma;
@@ -63,40 +64,102 @@ class HistoricoEscolar
             ->sortBy(fn (Matricula $m) => sprintf('%04d-%04d', $m->serieEfetiva->ser_ordem_no_segmento ?? 0, $m->turma->anoLetivo->anl_ano))
             ->values();
 
-        // Colunas (anos escolares) + matriz de componentes.
-        $colunas    = [];   // por matrícula/ano
-        $componentes = [];  // dis_id => ['nome'=>, 'ordem'=>]
-        $matriz      = [];  // dis_id => [colIndex => celula string]
-        $relacao     = [];  // linha inferior por ano
-        $conceitual  = false;
-
-        foreach ($matriculas as $i => $m) {
+        // Anos do SISTEMA (matrículas) normalizados como itens de ano escolar.
+        $itens = $matriculas->map(function (Matricula $m) use ($alnId) {
             $dados = $this->anoEscolar($m, $alnId);
 
-            foreach ($dados['componentes'] as $dis) {
+            return [
+                'ordem'         => $m->serieEfetiva->ser_ordem_no_segmento ?? 0,
+                'ano'           => (int) $m->turma->anoLetivo->anl_ano,
+                'ano_escolar'   => $m->serieEfetiva->ser_nome,
+                'frequencia'    => $dados['frequencia'],
+                'dias_letivos'  => $dados['dias_letivos'],
+                'carga_horaria' => $m->serieEfetiva->ser_carga_horaria,
+                'situacao'      => $m->situacaoSaida?->tas_descricao ?? 'Aprovado(a)',
+                'curso'         => $m->turma->segmento?->seg_nome_completo ?? $m->turma->segmento?->seg_nome_reduzido,
+                'estabelecimento' => $m->turma->escola?->esc_nome,
+                'municipio_uf'  => $this->municipioUf($m->turma->escola?->esc_mun_id),
+                'componentes'   => $dados['componentes'],
+            ];
+        })->all();
+
+        // Anos MANUAIS (escolaridade anterior / fora da rede) — até o ano de corte.
+        $manuais = HistoricoManual::where('hmn_aln_id', $alnId)
+            ->with([
+                'disciplinas.disciplina:dis_id,dis_nome',
+                'disciplinas.conceito:cnc_id,cnc_sigla',
+                'anoLetivo:anl_id,anl_ano',
+                'serie:ser_id,ser_nome,ser_ordem_no_segmento,ser_carga_horaria,seg_id',
+                'serie.segmento:seg_id,seg_nome_completo,seg_nome_reduzido',
+                'escola:esc_id,esc_nome,esc_mun_id',
+                'situacao:tas_cod,tas_descricao',
+            ])->get();
+
+        foreach ($manuais as $h) {
+            if (! $h->serie || ! $h->anoLetivo) {
+                continue;
+            }
+            $ano = (int) $h->anoLetivo->anl_ano;
+            if ($anoCorte !== null && $ano > $anoCorte) {
+                continue;
+            }
+            $itens[] = [
+                'ordem'         => $h->serie->ser_ordem_no_segmento ?? 0,
+                'ano'           => $ano,
+                'ano_escolar'   => $h->serie->ser_nome,
+                'frequencia'    => $h->hmn_frequencia !== null ? (int) round((float) $h->hmn_frequencia) : null,
+                'dias_letivos'  => $h->hmn_dias_letivos,
+                'carga_horaria' => $h->hmn_carga_horaria ?? $h->serie->ser_carga_horaria,
+                'situacao'      => $h->situacao?->tas_descricao ?? 'Aprovado(a)',
+                'curso'         => $h->serie->segmento?->seg_nome_completo ?? $h->serie->segmento?->seg_nome_reduzido,
+                'estabelecimento' => $h->escola?->esc_nome ?? $h->hmn_esc_nome,
+                'municipio_uf'  => $h->escola ? $this->municipioUf($h->escola->esc_mun_id) : $this->municipioUf($h->hmn_mun_id),
+                'componentes'   => $h->disciplinas->map(fn ($d) => [
+                    'dis_id'     => (int) $d->hmd_dis_id,
+                    'nome'       => $d->disciplina?->dis_nome ?? '—',
+                    'ordem'      => (int) $d->hmd_ordem,
+                    'mf'         => $d->hmd_cnc_id
+                        ? ($d->conceito?->cnc_sigla ?? '-')
+                        : ($d->hmd_mf !== null ? number_format((float) $d->hmd_mf, 1, ',', '') : '-'),
+                    'conceitual' => (bool) $d->hmd_cnc_id,
+                ])->all(),
+            ];
+        }
+
+        // Ordena todos os anos (sistema + manual) por ordem da série, depois ano.
+        usort($itens, fn ($a, $b) => [$a['ordem'], $a['ano']] <=> [$b['ordem'], $b['ano']]);
+
+        // Colunas (anos escolares) + matriz de componentes.
+        $colunas    = [];
+        $componentes = [];  // dis_id => ['nome'=>, 'ordem'=>]
+        $matriz      = [];  // dis_id => [colIndex => celula string]
+        $relacao     = [];
+        $conceitual  = false;
+
+        foreach ($itens as $i => $it) {
+            foreach ($it['componentes'] as $dis) {
                 $componentes[$dis['dis_id']] ??= ['nome' => $dis['nome'], 'ordem' => $dis['ordem']];
-                // menor ordem prevalece
                 if ($dis['ordem'] < $componentes[$dis['dis_id']]['ordem']) {
                     $componentes[$dis['dis_id']]['ordem'] = $dis['ordem'];
                 }
                 $matriz[$dis['dis_id']][$i] = $dis['mf'];
-                if ($dis['conceitual']) $conceitual = true;
+                if (! empty($dis['conceitual'])) $conceitual = true;
             }
 
             $colunas[] = [
-                'ano_escolar'  => $m->serieEfetiva->ser_nome,
-                'frequencia'   => $dados['frequencia'],
-                'dias_letivos' => $dados['dias_letivos'],
-                'carga_horaria' => $m->serieEfetiva->ser_carga_horaria,
-                'situacao'     => $m->situacaoSaida?->tas_descricao ?? 'Aprovado(a)',
+                'ano_escolar'   => $it['ano_escolar'],
+                'frequencia'    => $it['frequencia'],
+                'dias_letivos'  => $it['dias_letivos'],
+                'carga_horaria' => $it['carga_horaria'],
+                'situacao'      => $it['situacao'],
             ];
 
             $relacao[] = [
-                'etapa'          => $m->serieEfetiva->ser_nome,
-                'ano_conclusao'  => (int) $m->turma->anoLetivo->anl_ano,
-                'curso'          => $m->turma->segmento?->seg_nome_completo ?? $m->turma->segmento?->seg_nome_reduzido,
-                'estabelecimento' => $m->turma->escola?->esc_nome,
-                'municipio_uf'   => $this->municipioUf($m->turma->escola?->esc_mun_id),
+                'etapa'           => $it['ano_escolar'],
+                'ano_conclusao'   => $it['ano'],
+                'curso'           => $it['curso'],
+                'estabelecimento' => $it['estabelecimento'],
+                'municipio_uf'    => $it['municipio_uf'],
             ];
         }
 
@@ -139,6 +202,50 @@ class HistoricoEscolar
                 'data'         => now()->format('d/m/Y'),
             ],
         ];
+    }
+
+    /**
+     * Anos APROVADOS calculados pelo sistema, já consolidados (disciplinas + MF),
+     * p/ exibição read-only na tela de lançamento manual. Não editáveis.
+     *
+     * @return array<int, array{anl_id:int, anl_ano:int, serie:?string, escola:?string, situacao:string, disciplinas:array}>
+     */
+    public function sistemaConsolidado(int $alnId): array
+    {
+        $matriculas = Matricula::query()
+            ->where('tma_aln_id', $alnId)
+            ->where('tma_modalidade', Turma::MODALIDADE_REGULAR)
+            ->whereIn('tma_tas_cod_saida', self::APROVADO)
+            ->whereNull('tma_deleted_at')
+            ->with([
+                'turma:tur_id,tur_esc_id,tur_ser_id,tur_seg_id,tur_anl_id',
+                'turma.escola:esc_id,esc_nome',
+                'turma.anoLetivo:anl_id,anl_ano',
+                'turma.serie:ser_id,ser_nome,ser_ordem_no_segmento,ser_carga_horaria',
+                'serie:ser_id,ser_nome,ser_ordem_no_segmento,ser_carga_horaria',
+                'situacaoSaida:tas_cod,tas_descricao',
+            ])
+            ->get()
+            ->filter(fn (Matricula $m) => $m->turma && $m->serieEfetiva && $m->turma->anoLetivo);
+
+        return $matriculas
+            ->sortBy(fn (Matricula $m) => sprintf('%04d-%04d', $m->serieEfetiva->ser_ordem_no_segmento ?? 0, $m->turma->anoLetivo->anl_ano))
+            ->map(function (Matricula $m) use ($alnId) {
+                $dados = $this->anoEscolar($m, $alnId);
+
+                return [
+                    'anl_id'      => (int) $m->turma->tur_anl_id,
+                    'anl_ano'     => (int) $m->turma->anoLetivo->anl_ano,
+                    'serie'       => $m->serieEfetiva->ser_nome,
+                    'escola'      => $m->turma->escola?->esc_nome,
+                    'situacao'    => $m->situacaoSaida?->tas_descricao ?? 'Aprovado(a)',
+                    'disciplinas' => collect($dados['componentes'])
+                        ->map(fn ($c) => ['nome' => $c['nome'], 'mf' => $c['mf']])
+                        ->values()->all(),
+                ];
+            })
+            ->values()
+            ->all();
     }
 
     /** MF por componente + resumo (frequência/dias letivos) de uma matrícula/ano. */

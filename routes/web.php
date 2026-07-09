@@ -136,6 +136,10 @@ Route::middleware(['auth', 'verified', 'tela'])->group(function () {
     // Histórico Escolar / Certificado (só secretaria/diretor/admin — guard no controller)
     Route::get('alunos/{aluno}/historico/escolas', [\App\Http\Controllers\Aluno\HistoricoEscolarController::class, 'escolas'])->name('alunos.historico.escolas');
     Route::get('alunos/{aluno}/historico', [\App\Http\Controllers\Aluno\HistoricoEscolarController::class, 'pdf'])->name('alunos.historico.pdf');
+    // Lançamento MANUAL de anos do histórico (só secretaria/diretor/admin — guard no controller)
+    Route::get('alunos/{aluno}/historico-manual', [\App\Http\Controllers\Aluno\HistoricoManualController::class, 'listar'])->name('alunos.historico-manual.listar');
+    Route::post('alunos/{aluno}/historico-manual', [\App\Http\Controllers\Aluno\HistoricoManualController::class, 'salvar'])->name('alunos.historico-manual.salvar');
+    Route::delete('alunos/{aluno}/historico-manual/{historicoManual}', [\App\Http\Controllers\Aluno\HistoricoManualController::class, 'remover'])->name('alunos.historico-manual.remover');
     Route::resource('alunos', AlunoController::class)->except(['show']);
     Route::get('escolas/export', [EscolaController::class, 'export'])->name('escolas.export');
     Route::resource('escolas', EscolaController::class)->except(['show']);
@@ -210,7 +214,7 @@ Route::middleware(['auth', 'verified', 'tela'])->group(function () {
     Route::get('relatorios', [RelatorioCentralController::class, 'index'])->name('relatorios.index');
     Route::get('relatorios-escola', [RelatorioCentralController::class, 'escola'])->name('relatorios.escola');
     Route::get('relatorios-diario', [RelatorioCentralController::class, 'diario'])->name('relatorios.diario');
-    Route::get('relatorios-secretaria', [RelatorioCentralController::class, 'secretaria'])->name('relatorios.secretaria')->middleware('role:secretaria_escola');
+    Route::get('relatorios-secretaria', [RelatorioCentralController::class, 'secretaria'])->name('relatorios.secretaria')->middleware('role:admin,gestor_secretaria,diretor,secretaria_escola');
     Route::get('relatorios-pedagogico', [RelatorioCentralController::class, 'pedagogico'])->name('relatorios.pedagogico');
     Route::get('relatorios-encerramento', [RelatorioCentralController::class, 'encerramento'])->name('relatorios.encerramento');
 
@@ -259,6 +263,7 @@ Route::middleware(['auth', 'verified', 'tela'])->group(function () {
     Route::get('relatorios/mapa-notas-disciplina/disciplinas', [MapaNotasDisciplinaController::class, 'disciplinas'])->name('relatorios.mapa-notas-disciplina.disciplinas');
     Route::get('relatorios/mapa-notas-disciplina/unidades', [MapaNotasDisciplinaController::class, 'unidades'])->name('relatorios.mapa-notas-disciplina.unidades');
     Route::get('relatorios/mapa-notas-disciplina/gerar', [MapaNotasDisciplinaController::class, 'gerar'])->name('relatorios.mapa-notas-disciplina.gerar');
+    Route::get('relatorios/historico-escolar', [\App\Http\Controllers\Aluno\HistoricoEscolarController::class, 'form'])->name('relatorios.historico-escolar.form');
     Route::get('relatorios/ata-final', [AtaFinalController::class, 'form'])->name('relatorios.ata-final.form');
     Route::get('relatorios/ata-final/turmas', [AtaFinalController::class, 'turmas'])->name('relatorios.ata-final.turmas');
     Route::get('relatorios/ata-final/gerar', [AtaFinalController::class, 'gerar'])->name('relatorios.ata-final.gerar');
@@ -472,7 +477,7 @@ Route::middleware(['auth', 'verified', 'tela'])->group(function () {
     Route::prefix('diario-aee')->name('diario-aee.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Diario\DiarioAeeController::class, 'index'])->name('index');
     });
-    Route::prefix('api/diario-aee')->name('api.diario-aee.')->middleware('role:professor_aee')->group(function () {
+    Route::prefix('api/diario-aee')->name('api.diario-aee.')->middleware('role:professor_aee,gestor_secretaria')->group(function () {
         Route::get('contexto/escolas', [\App\Http\Controllers\Diario\DiarioAeeController::class, 'lookupEscolas'])->name('contexto.escolas');
         Route::get('contexto/turmas', [\App\Http\Controllers\Diario\DiarioAeeController::class, 'lookupTurmas'])->name('contexto.turmas');
         Route::get('contexto/unidades', [\App\Http\Controllers\Diario\DiarioAeeController::class, 'lookupUnidades'])->name('contexto.unidades');
@@ -494,7 +499,7 @@ Route::middleware(['auth', 'verified', 'tela'])->group(function () {
     Route::prefix('diario-atividade')->name('diario-atividade.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Diario\DiarioAtividadeController::class, 'index'])->name('index');
     });
-    Route::prefix('api/diario-atividade')->name('api.diario-atividade.')->middleware('role:professor')->group(function () {
+    Route::prefix('api/diario-atividade')->name('api.diario-atividade.')->middleware('role:professor,gestor_secretaria')->group(function () {
         Route::get('contexto/escolas', [\App\Http\Controllers\Diario\DiarioAtividadeController::class, 'lookupEscolas'])->name('contexto.escolas');
         Route::get('contexto/turmas', [\App\Http\Controllers\Diario\DiarioAtividadeController::class, 'lookupTurmas'])->name('contexto.turmas');
         Route::get('contexto/unidades', [\App\Http\Controllers\Diario\DiarioAtividadeController::class, 'lookupUnidades'])->name('contexto.unidades');

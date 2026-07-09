@@ -94,7 +94,7 @@ class AeeFrequenciaController extends Controller
         $planosQ = DiarioPlanoAee::query()
             ->where('dae_tur_id', $turId)
             ->whereIn('dae_status', [DiarioPlanoAee::STATUS_PENDENTE, DiarioPlanoAee::STATUS_APROVADO]);
-        if (! $user->isAdmin()) {
+        if (! $user->isGestorGlobal()) {
             $planosQ->where('dae_user_id', (int) $user->id);
         }
         $planos = $planosQ
@@ -187,7 +187,7 @@ class AeeFrequenciaController extends Controller
             ->whereIn('dae_status', [DiarioPlanoAee::STATUS_PENDENTE, DiarioPlanoAee::STATUS_APROVADO])
             ->whereDate('dae_dt_inicio', '<=', $d)
             ->whereDate('dae_dt_fim', '>=', $d)
-            ->when(! $user->isAdmin(), fn ($q) => $q->where('dae_user_id', (int) $user->id))
+            ->when(! $user->isGestorGlobal(), fn ($q) => $q->where('dae_user_id', (int) $user->id))
             ->when($daeId, fn ($q) => $q->where('dae_id', $daeId))
             ->orderBy('dae_dt_inicio')
             ->first(['dae_id', 'dae_objetivo', 'dae_estrategias']);
@@ -282,7 +282,7 @@ class AeeFrequenciaController extends Controller
     {
         $user = request()->user();
         abort_unless($user, 403, 'Acesso restrito.');
-        if ($user->isAdmin()) {
+        if ($user->isGestorGlobal()) {
             return;
         }
         abort_unless($user->hasRole('professor_aee'), 403, 'Acesso restrito ao professor AEE.');
@@ -295,7 +295,7 @@ class AeeFrequenciaController extends Controller
         abort_unless($modAee, 422, 'Turma não é de AEE.');
 
         $user = $request->user();
-        if ($user->isAdmin()) {
+        if ($user->isGestorGlobal()) {
             return;
         }
         $funId = (int) $user->fun_id;

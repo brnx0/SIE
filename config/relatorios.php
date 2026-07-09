@@ -2,6 +2,14 @@
 
 return [
     [
+        'slug'      => 'historico-escolar',
+        'titulo'    => 'Histórico Escolar / Certificado',
+        'descricao' => 'Histórico do aluno com os anos cursados (do sistema e lançados manualmente). Busca o aluno e escolhe a escola emissora.',
+        'categoria' => 'Secretaria Acadêmica',
+        'grupo'     => 'secretaria',
+        'icone'     => 'ScrollText',
+    ],
+    [
         'slug'      => 'ata-final',
         'titulo'    => 'Ata Final do Encerramento',
         'descricao' => 'Por turma: nota final de cada disciplina e o resultado final do aluno (aprovado/reprovado). Lista todas as turmas e sinaliza as ainda não encerradas. Alunos que saíram não têm resultado.',

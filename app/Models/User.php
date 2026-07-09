@@ -82,6 +82,15 @@ class User extends Authenticatable
         return $this->hasRole('admin');
     }
 
+    /**
+     * Gestor equiparado ao administrador (acesso total nas telas de diário
+     * AEE / Atividade). Admin ou gestor_secretaria.
+     */
+    public function isGestorGlobal(): bool
+    {
+        return $this->hasAnyRole(['admin', 'gestor_secretaria']);
+    }
+
     public function syncRoles(array $roles): void
     {
         $this->userRoles()->delete();

@@ -45,7 +45,7 @@ class TelaPermissaoSeeder extends Seeder
         ['/turmas-aee', 'Turmas AEE', 'Gestão', 10, [1, 1, 0, 0, 0, 2, 2, 2, 2, 0, 2]],
         ['/turmas-atividade', 'Turmas Atividades', 'Gestão', 11, [1, 1, 0, 0, 0, 2, 2, 2, 2, 0, 0]],
         ['/atendimentos-aee', 'Atendimentos AEE', 'Gestão', 12, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
-        ['/atividades', 'Atividades', 'Gestão', 13, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
+        ['/atividades', 'Atividades', 'Gestão', 13, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
 
         ['/matriculas', 'Matrículas', 'Matrículas', 14, [1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 1]],
         ['/matriculas-aee', 'Matrículas AEE', 'Matrículas', 15, [1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0]],
@@ -77,14 +77,15 @@ class TelaPermissaoSeeder extends Seeder
         ['/confirmacao-renovacao', 'Confirmação de Renovação', 'Ano Letivo', 37, [1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0]],
         ['/relatorios-encerramento', 'Relatórios Encerramento', 'Ano Letivo', 38, [1, 1, 0, 0, 0, 2, 2, 2, 2, 0, 0]],
 
-        ['/relatorios', 'Central de Relatórios', 'Relatórios', 39, [1, 1, 0, 0, 0, 2, 2, 2, 2, 0, 0]],
-        ['/relatorios-escola', 'Relatórios Gerais', 'Relatórios', 40, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
+        ['/relatorios', 'Central de Relatórios', 'Relatórios', 39, [1, 1, 0, 0, 0, 2, 2, 2, 2, 0, 2]],
+        ['/relatorios-escola', 'Relatórios Gerais', 'Relatórios', 40, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 2]],
+        ['/relatorios-secretaria', 'Relatórios da Secretaria', 'Relatórios', 46, [1, 1, 0, 0, 0, 0, 2, 2, 0, 0, 0]],
 
         ['/users', 'Usuários', 'Sistema', 41, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
         ['/parametros', 'Parâmetros', 'Sistema', 42, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
         ['/permissoes', 'Permissões de Telas', 'Sistema', 43, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
         ['/auditoria', 'Auditoria', 'Sistema', 44, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
-        ['/censo/importacao', 'Importar Censo', 'Sistema', 45, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1]],
+        ['/censo/importacao', 'Importar Censo', 'Sistema', 45, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
     ];
 
     public function run(): void
@@ -96,10 +97,9 @@ class TelaPermissaoSeeder extends Seeder
                 ['tla_nome' => $nome, 'tla_grupo' => $grupo, 'tla_ordem' => $ordem],
             );
 
-            // Níveis: só na criação. NÃO sobrescreve edições feitas pela tela de
-            // Permissões — o banco é a fonte de verdade após o seed inicial.
+            // A MATRIZ é a fonte de verdade: sincroniza (sobrescreve) os níveis.
             foreach (self::ROLES as $i => $role) {
-                TelaPermissao::firstOrCreate(
+                TelaPermissao::updateOrCreate(
                     ['tlp_tla_id' => $tela->tla_id, 'tlp_role' => $role],
                     ['tlp_nivel' => $niveis[$i]],
                 );

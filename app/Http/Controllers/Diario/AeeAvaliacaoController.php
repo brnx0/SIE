@@ -148,7 +148,7 @@ class AeeAvaliacaoController extends Controller
     {
         $user = request()->user();
         abort_unless($user, 403, 'Acesso restrito.');
-        if ($user->isAdmin()) {
+        if ($user->isGestorGlobal()) {
             return;
         }
         abort_unless($user->hasRole('professor_aee'), 403, 'Acesso restrito ao professor AEE.');
@@ -160,7 +160,7 @@ class AeeAvaliacaoController extends Controller
         abort_unless($modAee, 422, 'Turma não é de AEE.');
 
         $user = $request->user();
-        if ($user->isAdmin()) {
+        if ($user->isGestorGlobal()) {
             return;
         }
         $funId = (int) $user->fun_id;

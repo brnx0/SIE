@@ -105,6 +105,7 @@ const relatoriosMenu = [
         children: [
             { title: 'Central de Relatórios', href: '/relatorios' },
             { title: 'Relatórios Gerais', href: '/relatorios-escola' },
+            { title: 'Relatórios da Secretaria', href: '/relatorios-secretaria' },
         ],
     },
 ];

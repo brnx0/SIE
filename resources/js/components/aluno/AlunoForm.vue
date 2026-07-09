@@ -5,6 +5,7 @@ import InputError from '@/components/common/InputError.vue';
 import RefreshButton from '@/components/common/RefreshButton.vue';
 import HomonimoDialog, { type HomonimoMatch } from '@/components/aluno/HomonimoDialog.vue';
 import MunicipioCombobox from '@/components/aluno/MunicipioCombobox.vue';
+import HistoricoManualModal from '@/components/aluno/HistoricoManualModal.vue';
 import Switch from '@/components/common/Switch.vue';
 import Tabs from '@/components/common/Tabs.vue';
 import TabsContent from '@/components/common/TabsContent.vue';
@@ -375,45 +376,12 @@ const podeEmitirHistorico = computed(() =>
     props.mode === 'edit' && !!props.initial?.aln_id &&
     (hasRole('admin') || hasRole('secretaria_escola') || hasRole('diretor')),
 );
-const historicoDialog = ref(false);
-const historicoEscolas = ref<{ esc_id: number; esc_nome: string }[]>([]);
-const historicoEscId = ref<number | null>(null);
-const historicoLoading = ref(false);
-
-const abrirHistoricoPdf = (escId: number) => {
-    window.open(`/alunos/${props.initial!.aln_id}/historico?esc_id=${escId}`, '_blank');
-};
-
-const emitirHistorico = async () => {
-    if (!props.initial?.aln_id) return;
-    historicoLoading.value = true;
-    try {
-        const res = await fetch(`/alunos/${props.initial.aln_id}/historico/escolas`, {
-            headers: { Accept: 'application/json' },
-        });
-        if (!res.ok) { push('error', 'Não foi possível carregar as escolas.'); return; }
-        const escolas = await res.json();
-        if (!escolas.length) {
-            push('error', 'Aluno não possui anos aprovados para gerar histórico.');
-            return;
-        }
-        if (escolas.length === 1) {
-            abrirHistoricoPdf(escolas[0].esc_id);
-            return;
-        }
-        historicoEscolas.value = escolas;
-        historicoEscId.value = escolas[0].esc_id;
-        historicoDialog.value = true;
-    } finally {
-        historicoLoading.value = false;
-    }
-};
-
-const confirmarHistorico = () => {
-    if (!historicoEscId.value) return;
-    abrirHistoricoPdf(historicoEscId.value);
-    historicoDialog.value = false;
-};
+// Botão abre o modal de LANÇAMENTO MANUAL do histórico. A emissão do PDF fica
+// em Relatórios → Secretaria.
+const historicoManualOpen = ref(false);
+const alunoHistorico = computed(() =>
+    props.initial?.aln_id ? { aln_id: props.initial.aln_id, aln_nome: props.initial.aln_nome ?? '' } : null,
+);
 
 const submit = () => {
     if (isReadOnly.value) return;
@@ -521,11 +489,9 @@ const initials = computed(() => {
                     v-if="podeEmitirHistorico"
                     type="button"
                     variant="outline"
-                    :disabled="historicoLoading"
-                    @click="emitirHistorico"
+                    @click="historicoManualOpen = true"
                 >
-                    <LoaderCircle v-if="historicoLoading" class="mr-2 size-4 animate-spin" />
-                    <ScrollText v-else class="mr-2 size-4" />
+                    <ScrollText class="mr-2 size-4" />
                     Histórico Escolar
                 </Button>
                 <Button
@@ -541,24 +507,8 @@ const initials = computed(() => {
             </div>
         </div>
 
-        <!-- Dialog: escolher escola emissora quando o aluno estudou em várias -->
-        <div v-if="historicoDialog" class="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4" @click.self="historicoDialog = false">
-            <div class="w-full max-w-md rounded-xl border bg-card p-6 shadow-xl">
-                <h2 class="mb-1 text-lg font-semibold">Emitir Histórico Escolar</h2>
-                <p class="mb-4 text-sm text-muted-foreground">
-                    Escolha a escola emissora. O histórico incluirá os anos cursados nela e anteriores.
-                </p>
-                <select v-model.number="historicoEscId" class="mb-4 h-10 w-full rounded-md border border-input bg-background px-3 text-sm">
-                    <option v-for="e in historicoEscolas" :key="e.esc_id" :value="e.esc_id">{{ e.esc_nome }}</option>
-                </select>
-                <div class="flex justify-end gap-2">
-                    <Button type="button" variant="outline" @click="historicoDialog = false">Cancelar</Button>
-                    <Button type="button" class="bg-indigo-600 text-white hover:bg-indigo-700" @click="confirmarHistorico">
-                        <ScrollText class="mr-2 size-4" /> Gerar PDF
-                    </Button>
-                </div>
-            </div>
-        </div>
+        <!-- Modal: lançamento manual de anos do histórico -->
+        <HistoricoManualModal v-model:open="historicoManualOpen" :aluno="alunoHistorico" />
 
         <Tabs v-model="activeTab">
             <TabsList>

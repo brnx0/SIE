@@ -207,7 +207,7 @@ class AtividadeFrequenciaController extends Controller
     {
         $user = request()->user();
         abort_unless($user, 403, 'Acesso restrito.');
-        if ($user->isAdmin()) {
+        if ($user->isGestorGlobal()) {
             return;
         }
         abort_unless($user->hasRole('professor'), 403, 'Acesso restrito ao professor/monitor.');
@@ -220,7 +220,7 @@ class AtividadeFrequenciaController extends Controller
         abort_unless($modAtiv, 422, 'Turma não é de atividade.');
 
         $user = $request->user();
-        if ($user->isAdmin()) {
+        if ($user->isGestorGlobal()) {
             return;
         }
         $funId = (int) $user->fun_id;
