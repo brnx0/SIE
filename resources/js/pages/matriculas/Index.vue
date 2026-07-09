@@ -482,7 +482,7 @@ const formatarNomeAluno = (a: AlunoResumo) => {
                                 <col style="width:12%" />
                                 <col style="width:10%" />
                                 <col style="width:12%" />
-                                <col style="width:5%" />
+                                <col style="width:6%" />
                             </colgroup>
                             <thead class="sticky top-0 z-10 bg-indigo-600 text-white">
                                 <tr>

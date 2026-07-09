@@ -386,6 +386,12 @@ const breadcrumbs: BreadcrumbItem[] = [
                 <h2 class="mb-3 text-sm font-semibold text-muted-foreground">Detalhamento</h2>
                 <div class="grid grid-cols-1 gap-4">
                     <div>
+                        <Label>Objetivos Complementares / Recomposição / Descritor</Label>
+                        <textarea v-model="form.dpa_objetivos_complementares" rows="4" :disabled="readonly"
+                            class="w-full rounded-md border bg-background p-2 text-sm" />
+                        <InputError :message="form.errors.dpa_objetivos_complementares" />
+                    </div>
+                    <div>
                         <Label>Objeto do conhecimento / Saberes <span class="text-rose-600">*</span></Label>
                         <textarea v-model="form.dpa_objeto_conhecimento" rows="4" :disabled="readonly"
                             class="w-full rounded-md border bg-background p-2 text-sm" />
@@ -415,12 +421,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                             class="w-full rounded-md border bg-background p-2 text-sm" />
                         <InputError :message="form.errors.dpa_avaliacao" />
                     </div>
-                    <div>
-                        <Label>Objetivos Complementares / Recomposição / Descritor</Label>
-                        <textarea v-model="form.dpa_objetivos_complementares" rows="4" :disabled="readonly"
-                            class="w-full rounded-md border bg-background p-2 text-sm" />
-                        <InputError :message="form.errors.dpa_objetivos_complementares" />
-                    </div>
+
                 </div>
             </section>
 
