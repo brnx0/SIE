@@ -302,7 +302,7 @@ class CensoCommitManager
                     'tur_situacao'           => 'ABERTA',
                     'tur_hora_inicio'        => $this->hora($horario, 0),
                     'tur_hora_fim'           => $this->hora($horario, 1),
-                    'tur_mediacao'           => $this->col($campos, 6) ?: null,
+                    'tur_mediacao'           => $this->mediacao($this->col($campos, 6)),
                     'tur_modalidade'         => 'REGULAR',
                     'tur_local_diferenciado' => $this->col($campos, 23) ?: null,
                     'tur_dias_funcionamento' => json_encode($this->dias($campos), JSON_UNESCAPED_UNICODE),
@@ -903,6 +903,17 @@ class CensoCommitManager
     private function zona(string $raw): string
     {
         return $raw === '2' ? 'R' : 'U';
+    }
+
+    /** Censo mediação (col6): 1=Presencial, 2=Semipresencial, 3=EAD → valor de Turma::TIPOS_MEDIACAO. */
+    private function mediacao(string $raw): ?string
+    {
+        return match ($raw) {
+            '1' => 'PRESENCIAL',
+            '2' => 'SEMIPRESENCIAL',
+            '3' => 'EDUCAÇÃO A DISTÂNCIA',
+            default => null,
+        };
     }
 
     /** Deriva turno pelo horário "HH:MM-HH:MM" (Turma::TURNOS). */
