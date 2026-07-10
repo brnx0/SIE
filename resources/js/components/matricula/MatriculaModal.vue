@@ -805,6 +805,7 @@ const selectClass = 'flex h-10 w-full rounded-md border border-input bg-backgrou
                             <div class="grid gap-1.5 sm:col-span-3">
                                 <FormLabel for="aln_logradouro">Logradouro</FormLabel>
                                 <Input id="aln_logradouro" v-model="formAluno.aln_logradouro" maxlength="150" :readonly="cepLock.logradouro" :class="cepLock.logradouro ? 'bg-muted' : ''" />
+                                <InputError/>
                             </div>
                             <div class="grid gap-1.5 sm:col-span-2">
                                 <FormLabel for="aln_bairro">Bairro</FormLabel>
