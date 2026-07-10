@@ -43,12 +43,32 @@ class AjudaController extends Controller
         $converter = $this->converter();
         $artigos = [];
 
-        foreach (File::allFiles($base) as $file) {
+        // allFiles pode lançar se algum subdiretório não for legível (permissão).
+        try {
+            $arquivos = File::allFiles($base);
+        } catch (\Throwable $e) {
+            \Log::warning('Ajuda: falha ao listar artigos', ['erro' => $e->getMessage()]);
+
+            return [];
+        }
+
+        foreach ($arquivos as $file) {
             if ($file->getExtension() !== 'md') {
                 continue;
             }
 
-            $resultado = $converter->convert($file->getContents());
+            // 1 arquivo ilegível ou com frontmatter inválido não pode derrubar a página.
+            try {
+                $resultado = $converter->convert($file->getContents());
+            } catch (\Throwable $e) {
+                \Log::warning('Ajuda: falha ao processar artigo', [
+                    'arquivo' => $file->getRelativePathname(),
+                    'erro' => $e->getMessage(),
+                ]);
+
+                continue;
+            }
+
             $fm = $resultado instanceof RenderedContentWithFrontMatter
                 ? $resultado->getFrontMatter()
                 : [];
