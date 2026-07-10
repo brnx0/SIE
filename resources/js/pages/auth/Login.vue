@@ -39,7 +39,7 @@ const submit = () => {
 </script>
 
 <template>
-    <AuthBase title="Bem-vindo de volta" description="Acesse sua conta para gerenciar a vida acadêmica.">
+    <AuthBase title="Acesso ao sistema" description="Informe suas credenciais institucionais para continuar.">
         <Head title="Entrar" />
 
         <div v-if="status" class="mb-4 rounded-md bg-emerald-50 px-4 py-3 text-center text-sm font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
@@ -95,7 +95,7 @@ const submit = () => {
                 type="submit"
                 tabindex="3"
                 :disabled="form.processing"
-                class="w-full bg-sky-600 text-white hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-400"
+                class="h-11 w-full bg-indigo-700 text-white shadow-sm transition hover:bg-indigo-800 dark:bg-indigo-600 dark:hover:bg-indigo-500"
             >
                 <LoaderCircle v-if="form.processing" class="mr-2 h-4 w-4 animate-spin" />
                 Entrar

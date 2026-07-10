@@ -12,6 +12,32 @@ export interface Escola {
     esc_nome: string;
 }
 
+export interface CursoFormacaoSuperior {
+    cfs_id: number;
+    cfs_codigo: string;
+    cfs_nome: string;
+    cfs_grau: string | null;
+}
+
+export interface FuncionarioEscolaridade {
+    fes_id: number;
+    fes_fun_id: number;
+    fes_nivel: number;
+    fes_ano_inicio: number | null;
+    fes_ano_fim: number | null;
+    fes_cfs_id: number | null;
+    curso?: CursoFormacaoSuperior | null;
+}
+
+export interface EscolaridadeFormData {
+    fes_nivel: number | '';
+    fes_ano_inicio: number | '' | null;
+    fes_ano_fim: number | '' | null;
+    fes_cfs_id: number | null;
+    // Apenas para exibição no modo create (não é enviado como coluna).
+    curso?: CursoFormacaoSuperior | null;
+}
+
 export interface FuncionarioLotacao {
     lot_id: number;
     lot_adm_id: number;
@@ -71,7 +97,6 @@ export interface Funcionario {
     fun_mun_id_nasc: number;
     fun_cpf: string;
     fun_religiao: string | null;
-    fun_escolaridade: number | null;
     fun_estado_civil: number | null;
     fun_povo_indigena: string | null;
     fun_pin_id: number | null;
@@ -123,6 +148,7 @@ export interface Funcionario {
     municipio_certidao?: Municipio | null;
     povo_indigena?: PovoIndigena | null;
     admissoes?: FuncionarioAdmissao[];
+    escolaridades?: FuncionarioEscolaridade[];
 }
 
 export interface FuncionarioFormData {
@@ -136,7 +162,6 @@ export interface FuncionarioFormData {
     fun_mun_id_nasc: number | null;
     fun_cpf: string;
     fun_religiao: string;
-    fun_escolaridade: number | '' | null;
     fun_estado_civil: number | '' | null;
     fun_povo_indigena: string;
     fun_pin_id: number | null;
@@ -182,6 +207,7 @@ export interface FuncionarioFormData {
 
     fun_foto: File | null;
     fun_fl_ativo: boolean;
+    escolaridades: EscolaridadeFormData[];
     confirm_homonimo: boolean;
     _method?: 'put' | 'post';
     [key: string]: any;

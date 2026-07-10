@@ -35,7 +35,6 @@ class Funcionario extends Model
         'fun_mun_id_nasc',
         'fun_cpf',
         'fun_religiao',
-        'fun_escolaridade',
         'fun_estado_civil',
         'fun_povo_indigena',
         'fun_pin_id',
@@ -88,7 +87,6 @@ class Funcionario extends Model
         'fun_rg_dt_emissao' => 'date',
         'fun_certidao_dt_emissao' => 'date',
         'fun_cor_raca' => 'integer',
-        'fun_escolaridade' => 'integer',
         'fun_estado_civil' => 'integer',
         'fun_fl_usa_transporte' => 'boolean',
         'fun_fl_ativo' => 'boolean',
@@ -122,5 +120,10 @@ class Funcionario extends Model
     public function admissoes(): HasMany
     {
         return $this->hasMany(FuncionarioAdmissao::class, 'adm_fun_id', 'fun_id');
+    }
+
+    public function escolaridades(): HasMany
+    {
+        return $this->hasMany(FuncionarioEscolaridade::class, 'fes_fun_id', 'fun_id');
     }
 }

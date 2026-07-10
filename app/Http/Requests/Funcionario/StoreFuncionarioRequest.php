@@ -62,7 +62,9 @@ class StoreFuncionarioRequest extends FormRequest
 
     public function rules(): array
     {
-        $funId = $this->route('funcionario')?->fun_id;
+        $funId    = $this->route('funcionario')?->fun_id;
+        $isCreate = $funId === null;
+        $anoMax   = (int) date('Y') + 1;
 
         return [
             // Dados pessoais
@@ -76,7 +78,6 @@ class StoreFuncionarioRequest extends FormRequest
             'fun_mun_id_nasc' => ['required', 'integer', 'exists:edu_municipio,mun_id'],
             'fun_cpf' => ['required', 'digits:11', new Cpf],
             'fun_religiao' => ['nullable', 'string', 'max:60'],
-            'fun_escolaridade' => ['required', 'integer', Rule::in([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])],
             'fun_estado_civil' => ['required', 'integer', Rule::in([1, 2, 3, 4, 5])],
             'fun_povo_indigena' => ['nullable', 'string', 'max:60'],
             'fun_pin_id' => ['nullable', 'integer', 'exists:edu_povo_indigena,pin_id', 'required_if:fun_cor_raca,5'],
@@ -122,11 +123,36 @@ class StoreFuncionarioRequest extends FormRequest
 
             'fun_foto' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
             'fun_fl_ativo' => ['boolean'],
+
+            // Escolaridades — aba própria; no cadastro é obrigatório informar ao menos uma.
+            // Na edição, as escolaridades são gerenciadas por rotas próprias (não vêm no payload).
+            'escolaridades' => [$isCreate ? 'required' : 'nullable', 'array', ...($isCreate ? ['min:1'] : [])],
+            'escolaridades.*.fes_nivel' => ['required_with:escolaridades', 'integer', Rule::in([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])],
+            'escolaridades.*.fes_ano_inicio' => ['nullable', 'integer', 'min:1900', 'max:' . $anoMax],
+            'escolaridades.*.fes_ano_fim' => ['nullable', 'integer', 'min:1900', 'max:' . $anoMax],
+            'escolaridades.*.fes_cfs_id' => ['nullable', 'integer', 'exists:edu_curso_formacao_superior,cfs_id'],
         ];
     }
 
     public function withValidator(Validator $validator): void
     {
+        // Curso é obrigatório quando o nível é de ensino superior (5,6,7,8,10).
+        $validator->after(function (Validator $v) {
+            $niveisExigemCurso = [5, 6, 7, 8, 10];
+            foreach ((array) $this->input('escolaridades', []) as $i => $esc) {
+                $nivel = (int) ($esc['fes_nivel'] ?? 0);
+                $curso = $esc['fes_cfs_id'] ?? null;
+                if (in_array($nivel, $niveisExigemCurso, true) && ($curso === null || $curso === '')) {
+                    $v->errors()->add("escolaridades.{$i}.fes_cfs_id", 'Selecione o curso para níveis de ensino superior.');
+                }
+                $ini = $esc['fes_ano_inicio'] ?? null;
+                $fim = $esc['fes_ano_fim'] ?? null;
+                if ($ini !== null && $ini !== '' && $fim !== null && $fim !== '' && (int) $fim < (int) $ini) {
+                    $v->errors()->add("escolaridades.{$i}.fes_ano_fim", 'O ano final deve ser igual ou posterior ao ano inicial.');
+                }
+            }
+        });
+
         $validator->after(function (Validator $v) {
             // Pula se CPF já tem erro de formato/validade
             if ($v->errors()->has('fun_cpf') || ! $this->filled('fun_cpf')) {
@@ -172,6 +198,9 @@ class StoreFuncionarioRequest extends FormRequest
         return [
             'fun_dt_nascimento.before' => 'A data de nascimento deve ser anterior à data de hoje.',
             'fun_pin_id.required_if'   => 'Selecione o povo indígena quando a etnia/cor/raça for Indígena.',
+            'escolaridades.required'   => 'Informe ao menos uma escolaridade.',
+            'escolaridades.min'        => 'Informe ao menos uma escolaridade.',
+            'escolaridades.*.fes_nivel.required_with' => 'Selecione o nível de escolaridade.',
         ];
     }
 
@@ -188,7 +217,6 @@ class StoreFuncionarioRequest extends FormRequest
             'fun_mun_id_nasc' => 'naturalidade (município)',
             'fun_cpf' => 'CPF',
             'fun_religiao' => 'religião',
-            'fun_escolaridade' => 'escolaridade',
             'fun_estado_civil' => 'estado civil',
             'fun_povo_indigena' => 'povo indígena',
             'fun_pin_id' => 'povo indígena',

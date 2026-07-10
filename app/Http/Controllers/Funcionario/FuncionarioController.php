@@ -57,13 +57,25 @@ class FuncionarioController extends Controller
         $this->checkHomonimo($request);
 
         $funcionario = DB::transaction(function () use ($request) {
-            $data = $request->safe()->except(['fun_foto']);
+            $data = $request->safe()->except(['fun_foto', 'escolaridades']);
 
             if ($request->hasFile('fun_foto')) {
                 $data['fun_foto'] = $request->file('fun_foto')->store('funcionarios', 'public');
             }
 
-            return Funcionario::create($data);
+            $funcionario = Funcionario::create($data);
+
+            $intOuNull = fn ($v) => ($v === null || $v === '') ? null : (int) $v;
+            foreach ((array) $request->validated('escolaridades') as $esc) {
+                $funcionario->escolaridades()->create([
+                    'fes_nivel'      => (int) $esc['fes_nivel'],
+                    'fes_ano_inicio' => $intOuNull($esc['fes_ano_inicio'] ?? null),
+                    'fes_ano_fim'    => $intOuNull($esc['fes_ano_fim'] ?? null),
+                    'fes_cfs_id'     => $intOuNull($esc['fes_cfs_id'] ?? null),
+                ]);
+            }
+
+            return $funcionario;
         });
 
         return to_route('funcionarios.edit', $funcionario)->with('success', 'Funcionário cadastrado com sucesso.');
@@ -80,6 +92,8 @@ class FuncionarioController extends Controller
             'admissoes.cargo:crg_id,crg_nome',
             'admissoes.lotacoes.escola:esc_id,esc_nome',
             'admissoes.lotacoes.cargo:crg_id,crg_nome',
+            'escolaridades' => fn ($q) => $q->orderByDesc('fes_nivel')->orderByDesc('fes_ano_fim'),
+            'escolaridades.curso:cfs_id,cfs_codigo,cfs_nome,cfs_grau',
         ]);
 
         $diasMap = [
@@ -135,7 +149,8 @@ class FuncionarioController extends Controller
         $this->checkHomonimo($request, $funcionario->fun_id);
 
         DB::transaction(function () use ($request, $funcionario) {
-            $data = $request->safe()->except(['fun_foto']);
+            // escolaridades são geridas por rotas próprias na edição (não vêm no update do funcionário).
+            $data = $request->safe()->except(['fun_foto', 'escolaridades']);
 
             if ($request->hasFile('fun_foto')) {
                 if ($funcionario->fun_foto) {

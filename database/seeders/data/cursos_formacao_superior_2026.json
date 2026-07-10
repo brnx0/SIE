@@ -1,0 +1,4440 @@
+[
+ {
+  "codigo": "0111C012",
+  "nome": "Ciência da educação - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Educação",
+  "area_detalhada": "Ciência da educação"
+ },
+ {
+  "codigo": "0111C014",
+  "nome": "Ciência da educação - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Educação",
+  "area_detalhada": "Ciência da educação"
+ },
+ {
+  "codigo": "0111P013",
+  "nome": "Processos escolares - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Educação",
+  "area_detalhada": "Ciência da educação"
+ },
+ {
+  "codigo": "0111P022",
+  "nome": "Psicopedagogia - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Educação",
+  "area_detalhada": "Ciência da educação"
+ },
+ {
+  "codigo": "0111P024",
+  "nome": "Psicopedagogia - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Educação",
+  "area_detalhada": "Ciência da educação"
+ },
+ {
+  "codigo": "0112E011",
+  "nome": "Educação infantil formação de professor - Licenciatura",
+  "grau": "Licenciatura",
+  "area_geral": "Educação",
+  "area_detalhada": "Formação de professores de educação infantil"
+ },
+ {
+  "codigo": "0113E011",
+  "nome": "Educação do campo formação de professor - Licenciatura",
+  "grau": "Licenciatura",
+  "area_geral": "Educação",
+  "area_detalhada": "Formação de professores sem áreas específicas"
+ },
+ {
+  "codigo": "0113E021",
+  "nome": "Educação especial formação de professor - Licenciatura",
+  "grau": "Licenciatura",
+  "area_geral": "Educação",
+  "area_detalhada": "Formação de professores sem áreas específicas"
+ },
+ {
+  "codigo": "0113E031",
+  "nome": "Educação indígena formação de professor - Licenciatura",
+  "grau": "Licenciatura",
+  "area_geral": "Educação",
+  "area_detalhada": "Formação de professores sem áreas específicas"
+ },
+ {
+  "codigo": "0113F011",
+  "nome": "Formação pedagógica de professor para a educação básica - Licenciatura",
+  "grau": "Licenciatura",
+  "area_geral": "Educação",
+  "area_detalhada": "Formação de professores sem áreas específicas"
+ },
+ {
+  "codigo": "0113F014",
+  "nome": "Formação pedagógica de professor para a educação básica - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Educação",
+  "area_detalhada": "Formação de professores sem áreas específicas"
+ },
+ {
+  "codigo": "0113P011",
+  "nome": "Pedagogia - Licenciatura",
+  "grau": "Licenciatura",
+  "area_geral": "Educação",
+  "area_detalhada": "Formação de professores sem áreas específicas"
+ },
+ {
+  "codigo": "0113P012",
+  "nome": "Pedagogia - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Educação",
+  "area_detalhada": "Formação de professores sem áreas específicas"
+ },
+ {
+  "codigo": "0113P014",
+  "nome": "Pedagogia - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Educação",
+  "area_detalhada": "Formação de professores sem áreas específicas"
+ },
+ {
+  "codigo": "0114A011",
+  "nome": "Artes formação de professor - Licenciatura",
+  "grau": "Licenciatura",
+  "area_geral": "Educação",
+  "area_detalhada": "Formação de professores em áreas específicas (exceto Letras)"
+ },
+ {
+  "codigo": "0114A014",
+  "nome": "Artes formação de professor - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Educação",
+  "area_detalhada": "Formação de professores em áreas específicas (exceto Letras)"
+ },
+ {
+  "codigo": "0114A021",
+  "nome": "Artes visuais formação de professor - Licenciatura",
+  "grau": "Licenciatura",
+  "area_geral": "Educação",
+  "area_detalhada": "Formação de professores em áreas específicas (exceto Letras)"
+ },
+ {
+  "codigo": "0114B011",
+  "nome": "Biologia formação de professor - Licenciatura",
+  "grau": "Licenciatura",
+  "area_geral": "Educação",
+  "area_detalhada": "Formação de professores em áreas específicas (exceto Letras)"
+ },
+ {
+  "codigo": "0114C011",
+  "nome": "Ciências agrárias formação de professor - Licenciatura",
+  "grau": "Licenciatura",
+  "area_geral": "Educação",
+  "area_detalhada": "Formação de professores em áreas específicas (exceto Letras)"
+ },
+ {
+  "codigo": "0114C021",
+  "nome": "Ciências naturais formação de professor - Licenciatura",
+  "grau": "Licenciatura",
+  "area_geral": "Educação",
+  "area_detalhada": "Formação de professores em áreas específicas (exceto Letras)"
+ },
+ {
+  "codigo": "0114C031",
+  "nome": "Ciências sociais formação de professor - Licenciatura",
+  "grau": "Licenciatura",
+  "area_geral": "Educação",
+  "area_detalhada": "Formação de professores em áreas específicas (exceto Letras)"
+ },
+ {
+  "codigo": "0114C041",
+  "nome": "Cinema e audiovisual formação de professor - Licenciatura",
+  "grau": "Licenciatura",
+  "area_geral": "Educação",
+  "area_detalhada": "Formação de professores em áreas específicas (exceto Letras)"
+ },
+ {
+  "codigo": "0114C051",
+  "nome": "Computação formação de professor - Licenciatura",
+  "grau": "Licenciatura",
+  "area_geral": "Educação",
+  "area_detalhada": "Formação de professores em áreas específicas (exceto Letras)"
+ },
+ {
+  "codigo": "0114D011",
+  "nome": "Dança formação de professor - Licenciatura",
+  "grau": "Licenciatura",
+  "area_geral": "Educação",
+  "area_detalhada": "Formação de professores em áreas específicas (exceto Letras)"
+ },
+ {
+  "codigo": "0114E011",
+  "nome": "Economia doméstica formação de professor - Licenciatura",
+  "grau": "Licenciatura",
+  "area_geral": "Educação",
+  "area_detalhada": "Formação de professores em áreas específicas (exceto Letras)"
+ },
+ {
+  "codigo": "0114E021",
+  "nome": "Educação do campo em áreas de conhecimento da educação básica formação de professor - Licenciatura",
+  "grau": "Licenciatura",
+  "area_geral": "Educação",
+  "area_detalhada": "Formação de professores em áreas específicas (exceto Letras)"
+ },
+ {
+  "codigo": "0114E031",
+  "nome": "Educação física formação de professor - Licenciatura",
+  "grau": "Licenciatura",
+  "area_geral": "Educação",
+  "area_detalhada": "Formação de professores em áreas específicas (exceto Letras)"
+ },
+ {
+  "codigo": "0114E041",
+  "nome": "Educação indígena em áreas de conhecimento da educação básica formação de professor - Licenciatura",
+  "grau": "Licenciatura",
+  "area_geral": "Educação",
+  "area_detalhada": "Formação de professores em áreas específicas (exceto Letras)"
+ },
+ {
+  "codigo": "0114E051",
+  "nome": "Enfermagem formação de professor - Licenciatura",
+  "grau": "Licenciatura",
+  "area_geral": "Educação",
+  "area_detalhada": "Formação de professores em áreas específicas (exceto Letras)"
+ },
+ {
+  "codigo": "0114E061",
+  "nome": "Ensino profissionalizante em área específica formação de professor - Licenciatura",
+  "grau": "Licenciatura",
+  "area_geral": "Educação",
+  "area_detalhada": "Formação de professores em áreas específicas (exceto Letras)"
+ },
+ {
+  "codigo": "0114E071",
+  "nome": "Ensino religioso formação de professor - Licenciatura",
+  "grau": "Licenciatura",
+  "area_geral": "Educação",
+  "area_detalhada": "Formação de professores em áreas específicas (exceto Letras)"
+ },
+ {
+  "codigo": "0114E081",
+  "nome": "Estatística formação de professor - Licenciatura",
+  "grau": "Licenciatura",
+  "area_geral": "Educação",
+  "area_detalhada": "Formação de professores em áreas específicas (exceto Letras)"
+ },
+ {
+  "codigo": "0114F011",
+  "nome": "Filosofia formação de professor - Licenciatura",
+  "grau": "Licenciatura",
+  "area_geral": "Educação",
+  "area_detalhada": "Formação de professores em áreas específicas (exceto Letras)"
+ },
+ {
+  "codigo": "0114F021",
+  "nome": "Física formação de professor - Licenciatura",
+  "grau": "Licenciatura",
+  "area_geral": "Educação",
+  "area_detalhada": "Formação de professores em áreas específicas (exceto Letras)"
+ },
+ {
+  "codigo": "0114G011",
+  "nome": "Geografia formação de professor - Licenciatura",
+  "grau": "Licenciatura",
+  "area_geral": "Educação",
+  "area_detalhada": "Formação de professores em áreas específicas (exceto Letras)"
+ },
+ {
+  "codigo": "0114H011",
+  "nome": "História formação de professor - Licenciatura",
+  "grau": "Licenciatura",
+  "area_geral": "Educação",
+  "area_detalhada": "Formação de professores em áreas específicas (exceto Letras)"
+ },
+ {
+  "codigo": "0114M011",
+  "nome": "Matemática formação de professor - Licenciatura",
+  "grau": "Licenciatura",
+  "area_geral": "Educação",
+  "area_detalhada": "Formação de professores em áreas específicas (exceto Letras)"
+ },
+ {
+  "codigo": "0114M021",
+  "nome": "Música formação de professor - Licenciatura",
+  "grau": "Licenciatura",
+  "area_geral": "Educação",
+  "area_detalhada": "Formação de professores em áreas específicas (exceto Letras)"
+ },
+ {
+  "codigo": "0114P011",
+  "nome": "Psicologia formação de professor - Licenciatura",
+  "grau": "Licenciatura",
+  "area_geral": "Educação",
+  "area_detalhada": "Formação de professores em áreas específicas (exceto Letras)"
+ },
+ {
+  "codigo": "0114Q011",
+  "nome": "Química formação de professor - Licenciatura",
+  "grau": "Licenciatura",
+  "area_geral": "Educação",
+  "area_detalhada": "Formação de professores em áreas específicas (exceto Letras)"
+ },
+ {
+  "codigo": "0114T011",
+  "nome": "Teatro formação de professor - Licenciatura",
+  "grau": "Licenciatura",
+  "area_geral": "Educação",
+  "area_detalhada": "Formação de professores em áreas específicas (exceto Letras)"
+ },
+ {
+  "codigo": "0115L011",
+  "nome": "Letras alemão formação de professor - Licenciatura",
+  "grau": "Licenciatura",
+  "area_geral": "Educação",
+  "area_detalhada": "Formação de professores de letras"
+ },
+ {
+  "codigo": "0115L021",
+  "nome": "Letras espanhol formação de professor - Licenciatura",
+  "grau": "Licenciatura",
+  "area_geral": "Educação",
+  "area_detalhada": "Formação de professores de letras"
+ },
+ {
+  "codigo": "0115L031",
+  "nome": "Letras francês formação de professor - Licenciatura",
+  "grau": "Licenciatura",
+  "area_geral": "Educação",
+  "area_detalhada": "Formação de professores de letras"
+ },
+ {
+  "codigo": "0115L041",
+  "nome": "Letras inglês formação de professor - Licenciatura",
+  "grau": "Licenciatura",
+  "area_geral": "Educação",
+  "area_detalhada": "Formação de professores de letras"
+ },
+ {
+  "codigo": "0115L051",
+  "nome": "Letras italiano formação de professor - Licenciatura",
+  "grau": "Licenciatura",
+  "area_geral": "Educação",
+  "area_detalhada": "Formação de professores de letras"
+ },
+ {
+  "codigo": "0115L061",
+  "nome": "Letras japonês formação de professor - Licenciatura",
+  "grau": "Licenciatura",
+  "area_geral": "Educação",
+  "area_detalhada": "Formação de professores de letras"
+ },
+ {
+  "codigo": "0115L071",
+  "nome": "Letras língua brasileira de sinais formação de professor - Licenciatura",
+  "grau": "Licenciatura",
+  "area_geral": "Educação",
+  "area_detalhada": "Formação de professores de letras"
+ },
+ {
+  "codigo": "0115L081",
+  "nome": "Letras línguas estrangeiras clássicas formação de professor - Licenciatura",
+  "grau": "Licenciatura",
+  "area_geral": "Educação",
+  "area_detalhada": "Formação de professores de letras"
+ },
+ {
+  "codigo": "0115L091",
+  "nome": "Letras linguística formação de professor - Licenciatura",
+  "grau": "Licenciatura",
+  "area_geral": "Educação",
+  "area_detalhada": "Formação de professores de letras"
+ },
+ {
+  "codigo": "0115L101",
+  "nome": "Letras outras línguas estrangeiras modernas formação de professor - Licenciatura",
+  "grau": "Licenciatura",
+  "area_geral": "Educação",
+  "area_detalhada": "Formação de professores de letras"
+ },
+ {
+  "codigo": "0115L111",
+  "nome": "Letras português alemão formação de professor - Licenciatura",
+  "grau": "Licenciatura",
+  "area_geral": "Educação",
+  "area_detalhada": "Formação de professores de letras"
+ },
+ {
+  "codigo": "0115L121",
+  "nome": "Letras português espanhol formação de professor - Licenciatura",
+  "grau": "Licenciatura",
+  "area_geral": "Educação",
+  "area_detalhada": "Formação de professores de letras"
+ },
+ {
+  "codigo": "0115L131",
+  "nome": "Letras português formação de professor - Licenciatura",
+  "grau": "Licenciatura",
+  "area_geral": "Educação",
+  "area_detalhada": "Formação de professores de letras"
+ },
+ {
+  "codigo": "0115L141",
+  "nome": "Letras português francês formação de professor - Licenciatura",
+  "grau": "Licenciatura",
+  "area_geral": "Educação",
+  "area_detalhada": "Formação de professores de letras"
+ },
+ {
+  "codigo": "0115L151",
+  "nome": "Letras português inglês formação de professor - Licenciatura",
+  "grau": "Licenciatura",
+  "area_geral": "Educação",
+  "area_detalhada": "Formação de professores de letras"
+ },
+ {
+  "codigo": "0115L161",
+  "nome": "Letras português italiano formação de professor - Licenciatura",
+  "grau": "Licenciatura",
+  "area_geral": "Educação",
+  "area_detalhada": "Formação de professores de letras"
+ },
+ {
+  "codigo": "0115L171",
+  "nome": "Letras português japonês formação de professor - Licenciatura",
+  "grau": "Licenciatura",
+  "area_geral": "Educação",
+  "area_detalhada": "Formação de professores de letras"
+ },
+ {
+  "codigo": "0115L181",
+  "nome": "Letras português língua brasileira de sinais formação de professor - Licenciatura",
+  "grau": "Licenciatura",
+  "area_geral": "Educação",
+  "area_detalhada": "Formação de professores de letras"
+ },
+ {
+  "codigo": "0115L191",
+  "nome": "Letras português línguas estrangeiras clássicas formação de professor - Licenciatura",
+  "grau": "Licenciatura",
+  "area_geral": "Educação",
+  "area_detalhada": "Formação de professores de letras"
+ },
+ {
+  "codigo": "0115L201",
+  "nome": "Letras português outras línguas estrangeiras modernas formação de professor - Licenciatura",
+  "grau": "Licenciatura",
+  "area_geral": "Educação",
+  "area_detalhada": "Formação de professores de letras"
+ },
+ {
+  "codigo": "0115L211",
+  "nome": "Letras tradutor e intérprete formação de professor - Licenciatura",
+  "grau": "Licenciatura",
+  "area_geral": "Educação",
+  "area_detalhada": "Formação de professores de letras"
+ },
+ {
+  "codigo": "0188P011",
+  "nome": "Programas interdisciplinares abrangendo educação - Licenciatura",
+  "grau": "Licenciatura",
+  "area_geral": "Educação",
+  "area_detalhada": "Programas interdisciplinares abrangendo educação"
+ },
+ {
+  "codigo": "0188P012",
+  "nome": "Programas interdisciplinares abrangendo educação - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Educação",
+  "area_detalhada": "Programas interdisciplinares abrangendo educação"
+ },
+ {
+  "codigo": "0188P013",
+  "nome": "Programas interdisciplinares abrangendo educação - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Educação",
+  "area_detalhada": "Programas interdisciplinares abrangendo educação"
+ },
+ {
+  "codigo": "0211A012",
+  "nome": "Animação - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Produção audiovisual, de mídia e cultural"
+ },
+ {
+  "codigo": "0211A013",
+  "nome": "Animação - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Produção audiovisual, de mídia e cultural"
+ },
+ {
+  "codigo": "0211A014",
+  "nome": "Animação - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Produção audiovisual, de mídia e cultural"
+ },
+ {
+  "codigo": "0211C012",
+  "nome": "Cinema e audiovisual - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Produção audiovisual, de mídia e cultural"
+ },
+ {
+  "codigo": "0211C013",
+  "nome": "Cinema e audiovisual - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Produção audiovisual, de mídia e cultural"
+ },
+ {
+  "codigo": "0211C014",
+  "nome": "Cinema e audiovisual - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Produção audiovisual, de mídia e cultural"
+ },
+ {
+  "codigo": "0211C023",
+  "nome": "Comunicação assistiva - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Produção audiovisual, de mídia e cultural"
+ },
+ {
+  "codigo": "0211D012",
+  "nome": "Design gráfico - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Produção audiovisual, de mídia e cultural"
+ },
+ {
+  "codigo": "0211D013",
+  "nome": "Design gráfico - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Produção audiovisual, de mídia e cultural"
+ },
+ {
+  "codigo": "0211D014",
+  "nome": "Design gráfico - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Produção audiovisual, de mídia e cultural"
+ },
+ {
+  "codigo": "0211F012",
+  "nome": "Fotografia - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Produção audiovisual, de mídia e cultural"
+ },
+ {
+  "codigo": "0211F013",
+  "nome": "Fotografia - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Produção audiovisual, de mídia e cultural"
+ },
+ {
+  "codigo": "0211F014",
+  "nome": "Fotografia - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Produção audiovisual, de mídia e cultural"
+ },
+ {
+  "codigo": "0211P012",
+  "nome": "Produção audiovisual - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Produção audiovisual, de mídia e cultural"
+ },
+ {
+  "codigo": "0211P013",
+  "nome": "Produção audiovisual - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Produção audiovisual, de mídia e cultural"
+ },
+ {
+  "codigo": "0211P014",
+  "nome": "Produção audiovisual - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Produção audiovisual, de mídia e cultural"
+ },
+ {
+  "codigo": "0211P023",
+  "nome": "Produção cênica - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Produção audiovisual, de mídia e cultural"
+ },
+ {
+  "codigo": "0211P032",
+  "nome": "Produção cultural - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Produção audiovisual, de mídia e cultural"
+ },
+ {
+  "codigo": "0211P033",
+  "nome": "Produção cultural - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Produção audiovisual, de mídia e cultural"
+ },
+ {
+  "codigo": "0211P034",
+  "nome": "Produção cultural - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Produção audiovisual, de mídia e cultural"
+ },
+ {
+  "codigo": "0211P043",
+  "nome": "Produção fonográfica - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Produção audiovisual, de mídia e cultural"
+ },
+ {
+  "codigo": "0211P052",
+  "nome": "Produção multimídia - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Produção audiovisual, de mídia e cultural"
+ },
+ {
+  "codigo": "0211P053",
+  "nome": "Produção multimídia - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Produção audiovisual, de mídia e cultural"
+ },
+ {
+  "codigo": "0211P054",
+  "nome": "Produção multimídia - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Produção audiovisual, de mídia e cultural"
+ },
+ {
+  "codigo": "0212D012",
+  "nome": "Desenho industrial - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Moda, design de interiores e desenho industrial"
+ },
+ {
+  "codigo": "0212D022",
+  "nome": "Design - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Moda, design de interiores e desenho industrial"
+ },
+ {
+  "codigo": "0212D023",
+  "nome": "Design - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Moda, design de interiores e desenho industrial"
+ },
+ {
+  "codigo": "0212D032",
+  "nome": "Design de interiores - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Moda, design de interiores e desenho industrial"
+ },
+ {
+  "codigo": "0212D033",
+  "nome": "Design de interiores - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Moda, design de interiores e desenho industrial"
+ },
+ {
+  "codigo": "0212D034",
+  "nome": "Design de interiores - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Moda, design de interiores e desenho industrial"
+ },
+ {
+  "codigo": "0212D042",
+  "nome": "Design de produto - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Moda, design de interiores e desenho industrial"
+ },
+ {
+  "codigo": "0212D043",
+  "nome": "Design de produto - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Moda, design de interiores e desenho industrial"
+ },
+ {
+  "codigo": "0212D044",
+  "nome": "Design de produto - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Moda, design de interiores e desenho industrial"
+ },
+ {
+  "codigo": "0212M012",
+  "nome": "Moda - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Moda, design de interiores e desenho industrial"
+ },
+ {
+  "codigo": "0212M013",
+  "nome": "Moda - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Moda, design de interiores e desenho industrial"
+ },
+ {
+  "codigo": "0212M014",
+  "nome": "Moda - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Moda, design de interiores e desenho industrial"
+ },
+ {
+  "codigo": "0213A012",
+  "nome": "Artes - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Belas artes"
+ },
+ {
+  "codigo": "0213A013",
+  "nome": "Artes - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Belas artes"
+ },
+ {
+  "codigo": "0213A014",
+  "nome": "Artes - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Belas artes"
+ },
+ {
+  "codigo": "0213A022",
+  "nome": "Artes plásticas - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Belas artes"
+ },
+ {
+  "codigo": "0213A023",
+  "nome": "Artes plásticas - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Belas artes"
+ },
+ {
+  "codigo": "0213A024",
+  "nome": "Artes plásticas - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Belas artes"
+ },
+ {
+  "codigo": "0213A032",
+  "nome": "Artes visuais - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Belas artes"
+ },
+ {
+  "codigo": "0213A033",
+  "nome": "Artes visuais - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Belas artes"
+ },
+ {
+  "codigo": "0213H012",
+  "nome": "História da arte - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Belas artes"
+ },
+ {
+  "codigo": "0214F013",
+  "nome": "Fabricação de instrumentos musicais não industrial - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Artesanato"
+ },
+ {
+  "codigo": "0215A012",
+  "nome": "Artes cênicas - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Música e artes cênicas"
+ },
+ {
+  "codigo": "0215A013",
+  "nome": "Artes cênicas - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Música e artes cênicas"
+ },
+ {
+  "codigo": "0215D012",
+  "nome": "Dança - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Música e artes cênicas"
+ },
+ {
+  "codigo": "0215D013",
+  "nome": "Dança - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Música e artes cênicas"
+ },
+ {
+  "codigo": "0215M012",
+  "nome": "Música - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Música e artes cênicas"
+ },
+ {
+  "codigo": "0215M013",
+  "nome": "Música - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Música e artes cênicas"
+ },
+ {
+  "codigo": "0215M014",
+  "nome": "Música - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Música e artes cênicas"
+ },
+ {
+  "codigo": "0215T012",
+  "nome": "Teatro - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Música e artes cênicas"
+ },
+ {
+  "codigo": "0215T013",
+  "nome": "Teatro - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Música e artes cênicas"
+ },
+ {
+  "codigo": "0221C012",
+  "nome": "Ciências da religião - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Religião e teologia"
+ },
+ {
+  "codigo": "0221T012",
+  "nome": "Teologia - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Religião e teologia"
+ },
+ {
+  "codigo": "0221T013",
+  "nome": "Teologia - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Religião e teologia"
+ },
+ {
+  "codigo": "0221T014",
+  "nome": "Teologia - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Religião e teologia"
+ },
+ {
+  "codigo": "0222A012",
+  "nome": "Arqueologia - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "História e arqueologia"
+ },
+ {
+  "codigo": "0222A013",
+  "nome": "Arqueologia - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "História e arqueologia"
+ },
+ {
+  "codigo": "0222C012",
+  "nome": "Conservação e restauro - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "História e arqueologia"
+ },
+ {
+  "codigo": "0222C013",
+  "nome": "Conservação e restauro - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "História e arqueologia"
+ },
+ {
+  "codigo": "0222H012",
+  "nome": "História - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "História e arqueologia"
+ },
+ {
+  "codigo": "0222H014",
+  "nome": "História - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "História e arqueologia"
+ },
+ {
+  "codigo": "0223F012",
+  "nome": "Filosofia - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Filosofia e ética"
+ },
+ {
+  "codigo": "0223F014",
+  "nome": "Filosofia - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Filosofia e ética"
+ },
+ {
+  "codigo": "0231L012",
+  "nome": "Letras alemão - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Letras"
+ },
+ {
+  "codigo": "0231L023",
+  "nome": "Letras escrita criativa - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Letras"
+ },
+ {
+  "codigo": "0231L024",
+  "nome": "Letras escrita criativa - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Letras"
+ },
+ {
+  "codigo": "0231L032",
+  "nome": "Letras espanhol - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Letras"
+ },
+ {
+  "codigo": "0231L034",
+  "nome": "Letras espanhol - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Letras"
+ },
+ {
+  "codigo": "0231L042",
+  "nome": "Letras francês - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Letras"
+ },
+ {
+  "codigo": "0231L052",
+  "nome": "Letras inglês - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Letras"
+ },
+ {
+  "codigo": "0231L054",
+  "nome": "Letras inglês - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Letras"
+ },
+ {
+  "codigo": "0231L062",
+  "nome": "Letras italiano - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Letras"
+ },
+ {
+  "codigo": "0231L072",
+  "nome": "Letras japonês - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Letras"
+ },
+ {
+  "codigo": "0231L082",
+  "nome": "Letras língua brasileira de sinais - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Letras"
+ },
+ {
+  "codigo": "0231L083",
+  "nome": "Letras língua brasileira de sinais - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Letras"
+ },
+ {
+  "codigo": "0231L084",
+  "nome": "Letras língua brasileira de sinais - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Letras"
+ },
+ {
+  "codigo": "0231L092",
+  "nome": "Letras línguas estrangeiras clássicas - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Letras"
+ },
+ {
+  "codigo": "0231L094",
+  "nome": "Letras línguas estrangeiras clássicas - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Letras"
+ },
+ {
+  "codigo": "0231L102",
+  "nome": "Letras linguística - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Letras"
+ },
+ {
+  "codigo": "0231L112",
+  "nome": "Letras outras línguas estrangeiras modernas - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Letras"
+ },
+ {
+  "codigo": "0231L122",
+  "nome": "Letras português - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Letras"
+ },
+ {
+  "codigo": "0231L124",
+  "nome": "Letras português - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Letras"
+ },
+ {
+  "codigo": "0231L132",
+  "nome": "Letras português alemão - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Letras"
+ },
+ {
+  "codigo": "0231L142",
+  "nome": "Letras português espanhol - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Letras"
+ },
+ {
+  "codigo": "0231L152",
+  "nome": "Letras português francês - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Letras"
+ },
+ {
+  "codigo": "0231L162",
+  "nome": "Letras português inglês - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Letras"
+ },
+ {
+  "codigo": "0231L172",
+  "nome": "Letras português italiano - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Letras"
+ },
+ {
+  "codigo": "0231L182",
+  "nome": "Letras português japonês - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Letras"
+ },
+ {
+  "codigo": "0231L192",
+  "nome": "Letras português língua brasileira de sinais - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Letras"
+ },
+ {
+  "codigo": "0231L202",
+  "nome": "Letras português línguas estrangeiras clássicas - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Letras"
+ },
+ {
+  "codigo": "0231L212",
+  "nome": "Letras português outras línguas estrangeiras modernas - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Letras"
+ },
+ {
+  "codigo": "0231L222",
+  "nome": "Letras tradutor e intérprete - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Letras"
+ },
+ {
+  "codigo": "0231L223",
+  "nome": "Letras tradutor e intérprete - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Letras"
+ },
+ {
+  "codigo": "0231L224",
+  "nome": "Letras tradutor e intérprete - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Letras"
+ },
+ {
+  "codigo": "0288P012",
+  "nome": "Programas interdisciplinares abrangendo artes e humanidades - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Programas interdisciplinares abrangendo artes e humanidades"
+ },
+ {
+  "codigo": "0288P014",
+  "nome": "Programas interdisciplinares abrangendo artes e humanidades - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Artes e humanidades",
+  "area_detalhada": "Programas interdisciplinares abrangendo artes e humanidades"
+ },
+ {
+  "codigo": "0311E012",
+  "nome": "Economia - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Ciências sociais, comunicação e informação",
+  "area_detalhada": "Economia"
+ },
+ {
+  "codigo": "0311E014",
+  "nome": "Economia - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Ciências sociais, comunicação e informação",
+  "area_detalhada": "Economia"
+ },
+ {
+  "codigo": "0312A012",
+  "nome": "Antropologia - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Ciências sociais, comunicação e informação",
+  "area_detalhada": "Ciências sociais e políticas"
+ },
+ {
+  "codigo": "0312A014",
+  "nome": "Antropologia - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Ciências sociais, comunicação e informação",
+  "area_detalhada": "Ciências sociais e políticas"
+ },
+ {
+  "codigo": "0312C012",
+  "nome": "Ciência política - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Ciências sociais, comunicação e informação",
+  "area_detalhada": "Ciências sociais e políticas"
+ },
+ {
+  "codigo": "0312C013",
+  "nome": "Ciência política - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Ciências sociais, comunicação e informação",
+  "area_detalhada": "Ciências sociais e políticas"
+ },
+ {
+  "codigo": "0312C014",
+  "nome": "Ciência política  - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Ciências sociais, comunicação e informação",
+  "area_detalhada": "Ciências sociais e políticas"
+ },
+ {
+  "codigo": "0312C022",
+  "nome": "Ciências sociais - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Ciências sociais, comunicação e informação",
+  "area_detalhada": "Ciências sociais e políticas"
+ },
+ {
+  "codigo": "0312C023",
+  "nome": "Ciências sociais - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Ciências sociais, comunicação e informação",
+  "area_detalhada": "Ciências sociais e políticas"
+ },
+ {
+  "codigo": "0312C024",
+  "nome": "Ciências sociais - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Ciências sociais, comunicação e informação",
+  "area_detalhada": "Ciências sociais e políticas"
+ },
+ {
+  "codigo": "0312G012",
+  "nome": "Geografia - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Ciências sociais, comunicação e informação",
+  "area_detalhada": "Ciências sociais e políticas"
+ },
+ {
+  "codigo": "0312R012",
+  "nome": "Relações internacionais - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Ciências sociais, comunicação e informação",
+  "area_detalhada": "Ciências sociais e políticas"
+ },
+ {
+  "codigo": "0312R014",
+  "nome": "Relações internacionais - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Ciências sociais, comunicação e informação",
+  "area_detalhada": "Ciências sociais e políticas"
+ },
+ {
+  "codigo": "0312S012",
+  "nome": "Sociologia - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Ciências sociais, comunicação e informação",
+  "area_detalhada": "Ciências sociais e políticas"
+ },
+ {
+  "codigo": "0312S014",
+  "nome": "Sociologia - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Ciências sociais, comunicação e informação",
+  "area_detalhada": "Ciências sociais e políticas"
+ },
+ {
+  "codigo": "0313P012",
+  "nome": "Psicologia - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Ciências sociais, comunicação e informação",
+  "area_detalhada": "Psicologia"
+ },
+ {
+  "codigo": "0313P013",
+  "nome": "Psicologia - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Ciências sociais, comunicação e informação",
+  "area_detalhada": "Psicologia"
+ },
+ {
+  "codigo": "0313P014",
+  "nome": "Psicologia - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Ciências sociais, comunicação e informação",
+  "area_detalhada": "Psicologia"
+ },
+ {
+  "codigo": "0321C012",
+  "nome": "Comunicação social - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Ciências sociais, comunicação e informação",
+  "area_detalhada": "Comunicação e reportagem"
+ },
+ {
+  "codigo": "0321J012",
+  "nome": "Jornalismo - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Ciências sociais, comunicação e informação",
+  "area_detalhada": "Comunicação e reportagem"
+ },
+ {
+  "codigo": "0321J014",
+  "nome": "Jornalismo - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Ciências sociais, comunicação e informação",
+  "area_detalhada": "Comunicação e reportagem"
+ },
+ {
+  "codigo": "0321P012",
+  "nome": "Produção editorial - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Ciências sociais, comunicação e informação",
+  "area_detalhada": "Comunicação e reportagem"
+ },
+ {
+  "codigo": "0321P013",
+  "nome": "Produção editorial - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Ciências sociais, comunicação e informação",
+  "area_detalhada": "Comunicação e reportagem"
+ },
+ {
+  "codigo": "0321P014",
+  "nome": "Produção editorial - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Ciências sociais, comunicação e informação",
+  "area_detalhada": "Comunicação e reportagem"
+ },
+ {
+  "codigo": "0321R012",
+  "nome": "Rádio, TV e internet - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Ciências sociais, comunicação e informação",
+  "area_detalhada": "Comunicação e reportagem"
+ },
+ {
+  "codigo": "0321R013",
+  "nome": "Rádio, TV e internet - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Ciências sociais, comunicação e informação",
+  "area_detalhada": "Comunicação e reportagem"
+ },
+ {
+  "codigo": "0321R014",
+  "nome": "Rádio, TV e internet - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Ciências sociais, comunicação e informação",
+  "area_detalhada": "Comunicação e reportagem"
+ },
+ {
+  "codigo": "0322A012",
+  "nome": "Arquivologia - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Ciências sociais, comunicação e informação",
+  "area_detalhada": "Ciência da informação e museologia"
+ },
+ {
+  "codigo": "0322B012",
+  "nome": "Biblioteconomia - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Ciências sociais, comunicação e informação",
+  "area_detalhada": "Ciência da informação e museologia"
+ },
+ {
+  "codigo": "0322G012",
+  "nome": "Gestão da informação - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Ciências sociais, comunicação e informação",
+  "area_detalhada": "Ciência da informação e museologia"
+ },
+ {
+  "codigo": "0322G014",
+  "nome": "Gestão da informação - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Ciências sociais, comunicação e informação",
+  "area_detalhada": "Ciência da informação e museologia"
+ },
+ {
+  "codigo": "0322M012",
+  "nome": "Museologia - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Ciências sociais, comunicação e informação",
+  "area_detalhada": "Ciência da informação e museologia"
+ },
+ {
+  "codigo": "0322M013",
+  "nome": "Museologia - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Ciências sociais, comunicação e informação",
+  "area_detalhada": "Ciência da informação e museologia"
+ },
+ {
+  "codigo": "0322M014",
+  "nome": "Museologia - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Ciências sociais, comunicação e informação",
+  "area_detalhada": "Ciência da informação e museologia"
+ },
+ {
+  "codigo": "0388P012",
+  "nome": "Programas interdisciplinares abrangendo ciências sociais, jornalismo e informação - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Ciências sociais, comunicação e informação",
+  "area_detalhada": "Programas interdisciplinares abrangendo ciências sociais, comunicação e informação"
+ },
+ {
+  "codigo": "0388P013",
+  "nome": "Programas interdisciplinares abrangendo ciências sociais, jornalismo e informação - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Ciências sociais, comunicação e informação",
+  "area_detalhada": "Programas interdisciplinares abrangendo ciências sociais, comunicação e informação"
+ },
+ {
+  "codigo": "0388P014",
+  "nome": "Programas interdisciplinares abrangendo ciências sociais, jornalismo e informação - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Ciências sociais, comunicação e informação",
+  "area_detalhada": "Programas interdisciplinares abrangendo ciências sociais, comunicação e informação"
+ },
+ {
+  "codigo": "0411C012",
+  "nome": "Contabilidade - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Contabilidade e tributação"
+ },
+ {
+  "codigo": "0411C013",
+  "nome": "Contabilidade - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Contabilidade e tributação"
+ },
+ {
+  "codigo": "0411C014",
+  "nome": "Contabilidade - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Contabilidade e tributação"
+ },
+ {
+  "codigo": "0411G013",
+  "nome": "Gestão fiscal e tributária - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Contabilidade e tributação"
+ },
+ {
+  "codigo": "0412G012",
+  "nome": "Gestão financeira - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Finanças, bancos e seguros"
+ },
+ {
+  "codigo": "0412G013",
+  "nome": "Gestão financeira - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Finanças, bancos e seguros"
+ },
+ {
+  "codigo": "0412G014",
+  "nome": "Gestão financeira - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Finanças, bancos e seguros"
+ },
+ {
+  "codigo": "0412S013",
+  "nome": "Seguros - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Finanças, bancos e seguros"
+ },
+ {
+  "codigo": "0412S014",
+  "nome": "Seguros - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Finanças, bancos e seguros"
+ },
+ {
+  "codigo": "0413A012",
+  "nome": "Administração - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Gestão e administração"
+ },
+ {
+  "codigo": "0413A014",
+  "nome": "Administração - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Gestão e administração"
+ },
+ {
+  "codigo": "0413A022",
+  "nome": "Administração pública - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Gestão e administração"
+ },
+ {
+  "codigo": "0413A023",
+  "nome": "Administração pública - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Gestão e administração"
+ },
+ {
+  "codigo": "0413A024",
+  "nome": "Administração pública - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Gestão e administração"
+ },
+ {
+  "codigo": "0413C012",
+  "nome": "Comércio exterior - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Gestão e administração"
+ },
+ {
+  "codigo": "0413C013",
+  "nome": "Comércio exterior - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Gestão e administração"
+ },
+ {
+  "codigo": "0413C014",
+  "nome": "Comércio exterior - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Gestão e administração"
+ },
+ {
+  "codigo": "0413E012",
+  "nome": "Empreendedorismo - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Gestão e administração"
+ },
+ {
+  "codigo": "0413E013",
+  "nome": "Empreendedorismo - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Gestão e administração"
+ },
+ {
+  "codigo": "0413E014",
+  "nome": "Empreendedorismo - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Gestão e administração"
+ },
+ {
+  "codigo": "0413G013",
+  "nome": "Gestão da produção - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Gestão e administração"
+ },
+ {
+  "codigo": "0413G014",
+  "nome": "Gestão da produção - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Gestão e administração"
+ },
+ {
+  "codigo": "0413G023",
+  "nome": "Gestão da qualidade - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Gestão e administração"
+ },
+ {
+  "codigo": "0413G024",
+  "nome": "Gestão da qualidade - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Gestão e administração"
+ },
+ {
+  "codigo": "0413G032",
+  "nome": "Gestão da saúde - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Gestão e administração"
+ },
+ {
+  "codigo": "0413G033",
+  "nome": "Gestão da saúde - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Gestão e administração"
+ },
+ {
+  "codigo": "0413G034",
+  "nome": "Gestão da saúde - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Gestão e administração"
+ },
+ {
+  "codigo": "0413G042",
+  "nome": "Gestão de cooperativas - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Gestão e administração"
+ },
+ {
+  "codigo": "0413G043",
+  "nome": "Gestão de cooperativas - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Gestão e administração"
+ },
+ {
+  "codigo": "0413G044",
+  "nome": "Gestão de cooperativas - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Gestão e administração"
+ },
+ {
+  "codigo": "0413G052",
+  "nome": "Gestão de negócios - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Gestão e administração"
+ },
+ {
+  "codigo": "0413G053",
+  "nome": "Gestão de negócios - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Gestão e administração"
+ },
+ {
+  "codigo": "0413G054",
+  "nome": "Gestão de negócios - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Gestão e administração"
+ },
+ {
+  "codigo": "0413G062",
+  "nome": "Gestão de negócios internacionais - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Gestão e administração"
+ },
+ {
+  "codigo": "0413G064",
+  "nome": "Gestão de negócios internacionais - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Gestão e administração"
+ },
+ {
+  "codigo": "0413G073",
+  "nome": "Gestão de pessoas - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Gestão e administração"
+ },
+ {
+  "codigo": "0413G074",
+  "nome": "Gestão de pessoas - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Gestão e administração"
+ },
+ {
+  "codigo": "0413G083",
+  "nome": "Gestão de serviços - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Gestão e administração"
+ },
+ {
+  "codigo": "0413G084",
+  "nome": "Gestão de serviços - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Gestão e administração"
+ },
+ {
+  "codigo": "0413G092",
+  "nome": "Gestão do agronegócio - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Gestão e administração"
+ },
+ {
+  "codigo": "0413G093",
+  "nome": "Gestão do agronegócio - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Gestão e administração"
+ },
+ {
+  "codigo": "0413G094",
+  "nome": "Gestão do agronegócio - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Gestão e administração"
+ },
+ {
+  "codigo": "0413G103",
+  "nome": "Gestão estratégica - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Gestão e administração"
+ },
+ {
+  "codigo": "0413G104",
+  "nome": "Gestão estratégica - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Gestão e administração"
+ },
+ {
+  "codigo": "0413G113",
+  "nome": "Gestão hospitalar - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Gestão e administração"
+ },
+ {
+  "codigo": "0413G114",
+  "nome": "Gestão hospitalar - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Gestão e administração"
+ },
+ {
+  "codigo": "0413G122",
+  "nome": "Gestão pública - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Gestão e administração"
+ },
+ {
+  "codigo": "0413G123",
+  "nome": "Gestão pública - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Gestão e administração"
+ },
+ {
+  "codigo": "0413G124",
+  "nome": "Gestão pública - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Gestão e administração"
+ },
+ {
+  "codigo": "0413L012",
+  "nome": "Logística - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Gestão e administração"
+ },
+ {
+  "codigo": "0413L013",
+  "nome": "Logística - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Gestão e administração"
+ },
+ {
+  "codigo": "0413L014",
+  "nome": "Logística - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Gestão e administração"
+ },
+ {
+  "codigo": "0414M012",
+  "nome": "Marketing - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Marketing e propaganda"
+ },
+ {
+  "codigo": "0414M013",
+  "nome": "Marketing - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Marketing e propaganda"
+ },
+ {
+  "codigo": "0414M014",
+  "nome": "Marketing - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Marketing e propaganda"
+ },
+ {
+  "codigo": "0414P012",
+  "nome": "Publicidade e propaganda - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Marketing e propaganda"
+ },
+ {
+  "codigo": "0414P013",
+  "nome": "Publicidade e propaganda - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Marketing e propaganda"
+ },
+ {
+  "codigo": "0414P014",
+  "nome": "Publicidade e propaganda - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Marketing e propaganda"
+ },
+ {
+  "codigo": "0414R012",
+  "nome": "Relações públicas - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Marketing e propaganda"
+ },
+ {
+  "codigo": "0414R013",
+  "nome": "Relações públicas - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Marketing e propaganda"
+ },
+ {
+  "codigo": "0414R014",
+  "nome": "Relações públicas - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Marketing e propaganda"
+ },
+ {
+  "codigo": "0415S012",
+  "nome": "Secretariado - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Secretariado e trabalhos de escritório"
+ },
+ {
+  "codigo": "0415S013",
+  "nome": "Secretariado - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Secretariado e trabalhos de escritório"
+ },
+ {
+  "codigo": "0415S014",
+  "nome": "Secretariado - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Secretariado e trabalhos de escritório"
+ },
+ {
+  "codigo": "0416G013",
+  "nome": "Gestão comercial - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Gestão comercial"
+ },
+ {
+  "codigo": "0416G014",
+  "nome": "Gestão comercial - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Gestão comercial"
+ },
+ {
+  "codigo": "0416N012",
+  "nome": "Negócios imobiliários - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Gestão comercial"
+ },
+ {
+  "codigo": "0416N013",
+  "nome": "Negócios imobiliários - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Gestão comercial"
+ },
+ {
+  "codigo": "0416N014",
+  "nome": "Negócios imobiliários - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Gestão comercial"
+ },
+ {
+  "codigo": "0421D012",
+  "nome": "Direito - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Direito"
+ },
+ {
+  "codigo": "0421D013",
+  "nome": "Direito - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Direito"
+ },
+ {
+  "codigo": "0421D014",
+  "nome": "Direito - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Direito"
+ },
+ {
+  "codigo": "0421M013",
+  "nome": "Mediação - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Direito"
+ },
+ {
+  "codigo": "0421S013",
+  "nome": "Serviços jurídicos e cartoriais - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Direito"
+ },
+ {
+  "codigo": "0421S014",
+  "nome": "Serviços jurídicos e cartoriais - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Direito"
+ },
+ {
+  "codigo": "0488P012",
+  "nome": "Programas interdisciplinares abrangendo negócios, administração e direito - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Programas interdisciplinares abrangendo negócios, administração e direito"
+ },
+ {
+  "codigo": "0488P013",
+  "nome": "Programas interdisciplinares abrangendo negócios, administração e direito - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Negócios, administração e direito",
+  "area_detalhada": "Programas interdisciplinares abrangendo negócios, administração e direito"
+ },
+ {
+  "codigo": "0511B012",
+  "nome": "Biologia - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Ciências naturais, matemática e estatística",
+  "area_detalhada": "Biologia"
+ },
+ {
+  "codigo": "0511B014",
+  "nome": "Biologia - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Ciências naturais, matemática e estatística",
+  "area_detalhada": "Biologia"
+ },
+ {
+  "codigo": "0512B012",
+  "nome": "Bioquímica - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Ciências naturais, matemática e estatística",
+  "area_detalhada": "Bioquímica e biotecnologia"
+ },
+ {
+  "codigo": "0512B022",
+  "nome": "Biotecnologia - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Ciências naturais, matemática e estatística",
+  "area_detalhada": "Bioquímica e biotecnologia"
+ },
+ {
+  "codigo": "0512B023",
+  "nome": "Biotecnologia - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Ciências naturais, matemática e estatística",
+  "area_detalhada": "Bioquímica e biotecnologia"
+ },
+ {
+  "codigo": "0512B024",
+  "nome": "Biotecnologia - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Ciências naturais, matemática e estatística",
+  "area_detalhada": "Bioquímica e biotecnologia"
+ },
+ {
+  "codigo": "0512T013",
+  "nome": "Toxicologia - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Ciências naturais, matemática e estatística",
+  "area_detalhada": "Bioquímica e biotecnologia"
+ },
+ {
+  "codigo": "0521C012",
+  "nome": "Ciências ambientais - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Ciências naturais, matemática e estatística",
+  "area_detalhada": "Ciências ambientais"
+ },
+ {
+  "codigo": "0521C014",
+  "nome": "Ciências ambientais - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Ciências naturais, matemática e estatística",
+  "area_detalhada": "Ciências ambientais"
+ },
+ {
+  "codigo": "0521E012",
+  "nome": "Ecologia - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Ciências naturais, matemática e estatística",
+  "area_detalhada": "Ciências ambientais"
+ },
+ {
+  "codigo": "0531Q012",
+  "nome": "Química - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Ciências naturais, matemática e estatística",
+  "area_detalhada": "Química"
+ },
+ {
+  "codigo": "0531Q013",
+  "nome": "Química - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Ciências naturais, matemática e estatística",
+  "area_detalhada": "Química"
+ },
+ {
+  "codigo": "0531Q022",
+  "nome": "Química industrial e tecnológica - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Ciências naturais, matemática e estatística",
+  "area_detalhada": "Química"
+ },
+ {
+  "codigo": "0531Q023",
+  "nome": "Química industrial e tecnológica - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Ciências naturais, matemática e estatística",
+  "area_detalhada": "Química"
+ },
+ {
+  "codigo": "0531Q024",
+  "nome": "Química industrial e tecnológica - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Ciências naturais, matemática e estatística",
+  "area_detalhada": "Química"
+ },
+ {
+  "codigo": "0532G012",
+  "nome": "Geofísica - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Ciências naturais, matemática e estatística",
+  "area_detalhada": "Ciências da terra"
+ },
+ {
+  "codigo": "0532G022",
+  "nome": "Geologia - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Ciências naturais, matemática e estatística",
+  "area_detalhada": "Ciências da terra"
+ },
+ {
+  "codigo": "0532G033",
+  "nome": "Geoprocessamento - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Ciências naturais, matemática e estatística",
+  "area_detalhada": "Ciências da terra"
+ },
+ {
+  "codigo": "0532M012",
+  "nome": "Meteorologia - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Ciências naturais, matemática e estatística",
+  "area_detalhada": "Ciências da terra"
+ },
+ {
+  "codigo": "0532O012",
+  "nome": "Oceanografia - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Ciências naturais, matemática e estatística",
+  "area_detalhada": "Ciências da terra"
+ },
+ {
+  "codigo": "0533A012",
+  "nome": "Astronomia - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Ciências naturais, matemática e estatística",
+  "area_detalhada": "Física"
+ },
+ {
+  "codigo": "0533F012",
+  "nome": "Física - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Ciências naturais, matemática e estatística",
+  "area_detalhada": "Física"
+ },
+ {
+  "codigo": "0533F022",
+  "nome": "Física aplicada - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Ciências naturais, matemática e estatística",
+  "area_detalhada": "Física"
+ },
+ {
+  "codigo": "0533F024",
+  "nome": "Física aplicada - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Ciências naturais, matemática e estatística",
+  "area_detalhada": "Física"
+ },
+ {
+  "codigo": "0533F032",
+  "nome": "Física médica - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Ciências naturais, matemática e estatística",
+  "area_detalhada": "Física"
+ },
+ {
+  "codigo": "0541M012",
+  "nome": "Matemática - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Ciências naturais, matemática e estatística",
+  "area_detalhada": "Matemática"
+ },
+ {
+  "codigo": "0541M014",
+  "nome": "Matemática - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Ciências naturais, matemática e estatística",
+  "area_detalhada": "Matemática"
+ },
+ {
+  "codigo": "0541M022",
+  "nome": "Matemática aplicada e computacional - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Ciências naturais, matemática e estatística",
+  "area_detalhada": "Matemática"
+ },
+ {
+  "codigo": "0542C012",
+  "nome": "Ciências atuariais - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Ciências naturais, matemática e estatística",
+  "area_detalhada": "Estatística"
+ },
+ {
+  "codigo": "0542E012",
+  "nome": "Estatística - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Ciências naturais, matemática e estatística",
+  "area_detalhada": "Estatística"
+ },
+ {
+  "codigo": "0542E014",
+  "nome": "Estatística - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Ciências naturais, matemática e estatística",
+  "area_detalhada": "Estatística"
+ },
+ {
+  "codigo": "0588P012",
+  "nome": "Programas interdisciplinares abrangendo ciências naturais, matemática e estatística - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Ciências naturais, matemática e estatística",
+  "area_detalhada": "Programas interdisciplinares abrangendo ciências naturais, matemática e estatística"
+ },
+ {
+  "codigo": "0588P013",
+  "nome": "Programas interdisciplinares abrangendo ciências naturais, matemática e estatística  - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Ciências naturais, matemática e estatística",
+  "area_detalhada": "Programas interdisciplinares abrangendo ciências naturais, matemática e estatística"
+ },
+ {
+  "codigo": "0588P014",
+  "nome": "Programas interdisciplinares abrangendo ciências naturais, matemática e estatística - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Ciências naturais, matemática e estatística",
+  "area_detalhada": "Programas interdisciplinares abrangendo ciências naturais, matemática e estatística"
+ },
+ {
+  "codigo": "0612B013",
+  "nome": "Banco de dados - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Infraestrutura e gestão de TIC"
+ },
+ {
+  "codigo": "0612B014",
+  "nome": "Banco de dados - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Infraestrutura e gestão de TIC"
+ },
+ {
+  "codigo": "0612D012",
+  "nome": "Defesa cibernética - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Infraestrutura e gestão de TIC"
+ },
+ {
+  "codigo": "0612D013",
+  "nome": "Defesa cibernética - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Infraestrutura e gestão de TIC"
+ },
+ {
+  "codigo": "0612G013",
+  "nome": "Gestão da tecnologia da informação - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Infraestrutura e gestão de TIC"
+ },
+ {
+  "codigo": "0612G014",
+  "nome": "Gestão da tecnologia da informação - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Infraestrutura e gestão de TIC"
+ },
+ {
+  "codigo": "0612R012",
+  "nome": "Redes de computadores - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Infraestrutura e gestão de TIC"
+ },
+ {
+  "codigo": "0612R013",
+  "nome": "Redes de computadores - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Infraestrutura e gestão de TIC"
+ },
+ {
+  "codigo": "0612R014",
+  "nome": "Redes de computadores - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Infraestrutura e gestão de TIC"
+ },
+ {
+  "codigo": "0612S012",
+  "nome": "Segurança da informação - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Infraestrutura e gestão de TIC"
+ },
+ {
+  "codigo": "0612S013",
+  "nome": "Segurança da informação - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Infraestrutura e gestão de TIC"
+ },
+ {
+  "codigo": "0612S014",
+  "nome": "Segurança da informação - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Infraestrutura e gestão de TIC"
+ },
+ {
+  "codigo": "0613C012",
+  "nome": "Ciência da computação - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Análise e desenvolvimento de algoritmos e aplicações"
+ },
+ {
+  "codigo": "0613C013",
+  "nome": "Ciência da computação - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Análise e desenvolvimento de algoritmos e aplicações"
+ },
+ {
+  "codigo": "0613C014",
+  "nome": "Ciência da computação - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Análise e desenvolvimento de algoritmos e aplicações"
+ },
+ {
+  "codigo": "0613E012",
+  "nome": "Engenharia de software - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Análise e desenvolvimento de algoritmos e aplicações"
+ },
+ {
+  "codigo": "0613E013",
+  "nome": "Engenharia de software - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Análise e desenvolvimento de algoritmos e aplicações"
+ },
+ {
+  "codigo": "0613E014",
+  "nome": "Engenharia de software - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Análise e desenvolvimento de algoritmos e aplicações"
+ },
+ {
+  "codigo": "0613I012",
+  "nome": "Inteligência artificial - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Análise e desenvolvimento de algoritmos e aplicações"
+ },
+ {
+  "codigo": "0613I013",
+  "nome": "Inteligência artificial - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Análise e desenvolvimento de algoritmos e aplicações"
+ },
+ {
+  "codigo": "0613I023",
+  "nome": "Internet das coisas - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Análise e desenvolvimento de algoritmos e aplicações"
+ },
+ {
+  "codigo": "0613S012",
+  "nome": "Sistemas de informação - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Análise e desenvolvimento de algoritmos e aplicações"
+ },
+ {
+  "codigo": "0613S013",
+  "nome": "Sistemas de informação - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Análise e desenvolvimento de algoritmos e aplicações"
+ },
+ {
+  "codigo": "0613S014",
+  "nome": "Sistemas de informação - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Análise e desenvolvimento de algoritmos e aplicações"
+ },
+ {
+  "codigo": "0613S022",
+  "nome": "Sistemas para internet - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Análise e desenvolvimento de algoritmos e aplicações"
+ },
+ {
+  "codigo": "0613S023",
+  "nome": "Sistemas para internet - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Análise e desenvolvimento de algoritmos e aplicações"
+ },
+ {
+  "codigo": "0613S024",
+  "nome": "Sistemas para internet - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Análise e desenvolvimento de algoritmos e aplicações"
+ },
+ {
+  "codigo": "0613J012",
+  "nome": "Jogos digitais - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Análise e desenvolvimento de algoritmos e aplicações"
+ },
+ {
+  "codigo": "0613J013",
+  "nome": "Jogos digitais - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Análise e desenvolvimento de algoritmos e aplicações"
+ },
+ {
+  "codigo": "0613J014",
+  "nome": "Jogos digitais - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Análise e desenvolvimento de algoritmos e aplicações"
+ },
+ {
+  "codigo": "0614C012",
+  "nome": "Ciência da computação - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Ciência da computação"
+ },
+ {
+  "codigo": "0614C013",
+  "nome": "Ciência da computação - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Ciência da computação"
+ },
+ {
+  "codigo": "0614C014",
+  "nome": "Ciência da computação - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Ciência da computação"
+ },
+ {
+  "codigo": "0614I012",
+  "nome": "Inteligência artificial - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Ciência da computação"
+ },
+ {
+  "codigo": "0614I013",
+  "nome": "Inteligência artificial - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Ciência da computação"
+ },
+ {
+  "codigo": "0615S013",
+  "nome": "Segurança da informação - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Gestão e desenvolvimento de sistemas de informação"
+ },
+ {
+  "codigo": "0615S014",
+  "nome": "Segurança da informação - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Gestão e desenvolvimento de sistemas de informação"
+ },
+ {
+  "codigo": "0615S022",
+  "nome": "Sistemas de informação - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Gestão e desenvolvimento de sistemas de informação"
+ },
+ {
+  "codigo": "0615S023",
+  "nome": "Sistemas de informação - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Gestão e desenvolvimento de sistemas de informação"
+ },
+ {
+  "codigo": "0615S024",
+  "nome": "Sistemas de informação - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Gestão e desenvolvimento de sistemas de informação"
+ },
+ {
+  "codigo": "0615S032",
+  "nome": "Sistemas para internet - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Gestão e desenvolvimento de sistemas de informação"
+ },
+ {
+  "codigo": "0615S033",
+  "nome": "Sistemas para internet - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Gestão e desenvolvimento de sistemas de informação"
+ },
+ {
+  "codigo": "0615S034",
+  "nome": "Sistemas para internet - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Gestão e desenvolvimento de sistemas de informação"
+ },
+ {
+  "codigo": "0616I013",
+  "nome": "Internet das coisas - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Desenvolvimento de sistemas que integram software e hardware"
+ },
+ {
+  "codigo": "0616S013",
+  "nome": "Sistemas embarcados - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Desenvolvimento de sistemas que integram software e hardware"
+ },
+ {
+  "codigo": "0617A013",
+  "nome": "Agrocomputação - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Soluções computacionais para domínios específicos"
+ },
+ {
+  "codigo": "0617C012",
+  "nome": "Ciência de dados - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Soluções computacionais para domínios específicos"
+ },
+ {
+  "codigo": "0617C013",
+  "nome": "Ciência de dados - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Soluções computacionais para domínios específicos"
+ },
+ {
+  "codigo": "0617C022",
+  "nome": "Computação e Tecnologias da Informação e Comunicação (TIC) em biociências e saúde - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Soluções computacionais para domínios específicos"
+ },
+ {
+  "codigo": "0617C023",
+  "nome": "Computação e Tecnologias da Informação e Comunicação (TIC) em biociências e saúde - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Soluções computacionais para domínios específicos"
+ },
+ {
+  "codigo": "0617C032",
+  "nome": "Criação digital - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Soluções computacionais para domínios específicos"
+ },
+ {
+  "codigo": "0617C033",
+  "nome": "Criação digital - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Soluções computacionais para domínios específicos"
+ },
+ {
+  "codigo": "0681A013",
+  "nome": "Agrocomputação - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Soluções computacionais para domínios específicos"
+ },
+ {
+  "codigo": "0681C012",
+  "nome": "Ciência de dados - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Soluções computacionais para domínios específicos"
+ },
+ {
+  "codigo": "0681C013",
+  "nome": "Ciência de dados - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Soluções computacionais para domínios específicos"
+ },
+ {
+  "codigo": "0681C022",
+  "nome": "Computação e Tecnologias da Informação e Comunicação (TIC) em biociências e saúde - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Soluções computacionais para domínios específicos"
+ },
+ {
+  "codigo": "0681C023",
+  "nome": "Computação e Tecnologias da Informação e Comunicação (TIC) em biociências e saúde - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Soluções computacionais para domínios específicos"
+ },
+ {
+  "codigo": "0681C032",
+  "nome": "Criação digital - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Soluções computacionais para domínios específicos"
+ },
+ {
+  "codigo": "0681C033",
+  "nome": "Criação digital - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Soluções computacionais para domínios específicos"
+ },
+ {
+  "codigo": "0681J012",
+  "nome": "Jogos digitais - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Soluções computacionais para domínios específicos"
+ },
+ {
+  "codigo": "0681J013",
+  "nome": "Jogos digitais - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Soluções computacionais para domínios específicos"
+ },
+ {
+  "codigo": "0681J014",
+  "nome": "Jogos digitais - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Soluções computacionais para domínios específicos"
+ },
+ {
+  "codigo": "0688P012",
+  "nome": "Programas interdisciplinares abrangendo computação e Tecnologias da Informação e Comunicação (TIC) - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Programas interdisciplinares abrangendo computação e Tecnologias da Informação e Comunicação (TIC)"
+ },
+ {
+  "codigo": "0688P013",
+  "nome": "Programas interdisciplinares abrangendo computação e Tecnologias da Informação e Comunicação (TIC) - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Computação e Tecnologias da Informação e Comunicação (TIC)",
+  "area_detalhada": "Programas interdisciplinares abrangendo computação e Tecnologias da Informação e Comunicação (TIC)"
+ },
+ {
+  "codigo": "0711B013",
+  "nome": "Biocombustíveis - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Engenharia química e de processos"
+ },
+ {
+  "codigo": "0711E012",
+  "nome": "Engenharia bioquímica - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Engenharia química e de processos"
+ },
+ {
+  "codigo": "0711E022",
+  "nome": "Engenharia de bioprocessos - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Engenharia química e de processos"
+ },
+ {
+  "codigo": "0711E032",
+  "nome": "Engenharia de biotecnologia - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Engenharia química e de processos"
+ },
+ {
+  "codigo": "0711E042",
+  "nome": "Engenharia de nanotecnologia - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Engenharia química e de processos"
+ },
+ {
+  "codigo": "0711E052",
+  "nome": "Engenharia química - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Engenharia química e de processos"
+ },
+ {
+  "codigo": "0712E012",
+  "nome": "Engenharia ambiental - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Tecnologia de proteção ambiental"
+ },
+ {
+  "codigo": "0712E022",
+  "nome": "Engenharia ambiental e sanitária - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Tecnologia de proteção ambiental"
+ },
+ {
+  "codigo": "0712G012",
+  "nome": "Gestão ambiental - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Tecnologia de proteção ambiental"
+ },
+ {
+  "codigo": "0712G013",
+  "nome": "Gestão ambiental - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Tecnologia de proteção ambiental"
+ },
+ {
+  "codigo": "0712G014",
+  "nome": "Gestão ambiental - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Tecnologia de proteção ambiental"
+ },
+ {
+  "codigo": "0712G023",
+  "nome": "Gestão de resíduos  - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Tecnologia de proteção ambiental"
+ },
+ {
+  "codigo": "0712G024",
+  "nome": "Gestão de resíduos - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Tecnologia de proteção ambiental"
+ },
+ {
+  "codigo": "0712S013",
+  "nome": "Saneamento ambiental - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Tecnologia de proteção ambiental"
+ },
+ {
+  "codigo": "0713E013",
+  "nome": "Eletrotécnica industrial - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Eletricidade e energia"
+ },
+ {
+  "codigo": "0713E023",
+  "nome": "Energias renováveis - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Eletricidade e energia"
+ },
+ {
+  "codigo": "0713E032",
+  "nome": "Engenharia bioenergética - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Eletricidade e energia"
+ },
+ {
+  "codigo": "0713E042",
+  "nome": "Engenharia de energia - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Eletricidade e energia"
+ },
+ {
+  "codigo": "0713E052",
+  "nome": "Engenharia elétrica - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Eletricidade e energia"
+ },
+ {
+  "codigo": "0713E062",
+  "nome": "Engenharia nuclear - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Eletricidade e energia"
+ },
+ {
+  "codigo": "0713R013",
+  "nome": "Refrigeração e climatização - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Eletricidade e energia"
+ },
+ {
+  "codigo": "0713S012",
+  "nome": "Sistemas elétricos - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Eletricidade e energia"
+ },
+ {
+  "codigo": "0713S013",
+  "nome": "Sistemas elétricos - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Eletricidade e energia"
+ },
+ {
+  "codigo": "0713S014",
+  "nome": "Sistemas elétricos - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Eletricidade e energia"
+ },
+ {
+  "codigo": "0714A013",
+  "nome": "Automação industrial - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Eletrônica e automação"
+ },
+ {
+  "codigo": "0714A014",
+  "nome": "Automação industrial - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Eletrônica e automação"
+ },
+ {
+  "codigo": "0714E013",
+  "nome": "Eletrônica industrial - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Eletrônica e automação"
+ },
+ {
+  "codigo": "0714E022",
+  "nome": "Engenharia acústica - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Eletrônica e automação"
+ },
+ {
+  "codigo": "0714E032",
+  "nome": "Engenharia biomédica - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Eletrônica e automação"
+ },
+ {
+  "codigo": "0714E042",
+  "nome": "Engenharia de computação - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Eletrônica e automação"
+ },
+ {
+  "codigo": "0714E052",
+  "nome": "Engenharia de controle e automação - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Eletrônica e automação"
+ },
+ {
+  "codigo": "0714E062",
+  "nome": "Engenharia de informação - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Eletrônica e automação"
+ },
+ {
+  "codigo": "0714E072",
+  "nome": "Engenharia de telecomunicações - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Eletrônica e automação"
+ },
+ {
+  "codigo": "0714E082",
+  "nome": "Engenharia eletrônica - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Eletrônica e automação"
+ },
+ {
+  "codigo": "0714E092",
+  "nome": "Engenharia mecatrônica - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Eletrônica e automação"
+ },
+ {
+  "codigo": "0714G013",
+  "nome": "Gestão de telecomunicações - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Eletrônica e automação"
+ },
+ {
+  "codigo": "0714G014",
+  "nome": "Gestão de telecomunicações - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Eletrônica e automação"
+ },
+ {
+  "codigo": "0714M013",
+  "nome": "Mecatrônica industrial - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Eletrônica e automação"
+ },
+ {
+  "codigo": "0714M014",
+  "nome": "Mecatrônica industrial - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Eletrônica e automação"
+ },
+ {
+  "codigo": "0714R013",
+  "nome": "Redes de telecomunicações - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Eletrônica e automação"
+ },
+ {
+  "codigo": "0714S013",
+  "nome": "Sistemas biomédicos - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Eletrônica e automação"
+ },
+ {
+  "codigo": "0714S023",
+  "nome": "Sistemas de telecomunicações - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Eletrônica e automação"
+ },
+ {
+  "codigo": "0714S024",
+  "nome": "Sistemas de telecomunicações - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Eletrônica e automação"
+ },
+ {
+  "codigo": "0714S033",
+  "nome": "Sistemas embarcados - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Eletrônica e automação"
+ },
+ {
+  "codigo": "0714T013",
+  "nome": "Telemática - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Eletrônica e automação"
+ },
+ {
+  "codigo": "0714T014",
+  "nome": "Telemática - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Eletrônica e automação"
+ },
+ {
+  "codigo": "0715E012",
+  "nome": "Engenharia física - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Engenharia mecânica e metalurgia"
+ },
+ {
+  "codigo": "0715E022",
+  "nome": "Engenharia mecânica - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Engenharia mecânica e metalurgia"
+ },
+ {
+  "codigo": "0715E032",
+  "nome": "Engenharia metalúrgica - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Engenharia mecânica e metalurgia"
+ },
+ {
+  "codigo": "0715F013",
+  "nome": "Fabricação mecânica - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Engenharia mecânica e metalurgia"
+ },
+ {
+  "codigo": "0715M013",
+  "nome": "Manutenção industrial - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Engenharia mecânica e metalurgia"
+ },
+ {
+  "codigo": "0715M014",
+  "nome": "Manutenção industrial - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Engenharia mecânica e metalurgia"
+ },
+ {
+  "codigo": "0715M023",
+  "nome": "Mecânica de precisão - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Engenharia mecânica e metalurgia"
+ },
+ {
+  "codigo": "0715P013",
+  "nome": "Processos metalúrgicos - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Engenharia mecânica e metalurgia"
+ },
+ {
+  "codigo": "0715P014",
+  "nome": "Processos metalúrgicos - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Engenharia mecânica e metalurgia"
+ },
+ {
+  "codigo": "0715S013",
+  "nome": "Soldagem - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Engenharia mecânica e metalurgia"
+ },
+ {
+  "codigo": "0715S014",
+  "nome": "Soldagem - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Engenharia mecânica e metalurgia"
+ },
+ {
+  "codigo": "0716A013",
+  "nome": "Aeroespacial - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Veículos a motor, construção naval, aeronáutica, ferroviária e metroviária"
+ },
+ {
+  "codigo": "0716C013",
+  "nome": "Construção naval - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Veículos a motor, construção naval, aeronáutica, ferroviária e metroviária"
+ },
+ {
+  "codigo": "0716E012",
+  "nome": "Engenharia aeroespacial - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Veículos a motor, construção naval, aeronáutica, ferroviária e metroviária"
+ },
+ {
+  "codigo": "0716E022",
+  "nome": "Engenharia aeronáutica - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Veículos a motor, construção naval, aeronáutica, ferroviária e metroviária"
+ },
+ {
+  "codigo": "0716E023",
+  "nome": "Engenharia aeronáutica - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Veículos a motor, construção naval, aeronáutica, ferroviária e metroviária"
+ },
+ {
+  "codigo": "0716E032",
+  "nome": "Engenharia automotiva - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Veículos a motor, construção naval, aeronáutica, ferroviária e metroviária"
+ },
+ {
+  "codigo": "0716E042",
+  "nome": "Engenharia ferroviária e metroviária - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Veículos a motor, construção naval, aeronáutica, ferroviária e metroviária"
+ },
+ {
+  "codigo": "0716E052",
+  "nome": "Engenharia naval - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Veículos a motor, construção naval, aeronáutica, ferroviária e metroviária"
+ },
+ {
+  "codigo": "0716M013",
+  "nome": "Manutenção de aeronaves - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Veículos a motor, construção naval, aeronáutica, ferroviária e metroviária"
+ },
+ {
+  "codigo": "0716M014",
+  "nome": "Manutenção de aeronaves - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Veículos a motor, construção naval, aeronáutica, ferroviária e metroviária"
+ },
+ {
+  "codigo": "0716S013",
+  "nome": "Sistemas automotivos - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Veículos a motor, construção naval, aeronáutica, ferroviária e metroviária"
+ },
+ {
+  "codigo": "0716S023",
+  "nome": "Sistemas de navegação fluvial - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Veículos a motor, construção naval, aeronáutica, ferroviária e metroviária"
+ },
+ {
+  "codigo": "0721A012",
+  "nome": "Alimentos - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Processamento de alimentos"
+ },
+ {
+  "codigo": "0721A013",
+  "nome": "Alimentos - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Processamento de alimentos"
+ },
+ {
+  "codigo": "0721A014",
+  "nome": "Alimentos - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Processamento de alimentos"
+ },
+ {
+  "codigo": "0721E012",
+  "nome": "Engenharia de alimentos - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Processamento de alimentos"
+ },
+ {
+  "codigo": "0721L012",
+  "nome": "Laticínios - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Processamento de alimentos"
+ },
+ {
+  "codigo": "0721L013",
+  "nome": "Laticínios - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Processamento de alimentos"
+ },
+ {
+  "codigo": "0721P013",
+  "nome": "Processamento de carnes - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Processamento de alimentos"
+ },
+ {
+  "codigo": "0721P023",
+  "nome": "Produção de cachaça - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Processamento de alimentos"
+ },
+ {
+  "codigo": "0721P033",
+  "nome": "Produção sucroalcooleira - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Processamento de alimentos"
+ },
+ {
+  "codigo": "0721P034",
+  "nome": "Produção sucroalcooleira - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Processamento de alimentos"
+ },
+ {
+  "codigo": "0721P043",
+  "nome": "Produção de cerveja - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Processamento de alimentos"
+ },
+ {
+  "codigo": "0722C013",
+  "nome": "Cerâmica - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Materiais"
+ },
+ {
+  "codigo": "0722C023",
+  "nome": "Ciências dos materiais - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Materiais"
+ },
+ {
+  "codigo": "0722C024",
+  "nome": "Ciências dos materiais - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Materiais"
+ },
+ {
+  "codigo": "0722E012",
+  "nome": "Engenharia de materiais - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Materiais"
+ },
+ {
+  "codigo": "0722P013",
+  "nome": "Papel e celulose - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Materiais"
+ },
+ {
+  "codigo": "0722P022",
+  "nome": "Polímeros - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Materiais"
+ },
+ {
+  "codigo": "0722P023",
+  "nome": "Polímeros - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Materiais"
+ },
+ {
+  "codigo": "0722P033",
+  "nome": "Produção joalheira - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Materiais"
+ },
+ {
+  "codigo": "0722P043",
+  "nome": "Produção moveleira - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Materiais"
+ },
+ {
+  "codigo": "0723E012",
+  "nome": "Engenharia têxtil - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Têxteis (vestuário, calçados e couro)"
+ },
+ {
+  "codigo": "0723P013",
+  "nome": "Produção de vestuário - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Têxteis (vestuário, calçados e couro)"
+ },
+ {
+  "codigo": "0723P022",
+  "nome": "Produção têxtil - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Têxteis (vestuário, calçados e couro)"
+ },
+ {
+  "codigo": "0723P023",
+  "nome": "Produção têxtil - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Têxteis (vestuário, calçados e couro)"
+ },
+ {
+  "codigo": "0724E012",
+  "nome": "Engenharia de minas - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Mineração e extração"
+ },
+ {
+  "codigo": "0724E022",
+  "nome": "Engenharia de petróleo - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Mineração e extração"
+ },
+ {
+  "codigo": "0724E032",
+  "nome": "Engenharia geológica - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Mineração e extração"
+ },
+ {
+  "codigo": "0724M013",
+  "nome": "Mineração - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Mineração e extração"
+ },
+ {
+  "codigo": "0724P013",
+  "nome": "Petróleo e gás - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Mineração e extração"
+ },
+ {
+  "codigo": "0724R013",
+  "nome": "Rochas ornamentais - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Mineração e extração"
+ },
+ {
+  "codigo": "0725E012",
+  "nome": "Engenharia de manufatura - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Produção e processos de fabricação"
+ },
+ {
+  "codigo": "0725E013",
+  "nome": "Engenharia de manufatura - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Produção e processos de fabricação"
+ },
+ {
+  "codigo": "0725E022",
+  "nome": "Engenharia de produção - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Produção e processos de fabricação"
+ },
+ {
+  "codigo": "0725E032",
+  "nome": "Engenharia industrial - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Produção e processos de fabricação"
+ },
+ {
+  "codigo": "0725P013",
+  "nome": "Produção gráfica - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Produção e processos de fabricação"
+ },
+ {
+  "codigo": "0725P023",
+  "nome": "Produção industrial - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Produção e processos de fabricação"
+ },
+ {
+  "codigo": "0731A013",
+  "nome": "Agrimensura - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Arquitetura e planejamento urbano"
+ },
+ {
+  "codigo": "0731A022",
+  "nome": "Arquitetura e urbanismo - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Arquitetura e planejamento urbano"
+ },
+ {
+  "codigo": "0731A023",
+  "nome": "Arquitetura e urbanismo - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Arquitetura e planejamento urbano"
+ },
+ {
+  "codigo": "0731A024",
+  "nome": "Arquitetura e urbanismo - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Arquitetura e planejamento urbano"
+ },
+ {
+  "codigo": "0731E012",
+  "nome": "Engenharia cartográfica - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Arquitetura e planejamento urbano"
+ },
+ {
+  "codigo": "0731E022",
+  "nome": "Engenharia de agrimensura - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Arquitetura e planejamento urbano"
+ },
+ {
+  "codigo": "0731E024",
+  "nome": "Engenharia de agrimensura - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Arquitetura e planejamento urbano"
+ },
+ {
+  "codigo": "0731E032",
+  "nome": "Engenharia de agrimensura e cartográfica - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Arquitetura e planejamento urbano"
+ },
+ {
+  "codigo": "0732C013",
+  "nome": "Construção de edifícios - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Engenharia civil e construção"
+ },
+ {
+  "codigo": "0732C023",
+  "nome": "Controle de obras - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Engenharia civil e construção"
+ },
+ {
+  "codigo": "0732C024",
+  "nome": "Controle de obras - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Engenharia civil e construção"
+ },
+ {
+  "codigo": "0732E012",
+  "nome": "Engenharia civil - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Engenharia civil e construção"
+ },
+ {
+  "codigo": "0732E022",
+  "nome": "Engenharia de recursos hídricos - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Engenharia civil e construção"
+ },
+ {
+  "codigo": "0732E032",
+  "nome": "Engenharia de transportes - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Engenharia civil e construção"
+ },
+ {
+  "codigo": "0732E042",
+  "nome": "Engenharia portuária - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Engenharia civil e construção"
+ },
+ {
+  "codigo": "0732E053",
+  "nome": "Estradas - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Engenharia civil e construção"
+ },
+ {
+  "codigo": "0732G013",
+  "nome": "Gestão de recursos hídricos - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Engenharia civil e construção"
+ },
+ {
+  "codigo": "0732M013",
+  "nome": "Material de construção - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Engenharia civil e construção"
+ },
+ {
+  "codigo": "0788P012",
+  "nome": "Programas interdisciplinares abrangendo engenharia, produção e construção - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Engenharia, produção e construção",
+  "area_detalhada": "Programas interdisciplinares abrangendo engenharia, produção e construção"
+ },
+ {
+  "codigo": "0811A012",
+  "nome": "Agroecologia - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Agricultura, silvicultura, pesca e veterinária",
+  "area_detalhada": "Produção agrícola, agropecuária e zootecnia"
+ },
+ {
+  "codigo": "0811A013",
+  "nome": "Agroecologia - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Agricultura, silvicultura, pesca e veterinária",
+  "area_detalhada": "Produção agrícola, agropecuária e zootecnia"
+ },
+ {
+  "codigo": "0811A022",
+  "nome": "Agroindústria - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Agricultura, silvicultura, pesca e veterinária",
+  "area_detalhada": "Produção agrícola, agropecuária e zootecnia"
+ },
+ {
+  "codigo": "0811A023",
+  "nome": "Agroindústria - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Agricultura, silvicultura, pesca e veterinária",
+  "area_detalhada": "Produção agrícola, agropecuária e zootecnia"
+ },
+ {
+  "codigo": "0811A024",
+  "nome": "Agroindústria - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Agricultura, silvicultura, pesca e veterinária",
+  "area_detalhada": "Produção agrícola, agropecuária e zootecnia"
+ },
+ {
+  "codigo": "0811A032",
+  "nome": "Agronegócio - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Agricultura, silvicultura, pesca e veterinária",
+  "area_detalhada": "Produção agrícola, agropecuária e zootecnia"
+ },
+ {
+  "codigo": "0811A033",
+  "nome": "Agronegócio - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Agricultura, silvicultura, pesca e veterinária",
+  "area_detalhada": "Produção agrícola, agropecuária e zootecnia"
+ },
+ {
+  "codigo": "0811A042",
+  "nome": "Agronomia - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Agricultura, silvicultura, pesca e veterinária",
+  "area_detalhada": "Produção agrícola, agropecuária e zootecnia"
+ },
+ {
+  "codigo": "0811A043",
+  "nome": "Agronomia - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Agricultura, silvicultura, pesca e veterinária",
+  "area_detalhada": "Produção agrícola, agropecuária e zootecnia"
+ },
+ {
+  "codigo": "0811A053",
+  "nome": "Agropecuária - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Agricultura, silvicultura, pesca e veterinária",
+  "area_detalhada": "Produção agrícola, agropecuária e zootecnia"
+ },
+ {
+  "codigo": "0811C013",
+  "nome": "Cafeicultura - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Agricultura, silvicultura, pesca e veterinária",
+  "area_detalhada": "Produção agrícola, agropecuária e zootecnia"
+ },
+ {
+  "codigo": "0811E012",
+  "nome": "Engenharia agrícola - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Agricultura, silvicultura, pesca e veterinária",
+  "area_detalhada": "Produção agrícola, agropecuária e zootecnia"
+ },
+ {
+  "codigo": "0811E013",
+  "nome": "Engenharia agrícola - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Agricultura, silvicultura, pesca e veterinária",
+  "area_detalhada": "Produção agrícola, agropecuária e zootecnia"
+ },
+ {
+  "codigo": "0811E022",
+  "nome": "Engenharia de biossistemas - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Agricultura, silvicultura, pesca e veterinária",
+  "area_detalhada": "Produção agrícola, agropecuária e zootecnia"
+ },
+ {
+  "codigo": "0811F013",
+  "nome": "Fruticultura - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Agricultura, silvicultura, pesca e veterinária",
+  "area_detalhada": "Produção agrícola, agropecuária e zootecnia"
+ },
+ {
+  "codigo": "0811F014",
+  "nome": "Fruticultura - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Agricultura, silvicultura, pesca e veterinária",
+  "area_detalhada": "Produção agrícola, agropecuária e zootecnia"
+ },
+ {
+  "codigo": "0811I013",
+  "nome": "Irrigação e drenagem - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Agricultura, silvicultura, pesca e veterinária",
+  "area_detalhada": "Produção agrícola, agropecuária e zootecnia"
+ },
+ {
+  "codigo": "0811M013",
+  "nome": "Manejo da produção agrícola - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Agricultura, silvicultura, pesca e veterinária",
+  "area_detalhada": "Produção agrícola, agropecuária e zootecnia"
+ },
+ {
+  "codigo": "0811V012",
+  "nome": "Viticultura e enologia - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Agricultura, silvicultura, pesca e veterinária",
+  "area_detalhada": "Produção agrícola, agropecuária e zootecnia"
+ },
+ {
+  "codigo": "0811V013",
+  "nome": "Viticultura e enologia - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Agricultura, silvicultura, pesca e veterinária",
+  "area_detalhada": "Produção agrícola, agropecuária e zootecnia"
+ },
+ {
+  "codigo": "0811Z012",
+  "nome": "Zootecnia - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Agricultura, silvicultura, pesca e veterinária",
+  "area_detalhada": "Produção agrícola, agropecuária e zootecnia"
+ },
+ {
+  "codigo": "0811Z013",
+  "nome": "Zootecnia - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Agricultura, silvicultura, pesca e veterinária",
+  "area_detalhada": "Produção agrícola, agropecuária e zootecnia"
+ },
+ {
+  "codigo": "0811Z014",
+  "nome": "Zootecnia - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Agricultura, silvicultura, pesca e veterinária",
+  "area_detalhada": "Produção agrícola, agropecuária e zootecnia"
+ },
+ {
+  "codigo": "0812H013",
+  "nome": "Horticultura - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Agricultura, silvicultura, pesca e veterinária",
+  "area_detalhada": "Horticultura"
+ },
+ {
+  "codigo": "0821E012",
+  "nome": "Engenharia florestal - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Agricultura, silvicultura, pesca e veterinária",
+  "area_detalhada": "Silvicultura"
+ },
+ {
+  "codigo": "0821E013",
+  "nome": "Engenharia florestal - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Agricultura, silvicultura, pesca e veterinária",
+  "area_detalhada": "Silvicultura"
+ },
+ {
+  "codigo": "0821S013",
+  "nome": "Silvicultura - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Agricultura, silvicultura, pesca e veterinária",
+  "area_detalhada": "Silvicultura"
+ },
+ {
+  "codigo": "0831A012",
+  "nome": "Aquicultura - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Agricultura, silvicultura, pesca e veterinária",
+  "area_detalhada": "Pesca"
+ },
+ {
+  "codigo": "0831A013",
+  "nome": "Aquicultura - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Agricultura, silvicultura, pesca e veterinária",
+  "area_detalhada": "Pesca"
+ },
+ {
+  "codigo": "0831A014",
+  "nome": "Aquicultura - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Agricultura, silvicultura, pesca e veterinária",
+  "area_detalhada": "Pesca"
+ },
+ {
+  "codigo": "0831E012",
+  "nome": "Engenharia de pesca - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Agricultura, silvicultura, pesca e veterinária",
+  "area_detalhada": "Pesca"
+ },
+ {
+  "codigo": "0831P013",
+  "nome": "Produção pesqueira - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Agricultura, silvicultura, pesca e veterinária",
+  "area_detalhada": "Pesca"
+ },
+ {
+  "codigo": "0841M012",
+  "nome": "Medicina veterinária - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Agricultura, silvicultura, pesca e veterinária",
+  "area_detalhada": "Veterinária"
+ },
+ {
+  "codigo": "0841M013",
+  "nome": "Medicina veterinária - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Agricultura, silvicultura, pesca e veterinária",
+  "area_detalhada": "Veterinária"
+ },
+ {
+  "codigo": "0841M014",
+  "nome": "Medicina veterinária - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Agricultura, silvicultura, pesca e veterinária",
+  "area_detalhada": "Veterinária"
+ },
+ {
+  "codigo": "0888P012",
+  "nome": "Programas interdisciplinares abrangendo agricultura, silvicultura, pesca e veterinária - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Agricultura, silvicultura, pesca e veterinária",
+  "area_detalhada": "Programas interdisciplinares abrangendo agricultura, silvicultura, pesca e veterinária"
+ },
+ {
+  "codigo": "0911O012",
+  "nome": "Odontologia - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Saúde e bem-estar",
+  "area_detalhada": "Odontologia"
+ },
+ {
+  "codigo": "0911O014",
+  "nome": "Odontologia - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Saúde e bem-estar",
+  "area_detalhada": "Odontologia"
+ },
+ {
+  "codigo": "0912M012",
+  "nome": "Medicina - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Saúde e bem-estar",
+  "area_detalhada": "Medicina"
+ },
+ {
+  "codigo": "0912M013",
+  "nome": "Medicina - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Saúde e bem-estar",
+  "area_detalhada": "Medicina"
+ },
+ {
+  "codigo": "0912M014",
+  "nome": "Medicina - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Saúde e bem-estar",
+  "area_detalhada": "Medicina"
+ },
+ {
+  "codigo": "0913E012",
+  "nome": "Enfermagem - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Saúde e bem-estar",
+  "area_detalhada": "Enfermagem"
+ },
+ {
+  "codigo": "0913E013",
+  "nome": "Enfermagem - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Saúde e bem-estar",
+  "area_detalhada": "Enfermagem"
+ },
+ {
+  "codigo": "0913E014",
+  "nome": "Enfermagem - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Saúde e bem-estar",
+  "area_detalhada": "Enfermagem"
+ },
+ {
+  "codigo": "0914A013",
+  "nome": "Análises clínicas e toxicológicas - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Saúde e bem-estar",
+  "area_detalhada": "Tecnologia de diagnóstico e tratamento médico"
+ },
+ {
+  "codigo": "0914A014",
+  "nome": "Análises clínicas e toxicológicas - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Saúde e bem-estar",
+  "area_detalhada": "Tecnologia de diagnóstico e tratamento médico"
+ },
+ {
+  "codigo": "0914B012",
+  "nome": "Biomedicina - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Saúde e bem-estar",
+  "area_detalhada": "Tecnologia de diagnóstico e tratamento médico"
+ },
+ {
+  "codigo": "0914B014",
+  "nome": "Biomedicina - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Saúde e bem-estar",
+  "area_detalhada": "Tecnologia de diagnóstico e tratamento médico"
+ },
+ {
+  "codigo": "0914O013",
+  "nome": "Oftálmica - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Saúde e bem-estar",
+  "area_detalhada": "Tecnologia de diagnóstico e tratamento médico"
+ },
+ {
+  "codigo": "0914O022",
+  "nome": "Optometria - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Saúde e bem-estar",
+  "area_detalhada": "Tecnologia de diagnóstico e tratamento médico"
+ },
+ {
+  "codigo": "0914O023",
+  "nome": "Optometria - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Saúde e bem-estar",
+  "area_detalhada": "Tecnologia de diagnóstico e tratamento médico"
+ },
+ {
+  "codigo": "0914P013",
+  "nome": "Prótese e órtese - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Saúde e bem-estar",
+  "area_detalhada": "Tecnologia de diagnóstico e tratamento médico"
+ },
+ {
+  "codigo": "0914P014",
+  "nome": "Prótese e órtese - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Saúde e bem-estar",
+  "area_detalhada": "Tecnologia de diagnóstico e tratamento médico"
+ },
+ {
+  "codigo": "0914R013",
+  "nome": "Radiologia - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Saúde e bem-estar",
+  "area_detalhada": "Tecnologia de diagnóstico e tratamento médico"
+ },
+ {
+  "codigo": "0914R014",
+  "nome": "Radiologia - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Saúde e bem-estar",
+  "area_detalhada": "Tecnologia de diagnóstico e tratamento médico"
+ },
+ {
+  "codigo": "0915E012",
+  "nome": "Educação física - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Saúde e bem-estar",
+  "area_detalhada": "Promoção, prevenção, terapia e reabilitação"
+ },
+ {
+  "codigo": "0915E014",
+  "nome": "Educação física  - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Saúde e bem-estar",
+  "area_detalhada": "Promoção, prevenção, terapia e reabilitação"
+ },
+ {
+  "codigo": "0915F012",
+  "nome": "Fisioterapia - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Saúde e bem-estar",
+  "area_detalhada": "Promoção, prevenção, terapia e reabilitação"
+ },
+ {
+  "codigo": "0915F022",
+  "nome": "Fonoaudiologia - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Saúde e bem-estar",
+  "area_detalhada": "Promoção, prevenção, terapia e reabilitação"
+ },
+ {
+  "codigo": "0915N012",
+  "nome": "Nutrição - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Saúde e bem-estar",
+  "area_detalhada": "Promoção, prevenção, terapia e reabilitação"
+ },
+ {
+  "codigo": "0915N013",
+  "nome": "Nutrição - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Saúde e bem-estar",
+  "area_detalhada": "Promoção, prevenção, terapia e reabilitação"
+ },
+ {
+  "codigo": "0915N014",
+  "nome": "Nutrição - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Saúde e bem-estar",
+  "area_detalhada": "Promoção, prevenção, terapia e reabilitação"
+ },
+ {
+  "codigo": "0915P012",
+  "nome": "Podologia - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Saúde e bem-estar",
+  "area_detalhada": "Promoção, prevenção, terapia e reabilitação"
+ },
+ {
+  "codigo": "0915P013",
+  "nome": "Podologia - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Saúde e bem-estar",
+  "area_detalhada": "Promoção, prevenção, terapia e reabilitação"
+ },
+ {
+  "codigo": "0915T012",
+  "nome": "Terapia ocupacional - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Saúde e bem-estar",
+  "area_detalhada": "Promoção, prevenção, terapia e reabilitação"
+ },
+ {
+  "codigo": "0916F012",
+  "nome": "Farmácia - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Saúde e bem-estar",
+  "area_detalhada": "Farmácia"
+ },
+ {
+  "codigo": "0916F013",
+  "nome": "Farmácia - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Saúde e bem-estar",
+  "area_detalhada": "Farmácia"
+ },
+ {
+  "codigo": "0916F014",
+  "nome": "Farmácia - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Saúde e bem-estar",
+  "area_detalhada": "Farmácia"
+ },
+ {
+  "codigo": "0917M012",
+  "nome": "Musicoterapia - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Saúde e bem-estar",
+  "area_detalhada": "Medicina e terapia tradicional e complementar"
+ },
+ {
+  "codigo": "0917P012",
+  "nome": "Práticas integrativas - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Saúde e bem-estar",
+  "area_detalhada": "Medicina e terapia tradicional e complementar"
+ },
+ {
+  "codigo": "0917P013",
+  "nome": "Práticas integrativas - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Saúde e bem-estar",
+  "area_detalhada": "Medicina e terapia tradicional e complementar"
+ },
+ {
+  "codigo": "0917P014",
+  "nome": "Práticas integrativas - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Saúde e bem-estar",
+  "area_detalhada": "Medicina e terapia tradicional e complementar"
+ },
+ {
+  "codigo": "0918S012",
+  "nome": "Saúde coletiva - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Saúde e bem-estar",
+  "area_detalhada": "Saúde pública e saúde coletiva"
+ },
+ {
+  "codigo": "0918S013",
+  "nome": "Saúde coletiva - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Saúde e bem-estar",
+  "area_detalhada": "Saúde pública e saúde coletiva"
+ },
+ {
+  "codigo": "0918S014",
+  "nome": "Saúde coletiva - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Saúde e bem-estar",
+  "area_detalhada": "Saúde pública e saúde coletiva"
+ },
+ {
+  "codigo": "0918S022",
+  "nome": "Saúde pública - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Saúde e bem-estar",
+  "area_detalhada": "Saúde pública e saúde coletiva"
+ },
+ {
+  "codigo": "0918S023",
+  "nome": "Saúde pública - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Saúde e bem-estar",
+  "area_detalhada": "Saúde pública e saúde coletiva"
+ },
+ {
+  "codigo": "0918S024",
+  "nome": "Saúde pública - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Saúde e bem-estar",
+  "area_detalhada": "Saúde pública e saúde coletiva"
+ },
+ {
+  "codigo": "0921A014",
+  "nome": "Assistência a idosos e a deficientes - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Saúde e bem-estar",
+  "area_detalhada": "Assistência a idosos e a deficientes"
+ },
+ {
+  "codigo": "0921G012",
+  "nome": "Gerontologia - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Saúde e bem-estar",
+  "area_detalhada": "Assistência a idosos e a deficientes"
+ },
+ {
+  "codigo": "0921G013",
+  "nome": "Gerontologia - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Saúde e bem-estar",
+  "area_detalhada": "Assistência a idosos e a deficientes"
+ },
+ {
+  "codigo": "0921G014",
+  "nome": "Gerontologia - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Saúde e bem-estar",
+  "area_detalhada": "Assistência a idosos e a deficientes"
+ },
+ {
+  "codigo": "0923S012",
+  "nome": "Serviço social - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Saúde e bem-estar",
+  "area_detalhada": "Serviço social"
+ },
+ {
+  "codigo": "0923S013",
+  "nome": "Serviço social - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Saúde e bem-estar",
+  "area_detalhada": "Serviço social"
+ },
+ {
+  "codigo": "0923S014",
+  "nome": "Serviço social - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Saúde e bem-estar",
+  "area_detalhada": "Serviço social"
+ },
+ {
+  "codigo": "0988P012",
+  "nome": "Programas interdisciplinares abrangendo saúde e bem-estar - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Saúde e bem-estar",
+  "area_detalhada": "Programas interdisciplinares abrangendo saúde e bem-estar"
+ },
+ {
+  "codigo": "0988P013",
+  "nome": "Programas interdisciplinares abrangendo saúde e bem-estar - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Saúde e bem-estar",
+  "area_detalhada": "Programas interdisciplinares abrangendo saúde e bem-estar"
+ },
+ {
+  "codigo": "0988P014",
+  "nome": "Programas interdisciplinares abrangendo saúde e bem-estar - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Saúde e bem-estar",
+  "area_detalhada": "Programas interdisciplinares abrangendo saúde e bem-estar"
+ },
+ {
+  "codigo": "1011E012",
+  "nome": "Economia doméstica - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Serviços",
+  "area_detalhada": "Serviços domésticos"
+ },
+ {
+  "codigo": "1012E012",
+  "nome": "Estética e cosmética - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Serviços",
+  "area_detalhada": "Serviços de beleza"
+ },
+ {
+  "codigo": "1012E013",
+  "nome": "Estética e cosmética - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Serviços",
+  "area_detalhada": "Serviços de beleza"
+ },
+ {
+  "codigo": "1012E014",
+  "nome": "Estética e cosmética - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Serviços",
+  "area_detalhada": "Serviços de beleza"
+ },
+ {
+  "codigo": "1013G012",
+  "nome": "Gastronomia - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Serviços",
+  "area_detalhada": "Serviços de alimentação"
+ },
+ {
+  "codigo": "1013G013",
+  "nome": "Gastronomia - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Serviços",
+  "area_detalhada": "Serviços de alimentação"
+ },
+ {
+  "codigo": "1013G014",
+  "nome": "Gastronomia - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Serviços",
+  "area_detalhada": "Serviços de alimentação"
+ },
+ {
+  "codigo": "1014F013",
+  "nome": "Formação de técnicos e treinadores esportivos - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Serviços",
+  "area_detalhada": "Esportes e lazer"
+ },
+ {
+  "codigo": "1014F014",
+  "nome": "Formação de técnicos e treinadores esportivos - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Serviços",
+  "area_detalhada": "Esportes e lazer"
+ },
+ {
+  "codigo": "1014G012",
+  "nome": "Gestão desportiva e de lazer - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Serviços",
+  "area_detalhada": "Esportes e lazer"
+ },
+ {
+  "codigo": "1014G013",
+  "nome": "Gestão desportiva e de lazer - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Serviços",
+  "area_detalhada": "Esportes e lazer"
+ },
+ {
+  "codigo": "1014G014",
+  "nome": "Gestão desportiva e de lazer - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Serviços",
+  "area_detalhada": "Esportes e lazer"
+ },
+ {
+  "codigo": "1015E013",
+  "nome": "Eventos - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Serviços",
+  "area_detalhada": "Turismo e hotelaria"
+ },
+ {
+  "codigo": "1015E014",
+  "nome": "Eventos - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Serviços",
+  "area_detalhada": "Turismo e hotelaria"
+ },
+ {
+  "codigo": "1015H012",
+  "nome": "Hotelaria - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Serviços",
+  "area_detalhada": "Turismo e hotelaria"
+ },
+ {
+  "codigo": "1015H013",
+  "nome": "Hotelaria - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Serviços",
+  "area_detalhada": "Turismo e hotelaria"
+ },
+ {
+  "codigo": "1015H014",
+  "nome": "Hotelaria - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Serviços",
+  "area_detalhada": "Turismo e hotelaria"
+ },
+ {
+  "codigo": "1015T012",
+  "nome": "Turismo - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Serviços",
+  "area_detalhada": "Turismo e hotelaria"
+ },
+ {
+  "codigo": "1015T013",
+  "nome": "Turismo - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Serviços",
+  "area_detalhada": "Turismo e hotelaria"
+ },
+ {
+  "codigo": "1015T014",
+  "nome": "Turismo - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Serviços",
+  "area_detalhada": "Turismo e hotelaria"
+ },
+ {
+  "codigo": "1022S012",
+  "nome": "Segurança no trabalho - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Serviços",
+  "area_detalhada": "Saúde e segurança no trabalho"
+ },
+ {
+  "codigo": "1022S013",
+  "nome": "Segurança no trabalho - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Serviços",
+  "area_detalhada": "Saúde e segurança no trabalho"
+ },
+ {
+  "codigo": "1022S014",
+  "nome": "Segurança no trabalho - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Serviços",
+  "area_detalhada": "Saúde e segurança no trabalho"
+ },
+ {
+  "codigo": "1031C012",
+  "nome": "Ciências militares - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Serviços",
+  "area_detalhada": "Setor militar e de defesa"
+ },
+ {
+  "codigo": "1031C013",
+  "nome": "Ciências militares - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Serviços",
+  "area_detalhada": "Setor militar e de defesa"
+ },
+ {
+  "codigo": "1032I013",
+  "nome": "Investigação e perícia - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Serviços",
+  "area_detalhada": "Proteção de pessoas e de propriedades"
+ },
+ {
+  "codigo": "1032I014",
+  "nome": "Investigação e perícia - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Serviços",
+  "area_detalhada": "Proteção de pessoas e de propriedades"
+ },
+ {
+  "codigo": "1032S013",
+  "nome": "Segurança no trânsito - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Serviços",
+  "area_detalhada": "Proteção de pessoas e de propriedades"
+ },
+ {
+  "codigo": "1032S014",
+  "nome": "Segurança no trânsito - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Serviços",
+  "area_detalhada": "Proteção de pessoas e de propriedades"
+ },
+ {
+  "codigo": "1032S023",
+  "nome": "Segurança privada - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Serviços",
+  "area_detalhada": "Proteção de pessoas e de propriedades"
+ },
+ {
+  "codigo": "1032S024",
+  "nome": "Segurança privada - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Serviços",
+  "area_detalhada": "Proteção de pessoas e de propriedades"
+ },
+ {
+  "codigo": "1032S032",
+  "nome": "Segurança pública - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Serviços",
+  "area_detalhada": "Proteção de pessoas e de propriedades"
+ },
+ {
+  "codigo": "1032S033",
+  "nome": "Segurança pública - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Serviços",
+  "area_detalhada": "Proteção de pessoas e de propriedades"
+ },
+ {
+  "codigo": "1032S034",
+  "nome": "Segurança pública - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Serviços",
+  "area_detalhada": "Proteção de pessoas e de propriedades"
+ },
+ {
+  "codigo": "1032S043",
+  "nome": "Serviços penais - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Serviços",
+  "area_detalhada": "Proteção de pessoas e de propriedades"
+ },
+ {
+  "codigo": "1032S044",
+  "nome": "Serviços penais - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Serviços",
+  "area_detalhada": "Proteção de pessoas e de propriedades"
+ },
+ {
+  "codigo": "1041C012",
+  "nome": "Ciências aeronáuticas - Bacharelado",
+  "grau": "Bacharelado",
+  "area_geral": "Serviços",
+  "area_detalhada": "Serviços de transporte"
+ },
+ {
+  "codigo": "1041C013",
+  "nome": "Ciências aeronáuticas - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Serviços",
+  "area_detalhada": "Serviços de transporte"
+ },
+ {
+  "codigo": "1041C014",
+  "nome": "Ciências aeronáuticas - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Serviços",
+  "area_detalhada": "Serviços de transporte"
+ },
+ {
+  "codigo": "1041G013",
+  "nome": "Gestão portuária - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Serviços",
+  "area_detalhada": "Serviços de transporte"
+ },
+ {
+  "codigo": "1041G014",
+  "nome": "Gestão portuária - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Serviços",
+  "area_detalhada": "Serviços de transporte"
+ },
+ {
+  "codigo": "1041T013",
+  "nome": "Transporte aéreo - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Serviços",
+  "area_detalhada": "Serviços de transporte"
+ },
+ {
+  "codigo": "1041T023",
+  "nome": "Transporte terrestre - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Serviços",
+  "area_detalhada": "Serviços de transporte"
+ },
+ {
+  "codigo": "1041T024",
+  "nome": "Transporte terrestre  - Sequencial",
+  "grau": "Sequencial",
+  "area_geral": "Serviços",
+  "area_detalhada": "Serviços de transporte"
+ },
+ {
+  "codigo": "1088P013",
+  "nome": "Programas interdisciplinares abrangendo serviços - Tecnológico",
+  "grau": "Tecnológico",
+  "area_geral": "Serviços",
+  "area_detalhada": "Programas interdisciplinares abrangendo serviços"
+ }
+]

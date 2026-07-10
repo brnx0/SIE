@@ -520,7 +520,7 @@ class CensoCommitManager
         $escol = $this->col($campos, 56);
         $now = now();
 
-        DB::table('edu_funcionario')->insert([
+        $funId = DB::table('edu_funcionario')->insertGetId([
             'fun_nome'          => mb_substr($this->col($campos, 6) ?: 'SEM NOME', 0, 100),
             'fun_dt_nascimento' => $this->parseData($this->col($campos, 7)) ?? '1900-01-01',
             'fun_sexo'          => $this->sexo($this->col($campos, 11)),
@@ -529,14 +529,23 @@ class CensoCommitManager
             'fun_pais_origem'   => 'Brasil',
             'fun_mun_id_nasc'   => $munId,
             'fun_cpf'           => $cpf,
-            'fun_escolaridade'  => $escol !== '' ? (int) $escol : null,
             'fun_cd_censo'      => $inep,
             'fun_cep'           => $this->cepOuNull($this->col($campos, 52)),
             'fun_email'         => mb_substr($this->col($campos, 108), 0, 150) ?: null,
             'fun_fl_ativo'      => true,
             'fun_created_at'    => $now,
             'fun_updated_at'    => $now,
-        ]);
+        ], 'fun_id');
+
+        // Escolaridade migrou para tabela própria (edu_funcionario_escolaridade).
+        if ($escol !== '' && $escol !== null) {
+            DB::table('edu_funcionario_escolaridade')->insert([
+                'fes_fun_id'     => $funId,
+                'fes_nivel'      => (int) $escol,
+                'fes_created_at' => $now,
+                'fes_updated_at' => $now,
+            ]);
+        }
 
         $this->funcExistente[$inep] = true;
         if ($cpf !== null) {

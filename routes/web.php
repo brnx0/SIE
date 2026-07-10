@@ -57,10 +57,12 @@ use App\Http\Controllers\Serie\SerieController;
 use App\Http\Controllers\Escola\EscolaController;
 use App\Http\Controllers\Censo\CensoImportacaoController;
 use App\Http\Controllers\Api\CargoController as CargoApiController;
+use App\Http\Controllers\Api\CursoFormacaoSuperiorController as CursoFormacaoApiController;
 use App\Http\Controllers\Api\EscolaController as EscolaApiController;
 use App\Http\Controllers\Api\FuncionarioController as FuncionarioApiController;
 use App\Http\Controllers\Funcionario\FuncionarioAdmissaoController;
 use App\Http\Controllers\Funcionario\FuncionarioController;
+use App\Http\Controllers\Funcionario\FuncionarioEscolaridadeController;
 use App\Http\Controllers\Funcionario\FuncionarioLotacaoController;
 use App\Http\Controllers\Parametro\AnoLetivoController;
 use App\Http\Controllers\Parametro\AtendimentoAeeController;
@@ -172,6 +174,11 @@ Route::middleware(['auth', 'verified', 'tela'])->group(function () {
         Route::post('/', [FuncionarioLotacaoController::class, 'store'])->name('store');
         Route::put('/{lotacao}', [FuncionarioLotacaoController::class, 'update'])->name('update');
         Route::delete('/{lotacao}', [FuncionarioLotacaoController::class, 'destroy'])->name('destroy');
+    });
+    Route::prefix('funcionarios/{funcionario}/escolaridades')->name('funcionarios.escolaridades.')->group(function () {
+        Route::post('/', [FuncionarioEscolaridadeController::class, 'store'])->name('store');
+        Route::put('/{escolaridade}', [FuncionarioEscolaridadeController::class, 'update'])->name('update');
+        Route::delete('/{escolaridade}', [FuncionarioEscolaridadeController::class, 'destroy'])->name('destroy');
     });
 
     Route::get('turmas/export', [TurmaController::class, 'export'])->name('turmas.export');
@@ -396,6 +403,7 @@ Route::middleware(['auth', 'verified', 'tela'])->group(function () {
     Route::post('api/bairros', [BairroController::class, 'store'])->name('api.bairros.store');
     Route::get('api/gerencias', [GerenciaRegionalController::class, 'search'])->name('api.gerencias.search');
     Route::get('api/cargos', [CargoApiController::class, 'search'])->name('api.cargos.search');
+    Route::get('api/cursos-formacao-superior', [CursoFormacaoApiController::class, 'search'])->name('api.cursos-formacao-superior.search');
     Route::get('api/escolas', [EscolaApiController::class, 'search'])->name('api.escolas.search');
     Route::get('api/funcionarios', [FuncionarioApiController::class, 'search'])->name('api.funcionarios.search');
     Route::get('api/disciplinas/search', [DisciplinaApiController::class, 'search'])->name('api.disciplinas.search');

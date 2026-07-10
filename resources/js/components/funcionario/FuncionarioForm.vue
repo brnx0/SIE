@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AdmissaoLotacaoTab from '@/components/funcionario/AdmissaoLotacaoTab.vue';
+import EscolaridadeTab from '@/components/funcionario/EscolaridadeTab.vue';
 import HorariosTab from '@/components/funcionario/HorariosTab.vue';
 import CharCounter from '@/components/common/CharCounter.vue';
 import CpfDuplicadoDialog from '@/components/funcionario/CpfDuplicadoDialog.vue';
@@ -25,7 +26,6 @@ import { COR_RACA } from '@/lib/corRaca';
 import { PAISES } from '@/lib/paises';
 import { UFS } from '@/lib/ufs';
 import {
-    ESCOLARIDADES,
     ESTADOS_CIVIS,
     NACIONALIDADES,
     RELIGIOES,
@@ -79,16 +79,17 @@ const alertarAcentos = computed(() => params.value.alertar_acentos_nomes);
 
 const stripAccents = (str: string) => str.normalize('NFD').replace(/[̀-ͯ]/g, '');
 
-const TABS = ['dados-pessoais', 'documentacao', 'endereco-contato', 'admissao-lotacao', 'horario'] as const;
+const TABS = ['dados-pessoais', 'escolaridade', 'documentacao', 'endereco-contato', 'admissao-lotacao', 'horario'] as const;
 type TabId = (typeof TABS)[number];
 
 const TAB_FIELDS: Record<TabId, string[]> = {
     'dados-pessoais': [
         'fun_nome', 'fun_nome_social', 'fun_dt_nascimento', 'fun_sexo', 'fun_cor_raca',
         'fun_nacionalidade', 'fun_pais_origem', 'fun_mun_id_nasc',
-        'fun_cpf', 'fun_religiao', 'fun_escolaridade', 'fun_estado_civil',
+        'fun_cpf', 'fun_religiao', 'fun_estado_civil',
         'fun_pin_id', 'fun_cd_censo',
     ],
+    escolaridade: [],
     documentacao: [
         'fun_rg_numero', 'fun_rg_dt_emissao', 'fun_rg_uf', 'fun_rg_orgao_emissor',
         'fun_certidao_modelo', 'fun_certidao_tipo', 'fun_certidao_dt_emissao',
@@ -145,7 +146,6 @@ const form = useForm<FuncionarioFormData>({
     fun_mun_id_nasc: props.initial?.fun_mun_id_nasc ?? null,
     fun_cpf: props.initial?.fun_cpf ?? '',
     fun_religiao: props.initial?.fun_religiao ?? '',
-    fun_escolaridade: props.initial?.fun_escolaridade ?? '',
     fun_estado_civil: props.initial?.fun_estado_civil ?? '',
     fun_povo_indigena: props.initial?.fun_povo_indigena ?? '',
     fun_pin_id: props.initial?.fun_pin_id ?? null,
@@ -191,6 +191,10 @@ const form = useForm<FuncionarioFormData>({
 
     fun_foto: null,
     fun_fl_ativo: props.initial?.fun_fl_ativo ?? true,
+    // Escolaridades: no cadastro exige ao menos uma; na edição são geridas na aba (rotas próprias).
+    escolaridades: props.initial
+        ? []
+        : [{ fes_nivel: '', fes_ano_inicio: '', fes_ano_fim: '', fes_cfs_id: null, curso: null }],
     confirm_homonimo: false,
     _method: props.mode === 'edit' ? 'put' : 'post',
 });
@@ -287,6 +291,9 @@ const cancelarHomonimo = () => {
 };
 
 const tabHasError = (tab: TabId): boolean => {
+    if (tab === 'escolaridade') {
+        return Object.keys(form.errors).some((k) => k.startsWith('escolaridades'));
+    }
     const fields = TAB_FIELDS[tab];
     return fields.some((f) => Boolean((form.errors as Record<string, string>)[f]));
 };
@@ -444,17 +451,20 @@ const initials = computed(() => {
                 <TabsTrigger value="dados-pessoais" :has-error="tabHasError('dados-pessoais')">
                     1. Dados Pessoais
                 </TabsTrigger>
+                <TabsTrigger value="escolaridade" :has-error="tabHasError('escolaridade')">
+                    2. Escolaridade
+                </TabsTrigger>
                 <TabsTrigger value="documentacao" :has-error="tabHasError('documentacao')">
-                    2. Documentação
+                    3. Documentação
                 </TabsTrigger>
                 <TabsTrigger value="endereco-contato" :has-error="tabHasError('endereco-contato')">
-                    3. Endereço e Contato
+                    4. Endereço e Contato
                 </TabsTrigger>
                 <TabsTrigger value="admissao-lotacao" :has-error="tabHasError('admissao-lotacao')">
-                    4. Admissão / Lotação
+                    5. Admissão / Lotação
                 </TabsTrigger>
                 <TabsTrigger v-if="mode === 'edit'" value="horario">
-                    5. Horário
+                    6. Horário
                 </TabsTrigger>
             </TabsList>
 
@@ -663,22 +673,6 @@ const initials = computed(() => {
                     </div>
 
                     <div class="grid gap-2">
-                        <FormLabel :for="'fun_escolaridade'" :required="true">Escolaridade</FormLabel>
-                        <select
-                            id="fun_escolaridade"
-                            :value="form.fun_escolaridade === '' ? '' : form.fun_escolaridade"
-                            @change="(e) => (form.fun_escolaridade = (e.target as HTMLSelectElement).value === '' ? '' : Number((e.target as HTMLSelectElement).value) as any)"
-                            class="h-10 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
-                        >
-                            <option value="">Selecione...</option>
-                            <option v-for="opt in ESCOLARIDADES" :key="opt.value" :value="opt.value">
-                                {{ opt.label }}
-                            </option>
-                        </select>
-                        <InputError :message="form.errors.fun_escolaridade" />
-                    </div>
-
-                    <div class="grid gap-2">
                         <FormLabel :for="'fun_estado_civil'" :required="true">Estado Civil</FormLabel>
                         <select
                             id="fun_estado_civil"
@@ -722,7 +716,19 @@ const initials = computed(() => {
                 </div>
             </TabsContent>
 
-            <!-- Aba 2: Documentação -->
+            <!-- Aba 2: Escolaridade -->
+            <TabsContent value="escolaridade">
+                <EscolaridadeTab
+                    v-if="mode === 'create'"
+                    mode="create"
+                    :model-value="form.escolaridades"
+                    :errors="(form.errors as any)"
+                    @update:model-value="(v) => (form.escolaridades = v)"
+                />
+                <EscolaridadeTab v-else-if="initial" mode="edit" :funcionario="initial" />
+            </TabsContent>
+
+            <!-- Aba 3: Documentação -->
             <TabsContent value="documentacao" class="grid gap-6">
                 <!-- RG -->
                 <div class="grid gap-4 rounded-xl border bg-card p-6 shadow-sm sm:grid-cols-4">
@@ -894,7 +900,7 @@ const initials = computed(() => {
                 </div>
             </TabsContent>
 
-            <!-- Aba 3: Endereço e Contato -->
+            <!-- Aba 4: Endereço e Contato -->
             <TabsContent value="endereco-contato" class="grid gap-6">
                 <div class="grid gap-4 rounded-xl border bg-card p-6 shadow-sm sm:grid-cols-6">
                     <div class="sm:col-span-6">
@@ -1031,7 +1037,7 @@ const initials = computed(() => {
 
             </TabsContent>
 
-            <!-- Aba 4: Admissão / Lotação -->
+            <!-- Aba 5: Admissão / Lotação -->
             <TabsContent value="admissao-lotacao">
                 <div v-if="mode === 'create'" class="rounded-xl border-2 border-dashed bg-card py-12 text-center text-sm text-muted-foreground shadow-sm">
                     Salve o funcionário primeiro para gerenciar admissões e lotações.

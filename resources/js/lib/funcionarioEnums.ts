@@ -11,6 +11,9 @@ export const ESCOLARIDADES = [
     { value: 10, label: 'Graduação com Licenciatura' },
 ] as const;
 
+// Níveis de escolaridade (ESCOLARIDADES) que exigem informar o curso superior.
+export const NIVEIS_EXIGEM_CURSO = [5, 6, 7, 8, 10];
+
 export const ESTADOS_CIVIS = [
     { value: 1, label: 'Solteiro(a)' },
     { value: 2, label: 'Casado(a)' },
