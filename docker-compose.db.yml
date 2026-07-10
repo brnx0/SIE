@@ -23,8 +23,12 @@ services:
       TZ: America/Sao_Paulo
       PGTZ: America/Sao_Paulo
 
-    # DB nao publica porta no host: app conecta pela rede docker (db:5432).
+    # Porta publicada SO em 127.0.0.1 do servidor: app conecta pela rede docker
+    # (db:5432) e o acesso externo (DBeaver) e feito por SSH tunnel -> localhost:5432.
+    # NAO trocar por "5432:5432" (0.0.0.0) num servidor publico: exporia o banco.
     # Acesso p/ debug via:  docker compose -f docker-compose.db.yml exec db psql -U <user> -d <db>
+    ports:
+      - "127.0.0.1:5432:5432"
     volumes:
       - pg_data:/var/lib/postgresql/data
       - ./docker/postgres/postgresql.homolog.conf:/etc/postgresql/postgresql.conf:ro
