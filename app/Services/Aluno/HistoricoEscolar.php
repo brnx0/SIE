@@ -88,7 +88,6 @@ class HistoricoEscolar
             ->with([
                 'disciplinas.disciplina:dis_id,dis_nome',
                 'disciplinas.conceito:cnc_id,cnc_sigla',
-                'anoLetivo:anl_id,anl_ano',
                 'serie:ser_id,ser_nome,ser_ordem_no_segmento,ser_carga_horaria,seg_id',
                 'serie.segmento:seg_id,seg_nome_completo,seg_nome_reduzido',
                 'escola:esc_id,esc_nome,esc_mun_id',
@@ -96,10 +95,10 @@ class HistoricoEscolar
             ])->get();
 
         foreach ($manuais as $h) {
-            if (! $h->serie || ! $h->anoLetivo) {
+            if (! $h->serie || ! $h->hmn_ano) {
                 continue;
             }
-            $ano = (int) $h->anoLetivo->anl_ano;
+            $ano = (int) $h->hmn_ano;
             if ($anoCorte !== null && $ano > $anoCorte) {
                 continue;
             }

@@ -67,7 +67,6 @@ class HistoricoManualController extends Controller
 
         // Consolidado do sistema (anos aprovados, com disciplinas + MF) — read-only.
         $anosSistema = $service->sistemaConsolidado((int) $aluno->aln_id);
-        $anlSistema  = array_column($anosSistema, 'anl_id');
 
         $lancamentos = HistoricoManual::query()
             ->where('hmn_aln_id', $aluno->aln_id)
@@ -75,7 +74,6 @@ class HistoricoManualController extends Controller
                 'disciplinas:hmd_id,hmd_hmn_id,hmd_dis_id,hmd_mf,hmd_cnc_id,hmd_ordem',
                 'disciplinas.disciplina:dis_id,dis_nome',
                 'disciplinas.conceito:cnc_id,cnc_sigla',
-                'anoLetivo:anl_id,anl_ano',
                 'serie:ser_id,ser_nome',
                 'escola:esc_id,esc_nome',
                 'municipio:mun_id,mun_nome,mun_uf',
@@ -84,8 +82,7 @@ class HistoricoManualController extends Controller
             ->get()
             ->map(fn (HistoricoManual $h) => [
                 'hmn_id'            => $h->hmn_id,
-                'hmn_anl_id'        => $h->hmn_anl_id,
-                'anl_ano'           => $h->anoLetivo?->anl_ano,
+                'hmn_ano'           => $h->hmn_ano,
                 'hmn_ser_id'        => $h->hmn_ser_id,
                 'serie'             => $h->serie?->ser_nome,
                 'hmn_esc_id'        => $h->hmn_esc_id,
@@ -119,12 +116,6 @@ class HistoricoManualController extends Controller
             ->orderBy('tas_cod')
             ->get(['tas_cod', 'tas_descricao']);
 
-        // Anos letivos disponíveis p/ lançamento: exclui os que o sistema já tem.
-        $anosLetivos = DB::table('cfg_ano_letivo')
-            ->whereNotIn('anl_id', $anlSistema ?: [0])
-            ->orderByDesc('anl_ano')
-            ->get(['anl_id', 'anl_ano']);
-
         // Segmentos (p/ filtrar a série no form).
         $segmentos = DB::table('edu_segmento')
             ->where('seg_fl_ativo', true)
@@ -138,8 +129,6 @@ class HistoricoManualController extends Controller
 
         return response()->json([
             'anos_sistema' => $anosSistema,
-            'anl_sistema'  => $anlSistema,
-            'anos_letivos' => $anosLetivos,
             'segmentos'    => $segmentos,
             'conceitos'    => $conceitos,
             'lancamentos'  => $lancamentos,
@@ -153,21 +142,23 @@ class HistoricoManualController extends Controller
 
         $data = $request->validate([
             'hmn_id'            => ['nullable', 'integer', 'exists:edu_historico_manual,hmn_id'],
-            'hmn_anl_id'        => ['required', 'integer', 'exists:cfg_ano_letivo,anl_id'],
+            'hmn_ano'           => ['required', 'integer', 'min:1900', 'max:' . ((int) date('Y'))],
             'hmn_ser_id'        => ['required', 'integer', 'exists:edu_serie,ser_id'],
             'hmn_esc_id'        => ['nullable', 'integer', 'exists:edu_escola,esc_id'],
             'hmn_esc_nome'      => ['nullable', 'string', 'max:180'],
             'hmn_mun_id'        => ['nullable', 'integer', 'exists:edu_municipio,mun_id'],
-            'hmn_carga_horaria' => ['nullable', 'integer', 'min:0', 'max:9999'],
-            'hmn_dias_letivos'  => ['nullable', 'integer', 'min:0', 'max:400'],
+            'hmn_carga_horaria' => ['nullable', 'integer', 'min:0', 'max:99999'],
+            'hmn_dias_letivos'  => ['nullable', 'integer', 'min:0', 'max:999'],
             'hmn_frequencia'    => ['nullable', 'numeric', 'min:0', 'max:100'],
             'hmn_tas_cod'       => ['required', 'integer', 'exists:edu_turma_aluno_situacao,tas_cod'],
             'disciplinas'                 => ['required', 'array', 'min:1'],
             'disciplinas.*.hmd_dis_id'    => ['required', 'integer', 'exists:edu_disciplina,dis_id'],
             'disciplinas.*.hmd_mf'        => ['nullable', 'numeric', 'min:0', 'max:10'],
             'disciplinas.*.hmd_cnc_id'    => ['nullable', 'integer', 'exists:cfg_conceito,cnc_id'],
-        ], [], [
-            'hmn_anl_id' => 'ano letivo',
+        ], [
+            'hmn_ano.max' => 'O ano letivo não pode ser posterior ao ano atual.',
+        ], [
+            'hmn_ano' => 'ano letivo',
             'hmn_ser_id' => 'série',
             'hmn_tas_cod' => 'situação final',
         ]);
@@ -180,9 +171,9 @@ class HistoricoManualController extends Controller
         }
 
         // Sistema tem precedência: não permite lançar manual num ano que o sistema já calcula.
-        if (in_array((int) $data['hmn_anl_id'], array_column($this->anosSistema((int) $aluno->aln_id), 'anl_id'), true)) {
+        if (in_array((int) $data['hmn_ano'], array_column($this->anosSistema((int) $aluno->aln_id), 'anl_ano'), true)) {
             throw ValidationException::withMessages([
-                'hmn_anl_id' => 'O sistema já possui esse ano letivo para o aluno (calculado das matrículas). Ele não pode ser lançado manualmente.',
+                'hmn_ano' => 'O sistema já possui esse ano letivo para o aluno (calculado das matrículas). Ele não pode ser lançado manualmente.',
             ]);
         }
 
@@ -196,20 +187,20 @@ class HistoricoManualController extends Controller
 
         // Um lançamento por (aluno, ano) — bloqueia duplicar em outro registro.
         $dupQuery = HistoricoManual::where('hmn_aln_id', $aluno->aln_id)
-            ->where('hmn_anl_id', $data['hmn_anl_id']);
+            ->where('hmn_ano', $data['hmn_ano']);
         if ($registro) {
             $dupQuery->where('hmn_id', '!=', $registro->hmn_id);
         }
         if ($dupQuery->exists()) {
             throw ValidationException::withMessages([
-                'hmn_anl_id' => 'Já existe um lançamento manual para este aluno neste ano letivo.',
+                'hmn_ano' => 'Já existe um lançamento manual para este aluno neste ano letivo.',
             ]);
         }
 
         DB::transaction(function () use ($data, $aluno, &$registro) {
             $payload = [
                 'hmn_aln_id'        => (int) $aluno->aln_id,
-                'hmn_anl_id'        => (int) $data['hmn_anl_id'],
+                'hmn_ano'           => (int) $data['hmn_ano'],
                 'hmn_ser_id'        => (int) $data['hmn_ser_id'],
                 'hmn_esc_id'        => $data['hmn_esc_id'] ?? null,
                 'hmn_esc_nome'      => $data['hmn_esc_id'] ? null : ($data['hmn_esc_nome'] ?? null),

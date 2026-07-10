@@ -15,7 +15,6 @@ interface AnoSistema {
     anl_id: number; anl_ano: number; serie: string | null; escola: string | null;
     situacao: string | null; disciplinas: { nome: string; mf: string }[];
 }
-interface AnoLetivo { anl_id: number; anl_ano: number }
 interface Segmento { seg_id: number; seg_nome_reduzido: string }
 interface Conceito { cnc_id: number; cnc_sigla: string; cnc_descricao: string }
 interface Situacao { tas_cod: number; tas_descricao: string }
@@ -23,7 +22,7 @@ interface DiscLinha { hmd_dis_id: number | null; dis_nome?: string | null; tipo:
 interface DiscSalva { hmd_dis_id: number; dis_nome: string | null; hmd_mf: number | string | null; hmd_cnc_id: number | null; cnc_sigla: string | null }
 interface Lancamento {
     hmn_id: number;
-    hmn_anl_id: number; anl_ano: number | null;
+    hmn_ano: number;
     hmn_ser_id: number; serie: string | null;
     hmn_esc_id: number | null; escola: string | null; hmn_esc_nome: string | null;
     hmn_mun_id: number | null; municipio: Municipio | null;
@@ -39,7 +38,6 @@ const loading = ref(false);
 const processing = ref(false);
 const errors = ref<Record<string, string>>({});
 const anosSistema = ref<AnoSistema[]>([]);
-const anosLetivos = ref<AnoLetivo[]>([]);
 const segmentos = ref<Segmento[]>([]);
 const conceitos = ref<Conceito[]>([]);
 const situacoes = ref<Situacao[]>([]);
@@ -50,7 +48,7 @@ const escolaMode = ref<'rede' | 'livre'>('rede');
 
 const form = reactive({
     hmn_id: null as number | null,
-    hmn_anl_id: null as number | null,
+    hmn_ano: '' as number | string,
     seg_id: null as number | null,
     hmn_ser_id: null as number | null,
     serie_label: null as string | null,
@@ -66,10 +64,42 @@ const form = reactive({
     disciplinas: [] as DiscLinha[],
 });
 
-const anosDisponiveis = computed(() => {
-    const usados = new Set(lancamentos.value.map((l) => l.hmn_anl_id).filter((v) => v !== form.hmn_anl_id));
-    return anosLetivos.value.filter((a) => !usados.has(a.anl_id));
-});
+// Classe visual dos inputs numéricos (input nativo p/ garantir clamp no DOM).
+const inputCls =
+    'flex h-9 w-full min-w-0 rounded-md border border-input bg-background px-3 text-sm tabular-nums ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
+
+// Corrige o valor exibido no próprio elemento — necessário porque clampar para
+// um valor já vigente não dispara re-render do v-model interno do componente.
+const soDigitos = (e: Event, max: number): string => {
+    const el = e.target as HTMLInputElement;
+    const s = el.value.replace(/\D/g, '').slice(0, max);
+    el.value = s;
+    return s;
+};
+
+const onAnoInput = (e: Event) => {
+    const s = soDigitos(e, 4);
+    form.hmn_ano = s === '' ? '' : Number(s);
+};
+const onHorasInput = (e: Event) => {
+    const s = soDigitos(e, 5);
+    form.hmn_carga_horaria = s === '' ? '' : Number(s);
+};
+const onDiasInput = (e: Event) => {
+    const s = soDigitos(e, 3);
+    form.hmn_dias_letivos = s === '' ? '' : Number(s);
+};
+
+// Frequência: decimal com teto de 100%.
+const onFreqInput = (e: Event) => {
+    const el = e.target as HTMLInputElement;
+    let s = el.value.replace(/[^\d.]/g, '');
+    const i = s.indexOf('.');
+    if (i !== -1) s = s.slice(0, i + 1) + s.slice(i + 1).replace(/\./g, '');
+    if (s !== '' && s !== '.' && Number(s) > 100) s = '100';
+    el.value = s;
+    form.hmn_frequencia = s;
+};
 
 // Série filtrada pelo segmento escolhido (seg_id vira query da busca remota).
 const serieFetchUrl = computed(() =>
@@ -85,7 +115,6 @@ const carregar = async () => {
         if (r.ok) {
             const j = await r.json();
             anosSistema.value = j.anos_sistema ?? [];
-            anosLetivos.value = j.anos_letivos ?? [];
             segmentos.value = j.segmentos ?? [];
             conceitos.value = j.conceitos ?? [];
             situacoes.value = j.situacoes ?? [];
@@ -101,7 +130,7 @@ watch(() => props.open, (v) => {
 });
 
 const resetForm = () => {
-    form.hmn_id = null; form.hmn_anl_id = null; form.seg_id = null; form.hmn_ser_id = null; form.serie_label = null;
+    form.hmn_id = null; form.hmn_ano = ''; form.seg_id = null; form.hmn_ser_id = null; form.serie_label = null;
     form.hmn_esc_id = null; form.escola_label = null; form.hmn_esc_nome = ''; form.hmn_mun_id = null; form.municipio_initial = null;
     form.hmn_carga_horaria = ''; form.hmn_dias_letivos = ''; form.hmn_frequencia = ''; form.hmn_tas_cod = null;
     form.disciplinas = [{ hmd_dis_id: null, dis_nome: null, tipo: 'num', hmd_mf: '', hmd_cnc_id: null }];
@@ -113,7 +142,7 @@ const novo = () => { resetForm(); showForm.value = true; };
 
 const editar = (l: Lancamento) => {
     form.hmn_id = l.hmn_id;
-    form.hmn_anl_id = l.hmn_anl_id;
+    form.hmn_ano = l.hmn_ano;
     form.seg_id = null;
     form.hmn_ser_id = l.hmn_ser_id; form.serie_label = l.serie;
     form.hmn_esc_id = l.hmn_esc_id; form.escola_label = l.escola;
@@ -139,7 +168,7 @@ const salvar = () => {
     errors.value = {};
     const payload: Record<string, unknown> = {
         hmn_id: form.hmn_id,
-        hmn_anl_id: form.hmn_anl_id,
+        hmn_ano: form.hmn_ano === '' ? null : form.hmn_ano,
         hmn_ser_id: form.hmn_ser_id,
         hmn_esc_id: escolaMode.value === 'rede' ? form.hmn_esc_id : null,
         hmn_esc_nome: escolaMode.value === 'livre' ? form.hmn_esc_nome : null,
@@ -167,7 +196,7 @@ const salvar = () => {
 
 const remover = (l: Lancamento) => {
     if (!props.aluno) return;
-    if (!confirm(`Remover o lançamento de ${l.anl_ano} (${l.serie ?? ''})?`)) return;
+    if (!confirm(`Remover o lançamento de ${l.hmn_ano} (${l.serie ?? ''})?`)) return;
     router.delete(`/alunos/${props.aluno.aln_id}/historico-manual/${l.hmn_id}`, {
         preserveScroll: true, preserveState: true,
         onSuccess: () => carregar(),
@@ -223,7 +252,7 @@ const err = (k: string) => errors.value[k];
                     <ul v-else-if="!showForm" class="divide-y rounded-lg border">
                         <li v-for="l in lancamentos" :key="l.hmn_id" class="flex items-center justify-between gap-2 px-3 py-2 text-sm">
                             <div>
-                                <span class="tabular-nums font-medium">{{ l.anl_ano }}</span> — {{ l.serie ?? '—' }}
+                                <span class="tabular-nums font-medium">{{ l.hmn_ano }}</span> — {{ l.serie ?? '—' }}
                                 <span class="text-muted-foreground">· {{ l.escola ?? l.hmn_esc_nome ?? '—' }} · {{ l.situacao ?? '—' }} · {{ l.disciplinas.length }} disc.</span>
                             </div>
                             <div class="flex items-center gap-1">
@@ -239,11 +268,16 @@ const err = (k: string) => errors.value[k];
                     <div class="grid items-start gap-4 sm:grid-cols-3">
                         <div class="grid gap-1.5">
                             <FormLabel :required="true">Ano Letivo</FormLabel>
-                            <select v-model.number="form.hmn_anl_id" class="h-9 w-full min-w-0 rounded-md border border-input bg-background px-3 text-sm">
-                                <option :value="null">Selecione...</option>
-                                <option v-for="a in anosDisponiveis" :key="a.anl_id" :value="a.anl_id">{{ a.anl_ano }}</option>
-                            </select>
-                            <InputError :message="err('hmn_anl_id')" />
+                            <input
+                                :value="form.hmn_ano"
+                                type="text"
+                                inputmode="numeric"
+                                maxlength="4"
+                                placeholder="Ex.: 2018"
+                                :class="inputCls"
+                                @input="onAnoInput"
+                            />
+                            <InputError :message="err('hmn_ano')" />
                         </div>
                         <div class="grid gap-1.5">
                             <FormLabel>Segmento</FormLabel>
@@ -313,15 +347,15 @@ const err = (k: string) => errors.value[k];
                         </div>
                         <div class="grid gap-1.5">
                             <FormLabel>Carga horária</FormLabel>
-                            <Input v-model="form.hmn_carga_horaria" type="number" min="0" max="9999" />
+                            <input :value="form.hmn_carga_horaria" type="text" inputmode="numeric" maxlength="5" :class="inputCls" @input="onHorasInput" />
                         </div>
                         <div class="grid gap-1.5">
                             <FormLabel>Dias letivos</FormLabel>
-                            <Input v-model="form.hmn_dias_letivos" type="number" min="0" max="400" />
+                            <input :value="form.hmn_dias_letivos" type="text" inputmode="numeric" maxlength="3" :class="inputCls" @input="onDiasInput" />
                         </div>
                         <div class="grid gap-1.5">
                             <FormLabel>Frequência (%)</FormLabel>
-                            <Input v-model="form.hmn_frequencia" type="number" min="0" max="100" step="0.01" />
+                            <input :value="form.hmn_frequencia" type="text" inputmode="decimal" maxlength="6" :class="inputCls" @input="onFreqInput" />
                         </div>
                     </div>
 

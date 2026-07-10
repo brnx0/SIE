@@ -5,7 +5,6 @@ namespace App\Models\Aluno;
 use App\Models\Disciplina\Disciplina;
 use App\Models\Escola\Escola;
 use App\Models\Matricula\TurmaAlunoSituacao;
-use App\Models\Parametro\AnoLetivo;
 use App\Models\Serie\Serie;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -30,7 +29,7 @@ class HistoricoManual extends Model
 
     protected $fillable = [
         'hmn_aln_id',
-        'hmn_anl_id',
+        'hmn_ano',
         'hmn_ser_id',
         'hmn_esc_id',
         'hmn_esc_nome',
@@ -43,6 +42,7 @@ class HistoricoManual extends Model
     ];
 
     protected $casts = [
+        'hmn_ano'           => 'integer',
         'hmn_frequencia'    => 'decimal:2',
         'hmn_carga_horaria' => 'integer',
         'hmn_dias_letivos'  => 'integer',
@@ -52,11 +52,6 @@ class HistoricoManual extends Model
     public function disciplinas(): HasMany
     {
         return $this->hasMany(HistoricoManualDisciplina::class, 'hmd_hmn_id', 'hmn_id');
-    }
-
-    public function anoLetivo(): BelongsTo
-    {
-        return $this->belongsTo(AnoLetivo::class, 'hmn_anl_id', 'anl_id');
     }
 
     public function serie(): BelongsTo
