@@ -105,11 +105,11 @@ const aposMatricular = async () => {
                     </select>
                 </div>
                 <div class="grid gap-1">
-                    <FormLabel>Escola</FormLabel>
+                    <FormLabel :required="true">Escola</FormLabel>
                     <LocalCombobox
                         :model-value="fEscId === '' ? null : fEscId"
                         :items="escolaItems"
-                        placeholder="Todas"
+                        placeholder="Selecione a escola"
                         @update:model-value="(v) => (fEscId = v ?? '')"
                     />
                 </div>

@@ -8,11 +8,34 @@ export const ESCOLARIDADES = [
     { value: 7, label: 'Pós-graduação' },
     { value: 8, label: 'Mestrado / Doutorado' },
     { value: 9, label: 'Magistério' },
-    { value: 10, label: 'Graduação com Licenciatura' },
 ] as const;
 
-// Níveis de escolaridade (ESCOLARIDADES) que exigem informar o curso superior.
-export const NIVEIS_EXIGEM_CURSO = [5, 6, 7, 8, 10];
+// Níveis de graduação — exigem informar o curso de formação superior (cfs).
+export const NIVEIS_EXIGEM_CURSO = [5, 6, 10];
+
+// Níveis de pós — exigem informar a área de pós-graduação (fes_pos_area).
+export const NIVEIS_POS = [7, 8];
+
+// Níveis superior (graduação + pós) — permitem informar a instituição (IES).
+export const NIVEIS_EXIGE_IES = [5, 6, 7, 8, 10];
+
+// Níveis de graduação CONCLUÍDA — pré-requisito para cadastrar pós.
+export const NIVEIS_SUPERIOR_COMPLETO = [6, 10];
+
+// Áreas de pós-graduação (Censo/INEP). Código -> rótulo. 99 = Programas básicos.
+export const AREAS_POS_GRADUACAO = [
+    { value: 1, label: 'Educação' },
+    { value: 2, label: 'Artes e humanidades' },
+    { value: 3, label: 'Ciências sociais, comunicação e informação' },
+    { value: 4, label: 'Negócios, administração e direito' },
+    { value: 5, label: 'Ciências naturais, matemática e estatística' },
+    { value: 6, label: 'Computação e Tecnologias da Informação e Comunicação (TIC)' },
+    { value: 7, label: 'Engenharia, produção e construção' },
+    { value: 8, label: 'Agricultura, silvicultura, pesca e veterinária' },
+    { value: 9, label: 'Saúde e bem-estar' },
+    { value: 10, label: 'Serviços' },
+    { value: 99, label: 'Programas básicos' },
+] as const;
 
 export const ESTADOS_CIVIS = [
     { value: 1, label: 'Solteiro(a)' },

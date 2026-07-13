@@ -131,20 +131,45 @@ class StoreFuncionarioRequest extends FormRequest
             'escolaridades.*.fes_ano_inicio' => ['nullable', 'integer', 'min:1900', 'max:' . $anoMax],
             'escolaridades.*.fes_ano_fim' => ['nullable', 'integer', 'min:1900', 'max:' . $anoMax],
             'escolaridades.*.fes_cfs_id' => ['nullable', 'integer', 'exists:edu_curso_formacao_superior,cfs_id'],
+            'escolaridades.*.fes_pos_area' => ['nullable', 'integer', Rule::in([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 99])],
+            'escolaridades.*.fes_ies_id' => ['nullable', 'integer', 'exists:edu_instituicao_ensino_superior,ies_id'],
         ];
     }
 
     public function withValidator(Validator $validator): void
     {
-        // Curso é obrigatório quando o nível é de ensino superior (5,6,7,8,10).
+        // Regras por nível: graduação (5,6,10) exige curso; pós (7,8) exige área de pós
+        // e só é permitida se já houver graduação concluída (6,10) no mesmo cadastro.
         $validator->after(function (Validator $v) {
-            $niveisExigemCurso = [5, 6, 7, 8, 10];
-            foreach ((array) $this->input('escolaridades', []) as $i => $esc) {
+            $niveisExigemCurso     = [5, 6, 10];
+            $niveisPos             = [7, 8];
+            $niveisSuperiorCompleto = [6, 10];
+
+            $escolaridades = (array) $this->input('escolaridades', []);
+
+            $temSuperiorCompleto = collect($escolaridades)
+                ->contains(fn ($e) => in_array((int) ($e['fes_nivel'] ?? 0), $niveisSuperiorCompleto, true));
+
+            foreach ($escolaridades as $i => $esc) {
                 $nivel = (int) ($esc['fes_nivel'] ?? 0);
-                $curso = $esc['fes_cfs_id'] ?? null;
-                if (in_array($nivel, $niveisExigemCurso, true) && ($curso === null || $curso === '')) {
-                    $v->errors()->add("escolaridades.{$i}.fes_cfs_id", 'Selecione o curso para níveis de ensino superior.');
+
+                if (in_array($nivel, $niveisExigemCurso, true)) {
+                    $curso = $esc['fes_cfs_id'] ?? null;
+                    if ($curso === null || $curso === '') {
+                        $v->errors()->add("escolaridades.{$i}.fes_cfs_id", 'Selecione o curso para níveis de graduação.');
+                    }
                 }
+
+                if (in_array($nivel, $niveisPos, true)) {
+                    $area = $esc['fes_pos_area'] ?? null;
+                    if ($area === null || $area === '') {
+                        $v->errors()->add("escolaridades.{$i}.fes_pos_area", 'Selecione a área de pós-graduação.');
+                    }
+                    if (! $temSuperiorCompleto) {
+                        $v->errors()->add("escolaridades.{$i}.fes_nivel", 'Para cadastrar pós-graduação, informe ao menos um ensino superior completo.');
+                    }
+                }
+
                 $ini = $esc['fes_ano_inicio'] ?? null;
                 $fim = $esc['fes_ano_fim'] ?? null;
                 if ($ini !== null && $ini !== '' && $fim !== null && $fim !== '' && (int) $fim < (int) $ini) {

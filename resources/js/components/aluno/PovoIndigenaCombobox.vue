@@ -27,13 +27,8 @@ let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
 watch(query, (q) => {
     if (debounceTimer) clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(() => {
-        if (q.trim().length >= 1) {
-            search(q.trim());
-        } else {
-            items.value = [];
-        }
-    }, 250);
+    // Lista sempre; query vazia = todos (endpoint retorna os primeiros).
+    debounceTimer = setTimeout(() => search(q.trim()), 250);
 });
 
 watch(
@@ -68,6 +63,7 @@ const handleOutside = (e: MouseEvent) => {
 
 const openPanel = () => {
     open.value = true;
+    search('');   // já lista os registros disponíveis ao abrir
     setTimeout(() => inputEl.value?.focus(), 0);
 };
 
@@ -119,13 +115,7 @@ onBeforeUnmount(() => document.removeEventListener('mousedown', handleOutside));
 
             <ul class="max-h-64 overflow-y-auto py-1 text-sm">
                 <li
-                    v-if="!loading && query.length < 1"
-                    class="px-3 py-2 text-muted-foreground"
-                >
-                    Comece a digitar o nome do povo
-                </li>
-                <li
-                    v-else-if="!loading && items.length === 0"
+                    v-if="!loading && items.length === 0"
                     class="px-3 py-2 text-muted-foreground"
                 >
                     Nenhum povo encontrado.

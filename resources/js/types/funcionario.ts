@@ -19,6 +19,12 @@ export interface CursoFormacaoSuperior {
     cfs_grau: string | null;
 }
 
+export interface InstituicaoEnsinoSuperior {
+    ies_id: number;
+    ies_codigo: number;
+    ies_nome: string;
+}
+
 export interface FuncionarioEscolaridade {
     fes_id: number;
     fes_fun_id: number;
@@ -26,7 +32,10 @@ export interface FuncionarioEscolaridade {
     fes_ano_inicio: number | null;
     fes_ano_fim: number | null;
     fes_cfs_id: number | null;
+    fes_ies_id: number | null;
+    fes_pos_area: number | null;
     curso?: CursoFormacaoSuperior | null;
+    instituicao?: InstituicaoEnsinoSuperior | null;
 }
 
 export interface EscolaridadeFormData {
@@ -34,8 +43,11 @@ export interface EscolaridadeFormData {
     fes_ano_inicio: number | '' | null;
     fes_ano_fim: number | '' | null;
     fes_cfs_id: number | null;
+    fes_ies_id: number | null;
+    fes_pos_area: number | '' | null;
     // Apenas para exibição no modo create (não é enviado como coluna).
     curso?: CursoFormacaoSuperior | null;
+    instituicao?: InstituicaoEnsinoSuperior | null;
 }
 
 export interface FuncionarioLotacao {

@@ -194,7 +194,7 @@ const form = useForm<FuncionarioFormData>({
     // Escolaridades: no cadastro exige ao menos uma; na edição são geridas na aba (rotas próprias).
     escolaridades: props.initial
         ? []
-        : [{ fes_nivel: '', fes_ano_inicio: '', fes_ano_fim: '', fes_cfs_id: null, curso: null }],
+        : [{ fes_nivel: '', fes_ano_inicio: '', fes_ano_fim: '', fes_cfs_id: null, fes_ies_id: null, fes_pos_area: '', curso: null, instituicao: null }],
     confirm_homonimo: false,
     _method: props.mode === 'edit' ? 'put' : 'post',
 });
@@ -336,8 +336,19 @@ const goToFirstErrorTab = async () => {
 
 const submitLabel = computed(() => (props.mode === 'create' ? 'Cadastrar funcionário' : 'Salvar alterações'));
 
+// Modo edição: enquanto um sub-registro (escolaridade ou admissão/lotação) estiver
+// aberto para inclusão/edição, o usuário deve finalizar ou cancelar antes de salvar o principal.
+const escolaridadeEditing = ref(false);
+const admissaoEditing = ref(false);
+const subFormAberto = computed(() => escolaridadeEditing.value || admissaoEditing.value);
+
 const submit = () => {
     if (isReadOnly.value) return;
+    if (subFormAberto.value) {
+        // Leva o usuário ao sub-registro pendente para finalizar ou cancelar.
+        activeTab.value = escolaridadeEditing.value ? 'escolaridade' : 'admissao-lotacao';
+        return;
+    }
     const opts = {
         onError: (errors: Record<string, string>) => {
             handleHomonimo(errors);
@@ -434,16 +445,20 @@ const initials = computed(() => {
             <Link href="/funcionarios">
                 <Button type="button" variant="outline">Voltar para listagem</Button>
             </Link>
-            <Button
-                v-if="!isReadOnly"
-                type="submit"
-                :disabled="form.processing"
-                class="bg-sky-600 text-white hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-400"
-            >
-                <LoaderCircle v-if="form.processing" class="mr-2 size-4 animate-spin" />
-                <Save v-else class="mr-2 size-4" />
-                {{ submitLabel }}
-            </Button>
+            <div v-if="!isReadOnly" class="flex items-center gap-3">
+                <span v-if="subFormAberto" class="max-w-xs text-right text-xs text-amber-600 dark:text-amber-400">
+                    Finalize ou cancele o registro em edição para salvar.
+                </span>
+                <Button
+                    type="submit"
+                    :disabled="form.processing || subFormAberto"
+                    class="bg-sky-600 text-white hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-400"
+                >
+                    <LoaderCircle v-if="form.processing" class="mr-2 size-4 animate-spin" />
+                    <Save v-else class="mr-2 size-4" />
+                    {{ submitLabel }}
+                </Button>
+            </div>
         </div>
 
         <Tabs v-model="activeTab">
@@ -725,7 +740,12 @@ const initials = computed(() => {
                     :errors="(form.errors as any)"
                     @update:model-value="(v) => (form.escolaridades = v)"
                 />
-                <EscolaridadeTab v-else-if="initial" mode="edit" :funcionario="initial" />
+                <EscolaridadeTab
+                    v-else-if="initial"
+                    mode="edit"
+                    :funcionario="initial"
+                    @update:editing="(v) => (escolaridadeEditing = v)"
+                />
             </TabsContent>
 
             <!-- Aba 3: Documentação -->
@@ -1042,7 +1062,11 @@ const initials = computed(() => {
                 <div v-if="mode === 'create'" class="rounded-xl border-2 border-dashed bg-card py-12 text-center text-sm text-muted-foreground shadow-sm">
                     Salve o funcionário primeiro para gerenciar admissões e lotações.
                 </div>
-                <AdmissaoLotacaoTab v-else-if="initial" :funcionario="initial" />
+                <AdmissaoLotacaoTab
+                    v-else-if="initial"
+                    :funcionario="initial"
+                    @update:editing="(v) => (admissaoEditing = v)"
+                />
             </TabsContent>
 
             <TabsContent v-if="mode === 'edit'" value="horario">

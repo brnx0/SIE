@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Diario\StorePlanoAeeRequest;
 use App\Models\Diario\DiarioPlanoAee;
 use App\Models\Parametro\AnoLetivo;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -330,7 +331,13 @@ class PlanoAeeController extends Controller
         if ($request->user()->isAdmin() || $this->soVisualizacaoTela($request)) {
             return;
         }
-        abort_unless((int) $plano->dae_user_id === (int) $request->user()->id, 403);
+        // Sem página crua de 403: volta p/ a lista com flash → toast amigável no front.
+        if ((int) $plano->dae_user_id !== (int) $request->user()->id) {
+            throw new HttpResponseException(
+                redirect()->route('diario.planos-aee.index')
+                    ->with('error', 'Você só pode editar planos de aula AEE que você mesmo criou.')
+            );
+        }
     }
 
     private function resumoProfessor($user): array

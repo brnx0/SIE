@@ -282,7 +282,7 @@ const salvarAvaliacao = async () => {
 };
 
 const excluirAvaliacao = async (a: Avaliacao) => {
-    if (!confirm(`Excluir a avaliação "${a.ava_descricao}" e todas as notas lançadas nela?`)) return;
+    if (!confirm(`Excluir a avaliação "${a.iav_nome ?? a.ava_descricao}" e todas as notas lançadas nela?`)) return;
     try {
         const r = await fetch(`/api/diario/notas/avaliacoes/${a.ava_id}`, {
             method: 'DELETE',

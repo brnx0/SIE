@@ -1,20 +1,29 @@
 <script setup lang="ts">
 import CursoFormacaoCombobox from '@/components/funcionario/CursoFormacaoCombobox.vue';
+import InstituicaoCombobox from '@/components/funcionario/InstituicaoCombobox.vue';
 import FormLabel from '@/components/common/FormLabel.vue';
 import InputError from '@/components/common/InputError.vue';
 import RefreshButton from '@/components/common/RefreshButton.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ESCOLARIDADES, NIVEIS_EXIGEM_CURSO } from '@/lib/funcionarioEnums';
+import {
+    AREAS_POS_GRADUACAO,
+    ESCOLARIDADES,
+    NIVEIS_EXIGE_IES,
+    NIVEIS_EXIGEM_CURSO,
+    NIVEIS_POS,
+    NIVEIS_SUPERIOR_COMPLETO,
+} from '@/lib/funcionarioEnums';
 import type {
     CursoFormacaoSuperior,
     EscolaridadeFormData,
     Funcionario,
     FuncionarioEscolaridade,
+    InstituicaoEnsinoSuperior,
 } from '@/types/funcionario';
 import { router } from '@inertiajs/vue3';
-import { Edit3, GraduationCap, Loader2, Plus, Trash2, X } from 'lucide-vue-next';
-import { computed, reactive, ref } from 'vue';
+import { Building2, Edit3, GraduationCap, Loader2, Plus, Trash2, X } from 'lucide-vue-next';
+import { computed, reactive, ref, watch } from 'vue';
 
 const props = defineProps<{
     mode: 'create' | 'edit';
@@ -25,25 +34,46 @@ const props = defineProps<{
 
 const emit = defineEmits<{
     (e: 'update:modelValue', value: EscolaridadeFormData[]): void;
+    (e: 'update:editing', value: boolean): void;
 }>();
 
 const nivelLabel = (n: number | '' | null | undefined): string =>
     ESCOLARIDADES.find((e) => e.value === Number(n))?.label ?? '—';
 
+const areaLabel = (c: number | '' | null | undefined): string =>
+    AREAS_POS_GRADUACAO.find((a) => a.value === Number(c))?.label ?? '—';
+
 const exigeCurso = (n: number | '' | null | undefined): boolean =>
     NIVEIS_EXIGEM_CURSO.includes(Number(n));
+
+const ehPos = (n: number | '' | null | undefined): boolean =>
+    NIVEIS_POS.includes(Number(n));
+
+const exigeIes = (n: number | '' | null | undefined): boolean =>
+    NIVEIS_EXIGE_IES.includes(Number(n));
+
+const ehSuperiorCompleto = (n: number | '' | null | undefined): boolean =>
+    NIVEIS_SUPERIOR_COMPLETO.includes(Number(n));
 
 const novaLinha = (): EscolaridadeFormData => ({
     fes_nivel: '',
     fes_ano_inicio: '',
     fes_ano_fim: '',
     fes_cfs_id: null,
+    fes_ies_id: null,
+    fes_pos_area: '',
     curso: null,
+    instituicao: null,
 });
 
 // ─── Modo CREATE (lista inline no formulário do funcionário) ─────────────
 
 const rows = computed<EscolaridadeFormData[]>(() => props.modelValue ?? []);
+
+// Pós só é permitida se já houver graduação concluída (6,10) entre as linhas.
+const temSuperiorCompletoCreate = computed(() =>
+    rows.value.some((r) => ehSuperiorCompleto(r.fes_nivel)),
+);
 
 const patchRow = (i: number, patch: Partial<EscolaridadeFormData>) => {
     emit(
@@ -67,10 +97,17 @@ const removeRow = (i: number) => {
 const onCreateNivel = (i: number, value: string) => {
     const nivel = value === '' ? '' : (Number(value) as number);
     const patch: Partial<EscolaridadeFormData> = { fes_nivel: nivel };
-    // Ao mudar para um nível que não exige curso, limpa o curso selecionado.
+    // Limpa campos que não se aplicam ao novo nível.
     if (!exigeCurso(nivel)) {
         patch.fes_cfs_id = null;
         patch.curso = null;
+    }
+    if (!ehPos(nivel)) {
+        patch.fes_pos_area = '';
+    }
+    if (!exigeIes(nivel)) {
+        patch.fes_ies_id = null;
+        patch.instituicao = null;
     }
     patchRow(i, patch);
 };
@@ -89,14 +126,29 @@ const editingId = ref<number | null>(null);
 const processing = ref(false);
 const errs = ref<Record<string, string>>({});
 const cursoInitial = ref<CursoFormacaoSuperior | null>(null);
+const instituicaoInitial = ref<InstituicaoEnsinoSuperior | null>(null);
 
 const form = reactive<EscolaridadeFormData>(novaLinha());
 
+// Sinaliza ao formulário principal que há um sub-registro em edição/inclusão aberto.
+watch(showForm, (v) => emit('update:editing', v));
+
 const formExigeCurso = computed(() => exigeCurso(form.fes_nivel));
+const formEhPos = computed(() => ehPos(form.fes_nivel));
+const formExigeIes = computed(() => exigeIes(form.fes_nivel));
+
+// Já existe graduação concluída (6,10) cadastrada (ignora a própria linha em edição)?
+const temSuperiorCompletoEdit = computed(() =>
+    escolaridades.value.some(
+        (e) => ehSuperiorCompleto(e.fes_nivel) && e.fes_id !== editingId.value,
+    ),
+);
+const posSemPreRequisito = computed(() => formEhPos.value && !temSuperiorCompletoEdit.value);
 
 const resetForm = () => {
     Object.assign(form, novaLinha());
     cursoInitial.value = null;
+    instituicaoInitial.value = null;
     errs.value = {};
     editingId.value = null;
     showForm.value = false;
@@ -112,8 +164,12 @@ const openEdit = (esc: FuncionarioEscolaridade) => {
     form.fes_ano_inicio = esc.fes_ano_inicio ?? '';
     form.fes_ano_fim = esc.fes_ano_fim ?? '';
     form.fes_cfs_id = esc.fes_cfs_id;
+    form.fes_ies_id = esc.fes_ies_id;
+    form.fes_pos_area = esc.fes_pos_area ?? '';
     form.curso = esc.curso ?? null;
+    form.instituicao = esc.instituicao ?? null;
     cursoInitial.value = esc.curso ?? null;
+    instituicaoInitial.value = esc.instituicao ?? null;
     errs.value = {};
     editingId.value = esc.fes_id;
     showForm.value = true;
@@ -126,12 +182,26 @@ const onEditNivel = (value: string) => {
         form.curso = null;
         cursoInitial.value = null;
     }
+    if (!ehPos(form.fes_nivel)) {
+        form.fes_pos_area = '';
+    }
+    if (!exigeIes(form.fes_nivel)) {
+        form.fes_ies_id = null;
+        form.instituicao = null;
+        instituicaoInitial.value = null;
+    }
 };
 
 const onCursoSelect = (curso: CursoFormacaoSuperior | null) => {
     form.fes_cfs_id = curso?.cfs_id ?? null;
     form.curso = curso;
     cursoInitial.value = curso;
+};
+
+const onInstituicaoSelect = (ies: InstituicaoEnsinoSuperior | null) => {
+    form.fes_ies_id = ies?.ies_id ?? null;
+    form.instituicao = ies;
+    instituicaoInitial.value = ies;
 };
 
 const numOuNull = (v: number | '' | null): number | null =>
@@ -145,14 +215,27 @@ const ano4 = (v: string | number): number | '' => {
 
 const submit = () => {
     if (!props.funcionario) return;
+
+    // Bloqueio local do pré-requisito de pós (o backend também valida).
+    if (posSemPreRequisito.value) {
+        errs.value = {
+            fes_nivel:
+                'Para cadastrar pós-graduação, o funcionário deve ter ao menos um ensino superior completo cadastrado.',
+        };
+        return;
+    }
+
     processing.value = true;
     errs.value = {};
 
+    const nivel = form.fes_nivel === '' ? null : Number(form.fes_nivel);
     const data = {
-        fes_nivel: form.fes_nivel === '' ? null : Number(form.fes_nivel),
+        fes_nivel: nivel,
         fes_ano_inicio: numOuNull(form.fes_ano_inicio),
         fes_ano_fim: numOuNull(form.fes_ano_fim),
-        fes_cfs_id: form.fes_cfs_id ?? null,
+        fes_cfs_id: formExigeCurso.value ? (form.fes_cfs_id ?? null) : null,
+        fes_pos_area: formEhPos.value ? numOuNull(form.fes_pos_area) : null,
+        fes_ies_id: formExigeIes.value ? (form.fes_ies_id ?? null) : null,
     };
 
     const base = `/funcionarios/${props.funcionario.fun_id}/escolaridades`;
@@ -182,7 +265,7 @@ const remove = (esc: FuncionarioEscolaridade) => {
     });
 };
 
-const periodo =(ini: number | null | '', fim: number | null | ''): string => {
+const periodo = (ini: number | null | '', fim: number | null | ''): string => {
     const a = ini || '';
     const b = fim || '';
     if (!a && !b) return '—';
@@ -197,7 +280,7 @@ const periodo =(ini: number | null | '', fim: number | null | ''): string => {
             <div>
                 <h3 class="text-sm font-semibold">Escolaridades</h3>
                 <p class="text-xs text-muted-foreground">
-                    Informe ao menos uma escolaridade. O curso é obrigatório para níveis de ensino superior.
+                    Informe ao menos uma escolaridade. O curso é obrigatório na graduação e a área na pós-graduação.
                 </p>
             </div>
             <Button type="button" variant="outline" size="sm" @click="addRow">
@@ -236,19 +319,52 @@ const periodo =(ini: number | null | '', fim: number | null | ''): string => {
                     </option>
                 </select>
                 <InputError :message="errText(i, 'fes_nivel')" />
+                <p v-if="ehPos(row.fes_nivel) && !temSuperiorCompletoCreate" class="text-xs text-amber-600 dark:text-amber-400">
+                    Pós exige ao menos um ensino superior completo (Superior Completo ou Graduação com Licenciatura) entre as escolaridades.
+                </p>
             </div>
 
-            <div class="grid gap-2">
-                <FormLabel :required="exigeCurso(row.fes_nivel)">Curso</FormLabel>
+            <!-- Instituição — níveis superior (5,6,7,8,10) -->
+            <div v-if="exigeIes(row.fes_nivel)" class="grid gap-2">
+                <FormLabel>Instituição de ensino superior</FormLabel>
+                <InstituicaoCombobox
+                    :model-value="row.fes_ies_id"
+                    :initial="row.instituicao ?? null"
+                    :invalid="!!errText(i, 'fes_ies_id')"
+                    @update:model-value="(v) => patchRow(i, { fes_ies_id: v })"
+                    @select="(c) => patchRow(i, { instituicao: c })"
+                />
+                <InputError :message="errText(i, 'fes_ies_id')" />
+            </div>
+
+            <!-- Curso — graduação (5,6,10) -->
+            <div v-if="exigeCurso(row.fes_nivel)" class="grid gap-2">
+                <FormLabel :required="true">Curso</FormLabel>
                 <CursoFormacaoCombobox
                     :model-value="row.fes_cfs_id"
                     :initial="row.curso ?? null"
                     :invalid="!!errText(i, 'fes_cfs_id')"
-                    :placeholder="exigeCurso(row.fes_nivel) ? 'Buscar curso...' : 'Opcional para este nível'"
+                    placeholder="Buscar curso..."
                     @update:model-value="(v) => patchRow(i, { fes_cfs_id: v })"
                     @select="(c) => patchRow(i, { curso: c })"
                 />
                 <InputError :message="errText(i, 'fes_cfs_id')" />
+            </div>
+
+            <!-- Área de pós — pós (7,8) -->
+            <div v-if="ehPos(row.fes_nivel)" class="grid gap-2">
+                <FormLabel :required="true">Área de pós-graduação</FormLabel>
+                <select
+                    :value="row.fes_pos_area === '' || row.fes_pos_area === null ? '' : row.fes_pos_area"
+                    class="h-10 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                    @change="(e) => patchRow(i, { fes_pos_area: (e.target as HTMLSelectElement).value === '' ? '' : Number((e.target as HTMLSelectElement).value) })"
+                >
+                    <option value="">Selecione...</option>
+                    <option v-for="opt in AREAS_POS_GRADUACAO" :key="opt.value" :value="opt.value">
+                        {{ opt.label }}
+                    </option>
+                </select>
+                <InputError :message="errText(i, 'fes_pos_area')" />
             </div>
 
             <div class="grid gap-2">
@@ -322,19 +438,52 @@ const periodo =(ini: number | null | '', fim: number | null | ''): string => {
                     </option>
                 </select>
                 <InputError :message="errs.fes_nivel" />
+                <p v-if="posSemPreRequisito" class="text-xs text-amber-600 dark:text-amber-400">
+                    Pós exige ao menos um ensino superior completo (Superior Completo ou Graduação com Licenciatura) já cadastrado.
+                </p>
             </div>
 
-            <div class="grid gap-2">
-                <FormLabel :required="formExigeCurso">Curso</FormLabel>
+            <!-- Instituição — níveis superior -->
+            <div v-if="formExigeIes" class="grid gap-2">
+                <FormLabel>Instituição de ensino superior</FormLabel>
+                <InstituicaoCombobox
+                    :model-value="form.fes_ies_id"
+                    :initial="instituicaoInitial"
+                    :invalid="!!errs.fes_ies_id"
+                    @update:model-value="(v) => (form.fes_ies_id = v)"
+                    @select="onInstituicaoSelect"
+                />
+                <InputError :message="errs.fes_ies_id" />
+            </div>
+
+            <!-- Curso — graduação -->
+            <div v-if="formExigeCurso" class="grid gap-2">
+                <FormLabel :required="true">Curso</FormLabel>
                 <CursoFormacaoCombobox
                     :model-value="form.fes_cfs_id"
                     :initial="cursoInitial"
                     :invalid="!!errs.fes_cfs_id"
-                    :placeholder="formExigeCurso ? 'Buscar curso...' : 'Opcional para este nível'"
+                    placeholder="Buscar curso..."
                     @update:model-value="(v) => (form.fes_cfs_id = v)"
                     @select="onCursoSelect"
                 />
                 <InputError :message="errs.fes_cfs_id" />
+            </div>
+
+            <!-- Área de pós — pós -->
+            <div v-if="formEhPos" class="grid gap-2">
+                <FormLabel :required="true">Área de pós-graduação</FormLabel>
+                <select
+                    :value="form.fes_pos_area === '' || form.fes_pos_area === null ? '' : form.fes_pos_area"
+                    class="h-10 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                    @change="(e) => (form.fes_pos_area = (e.target as HTMLSelectElement).value === '' ? '' : Number((e.target as HTMLSelectElement).value))"
+                >
+                    <option value="">Selecione...</option>
+                    <option v-for="opt in AREAS_POS_GRADUACAO" :key="opt.value" :value="opt.value">
+                        {{ opt.label }}
+                    </option>
+                </select>
+                <InputError :message="errs.fes_pos_area" />
             </div>
 
             <div class="grid gap-2">
@@ -397,6 +546,13 @@ const periodo =(ini: number | null | '', fim: number | null | ''): string => {
                     <span v-if="esc.curso" class="text-sm">
                         <span class="font-mono text-xs text-muted-foreground">{{ esc.curso.cfs_codigo }}</span>
                         — {{ esc.curso.cfs_nome }}
+                    </span>
+                    <span v-if="esc.fes_pos_area" class="text-sm">
+                        Área: {{ areaLabel(esc.fes_pos_area) }}
+                    </span>
+                    <span v-if="esc.instituicao" class="flex items-center gap-1 text-sm text-muted-foreground">
+                        <Building2 class="size-3.5 shrink-0" />
+                        {{ esc.instituicao.ies_nome }}
                     </span>
                     <span class="text-xs text-muted-foreground">
                         Período: {{ periodo(esc.fes_ano_inicio, esc.fes_ano_fim) }}

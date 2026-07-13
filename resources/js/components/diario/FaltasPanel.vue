@@ -559,21 +559,21 @@ const statusInfo = (aln: number): { label: string; cls: string } => {
                                         Aluno
                                     </th>
                                     <th v-for="t in temposDoDia" :key="t.trh_id" :class="['sticky top-0 z-20 border-b border-l px-2 py-1 text-center align-top backdrop-blur', aulaNaoExec(t.trh_id) ? 'bg-amber-100 dark:bg-amber-950/40' : (t.pode_editar ? 'bg-muted/90' : 'bg-muted/50')]">
-                                        <div class="mx-auto flex w-24 items-center justify-center gap-1 truncate text-xs font-semibold text-slate-700 dark:text-slate-200" :title="tempoLabel(t) + (t.fun_nome ? ' · ' + t.fun_nome : '')">
-                                            <span>{{ t.trh_tempo }}º<span v-if="t.dis_nome"> · {{ t.dis_nome }}</span></span>
+                                        <div class="mx-auto flex w-28 items-start justify-center gap-1 text-xs font-semibold text-slate-700 dark:text-slate-200" :title="tempoLabel(t) + (t.fun_nome ? ' · ' + t.fun_nome : '')">
+                                            <span class="whitespace-normal break-words leading-tight">{{ t.trh_tempo }}º<span v-if="t.dis_nome"> · {{ t.dis_nome }}</span></span>
                                             <template v-if="t.pode_editar && !aulaNaoExec(t.trh_id)">
-                                                <button type="button" :disabled="!editavel" title="Todos presentes" class="text-[11px] font-semibold text-emerald-600 hover:text-emerald-700 disabled:opacity-40" @click="marcarLote(t.trh_id, true)">✓</button>
-                                                <button type="button" :disabled="!editavel" title="Todos ausentes" class="text-[11px] font-semibold text-rose-600 hover:text-rose-700 disabled:opacity-40" @click="marcarLote(t.trh_id, false)">✕</button>
+                                                <button type="button" :disabled="!editavel" title="Todos presentes" class="shrink-0 text-[11px] font-semibold text-emerald-600 hover:text-emerald-700 disabled:opacity-40" @click="marcarLote(t.trh_id, true)">✓</button>
+                                                <button type="button" :disabled="!editavel" title="Todos ausentes" class="shrink-0 text-[11px] font-semibold text-rose-600 hover:text-rose-700 disabled:opacity-40" @click="marcarLote(t.trh_id, false)">✕</button>
                                             </template>
                                         </div>
-                                        <div class="mx-auto w-24 truncate text-[10px] font-normal text-muted-foreground" :title="t.fun_nome ?? ''">
+                                        <div class="mx-auto w-28 truncate text-[10px] font-normal text-muted-foreground" :title="t.fun_nome ?? ''">
                                             {{ nomeCurto(t.fun_nome) }}<span v-if="!t.pode_editar"> · leitura</span>
                                         </div>
                                         <button
                                             v-if="t.pode_editar"
                                             type="button"
                                             :disabled="!editavel || salvandoAula(t.trh_id)"
-                                            class="mx-auto mt-1.5 flex w-24 items-center justify-center gap-1 rounded-md border px-1.5 py-1 text-[11px] font-semibold leading-none shadow-sm transition active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
+                                            class="mx-auto mt-1.5 flex w-28 items-center justify-center gap-1 rounded-md border px-1.5 py-1 text-[11px] font-semibold leading-none shadow-sm transition active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
                                             :class="aulaNaoExec(t.trh_id)
                                                 ? 'border-amber-600 bg-amber-500 text-white shadow-amber-500/30 hover:bg-amber-600'
                                                 : 'border-amber-400 bg-amber-50 text-amber-700 hover:bg-amber-100 dark:border-amber-700/70 dark:bg-amber-950/40 dark:text-amber-300 dark:hover:bg-amber-900/40'"

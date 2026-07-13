@@ -181,7 +181,7 @@ const confirmar = async () => {
                 </div>
 
                 <!-- Detalhe -->
-                <div class="rounded-lg border bg-background p-4">
+                <div class="min-w-0 break-words rounded-lg border bg-background p-4">
                     <p v-if="!selecionado" class="py-10 text-center text-sm text-muted-foreground">
                         Selecione um aluno para ver detalhes.
                     </p>

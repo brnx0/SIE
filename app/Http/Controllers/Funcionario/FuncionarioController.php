@@ -66,12 +66,18 @@ class FuncionarioController extends Controller
             $funcionario = Funcionario::create($data);
 
             $intOuNull = fn ($v) => ($v === null || $v === '') ? null : (int) $v;
+            $niveisCurso = [5, 6, 10];
+            $niveisPos   = [7, 8];
+            $niveisIes   = [5, 6, 7, 8, 10];
             foreach ((array) $request->validated('escolaridades') as $esc) {
+                $nivel = (int) $esc['fes_nivel'];
                 $funcionario->escolaridades()->create([
-                    'fes_nivel'      => (int) $esc['fes_nivel'],
+                    'fes_nivel'      => $nivel,
                     'fes_ano_inicio' => $intOuNull($esc['fes_ano_inicio'] ?? null),
                     'fes_ano_fim'    => $intOuNull($esc['fes_ano_fim'] ?? null),
-                    'fes_cfs_id'     => $intOuNull($esc['fes_cfs_id'] ?? null),
+                    'fes_cfs_id'     => in_array($nivel, $niveisCurso, true) ? $intOuNull($esc['fes_cfs_id'] ?? null) : null,
+                    'fes_pos_area'   => in_array($nivel, $niveisPos, true) ? $intOuNull($esc['fes_pos_area'] ?? null) : null,
+                    'fes_ies_id'     => in_array($nivel, $niveisIes, true) ? $intOuNull($esc['fes_ies_id'] ?? null) : null,
                 ]);
             }
 
@@ -94,6 +100,7 @@ class FuncionarioController extends Controller
             'admissoes.lotacoes.cargo:crg_id,crg_nome',
             'escolaridades' => fn ($q) => $q->orderByDesc('fes_nivel')->orderByDesc('fes_ano_fim'),
             'escolaridades.curso:cfs_id,cfs_codigo,cfs_nome,cfs_grau',
+            'escolaridades.instituicao:ies_id,ies_codigo,ies_nome',
         ]);
 
         $diasMap = [

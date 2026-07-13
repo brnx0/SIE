@@ -1081,7 +1081,7 @@ const initials = computed(() => {
                                 <InputError :message="(form.errors as Record<string, string>)['saude.als_alergia_a']" />
                             </div>
                             <div class="grid gap-2 sm:col-span-2">
-                                <Label for="als_ds_alergias">Alergias / Restrições Alimentares</Label>
+                                <Label for="als_ds_alergias">Restrições Alimentares</Label>
                                 <Input id="als_ds_alergias" v-model="form.saude.als_ds_alergias" maxlength="500" />
                                 <InputError :message="(form.errors as Record<string, string>)['saude.als_ds_alergias']" />
                             </div>

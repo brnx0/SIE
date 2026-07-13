@@ -24,13 +24,13 @@ class TurmaProfessorController extends Controller
             'tup_dis_id' => 'disciplina',
         ]);
 
+        // 1 disciplina por turma: se já houver professor nela, bloqueia.
         $exists = TurmaProfessor::where('tup_tur_id', $turma->tur_id)
-            ->where('tup_fun_id', $data['tup_fun_id'])
             ->where('tup_dis_id', $data['tup_dis_id'])
             ->exists();
 
         if ($exists) {
-            return back()->withErrors(['tup_dis_id' => 'Combinação professor/disciplina já cadastrada nesta turma.']);
+            return back()->withErrors(['tup_dis_id' => 'Esta disciplina já está alocada nesta turma.']);
         }
 
         $apoio = TurmaProfessorApoio::where('tpa_tur_id', $turma->tur_id)
@@ -73,14 +73,14 @@ class TurmaProfessorController extends Controller
             'tup_dis_id' => 'disciplina',
         ]);
 
+        // 1 disciplina por turma: outra alocação (professor) já usando esta disciplina.
         $duplic = TurmaProfessor::where('tup_tur_id', $turma->tur_id)
-            ->where('tup_fun_id', $data['tup_fun_id'])
             ->where('tup_dis_id', $data['tup_dis_id'])
             ->where('tup_id', '!=', $turmaProfessor->tup_id)
             ->exists();
 
         if ($duplic) {
-            return back()->withErrors(['tup_dis_id' => 'Combinação professor/disciplina já cadastrada nesta turma.']);
+            return back()->withErrors(['tup_dis_id' => 'Esta disciplina já está alocada nesta turma.']);
         }
 
         $apoio = TurmaProfessorApoio::where('tpa_tur_id', $turma->tur_id)

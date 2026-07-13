@@ -115,6 +115,14 @@ return [
         'icone'     => 'Users',
     ],
     [
+        'slug'      => 'alunos-por-escola',
+        'titulo'    => 'Alunos por Escola',
+        'descricao' => 'Lista nominal (nome, matrícula, CPF e idade) dos alunos com matrícula ativa na escola, no ano em exercício.',
+        'categoria' => 'Aluno',
+        'grupo'     => 'central',
+        'icone'     => 'Users',
+    ],
+    [
         'slug'      => 'declaracao-matricula',
         'titulo'    => 'Declaração de Matrícula',
         'descricao' => 'Emite declaração de matrícula por aluno ou em lote por turma.',

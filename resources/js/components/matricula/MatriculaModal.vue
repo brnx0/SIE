@@ -933,7 +933,7 @@ const selectClass = 'flex h-10 w-full rounded-md border border-input bg-backgrou
                                 <Input id="als_alergia_a" v-model="formSaude.als_alergia_a" maxlength="500" />
                             </div>
                             <div class="grid gap-2 sm:col-span-2">
-                                <Label for="als_ds_alergias">Alergias / Restrições Alimentares</Label>
+                                <Label for="als_ds_alergias">Restrições Alimentares</Label>
                                 <Input id="als_ds_alergias" v-model="formSaude.als_ds_alergias" maxlength="500" />
                             </div>
                         </div>

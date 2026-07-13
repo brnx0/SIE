@@ -50,8 +50,8 @@ async function loadTurmas() {
         const r = await fetch(`/api/matriculas/turmas?${p}`);
         if (r.ok) {
             const lista: any[] = await r.json();
+            // Lista turmas independente do status (inclui ENCERRADA); só restringe à modalidade regular.
             turmas.value = lista
-                .filter(t => t.tur_situacao === 'ABERTA')
                 .filter(t => (t.tur_modalidade ?? 'REGULAR') === 'REGULAR');
         }
     } finally {

@@ -26,12 +26,15 @@ class FuncionarioEscolaridade extends Model
         'fes_ano_inicio',
         'fes_ano_fim',
         'fes_cfs_id',
+        'fes_ies_id',
+        'fes_pos_area',
     ];
 
     protected $casts = [
         'fes_nivel'      => 'integer',
         'fes_ano_inicio' => 'integer',
         'fes_ano_fim'    => 'integer',
+        'fes_pos_area'   => 'integer',
     ];
 
     public function funcionario(): BelongsTo
@@ -42,5 +45,10 @@ class FuncionarioEscolaridade extends Model
     public function curso(): BelongsTo
     {
         return $this->belongsTo(CursoFormacaoSuperior::class, 'fes_cfs_id', 'cfs_id');
+    }
+
+    public function instituicao(): BelongsTo
+    {
+        return $this->belongsTo(InstituicaoEnsinoSuperior::class, 'fes_ies_id', 'ies_id');
     }
 }

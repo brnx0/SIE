@@ -32,6 +32,10 @@ const props = defineProps<{
     funcionario: Funcionario;
 }>();
 
+const emit = defineEmits<{
+    (e: 'update:editing', value: boolean): void;
+}>();
+
 const admissoes = computed<FuncionarioAdmissao[]>(() => props.funcionario.admissoes ?? []);
 
 // Lotações achatadas (todas as admissões), com referência à admissão
@@ -146,6 +150,12 @@ const editingLotId = ref<number | null>(null);
 const lotAdmId = ref<number | null>(null);
 const lotProcessing = ref(false);
 const lotErrors = ref<Record<string, string>>({});
+
+// Sinaliza ao formulário principal que há admissão ou lotação em edição/inclusão aberta.
+watch(
+    () => showAdmForm.value || showLotForm.value,
+    (v) => emit('update:editing', v),
+);
 
 const lotForm = reactive<LotacaoFormData>({
     lot_adm_id: null,

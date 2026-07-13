@@ -363,7 +363,23 @@ const exportarExcel = () => {
         border-collapse: collapse;
         font-size: 8.5pt;
         border: 1px solid #000;
+        /* Larguras fixas: colunas alinhadas entre todas as turmas (não redimensiona por conteúdo). */
+        table-layout: fixed;
     }
+    /* Larguras por coluna (somam 100%). */
+    .tabela-impressao th:nth-child(1),  .tabela-impressao td:nth-child(1)  { width: 3%; }   /* # */
+    .tabela-impressao th:nth-child(2),  .tabela-impressao td:nth-child(2)  { width: 16%; }  /* Nome */
+    .tabela-impressao th:nth-child(3),  .tabela-impressao td:nth-child(3)  { width: 4%; }   /* Sexo */
+    .tabela-impressao th:nth-child(4),  .tabela-impressao td:nth-child(4)  { width: 4%; }   /* Idade */
+    .tabela-impressao th:nth-child(5),  .tabela-impressao td:nth-child(5)  { width: 5%; }   /* Transp. */
+    .tabela-impressao th:nth-child(6),  .tabela-impressao td:nth-child(6)  { width: 9%; }   /* Situação */
+    .tabela-impressao th:nth-child(7),  .tabela-impressao td:nth-child(7)  { width: 5%; }   /* Defic. */
+    .tabela-impressao th:nth-child(8),  .tabela-impressao td:nth-child(8)  { width: 8%; }   /* Nascimento */
+    .tabela-impressao th:nth-child(9),  .tabela-impressao td:nth-child(9)  { width: 10%; }  /* CPF */
+    .tabela-impressao th:nth-child(10), .tabela-impressao td:nth-child(10) { width: 10%; }  /* Cartão SUS */
+    .tabela-impressao th:nth-child(11), .tabela-impressao td:nth-child(11) { width: 13%; }  /* Filiação */
+    .tabela-impressao th:nth-child(12), .tabela-impressao td:nth-child(12) { width: 13%; }  /* Contato */
+    .tabela-impressao td { word-break: break-word; overflow-wrap: anywhere; }
     .tabela-impressao th {
         background: transparent;
         color: #000;

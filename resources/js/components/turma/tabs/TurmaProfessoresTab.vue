@@ -44,8 +44,16 @@ const professoresItems = computed(() =>
     props.professoresDisponiveis.map((p) => ({ id: p.fun_id, label: p.fun_nome })),
 );
 
+// Disciplinas já alocadas (por qualquer professor) na turma.
+const disIdsAlocadas = computed(() =>
+    new Set(list.value.map((p) => p.tup_dis_id).filter((v): v is number => v != null)),
+);
+
+// Formulário de INCLUSÃO: só disciplinas ainda não alocadas.
 const disciplinasItems = computed(() =>
-    props.disciplinas.map((d) => ({ id: d.dis_id, label: d.dis_nome })),
+    props.disciplinas
+        .filter((d) => !disIdsAlocadas.value.has(d.dis_id))
+        .map((d) => ({ id: d.dis_id, label: d.dis_nome })),
 );
 
 const resetForm = () => {
@@ -100,6 +108,13 @@ const editFunId       = ref<number | null>(null);
 const editDisId       = ref<number | null>(null);
 const editProcessing  = ref<number | null>(null);
 const editErrors      = ref<Record<string, string>>({});
+
+// EDIÇÃO inline: disciplinas não alocadas + a que já está no registro em edição.
+const disciplinasEdit = computed(() =>
+    props.disciplinas
+        .filter((d) => !disIdsAlocadas.value.has(d.dis_id) || d.dis_id === editDisId.value)
+        .map((d) => ({ id: d.dis_id, label: d.dis_nome })),
+);
 
 const startEdit = (tup: TurmaProfessor) => {
     editingId.value = tup.tup_id;
@@ -324,7 +339,7 @@ const removeApoio = (apoio: TurmaProfessorApoio) => {
                             <template v-if="editingId === tup.tup_id">
                                 <LocalCombobox
                                     :model-value="editDisId"
-                                    :items="disciplinasItems"
+                                    :items="disciplinasEdit"
                                     :invalid="!!editErrors.tup_dis_id"
                                     placeholder="Disciplina..."
                                     @update:model-value="(v) => (editDisId = v)"
