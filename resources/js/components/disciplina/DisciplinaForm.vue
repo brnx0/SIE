@@ -5,6 +5,7 @@ import Switch from '@/components/common/Switch.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { usePermissao } from '@/composables/usePermissao';
+import { useErrorFocus } from '@/composables/useErrorFocus';
 import type { AreaConhecimento, Disciplina, DisciplinaFormData } from '@/types/disciplina';
 import { Link, useForm } from '@inertiajs/vue3';
 import { ChevronLeft, LoaderCircle, Save, PlusCircle } from 'lucide-vue-next';
@@ -16,6 +17,7 @@ const props = defineProps<{
 }>();
 
 const { isReadOnly } = usePermissao();
+const { focusFirstError } = useErrorFocus();
 
 const form = useForm<DisciplinaFormData & { continue_new?: boolean }>({
     arc_id:            props.initial?.arc_id ?? null,
@@ -40,6 +42,7 @@ const submit = (continueNew = false) => {
                 form.continue_new = false;
             }
         },
+        onError: (errors: Record<string, string>) => focusFirstError(Object.keys(errors)),
     };
     if (props.mode === 'create') {
         form.post('/disciplinas', opts);

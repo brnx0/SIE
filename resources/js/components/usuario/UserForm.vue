@@ -5,9 +5,12 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useErrorFocus } from '@/composables/useErrorFocus';
 import { Link, useForm } from '@inertiajs/vue3';
 import { LoaderCircle, Save, X } from 'lucide-vue-next';
 import { computed, watch } from 'vue';
+
+const { focusFirstError } = useErrorFocus();
 
 interface UserFormData {
     name: string;
@@ -66,16 +69,35 @@ const removeRole = (key: string) => {
 const submitLabel = computed(() => (props.mode === 'create' ? 'Cadastrar usuário' : 'Salvar alterações'));
 
 const submit = () => {
+    const opts = {
+        onError: (errors: Record<string, string>) => focusFirstError(Object.keys(errors)),
+    };
     if (props.mode === 'create') {
-        form.post('/users');
+        form.post('/users', opts);
     } else {
-        form.put(`/users/${props.initial?.id}`);
+        form.put(`/users/${props.initial?.id}`, opts);
     }
 };
 </script>
 
 <template>
     <form @submit.prevent="submit" class="grid gap-6">
+        <!-- Topo: Voltar + Salvar -->
+        <div class="flex items-center justify-between">
+            <Link href="/users">
+                <Button type="button" variant="outline">Voltar para listagem</Button>
+            </Link>
+            <Button
+                type="submit"
+                :disabled="form.processing"
+                class="bg-sky-600 text-white hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-400"
+            >
+                <LoaderCircle v-if="form.processing" class="mr-2 size-4 animate-spin" />
+                <Save v-else class="mr-2 size-4" />
+                {{ submitLabel }}
+            </Button>
+        </div>
+
         <div class="grid gap-4 rounded-xl border bg-card p-6 shadow-sm sm:grid-cols-2">
             <div class="grid gap-2 sm:col-span-2">
                 <Label for="name">Nome completo</Label>
@@ -167,19 +189,5 @@ const submit = () => {
             </div>
         </div>
 
-        <div class="flex justify-end gap-2">
-            <Link href="/users">
-                <Button type="button" variant="outline">Voltar para listagem</Button>
-            </Link>
-            <Button
-                type="submit"
-                :disabled="form.processing"
-                class="bg-sky-600 text-white hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-400"
-            >
-                <LoaderCircle v-if="form.processing" class="mr-2 size-4 animate-spin" />
-                <Save v-else class="mr-2 size-4" />
-                {{ submitLabel }}
-            </Button>
-        </div>
     </form>
 </template>

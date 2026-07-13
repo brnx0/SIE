@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Diario\StorePlanoAeeRequest;
 use App\Models\Diario\DiarioPlanoAee;
 use App\Models\Parametro\AnoLetivo;
-use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -145,6 +144,7 @@ class PlanoAeeController extends Controller
             'plano'       => null,
             'professor'   => $this->resumoProfessor($request->user()),
             'anosLetivos' => $this->anosLetivosDoProfessor($funId),
+            'podeEditar'  => true,
         ]);
     }
 
@@ -159,10 +159,10 @@ class PlanoAeeController extends Controller
         return to_route('diario.planos-aee.edit', $plano)->with('success', 'Plano AEE cadastrado com sucesso.');
     }
 
-    public function edit(DiarioPlanoAee $plano, Request $request): Response
+    public function edit(DiarioPlanoAee $plano, Request $request): Response|RedirectResponse
     {
         $this->abortIfNotProfessor();
-        $this->abortIfNotOwner($plano, $request);
+        if ($r = $this->redirectSeNaoDono($plano, $request)) return $r;
 
         $plano->load([
             'turma:tur_id,tur_nome,tur_esc_id,tur_anl_id',
@@ -177,12 +177,14 @@ class PlanoAeeController extends Controller
             'plano'       => $plano,
             'professor'   => $this->resumoProfessor($request->user()),
             'anosLetivos' => $this->anosLetivosDoProfessor($funId),
+            'podeEditar'  => $request->user()->isAdmin()
+                || (int) $plano->dae_user_id === (int) $request->user()->id,
         ]);
     }
 
     public function update(StorePlanoAeeRequest $request, DiarioPlanoAee $plano): RedirectResponse
     {
-        $this->abortIfNotOwner($plano, $request);
+        if ($r = $this->redirectSeNaoDono($plano, $request)) return $r;
 
         $data = $request->validated();
 
@@ -197,7 +199,7 @@ class PlanoAeeController extends Controller
 
     public function destroy(DiarioPlanoAee $plano, Request $request): RedirectResponse
     {
-        $this->abortIfNotOwner($plano, $request);
+        if ($r = $this->redirectSeNaoDono($plano, $request)) return $r;
 
         if (! $plano->isPendente()) {
             return back()->with('error', 'Plano só pode ser excluído enquanto estiver pendente.');
@@ -207,9 +209,9 @@ class PlanoAeeController extends Controller
             ?? to_route('diario.planos-aee.index')->with('success', 'Plano removido.');
     }
 
-    public function pdf(DiarioPlanoAee $plano, Request $request): HttpResponse
+    public function pdf(DiarioPlanoAee $plano, Request $request): HttpResponse|RedirectResponse
     {
-        $this->abortIfNotOwner($plano, $request);
+        if ($r = $this->redirectSeNaoDono($plano, $request)) return $r;
 
         $plano->load([
             'funcionario:edu_funcionario.fun_id,edu_funcionario.fun_nome',
@@ -252,11 +254,11 @@ class PlanoAeeController extends Controller
         $user = $request->user();
         $funId = (int) $user->fun_id;
 
-        if ($user->isAdmin() || ! $funId) {
+        if ($user->isGestorGlobal() || ! $funId) {
             return response()->json(
                 DB::table('edu_escola')
                     ->whereNull('esc_deleted_at')
-                    ->where('esc_fl_ativa', true)
+                    ->where('esc_fl_ativo', true)
                     ->select('esc_id', 'esc_nome')
                     ->orderBy('esc_nome')
                     ->get()
@@ -291,7 +293,7 @@ class PlanoAeeController extends Controller
             return response()->json([]);
         }
 
-        if ($funId && ! $user->isAdmin()) {
+        if ($funId && ! $user->isGestorGlobal()) {
             $temLotacao = DB::table('edu_funcionario_lotacao as l')
                 ->join('edu_funcionario_admissao as a', 'a.adm_id', '=', 'l.lot_adm_id')
                 ->where('a.adm_fun_id', $funId)
@@ -326,18 +328,26 @@ class PlanoAeeController extends Controller
         abort_unless(request()->user(), 403);
     }
 
-    private function abortIfNotOwner(DiarioPlanoAee $plano, Request $request): void
+    /**
+     * Retorna um redirect com flash (toast amigável) quando o usuário não pode
+     * operar o plano; ou `null` quando pode. Sem exceção/página crua.
+     */
+    private function redirectSeNaoDono(DiarioPlanoAee $plano, Request $request): ?RedirectResponse
     {
-        if ($request->user()->isAdmin() || $this->soVisualizacaoTela($request)) {
-            return;
+        if ($request->user()->isAdmin()) {
+            return null;
         }
-        // Sem página crua de 403: volta p/ a lista com flash → toast amigável no front.
+        // Só-visualização (nível 2) pode ABRIR o plano de qualquer um (leitura/GET),
+        // mas NÃO pode gravar. Em escrita (PUT/DELETE), só o dono.
+        if ($request->isMethod('GET') && $this->soVisualizacaoTela($request)) {
+            return null;
+        }
         if ((int) $plano->dae_user_id !== (int) $request->user()->id) {
-            throw new HttpResponseException(
-                redirect()->route('diario.planos-aee.index')
-                    ->with('error', 'Você só pode editar planos de aula AEE que você mesmo criou.')
-            );
+            return redirect()->route('diario.planos-aee.index')
+                ->with('error', 'Você só pode editar planos de aula AEE que você mesmo criou.');
         }
+
+        return null;
     }
 
     private function resumoProfessor($user): array
@@ -354,7 +364,7 @@ class PlanoAeeController extends Controller
 
     private function anosLetivosDoProfessor(int $funId): array
     {
-        if (! $funId || request()->user()->isAdmin()) {
+        if (! $funId || request()->user()->isGestorGlobal()) {
             return AnoLetivo::query()
                 ->whereNull('anl_deleted_at')
                 ->orderByDesc('anl_ano')

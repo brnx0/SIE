@@ -12,8 +12,10 @@ import { Link, useForm } from '@inertiajs/vue3';
 import { ChevronLeft, LoaderCircle, Save } from 'lucide-vue-next';
 import { computed, watch } from 'vue';
 import { usePermissao } from '@/composables/usePermissao';
+import { useErrorFocus } from '@/composables/useErrorFocus';
 
 const { isReadOnly } = usePermissao();
+const { focusFirstError } = useErrorFocus();
 
 const props = defineProps<{
     mode: 'create' | 'edit';
@@ -52,7 +54,10 @@ const form = useForm<SerieFormData>({
 
 const submit = () => {
     if (isReadOnly.value) return;
-    const opts = { preserveScroll: true };
+    const opts = {
+        preserveScroll: true,
+        onError: (errors: Record<string, string>) => focusFirstError(Object.keys(errors)),
+    };
     if (props.mode === 'create') {
         form.post('/series', opts);
     } else if (props.initial) {

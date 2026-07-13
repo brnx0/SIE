@@ -40,8 +40,10 @@ import type { AnoLetivo } from '@/types/parametro';
 import type { Segmento } from '@/types/segmento';
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 import { usePermissao } from '@/composables/usePermissao';
+import { useErrorFocus } from '@/composables/useErrorFocus';
 
 const { isReadOnly } = usePermissao();
+const { focusFirstError } = useErrorFocus();
 
 const props = defineProps<{
     mode: 'create' | 'edit';
@@ -311,7 +313,10 @@ const segmentoEditando = ref(false);
 const submit = () => {
     if (isReadOnly.value || segmentoEditando.value) return;
     const opts = {
-        onError: () => goToFirstErrorTab(),
+        onError: (errors: Record<string, string>) => {
+            goToFirstErrorTab();
+            focusFirstError(Object.keys(errors));
+        },
         preserveScroll: true,
         forceFormData: true,
     };

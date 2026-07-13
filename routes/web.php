@@ -485,7 +485,10 @@ Route::middleware(['auth', 'verified', 'tela'])->group(function () {
         Route::get('planos/disciplinas', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'lookupDisciplinas'])->name('planos.disciplinas');
         Route::get('planos/unidades', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'lookupUnidades'])->name('planos.unidades');
         Route::get('planos/indicadores', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'lookupIndicadores'])->name('planos.indicadores');
+    });
 
+    // Lookups do Plano de Aula AEE — quem cadastra/valida plano AEE.
+    Route::prefix('api/diario')->name('api.diario.')->middleware('role:professor_aee,coordenador_interno,gestor_secretaria')->group(function () {
         Route::get('planos-aee/escolas', [\App\Http\Controllers\Diario\PlanoAeeController::class, 'lookupEscolas'])->name('planos-aee.escolas');
         Route::get('planos-aee/turmas', [\App\Http\Controllers\Diario\PlanoAeeController::class, 'lookupTurmas'])->name('planos-aee.turmas');
     });

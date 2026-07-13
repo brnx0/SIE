@@ -12,6 +12,9 @@ import type { CensoEscolar, CensoFormData } from '@/types/censo';
 import { Link, useForm } from '@inertiajs/vue3';
 import { ChevronLeft, ChevronRight, LoaderCircle, Save } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
+import { useErrorFocus } from '@/composables/useErrorFocus';
+
+const { focusFirstError, idFromErrorKey } = useErrorFocus();
 
 const props = defineProps<{
     escola: { esc_id: number; esc_nome: string; esc_apelido: string };
@@ -205,9 +208,26 @@ const isLast = computed(() => activeTab.value === TABS[TABS.length - 1]);
 const next = () => { const i = TABS.indexOf(activeTab.value); if (i < TABS.length - 1) activeTab.value = TABS[i + 1]; };
 const prev = () => { const i = TABS.indexOf(activeTab.value); if (i > 0) activeTab.value = TABS[i - 1]; };
 
+// Resolve a qual aba pertence um campo, para ativá-la antes de focar o erro.
+const tabForField = (field: string): TabId | null => {
+    if (/^cen_(dep|ace|esg|lxd|lxt)_/.test(field)) return 'dependencias';
+    if (/^cen_(sal|eqp|ens)_/.test(field)) return 'salas';
+    if (/^cen_net/.test(field)) return 'internet';
+    if (/^cen_pro_/.test(field)) return 'profissionais';
+    if (/^cen_mat_/.test(field) || ['cen_fl_site', 'cen_fl_compartilha_espacos', 'cen_fl_usa_entorno'].includes(field)) return 'materiais';
+    if (/^cen_(org|amb)_/.test(field) || field === 'cen_ppp' || field === 'cen_fl_educ_ambiental') return 'gestao';
+    return null;
+};
+
 const submit = () => {
     form.post(`/escolas/${props.escola.esc_id}/censo/${props.censo.cen_id}`, {
         preserveScroll: true,
+        onError: (errors) => {
+            const keys = Object.keys(errors);
+            const tab = keys.map((k) => tabForField(idFromErrorKey(k))).find((t) => t !== null);
+            if (tab) activeTab.value = tab;
+            focusFirstError(keys);
+        },
     });
 };
 

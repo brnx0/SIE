@@ -18,16 +18,25 @@ import { Head, router, useForm } from '@inertiajs/vue3';
 import { ArrowLeft, Printer, Save } from 'lucide-vue-next';
 import { computed, onMounted, ref, watch } from 'vue';
 
-const props = defineProps<{
+import { usePermissao } from '@/composables/usePermissao';
+
+const props = withDefaults(defineProps<{
     plano: PlanoAee | null;
     professor: ProfessorResumoDiario;
     anosLetivos: AnoLetivoResumo[];
-}>();
+    podeEditar?: boolean;
+}>(), { podeEditar: true });
+
+const { isReadOnly } = usePermissao();
 
 const isEdit = computed(() => !!props.plano);
 
 const statusAtual = computed<PlanoStatus>(() => props.plano?.dae_status ?? 'pendente');
-const readonly = computed(() => ['aprovado', 'reprovado'].includes(statusAtual.value));
+// Leitura quando: status travado (aprovado/reprovado), sem permissão de edição
+// (não é o dono / role só-visualização).
+const readonly = computed(() =>
+    ['aprovado', 'reprovado'].includes(statusAtual.value) || !props.podeEditar || isReadOnly.value,
+);
 
 const anlInicial = computed<number | null>(() => {
     if (props.plano) return props.plano.dae_anl_id;
@@ -200,11 +209,12 @@ const breadcrumbs: BreadcrumbItem[] = [
                     <Button v-if="isEdit" variant="outline" @click="imprimir">
                         <Printer class="mr-2 size-4" /> Imprimir
                     </Button>
-                    <Button :disabled="form.processing || readonly"
+                    <Button v-if="!readonly" :disabled="form.processing"
                         class="bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
                         @click="submit">
                         <Save class="mr-2 size-4" /> Salvar
                     </Button>
+                    <span v-else class="flex items-center rounded-md bg-muted px-3 py-1.5 text-xs text-muted-foreground">Somente leitura</span>
                 </div>
             </div>
 

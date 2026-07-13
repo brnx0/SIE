@@ -20,6 +20,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/composables/useToast';
+import { useErrorFocus } from '@/composables/useErrorFocus';
 import { validarImagem } from '@/lib/validaArquivo';
 import type { Municipio } from '@/types/aluno';
 import type { AnoLetivo, Conceito, DiaNaoLetivo, DiasLetivos, GradeHorario, MediaEscola, ParametroEntidade, ParametroEntidadeFormData, SegmentoResumo, SituacaoBloqueio, TurmaAlunoSituacaoResumo, Unidade } from '@/types/parametro';
@@ -153,6 +154,8 @@ onBeforeUnmount(() => {
     if (brasaoObjectUrl) URL.revokeObjectURL(brasaoObjectUrl);
 });
 
+const { focusFirstError } = useErrorFocus();
+
 const goToFirstErrorTab = () => {
     for (const tab of TABS) {
         if (tabHasError(tab)) { activeTab.value = tab; return; }
@@ -161,7 +164,10 @@ const goToFirstErrorTab = () => {
 
 const submit = () => {
     form.post('/parametros', {
-        onError: () => goToFirstErrorTab(),
+        onError: (errors) => {
+            goToFirstErrorTab();
+            focusFirstError(Object.keys(errors));
+        },
         preserveScroll: true,
         forceFormData: true,
     });

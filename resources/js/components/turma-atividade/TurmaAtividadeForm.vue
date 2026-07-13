@@ -18,7 +18,9 @@ import { Link, useForm } from '@inertiajs/vue3';
 import { ChevronLeft, Lock, LoaderCircle, Save } from 'lucide-vue-next';
 import { computed, watch } from 'vue';
 import { usePermissao } from '@/composables/usePermissao';
+import { useErrorFocus } from '@/composables/useErrorFocus';
 
+const { focusFirstError } = useErrorFocus();
 const { isReadOnly, hasRole } = usePermissao();
 // Secretaria e Diretor/Vice editam as abas de composição da turma de atividade.
 const bloqueiaComposicao = computed(
@@ -89,10 +91,16 @@ const submit = () => {
         tur_mediacao: data.tur_mediacao === '' ? null : data.tur_mediacao,
     }));
 
+    const options = {
+        onError: (errors: Record<string, string>) => {
+            focusFirstError(Object.keys(errors));
+        },
+    };
+
     if (props.mode === 'create') {
-        form.post('/turmas-atividade');
+        form.post('/turmas-atividade', options);
     } else {
-        form.post(`/turmas-atividade/${props.initial?.tur_id}`);
+        form.post(`/turmas-atividade/${props.initial?.tur_id}`, options);
     }
 };
 

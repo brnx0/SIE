@@ -37,8 +37,10 @@ import { Link, useForm } from '@inertiajs/vue3';
 import { ChevronLeft, Lock, LoaderCircle, Save } from 'lucide-vue-next';
 import { computed, watch } from 'vue';
 import { usePermissao } from '@/composables/usePermissao';
+import { useErrorFocus } from '@/composables/useErrorFocus';
 
 const { isReadOnly, hasRole } = usePermissao();
+const { focusFirstError } = useErrorFocus();
 // Secretaria e Diretor/Vice editam abas de composição (professores/horários/
 // alunos); só Dados Gerais fica bloqueado. Demais perfis nível 2 = read-only.
 const bloqueiaComposicao = computed(
@@ -169,10 +171,13 @@ const submit = () => {
         tur_local_diferenciado: data.tur_local_diferenciado === '' ? null : data.tur_local_diferenciado,
     }));
 
+    const opts = {
+        onError: (errors: Record<string, string>) => focusFirstError(Object.keys(errors)),
+    };
     if (props.mode === 'create') {
-        form.post('/turmas');
+        form.post('/turmas', opts);
     } else {
-        form.post(`/turmas/${props.initial?.tur_id}`);
+        form.post(`/turmas/${props.initial?.tur_id}`, opts);
     }
 };
 

@@ -159,6 +159,7 @@ class PlanoAulaController extends Controller
             'professor'   => $this->resumoProfessor($request->user()),
             'anosLetivos' => $this->anosLetivosDoProfessor($funId),
             'indicadoresSelecionados' => [],
+            'podeEditar'  => true,
         ]);
     }
 
@@ -184,10 +185,10 @@ class PlanoAulaController extends Controller
         return to_route('diario.planos.edit', $plano)->with('success', 'Plano cadastrado com sucesso.');
     }
 
-    public function edit(DiarioPlanoAula $plano, Request $request): Response
+    public function edit(DiarioPlanoAula $plano, Request $request): Response|RedirectResponse
     {
         $this->abortIfNotProfessor();
-        $this->abortIfNotOwner($plano, $request);
+        if ($r = $this->redirectSeNaoDono($plano, $request)) return $r;
 
         $plano->load([
             'serie:ser_id,ser_nome',
@@ -206,12 +207,14 @@ class PlanoAulaController extends Controller
             'professor'   => $this->resumoProfessor($request->user()),
             'anosLetivos' => $this->anosLetivosDoProfessor($funId),
             'indicadoresSelecionados' => $plano->indicadores->pluck('dpi_ind_id')->all(),
+            'podeEditar'  => $request->user()->isAdmin()
+                || (int) $plano->dpa_user_id === (int) $request->user()->id,
         ]);
     }
 
     public function update(StorePlanoAulaRequest $request, DiarioPlanoAula $plano): RedirectResponse
     {
-        $this->abortIfNotOwner($plano, $request);
+        if ($r = $this->redirectSeNaoDono($plano, $request)) return $r;
 
         $data = $request->validated();
         unset($data['indicadores']);
@@ -240,7 +243,7 @@ class PlanoAulaController extends Controller
 
     public function destroy(DiarioPlanoAula $plano, Request $request): RedirectResponse
     {
-        $this->abortIfNotOwner($plano, $request);
+        if ($r = $this->redirectSeNaoDono($plano, $request)) return $r;
 
         if (! $plano->isPendente()) {
             return back()->with('error', 'Plano só pode ser excluído enquanto estiver pendente.');
@@ -250,9 +253,9 @@ class PlanoAulaController extends Controller
             ?? to_route('diario.planos.index')->with('success', 'Plano removido.');
     }
 
-    public function pdf(DiarioPlanoAula $plano, Request $request): HttpResponse
+    public function pdf(DiarioPlanoAula $plano, Request $request): HttpResponse|RedirectResponse
     {
-        $this->abortIfNotOwner($plano, $request);
+        if ($r = $this->redirectSeNaoDono($plano, $request)) return $r;
 
         $plano->load([
             'funcionario:edu_funcionario.fun_id,edu_funcionario.fun_nome',
@@ -457,12 +460,26 @@ class PlanoAulaController extends Controller
         abort_unless(request()->user(), 403);
     }
 
-    private function abortIfNotOwner(DiarioPlanoAula $plano, Request $request): void
+    /**
+     * Retorna um redirect com flash (toast amigável no front) quando o usuário
+     * não pode operar o plano; ou `null` quando pode. Sem exceção/página crua.
+     */
+    private function redirectSeNaoDono(DiarioPlanoAula $plano, Request $request): ?RedirectResponse
     {
-        if ($request->user()->isAdmin() || $this->soVisualizacaoTela($request)) {
-            return;
+        if ($request->user()->isAdmin()) {
+            return null;
         }
-        abort_unless((int) $plano->dpa_user_id === (int) $request->user()->id, 403);
+        // Só-visualização (nível 2) pode ABRIR o plano de qualquer um (leitura/GET),
+        // mas NÃO pode gravar. Em escrita (PUT/DELETE), só o dono.
+        if ($request->isMethod('GET') && $this->soVisualizacaoTela($request)) {
+            return null;
+        }
+        if ((int) $plano->dpa_user_id !== (int) $request->user()->id) {
+            return redirect()->route('diario.planos.index')
+                ->with('error', 'Você só pode editar planos de aula que você mesmo criou.');
+        }
+
+        return null;
     }
 
     private function resumoProfessor($user): array

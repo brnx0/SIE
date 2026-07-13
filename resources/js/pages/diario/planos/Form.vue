@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import InputError from '@/components/common/InputError.vue';
 import LocalCombobox from '@/components/common/LocalCombobox.vue';
+import { usePermissao } from '@/composables/usePermissao';
 import PdfPreviewModal from '@/components/common/PdfPreviewModal.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,18 +21,24 @@ import { Head, router, useForm } from '@inertiajs/vue3';
 import { ArrowLeft, Printer, Save, Search } from 'lucide-vue-next';
 import { computed, onMounted, ref, watch } from 'vue';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
     plano: PlanoAula | null;
     professor: ProfessorResumoDiario;
     anosLetivos: AnoLetivoResumo[];
     indicadoresSelecionados: number[];
-}>();
+    podeEditar?: boolean;
+}>(), { podeEditar: true });
+
+const { isReadOnly } = usePermissao();
 
 const isEdit = computed(() => !!props.plano);
 
-// Status -> readonly se aprovado/reprovado
+// Leitura quando: status travado (aprovado/reprovado), sem permissão de edição
+// (não é o dono / role só-visualização).
 const statusAtual = computed<PlanoStatus>(() => props.plano?.dpa_status ?? 'pendente');
-const readonly = computed(() => ['aprovado', 'reprovado'].includes(statusAtual.value));
+const readonly = computed(() =>
+    ['aprovado', 'reprovado'].includes(statusAtual.value) || !props.podeEditar || isReadOnly.value,
+);
 
 // Ano letivo: trava se 1 só
 const anlInicial = computed<number | null>(() => {
@@ -287,11 +294,12 @@ const breadcrumbs: BreadcrumbItem[] = [
                     <Button v-if="isEdit" variant="outline" @click="imprimir">
                         <Printer class="mr-2 size-4" /> Imprimir
                     </Button>
-                    <Button :disabled="form.processing || readonly"
+                    <Button v-if="!readonly" :disabled="form.processing"
                         class="bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
                         @click="submit">
                         <Save class="mr-2 size-4" /> Salvar
                     </Button>
+                    <span v-else class="flex items-center rounded-md bg-muted px-3 py-1.5 text-xs text-muted-foreground">Somente leitura</span>
                 </div>
             </div>
 

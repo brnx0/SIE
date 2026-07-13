@@ -319,7 +319,7 @@ class PlanoValidacaoController extends Controller
             return response()->json(
                 DB::table('edu_escola')
                     ->whereNull('esc_deleted_at')
-                    ->where('esc_fl_ativa', true)
+                    ->where('esc_fl_ativo', true)
                     ->select('esc_id', 'esc_nome')
                     ->orderBy('esc_nome')
                     ->get()

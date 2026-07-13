@@ -10,8 +10,10 @@ import { Link, useForm } from '@inertiajs/vue3';
 import { ChevronLeft, LoaderCircle, Save } from 'lucide-vue-next';
 import { computed, watch } from 'vue';
 import { usePermissao } from '@/composables/usePermissao';
+import { useErrorFocus } from '@/composables/useErrorFocus';
 
 const { isReadOnly } = usePermissao();
+const { focusFirstError } = useErrorFocus();
 
 const props = defineProps<{
     mode: 'create' | 'edit';
@@ -47,7 +49,10 @@ const minEncerramento = computed(() => form.seg_dt_abertura || undefined);
 
 const submit = () => {
     if (isReadOnly.value) return;
-    const opts = { preserveScroll: true };
+    const opts = {
+        preserveScroll: true,
+        onError: (errors: Record<string, string>) => focusFirstError(Object.keys(errors)),
+    };
     if (props.mode === 'create') {
         form.post('/segmentos', opts);
     } else if (props.initial) {

@@ -5,8 +5,11 @@ import Switch from '@/components/common/Switch.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import type { InstrumentoAvaliativo, InstrumentoAvaliativoFormData } from '@/types/instrumento-avaliativo';
+import { useErrorFocus } from '@/composables/useErrorFocus';
 import { Link, useForm } from '@inertiajs/vue3';
 import { ChevronLeft, LoaderCircle, PlusCircle, Save } from 'lucide-vue-next';
+
+const { focusFirstError } = useErrorFocus();
 
 const props = defineProps<{
     mode: 'create' | 'edit';
@@ -31,6 +34,7 @@ const submit = (continueNew = false) => {
                 form.continue_new = false;
             }
         },
+        onError: (errors: Record<string, string>) => focusFirstError(Object.keys(errors)),
     };
     if (props.mode === 'create') {
         form.post('/diario/instrumentos-avaliativos', opts);

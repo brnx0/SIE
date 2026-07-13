@@ -18,7 +18,9 @@ import { Link, useForm } from '@inertiajs/vue3';
 import { ChevronLeft, Lock, LoaderCircle, Save } from 'lucide-vue-next';
 import { computed, watch } from 'vue';
 import { usePermissao } from '@/composables/usePermissao';
+import { useErrorFocus } from '@/composables/useErrorFocus';
 
+const { focusFirstError } = useErrorFocus();
 const { isReadOnly, hasRole } = usePermissao();
 const bloqueiaComposicao = computed(
     () => isReadOnly.value && !hasRole('secretaria_escola') && !hasRole('diretor'),
@@ -89,10 +91,16 @@ const submit = () => {
         tur_mediacao: data.tur_mediacao === '' ? null : data.tur_mediacao,
     }));
 
+    const options = {
+        onError: (errors: Record<string, string>) => {
+            focusFirstError(Object.keys(errors));
+        },
+    };
+
     if (props.mode === 'create') {
-        form.post('/turmas-aee');
+        form.post('/turmas-aee', options);
     } else {
-        form.post(`/turmas-aee/${props.initial?.tur_id}`);
+        form.post(`/turmas-aee/${props.initial?.tur_id}`, options);
     }
 };
 
