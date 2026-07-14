@@ -35,6 +35,17 @@ abstract class Controller
     }
 
     /**
+     * "Vê tudo" nos lookups do diário (escolas/turmas): admin/gestor global, OU
+     * perfil só-visualização (nível 2) na tela informada — ex.: secretaria vendo
+     * o Diário. Usa a rota EXPLÍCITA da tela porque os lookups vivem em `api/*`.
+     */
+    protected function veTudoNoDiario($user, string $rota): bool
+    {
+        return $user->isGestorGlobal()
+            || PermissaoTela::nivelParaRota($user, $rota) === PermissaoTela::VISUALIZAR;
+    }
+
+    /**
      * Data de saída (tma_dt_saida) do aluno na turma — string Y-m-d — ou null
      * se o aluno está ativo / sem saída registrada. Saída = tma_tas_cod_saida preenchido.
      */

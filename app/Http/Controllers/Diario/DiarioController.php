@@ -40,7 +40,8 @@ class DiarioController extends Controller
         $funId = (int) $user->fun_id;
         $anlId = (int) $request->input('anl_id');
 
-        if ($user->isAdmin() || ! $funId) {
+        // Admin ou perfil só-visualização na tela do Diário (ex.: secretaria) vê todas as escolas.
+        if ($this->veTudoNoDiario($user, '/diario') || ! $funId) {
             $escolas = DB::table('edu_turma as t')
                 ->join('edu_escola as e', 'e.esc_id', '=', 't.tur_esc_id')
                 ->whereNull('t.tur_deleted_at')
@@ -79,7 +80,7 @@ class DiarioController extends Controller
         $anlId = (int) $request->input('anl_id');
         $escId = (int) $request->input('esc_id');
 
-        $base = ($funId && ! $user->isAdmin())
+        $base = ($funId && ! $this->veTudoNoDiario($user, '/diario'))
             ? DB::table('edu_turma_professor as tp')
                 ->join('edu_turma as t', 't.tur_id', '=', 'tp.tup_tur_id')
                 ->where('tp.tup_fun_id', $funId)

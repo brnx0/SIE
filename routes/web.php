@@ -448,7 +448,7 @@ Route::middleware(['auth', 'verified', 'tela'])->group(function () {
         Route::post('quadro-horario/{turma}/horarios', [\App\Http\Controllers\Diario\QuadroHorarioController::class, 'store'])->name('quadro-horario.store');
         Route::delete('quadro-horario/{turma}/horarios/{turmaHorario}', [\App\Http\Controllers\Diario\QuadroHorarioController::class, 'destroy'])->name('quadro-horario.destroy');
     });
-    Route::prefix('api/diario')->name('api.diario.')->middleware('role:professor,coordenador,coordenador_interno')->group(function () {
+    Route::prefix('api/diario')->name('api.diario.')->middleware('role:professor,coordenador,coordenador_interno,secretaria_escola')->group(function () {
         // Diário de Classe — lookups de contexto
         Route::get('contexto/escolas', [\App\Http\Controllers\Diario\DiarioController::class, 'lookupEscolas'])->name('contexto.escolas');
         Route::get('contexto/turmas', [\App\Http\Controllers\Diario\DiarioController::class, 'lookupTurmas'])->name('contexto.turmas');
@@ -497,7 +497,7 @@ Route::middleware(['auth', 'verified', 'tela'])->group(function () {
     Route::prefix('diario-aee')->name('diario-aee.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Diario\DiarioAeeController::class, 'index'])->name('index');
     });
-    Route::prefix('api/diario-aee')->name('api.diario-aee.')->middleware('role:professor_aee,gestor_secretaria')->group(function () {
+    Route::prefix('api/diario-aee')->name('api.diario-aee.')->middleware('role:professor_aee,gestor_secretaria,secretaria_escola')->group(function () {
         Route::get('contexto/escolas', [\App\Http\Controllers\Diario\DiarioAeeController::class, 'lookupEscolas'])->name('contexto.escolas');
         Route::get('contexto/turmas', [\App\Http\Controllers\Diario\DiarioAeeController::class, 'lookupTurmas'])->name('contexto.turmas');
         Route::get('contexto/unidades', [\App\Http\Controllers\Diario\DiarioAeeController::class, 'lookupUnidades'])->name('contexto.unidades');
