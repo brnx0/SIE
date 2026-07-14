@@ -60,9 +60,11 @@ class NotasPorUnidadeController extends Controller
             ? $unidades->pluck('uni_id')->map(fn ($v) => (int) $v)->all()
             : [$uniIdFiltro];
 
+        // Grade é por ANO LETIVO — sem o filtro, mistura grades de anos diferentes.
         $disciplinas = DB::table('edu_grade_disciplinar as gd')
             ->join('edu_disciplina as d', 'd.dis_id', '=', 'gd.grd_dis_id')
             ->where('gd.grd_ser_id', $turma->tur_ser_id)
+            ->where('gd.grd_anl_id', $data['anl_id'])
             ->where('gd.grd_fl_ativo', true)
             ->distinct()
             ->orderBy('d.dis_nome')
@@ -148,6 +150,18 @@ class NotasPorUnidadeController extends Controller
             ],
             'disciplinas' => $disciplinas->pluck('dis_nome')->values(),
             'alunos'      => $alunos,
+            // Explica um relatório vazio em vez de sair em branco silencioso.
+            'avisos'      => array_values(array_filter([
+                $unidades->isEmpty()
+                    ? 'Nenhuma unidade/período avaliativo cadastrado para o ano letivo. Cadastre em Parâmetros → Ano Letivo.'
+                    : null,
+                $disciplinas->isEmpty()
+                    ? 'Grade disciplinar não cadastrada para esta série neste ano letivo. Cadastre em Parâmetros → Grade Disciplinar.'
+                    : null,
+                $alunos->isEmpty()
+                    ? 'Nenhum aluno com matrícula ativa nesta turma.'
+                    : null,
+            ])),
         ]);
     }
 }

@@ -17,6 +17,7 @@ defineProps<{
     filtros: { anl_ano: number; esc_nome: string; turma: string; periodo: string | null; periodo_datas: string | null };
     disciplinas: string[];
     alunos: Aluno[];
+    avisos?: string[];
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Notas por Unidade', href: '/relatorios/notas-por-unidade' }];
@@ -95,6 +96,13 @@ const imprimir = () => window.print();
                     <strong>Turma:</strong> {{ filtros.turma }} · <strong>Unidade:</strong> {{ filtros.periodo }}
                     <span v-if="filtros.periodo_datas" class="text-muted-foreground">({{ filtros.periodo_datas }})</span>
                 </div>
+            </div>
+
+            <div v-if="avisos?.length" class="mb-4 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
+                <p class="mb-1 font-semibold">O relatório sai em branco porque falta configuração:</p>
+                <ul class="list-disc pl-5">
+                    <li v-for="(a, i) in avisos" :key="i">{{ a }}</li>
+                </ul>
             </div>
 
             <div v-if="!alunos.length" class="rounded-xl border bg-card py-12 text-center text-muted-foreground">Nenhum aluno ativo nesta turma.</div>
