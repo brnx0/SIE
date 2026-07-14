@@ -58,4 +58,14 @@ return Application::configure(basePath: dirname(__DIR__))
             return redirect()->guest(route('login'))
                 ->with('error', 'Sua sessão expirou. Faça login novamente.');
         });
+
+        // 403 (sem permissão): numa navegação Inertia, volta com flash → toast
+        // amigável (não modal cru). Full-page cai na view errors/403.blade.php.
+        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\HttpExceptionInterface $e, $request) {
+            if ($e->getStatusCode() !== 403 || ! $request->header('X-Inertia')) {
+                return null;
+            }
+            $msg = $e->getMessage() ?: 'Você não tem permissão para acessar este recurso.';
+            return back()->with('error', $msg);
+        });
     })->create();

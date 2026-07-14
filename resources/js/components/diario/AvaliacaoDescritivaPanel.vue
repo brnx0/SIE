@@ -123,10 +123,7 @@ const salvar = async (row: AlunoRow) => {
 };
 
 // Autosave: debounce enquanto digita + flush imediato ao sair do campo.
-const aoDigitar = (e: Event, row: AlunoRow) => {
-    const el = e.target as HTMLTextAreaElement;
-    el.style.height = 'auto';
-    el.style.height = `${el.scrollHeight}px`;
+const aoDigitar = (row: AlunoRow) => {
     if (!periodoAberto.value) return;
     row._status = row.descricao === row._original ? 'saved' : 'dirty';
     if (row._timer) clearTimeout(row._timer);
@@ -148,14 +145,7 @@ const bindTextarea = (el: any) => {
 const abrir = (row: AlunoRow) => {
     abertoId.value = abertoId.value === row.aln_id ? null : row.aln_id;
     if (abertoId.value !== null) {
-        nextTick(() => {
-            const el = textareaEl.value;
-            if (el) {
-                el.focus();
-                el.style.height = 'auto';
-                el.style.height = `${el.scrollHeight}px`;
-            }
-        });
+        nextTick(() => textareaEl.value?.focus());
     }
 };
 
@@ -304,11 +294,12 @@ const avaliados = computed(() => alunos.value.filter((a) => a.descricao.trim().l
                         <textarea
                             :ref="bindTextarea"
                             v-model="row.descricao"
-                            rows="3"
+                            rows="5"
+                            maxlength="20000"
                             :disabled="!periodoAberto || row.bloqueado"
                             :placeholder="row.bloqueado ? 'Aluno saiu antes deste período — lançamento bloqueado.' : 'Descreva o desenvolvimento do aluno neste período...'"
-                            class="w-full resize-none overflow-hidden rounded-md border bg-background p-2.5 text-sm leading-relaxed outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 disabled:cursor-not-allowed disabled:opacity-60 dark:focus:ring-indigo-950"
-                            @input="(e) => aoDigitar(e, row)"
+                            class="w-full resize-none overflow-y-auto rounded-md border bg-background p-2.5 text-sm leading-relaxed outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 disabled:cursor-not-allowed disabled:opacity-60 dark:focus:ring-indigo-950"
+                            @input="() => aoDigitar(row)"
                             @blur="salvar(row)"
                         />
                     </div>
