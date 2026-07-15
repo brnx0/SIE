@@ -7,6 +7,7 @@ import type { BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
 import { Baby, Loader2 } from 'lucide-vue-next';
 import { computed, onMounted, ref, watch } from 'vue';
+import { useFiltrosRelatorio } from '@/composables/useFiltrosRelatorio';
 
 interface AnoLetivo { anl_id: number; anl_ano: number }
 interface Escola { esc_id: number; esc_nome: string }
@@ -16,8 +17,18 @@ const props = defineProps<{ anosLetivos: AnoLetivo[]; escolas: Escola[]; userEsc
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Final da Educação Infantil', href: '/relatorios/final-educacao-infantil' }];
 
-const anlId = ref<number | null>(props.anosLetivos[0]?.anl_id ?? null);
-const escId = ref<number | null>(props.userEscola?.esc_id ?? null); // obrigatória
+// Mantém os filtros ao voltar do resultado (gerar outro sem refazer tudo).
+const { restaurar, salvar } = useFiltrosRelatorio('final-educacao-infantil', {
+    anl_id: null as number | null,
+    esc_id: null as number | null,
+    tur_id: null as number | null,
+});
+const salvos = restaurar();
+// Enquanto restaura, as cascatas ficam mudas (senão zeram o que foi restaurado).
+let restaurando = true;
+
+const anlId = ref<number | null>(salvos.anl_id ?? props.anosLetivos[0]?.anl_id ?? null);
+const escId = ref<number | null>(salvos.esc_id ?? props.userEscola?.esc_id ?? null); // obrigatória
 const turId = ref<number>(0); // 0 = todas as turmas da escola
 
 const turmas = ref<Turma[]>([]);
@@ -40,8 +51,15 @@ async function loadTurmas() {
     }
 }
 
-onMounted(loadTurmas);
-watch([anlId, escId], loadTurmas);
+onMounted(async () => {
+    await loadTurmas();
+    // Só restaura o que ainda existe na lista carregada.
+    if (salvos.tur_id && turmas.value.some((t) => t.tur_id === salvos.tur_id)) {
+        turId.value = salvos.tur_id;
+    }
+    restaurando = false;
+});
+watch([anlId, escId], () => { if (!restaurando) loadTurmas(); });
 
 const itemsAno = computed(() => props.anosLetivos.map((a) => ({ id: a.anl_id, label: String(a.anl_ano) })));
 const itemsEscola = computed(() => props.escolas.map((e) => ({ id: e.esc_id, label: e.esc_nome })));
@@ -52,6 +70,7 @@ const itemsTurma = computed(() => [
 
 function gerar() {
     if (!anlId.value || !escId.value) return;
+    salvar({ anl_id: anlId.value, esc_id: escId.value, tur_id: turId.value });
     gerando.value = true;
     const params: Record<string, number> = { anl_id: anlId.value, esc_id: escId.value };
     if (turId.value) params.tur_id = turId.value;

@@ -12,6 +12,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -23,6 +24,9 @@ use Illuminate\Validation\ValidationException;
 class HistoricoManualController extends Controller
 {
     private const PERFIS = ['admin', 'secretaria_escola', 'diretor'];
+
+    /** Situações que o sistema gera sozinho — não se lançam à mão. 21 = Inser. Automática. */
+    private const SITUACOES_OCULTAS = [21];
 
     private function autorizar(): void
     {
@@ -50,10 +54,10 @@ class HistoricoManualController extends Controller
             ->get()
             ->filter(fn (Matricula $m) => $m->turma && $m->turma->anoLetivo)
             ->map(fn (Matricula $m) => [
-                'anl_id'  => (int) $m->turma->tur_anl_id,
+                'anl_id' => (int) $m->turma->tur_anl_id,
                 'anl_ano' => (int) $m->turma->anoLetivo->anl_ano,
-                'serie'   => $m->serie?->ser_nome,
-                'escola'  => $m->turma->escola?->esc_nome,
+                'serie' => $m->serie?->ser_nome,
+                'escola' => $m->turma->escola?->esc_nome,
             ])
             ->unique('anl_id')
             ->sortBy('anl_ano')
@@ -81,38 +85,41 @@ class HistoricoManualController extends Controller
             ])
             ->get()
             ->map(fn (HistoricoManual $h) => [
-                'hmn_id'            => $h->hmn_id,
-                'hmn_ano'           => $h->hmn_ano,
-                'hmn_ser_id'        => $h->hmn_ser_id,
-                'serie'             => $h->serie?->ser_nome,
-                'hmn_esc_id'        => $h->hmn_esc_id,
-                'escola'            => $h->escola?->esc_nome,
-                'hmn_esc_nome'      => $h->hmn_esc_nome,
-                'hmn_mun_id'        => $h->hmn_mun_id,
-                'municipio'         => $h->municipio ? [
-                    'mun_id'   => $h->municipio->mun_id,
+                'hmn_id' => $h->hmn_id,
+                'hmn_ano' => $h->hmn_ano,
+                'hmn_ser_id' => $h->hmn_ser_id,
+                'serie' => $h->serie?->ser_nome,
+                'hmn_esc_id' => $h->hmn_esc_id,
+                'escola' => $h->escola?->esc_nome,
+                'hmn_esc_nome' => $h->hmn_esc_nome,
+                'hmn_mun_id' => $h->hmn_mun_id,
+                'municipio' => $h->municipio ? [
+                    'mun_id' => $h->municipio->mun_id,
                     'mun_nome' => $h->municipio->mun_nome,
-                    'mun_uf'   => $h->municipio->mun_uf,
+                    'mun_uf' => $h->municipio->mun_uf,
                 ] : null,
                 'hmn_carga_horaria' => $h->hmn_carga_horaria,
-                'hmn_dias_letivos'  => $h->hmn_dias_letivos,
-                'hmn_frequencia'    => $h->hmn_frequencia,
-                'hmn_tas_cod'       => $h->hmn_tas_cod,
-                'situacao'          => $h->situacao?->tas_descricao,
-                'disciplinas'       => $h->disciplinas->map(fn ($d) => [
+                'hmn_dias_letivos' => $h->hmn_dias_letivos,
+                'hmn_frequencia' => $h->hmn_frequencia,
+                'hmn_tas_cod' => $h->hmn_tas_cod,
+                'situacao' => $h->situacao?->tas_descricao,
+                'disciplinas' => $h->disciplinas->map(fn ($d) => [
                     'hmd_dis_id' => $d->hmd_dis_id,
-                    'dis_nome'   => $d->disciplina?->dis_nome,
-                    'hmd_mf'     => $d->hmd_mf,
+                    'dis_nome' => $d->disciplina?->dis_nome,
+                    'hmd_mf' => $d->hmd_mf,
                     'hmd_cnc_id' => $d->hmd_cnc_id,
-                    'cnc_sigla'  => $d->conceito?->cnc_sigla,
-                    'hmd_ordem'  => $d->hmd_ordem,
+                    'cnc_sigla' => $d->conceito?->cnc_sigla,
+                    'hmd_ordem' => $d->hmd_ordem,
                 ])->values(),
             ])
             ->values();
 
-        // Situações de aprovação (ctrl_cod = 1) para o select.
+        // Situações de aprovação (ctrl_cod = 1) para o select. "Inser. Automática"
+        // (21) fica de fora: é saída automática de creche gerada pelo sistema, não
+        // um resultado que se lance à mão num ano de histórico.
         $situacoes = DB::table('edu_turma_aluno_situacao')
             ->where('tas_ctrl_cod', 1)
+            ->whereNotIn('tas_cod', self::SITUACOES_OCULTAS)
             ->orderBy('tas_cod')
             ->get(['tas_cod', 'tas_descricao']);
 
@@ -129,10 +136,10 @@ class HistoricoManualController extends Controller
 
         return response()->json([
             'anos_sistema' => $anosSistema,
-            'segmentos'    => $segmentos,
-            'conceitos'    => $conceitos,
-            'lancamentos'  => $lancamentos,
-            'situacoes'    => $situacoes,
+            'segmentos' => $segmentos,
+            'conceitos' => $conceitos,
+            'lancamentos' => $lancamentos,
+            'situacoes' => $situacoes,
         ]);
     }
 
@@ -140,23 +147,35 @@ class HistoricoManualController extends Controller
     {
         $this->autorizar();
 
+        // Nome de escola fora da rede vai sem acento, igual ao cadastro de escola
+        // (StoreEscolaRequest). O front já tira, mas o payload não é confiável.
+        if (is_string($request->input('hmn_esc_nome'))) {
+            $request->merge(['hmn_esc_nome' => Str::ascii($request->input('hmn_esc_nome'))]);
+        }
+
         $data = $request->validate([
-            'hmn_id'            => ['nullable', 'integer', 'exists:edu_historico_manual,hmn_id'],
-            'hmn_ano'           => ['required', 'integer', 'min:1900', 'max:' . ((int) date('Y'))],
-            'hmn_ser_id'        => ['required', 'integer', 'exists:edu_serie,ser_id'],
-            'hmn_esc_id'        => ['nullable', 'integer', 'exists:edu_escola,esc_id'],
-            'hmn_esc_nome'      => ['nullable', 'string', 'max:180'],
-            'hmn_mun_id'        => ['nullable', 'integer', 'exists:edu_municipio,mun_id'],
+            'hmn_id' => ['nullable', 'integer', 'exists:edu_historico_manual,hmn_id'],
+            'hmn_ano' => ['required', 'integer', 'min:1900', 'max:'.((int) date('Y'))],
+            'hmn_ser_id' => ['required', 'integer', 'exists:edu_serie,ser_id'],
+            'hmn_esc_id' => ['nullable', 'integer', 'exists:edu_escola,esc_id'],
+            'hmn_esc_nome' => ['nullable', 'string', 'max:180'],
+            'hmn_mun_id' => ['nullable', 'integer', 'exists:edu_municipio,mun_id'],
             'hmn_carga_horaria' => ['nullable', 'integer', 'min:0', 'max:99999'],
-            'hmn_dias_letivos'  => ['nullable', 'integer', 'min:0', 'max:999'],
-            'hmn_frequencia'    => ['nullable', 'numeric', 'min:0', 'max:100'],
-            'hmn_tas_cod'       => ['required', 'integer', 'exists:edu_turma_aluno_situacao,tas_cod'],
-            'disciplinas'                 => ['required', 'array', 'min:1'],
-            'disciplinas.*.hmd_dis_id'    => ['required', 'integer', 'exists:edu_disciplina,dis_id'],
-            'disciplinas.*.hmd_mf'        => ['nullable', 'numeric', 'min:0', 'max:10'],
-            'disciplinas.*.hmd_cnc_id'    => ['nullable', 'integer', 'exists:cfg_conceito,cnc_id'],
+            'hmn_dias_letivos' => ['nullable', 'integer', 'min:0', 'max:999'],
+            'hmn_frequencia' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'hmn_tas_cod' => [
+                'required', 'integer',
+                Rule::exists('edu_turma_aluno_situacao', 'tas_cod')->where('tas_ctrl_cod', 1),
+                Rule::notIn(self::SITUACOES_OCULTAS),
+            ],
+            'disciplinas' => ['required', 'array', 'min:1'],
+            'disciplinas.*.hmd_dis_id' => ['required', 'integer', 'exists:edu_disciplina,dis_id'],
+            'disciplinas.*.hmd_mf' => ['nullable', 'numeric', 'min:0', 'max:10'],
+            'disciplinas.*.hmd_cnc_id' => ['nullable', 'integer', 'exists:cfg_conceito,cnc_id'],
         ], [
             'hmn_ano.max' => 'O ano letivo não pode ser posterior ao ano atual.',
+            'hmn_tas_cod.not_in' => 'Situação final inválida para lançamento manual.',
+            'hmn_tas_cod.exists' => 'Situação final inválida para lançamento manual.',
         ], [
             'hmn_ano' => 'ano letivo',
             'hmn_ser_id' => 'série',
@@ -199,17 +218,17 @@ class HistoricoManualController extends Controller
 
         DB::transaction(function () use ($data, $aluno, &$registro) {
             $payload = [
-                'hmn_aln_id'        => (int) $aluno->aln_id,
-                'hmn_ano'           => (int) $data['hmn_ano'],
-                'hmn_ser_id'        => (int) $data['hmn_ser_id'],
-                'hmn_esc_id'        => $data['hmn_esc_id'] ?? null,
-                'hmn_esc_nome'      => $data['hmn_esc_id'] ? null : ($data['hmn_esc_nome'] ?? null),
-                'hmn_mun_id'        => $data['hmn_esc_id'] ? null : ($data['hmn_mun_id'] ?? null),
+                'hmn_aln_id' => (int) $aluno->aln_id,
+                'hmn_ano' => (int) $data['hmn_ano'],
+                'hmn_ser_id' => (int) $data['hmn_ser_id'],
+                'hmn_esc_id' => $data['hmn_esc_id'] ?? null,
+                'hmn_esc_nome' => $data['hmn_esc_id'] ? null : ($data['hmn_esc_nome'] ?? null),
+                'hmn_mun_id' => $data['hmn_esc_id'] ? null : ($data['hmn_mun_id'] ?? null),
                 'hmn_carga_horaria' => $data['hmn_carga_horaria'] ?? null,
-                'hmn_dias_letivos'  => $data['hmn_dias_letivos'] ?? null,
-                'hmn_frequencia'    => $data['hmn_frequencia'] ?? null,
-                'hmn_tas_cod'       => (int) $data['hmn_tas_cod'],
-                'hmn_user_id'       => request()->user()?->id,
+                'hmn_dias_letivos' => $data['hmn_dias_letivos'] ?? null,
+                'hmn_frequencia' => $data['hmn_frequencia'] ?? null,
+                'hmn_tas_cod' => (int) $data['hmn_tas_cod'],
+                'hmn_user_id' => request()->user()?->id,
             ];
 
             if ($registro) {
@@ -225,9 +244,9 @@ class HistoricoManualController extends Controller
                 $cnc = $d['hmd_cnc_id'] ?? null;
                 $registro->disciplinas()->create([
                     'hmd_dis_id' => (int) $d['hmd_dis_id'],
-                    'hmd_mf'     => $cnc ? null : ($d['hmd_mf'] ?? null),
+                    'hmd_mf' => $cnc ? null : ($d['hmd_mf'] ?? null),
                     'hmd_cnc_id' => $cnc,
-                    'hmd_ordem'  => $i,
+                    'hmd_ordem' => $i,
                 ]);
             }
         });

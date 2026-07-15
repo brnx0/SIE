@@ -227,7 +227,6 @@ Route::middleware(['auth', 'verified', 'tela'])->group(function () {
     Route::get('relatorios-diario', [RelatorioCentralController::class, 'diario'])->name('relatorios.diario');
     Route::get('relatorios-secretaria', [RelatorioCentralController::class, 'secretaria'])->name('relatorios.secretaria')->middleware('role:admin,gestor_secretaria,diretor,secretaria_escola');
     Route::get('relatorios-pedagogico', [RelatorioCentralController::class, 'pedagogico'])->name('relatorios.pedagogico');
-    Route::get('relatorios-encerramento', [RelatorioCentralController::class, 'encerramento'])->name('relatorios.encerramento');
 
     // Encerramento do Ano Letivo — acesso governado pela matriz de telas.
     Route::group([], function () {

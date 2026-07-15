@@ -8,6 +8,7 @@ import type { BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
 import { FileText, Loader2 } from 'lucide-vue-next';
 import { computed, onMounted, ref, watch } from 'vue';
+import { useFiltrosRelatorio } from '@/composables/useFiltrosRelatorio';
 
 interface Escola { esc_id: number; esc_nome: string }
 interface Turma { tur_id: number; tur_nome: string; tur_situacao: string; tur_modalidade?: string; serie?: { ser_nome: string } | null }
@@ -24,7 +25,17 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Declaração de Matrícula', href: '/relatorios/declaracao-matricula' },
 ];
 
-const escId = ref<number | null>(props.userEscola?.esc_id ?? null);
+// Mantém os filtros ao voltar do resultado (gerar outro sem refazer tudo).
+const { restaurar, salvar } = useFiltrosRelatorio('declaracao-matricula', {
+    esc_id: null as number | null,
+    tur_id: null as number | null,
+    aln_id: null as number | null,
+});
+const salvos = restaurar();
+// Enquanto restaura, as cascatas ficam mudas (senão zeram o que foi restaurado).
+let restaurando = true;
+
+const escId = ref<number | null>(salvos.esc_id ?? props.userEscola?.esc_id ?? null);
 const itemsEscola = computed(() => props.escolas.map((e) => ({ id: e.esc_id, label: e.esc_nome })));
 const turId = ref<number | ''>('');
 const alnId = ref<number | null>(null);
@@ -73,12 +84,28 @@ async function loadAlunos() {
     }
 }
 
-onMounted(loadTurmas);
-watch(escId, loadTurmas);
-watch(turId, loadAlunos);
+onMounted(async () => {
+    await loadTurmas();
+    // Só restaura o que ainda existe nas listas carregadas.
+    if (salvos.tur_id && turmas.value.some((t) => t.tur_id === salvos.tur_id)) {
+        turId.value = salvos.tur_id;
+        await loadAlunos();
+        if (salvos.aln_id && alunos.value.some((a) => a.aln_id === salvos.aln_id)) {
+            alnId.value = salvos.aln_id;
+        }
+    }
+    restaurando = false;
+});
+watch(escId, () => { if (!restaurando) loadTurmas(); });
+watch(turId, () => { if (!restaurando) loadAlunos(); });
 
 function gerar() {
     if (!escId.value) return;
+    salvar({
+        esc_id: Number(escId.value),
+        tur_id: turId.value ? Number(turId.value) : null,
+        aln_id: alnId.value,
+    });
     gerando.value = true;
     const payload: Record<string, any> = { esc_id: Number(escId.value) };
     if (turId.value) payload.tur_id = Number(turId.value);

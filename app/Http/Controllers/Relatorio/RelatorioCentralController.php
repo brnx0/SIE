@@ -12,9 +12,9 @@ class RelatorioCentralController extends Controller
     {
         return Inertia::render('relatorios/Index', [
             'relatorios' => $this->filtrar('central'),
-            'titulo'     => 'Central de Relatórios',
-            'subtitulo'  => 'Selecione um relatório para gerar.',
-            'grupo'      => 'central',
+            'titulo' => 'Central de Relatórios',
+            'subtitulo' => 'Selecione um relatório para gerar.',
+            'grupo' => 'central',
         ]);
     }
 
@@ -22,9 +22,9 @@ class RelatorioCentralController extends Controller
     {
         return Inertia::render('relatorios/Index', [
             'relatorios' => $this->filtrar('escola'),
-            'titulo'     => 'Relatórios Gerais',
-            'subtitulo'  => 'Relatórios específicos do contexto da escola.',
-            'grupo'      => 'escola',
+            'titulo' => 'Relatórios Gerais',
+            'subtitulo' => 'Relatórios específicos do contexto da escola.',
+            'grupo' => 'escola',
         ]);
     }
 
@@ -32,9 +32,9 @@ class RelatorioCentralController extends Controller
     {
         return Inertia::render('relatorios/Index', [
             'relatorios' => $this->filtrar('diario'),
-            'titulo'     => 'Relatórios do Diário',
-            'subtitulo'  => 'Relatórios do diário de classe.',
-            'grupo'      => 'diario',
+            'titulo' => 'Relatórios do Diário',
+            'subtitulo' => 'Relatórios do diário de classe.',
+            'grupo' => 'diario',
         ]);
     }
 
@@ -42,19 +42,9 @@ class RelatorioCentralController extends Controller
     {
         return Inertia::render('relatorios/Index', [
             'relatorios' => $this->filtrar('secretaria'),
-            'titulo'     => 'Relatórios da Secretaria',
-            'subtitulo'  => 'Relatórios acadêmicos da secretaria escolar.',
-            'grupo'      => 'secretaria',
-        ]);
-    }
-
-    public function encerramento(): Response
-    {
-        return Inertia::render('relatorios/Index', [
-            'relatorios' => $this->filtrar('encerramento'),
-            'titulo'     => 'Relatórios de Encerramento',
-            'subtitulo'  => 'Relatórios do encerramento do ano letivo.',
-            'grupo'      => 'encerramento',
+            'titulo' => 'Relatórios da Secretaria',
+            'subtitulo' => 'Relatórios acadêmicos da secretaria escolar.',
+            'grupo' => 'secretaria',
         ]);
     }
 
@@ -62,9 +52,9 @@ class RelatorioCentralController extends Controller
     {
         return Inertia::render('relatorios/Index', [
             'relatorios' => $this->filtrar('pedagogico'),
-            'titulo'     => 'Relatórios Pedagógicos',
-            'subtitulo'  => 'Relatórios do acompanhamento pedagógico.',
-            'grupo'      => 'pedagogico',
+            'titulo' => 'Relatórios Pedagógicos',
+            'subtitulo' => 'Relatórios do acompanhamento pedagógico.',
+            'grupo' => 'pedagogico',
         ]);
     }
 

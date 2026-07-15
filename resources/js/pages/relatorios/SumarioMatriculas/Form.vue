@@ -6,6 +6,7 @@ import type { BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
 import { Loader2, Table } from 'lucide-vue-next';
 import { ref } from 'vue';
+import { useFiltrosRelatorio } from '@/composables/useFiltrosRelatorio';
 
 interface AnoLetivo { anl_id: number; anl_ano: number; anl_fl_em_exercicio: boolean }
 
@@ -19,11 +20,18 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const anoDefault = props.anosLetivos.find(a => a.anl_fl_em_exercicio) ?? props.anosLetivos[0];
 
-const anlId = ref<number | ''>(anoDefault?.anl_id ?? '');
+// Mantém os filtros ao voltar do resultado (gerar outro sem refazer tudo).
+const { restaurar, salvar } = useFiltrosRelatorio('sumario-matriculas', {
+    anl_id: null as number | null,
+});
+const salvos = restaurar();
+
+const anlId = ref<number | ''>(salvos.anl_id ?? anoDefault?.anl_id ?? '');
 const gerando = ref(false);
 
 function gerar() {
     if (!anlId.value) return;
+    salvar({ anl_id: Number(anlId.value) });
     gerando.value = true;
     router.get('/relatorios/sumario-matriculas/gerar', {
         anl_id: Number(anlId.value),

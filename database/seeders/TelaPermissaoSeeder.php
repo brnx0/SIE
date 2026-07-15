@@ -71,15 +71,15 @@ class TelaPermissaoSeeder extends Seeder
         ['/secretaria/justificativas-falta', 'Justificativa de Falta', 'Secretaria Escolar', 32, [1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0]],
         ['/secretaria/renovacao-matricula', 'Renovação de Matrícula', 'Secretaria Escolar', 33, [1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0]],
         ['/secretaria/motivos-baixa-frequencia', 'Motivo Baixa Frequência', 'Secretaria Escolar', 34, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
+        // Vive no menu Secretaria Escolar (não mais em Relatórios) — grupo acompanha.
+        ['/relatorios-secretaria', 'Relatórios da Secretaria', 'Secretaria Escolar', 46, [1, 1, 0, 0, 0, 0, 2, 2, 0, 0, 0]],
 
         ['/encerramento-turmas', 'Encerramento de Turmas', 'Ano Letivo', 35, [1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0]],
         ['/duplicar-turmas', 'Duplicar Turmas', 'Ano Letivo', 36, [1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0]],
         ['/confirmacao-renovacao', 'Confirmação de Renovação', 'Ano Letivo', 37, [1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0]],
-        ['/relatorios-encerramento', 'Relatórios Encerramento', 'Ano Letivo', 38, [1, 1, 0, 0, 0, 2, 2, 2, 2, 0, 0]],
 
         ['/relatorios', 'Central de Relatórios', 'Relatórios', 39, [1, 1, 0, 0, 0, 2, 2, 2, 2, 0, 2]],
         ['/relatorios-escola', 'Relatórios Gerais', 'Relatórios', 40, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 2]],
-        ['/relatorios-secretaria', 'Relatórios da Secretaria', 'Relatórios', 46, [1, 1, 0, 0, 0, 0, 2, 2, 0, 0, 0]],
 
         ['/users', 'Usuários', 'Sistema', 41, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
         ['/parametros', 'Parâmetros', 'Sistema', 42, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
@@ -88,8 +88,20 @@ class TelaPermissaoSeeder extends Seeder
         ['/censo/importacao', 'Importar Censo', 'Sistema', 45, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
     ];
 
+    /**
+     * Telas que saíram do sistema. Como o seeder só faz updateOrCreate, sem isso
+     * a linha continuaria em cfg_tela e apareceria na tela de Permissão apontando
+     * para uma rota que não existe mais. Lista explícita (não um prune de tudo que
+     * não está na MATRIZ) para não apagar tela que só não foi mapeada ainda.
+     */
+    private const ROTAS_REMOVIDAS = [
+        '/relatorios-encerramento',
+    ];
+
     public function run(): void
     {
+        Tela::whereIn('tla_rota', self::ROTAS_REMOVIDAS)->delete();
+
         foreach (self::MATRIZ as [$rota, $nome, $grupo, $ordem, $niveis]) {
             // Metadados da tela são sempre atualizados (nome/grupo/ordem).
             $tela = Tela::updateOrCreate(

@@ -7,6 +7,7 @@ import type { BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
 import { Table, Loader2 } from 'lucide-vue-next';
 import { computed, onMounted, ref, watch } from 'vue';
+import { useFiltrosRelatorio } from '@/composables/useFiltrosRelatorio';
 
 interface AnoLetivo { anl_id: number; anl_ano: number }
 interface Escola { esc_id: number; esc_nome: string }
@@ -20,8 +21,19 @@ const props = defineProps<{
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Notas por Unidade', href: '/relatorios/notas-por-unidade' }];
 
-const anlId = ref<number | null>(props.anosLetivos[0]?.anl_id ?? null);
-const escId = ref<number | null>(props.userEscola?.esc_id ?? null);
+// Mantém os filtros ao voltar do resultado (gerar outro sem refazer tudo).
+const { restaurar, salvar } = useFiltrosRelatorio('notas-por-unidade', {
+    anl_id: null as number | null,
+    esc_id: null as number | null,
+    tur_id: null as number | null,
+    uni_id: null as number | null,
+});
+const salvos = restaurar();
+// Enquanto restaura, as cascatas ficam mudas (senão zeram o que foi restaurado).
+let restaurando = true;
+
+const anlId = ref<number | null>(salvos.anl_id ?? props.anosLetivos[0]?.anl_id ?? null);
+const escId = ref<number | null>(salvos.esc_id ?? props.userEscola?.esc_id ?? null);
 const turId = ref<number | null>(null);
 const uniId = ref<number | null>(null);
 
@@ -46,9 +58,19 @@ async function loadUnidades() {
     unidades.value = await getJson(`/relatorios/notas-por-unidade/unidades?anl_id=${anlId.value}`);
 }
 
-onMounted(() => { loadTurmas(); loadUnidades(); });
-watch([escId, anlId], loadTurmas);
-watch(anlId, loadUnidades);
+onMounted(async () => {
+    await Promise.all([loadTurmas(), loadUnidades()]);
+    // Só restaura o que ainda existe nas listas carregadas.
+    if (salvos.tur_id && turmas.value.some((t) => t.tur_id === salvos.tur_id)) {
+        turId.value = salvos.tur_id;
+    }
+    if (salvos.uni_id && unidades.value.some((u) => u.uni_id === salvos.uni_id)) {
+        uniId.value = salvos.uni_id;
+    }
+    restaurando = false;
+});
+watch([escId, anlId], () => { if (!restaurando) loadTurmas(); });
+watch(anlId, () => { if (!restaurando) loadUnidades(); });
 
 const itemsAno = computed(() => props.anosLetivos.map((a) => ({ id: a.anl_id, label: String(a.anl_ano) })));
 const itemsEscola = computed(() => props.escolas.map((e) => ({ id: e.esc_id, label: e.esc_nome })));
@@ -57,6 +79,7 @@ const itemsPeriodo = computed(() => unidades.value.map((u) => ({ id: u.uni_id, l
 
 function gerar() {
     if (!escId.value || !anlId.value || !turId.value || !uniId.value) return;
+    salvar({ anl_id: anlId.value, esc_id: escId.value, tur_id: turId.value, uni_id: uniId.value });
     gerando.value = true;
     const payload: Record<string, any> = { anl_id: anlId.value, esc_id: escId.value, tur_id: turId.value, uni_id: uniId.value };
     router.get('/relatorios/notas-por-unidade/gerar', payload, { preserveScroll: true, onFinish: () => { gerando.value = false; } });

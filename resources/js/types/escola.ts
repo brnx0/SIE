@@ -61,6 +61,7 @@ export interface Escola {
     esc_fl_creche: boolean;
     esc_fl_predio_compartilhado: boolean;
     esc_fl_sorteio_vagas: boolean;
+    esc_fl_oferece_merenda: boolean;
     esc_fl_ativo: boolean;
 
     esc_resolucao_num: string | null;
@@ -111,6 +112,7 @@ export interface EscolaFormData {
     esc_fl_creche: boolean;
     esc_fl_predio_compartilhado: boolean;
     esc_fl_sorteio_vagas: boolean;
+    esc_fl_oferece_merenda: boolean;
     esc_fl_ativo: boolean;
 
     esc_resolucao_num: string;

@@ -87,7 +87,7 @@ const TAB_FIELDS: Record<TabId, string[]> = {
         'esc_dep_administrativa', 'esc_proprietario_imovel', 'esc_forma_ocupacao',
         'esc_situacao_func', 'esc_regulamentada_conselho', 'esc_turno_escolar',
         'esc_ger_id', 'esc_orgao_regional_ensino',
-        'esc_fl_predio_compartilhado', 'esc_fl_sorteio_vagas',
+        'esc_fl_predio_compartilhado', 'esc_fl_sorteio_vagas', 'esc_fl_oferece_merenda',
     ],
     contato: [
         'esc_cep', 'esc_logradouro', 'esc_numero', 'esc_complemento',
@@ -157,6 +157,7 @@ const form = useForm<EscolaFormData>({
     esc_orgao_regional_ensino: props.initial?.esc_orgao_regional_ensino ?? '',
     esc_fl_predio_compartilhado: props.initial?.esc_fl_predio_compartilhado ?? false,
     esc_fl_sorteio_vagas: props.initial?.esc_fl_sorteio_vagas ?? false,
+    esc_fl_oferece_merenda: props.initial?.esc_fl_oferece_merenda ?? false,
     esc_fl_ativo: props.initial?.esc_fl_ativo ?? true,
 
     esc_resolucao_num: props.initial?.esc_resolucao_num ?? '',
@@ -562,6 +563,11 @@ const isLast = computed(() => activeTab.value === TABS.value[TABS.value.length -
                     <div class="flex items-center gap-3 sm:col-span-2">
                         <Switch id="esc_fl_sorteio_vagas" v-model="form.esc_fl_sorteio_vagas" />
                         <Label for="esc_fl_sorteio_vagas" class="text-sm font-normal">Participa do Sorteio de Vagas</Label>
+                    </div>
+
+                    <div class="flex items-center gap-3 sm:col-span-2">
+                        <Switch id="esc_fl_oferece_merenda" v-model="form.esc_fl_oferece_merenda" />
+                        <Label for="esc_fl_oferece_merenda" class="text-sm font-normal">Oferece Merenda</Label>
                     </div>
 
                     <div class="flex items-center gap-3 sm:col-span-2">

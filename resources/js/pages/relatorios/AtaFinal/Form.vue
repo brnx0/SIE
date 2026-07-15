@@ -7,6 +7,7 @@ import type { BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
 import { ScrollText, Loader2, TriangleAlert } from 'lucide-vue-next';
 import { computed, onMounted, ref, watch } from 'vue';
+import { useFiltrosRelatorio } from '@/composables/useFiltrosRelatorio';
 
 interface AnoLetivo { anl_id: number; anl_ano: number }
 interface Escola { esc_id: number; esc_nome: string }
@@ -15,8 +16,18 @@ const props = defineProps<{ anosLetivos: AnoLetivo[]; escolas: Escola[]; userEsc
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Ata Final do Encerramento', href: '/relatorios/ata-final' }];
 
-const anlId = ref<number | null>(props.anosLetivos[0]?.anl_id ?? null);
-const escId = ref<number | null>(props.userEscola?.esc_id ?? null);
+// Mantém os filtros ao voltar do resultado (gerar outro sem refazer tudo).
+const { restaurar, salvar } = useFiltrosRelatorio('ata-final', {
+    anl_id: null as number | null,
+    esc_id: null as number | null,
+    tur_id: null as number | null,
+});
+const salvos = restaurar();
+// Enquanto restaura, as cascatas ficam mudas (senão zeram o que foi restaurado).
+let restaurando = true;
+
+const anlId = ref<number | null>(salvos.anl_id ?? props.anosLetivos[0]?.anl_id ?? null);
+const escId = ref<number | null>(salvos.esc_id ?? props.userEscola?.esc_id ?? null);
 const turId = ref<number | null>(null);
 
 const turmas = ref<{ tur_id: number; turma: string; encerrada: boolean }[]>([]);
@@ -38,8 +49,15 @@ async function loadTurmas() {
     } finally { carregandoTurmas.value = false; }
 }
 
-onMounted(loadTurmas);
-watch([escId, anlId], loadTurmas);
+onMounted(async () => {
+    await loadTurmas();
+    // Só restaura o que ainda existe nas listas carregadas.
+    if (salvos.tur_id && turmas.value.some((t) => t.tur_id === salvos.tur_id)) {
+        turId.value = salvos.tur_id;
+    }
+    restaurando = false;
+});
+watch([escId, anlId], () => { if (!restaurando) loadTurmas(); });
 
 const itemsAno = computed(() => props.anosLetivos.map((a) => ({ id: a.anl_id, label: String(a.anl_ano) })));
 const itemsEscola = computed(() => props.escolas.map((e) => ({ id: e.esc_id, label: e.esc_nome })));
@@ -49,6 +67,7 @@ const turmaNaoEncerrada = computed(() => !!turmaSel.value && !turmaSel.value.enc
 
 function gerar() {
     if (!escId.value || !anlId.value || !turId.value) return;
+    salvar({ anl_id: anlId.value, esc_id: escId.value, tur_id: turId.value });
     gerando.value = true;
     router.get('/relatorios/ata-final/gerar', { anl_id: anlId.value, esc_id: escId.value, tur_id: turId.value }, { preserveScroll: true, onFinish: () => { gerando.value = false; } });
 }

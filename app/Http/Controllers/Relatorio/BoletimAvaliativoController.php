@@ -14,6 +14,7 @@ use App\Support\FaltasAluno;
 use App\Support\UserAccess;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -21,7 +22,9 @@ use Inertia\Response;
  * Boletim Avaliativo: agrupado por disciplina da grade (1 página por disciplina).
  * Por disciplina lista todos os alunos com a média de cada unidade (bimestre),
  * total de faltas na matéria, média final (M.F) e o resultado final.
- * (A regra de aprovação será definida futuramente — por ora "Aprovado (a)".)
+ *
+ * O "Resultado Final" vem do ENCERRAMENTO da turma (tma_dt_encerramento +
+ * tma_tas_cod_saida) — não é recalculado aqui. Turma em curso sai "—".
  */
 class BoletimAvaliativoController extends Controller
 {
@@ -35,9 +38,9 @@ class BoletimAvaliativoController extends Controller
 
         return Inertia::render('relatorios/BoletimAvaliativo/Form', [
             'anosLetivos' => AnoLetivo::orderByDesc('anl_ano')->get(['anl_id', 'anl_ano']),
-            'escolas'     => UserAccess::escolasVisiveis($user),
-            'userEscola'  => UserAccess::escolaDefault($user),
-            'isAdmin'     => $user->isAdmin(),
+            'escolas' => UserAccess::escolasVisiveis($user),
+            'userEscola' => UserAccess::escolaDefault($user),
+            'isAdmin' => $user->isAdmin(),
         ]);
     }
 
@@ -52,10 +55,10 @@ class BoletimAvaliativoController extends Controller
 
         $this->autorizarTurma((int) $data['tur_id']);
 
-        $ano    = AnoLetivo::findOrFail($data['anl_id']);
+        $ano = AnoLetivo::findOrFail($data['anl_id']);
         $escola = Escola::findOrFail($data['esc_id']);
-        $turma  = Turma::with('serie:ser_id,ser_nome')->findOrFail($data['tur_id']);
-        $disId  = ! empty($data['dis_id']) ? (int) $data['dis_id'] : null;
+        $turma = Turma::with('serie:ser_id,ser_nome')->findOrFail($data['tur_id']);
+        $disId = ! empty($data['dis_id']) ? (int) $data['dis_id'] : null;
 
         // Cabeçalho da escola (endereço completo).
         $e = DB::table('edu_escola as esc')
@@ -64,11 +67,11 @@ class BoletimAvaliativoController extends Controller
             ->where('esc.esc_id', $data['esc_id'])
             ->first(['esc.esc_nome', 'esc.esc_logradouro', 'esc.esc_numero', 'esc.esc_cep', 'b.bai_nome', 'm.mun_nome', 'm.mun_uf']);
 
-        $logradouro = trim(($e->esc_logradouro ?? '') . ($e->esc_numero ? ', ' . $e->esc_numero : ''));
+        $logradouro = trim(($e->esc_logradouro ?? '').($e->esc_numero ? ', '.$e->esc_numero : ''));
         $endereco = implode(' - ', array_filter([
             $logradouro ?: null,
             $e->bai_nome ?? null,
-            $e->mun_nome ? $e->mun_nome . ($e->mun_uf ? ' (' . $e->mun_uf . ')' : '') : null,
+            $e->mun_nome ? $e->mun_nome.($e->mun_uf ? ' ('.$e->mun_uf.')' : '') : null,
             $e->esc_cep ?: null,
         ]));
 
@@ -97,15 +100,15 @@ class BoletimAvaliativoController extends Controller
             ->where('tma_tur_id', $turma->tur_id)
             ->where(function ($q) {
                 $q->where('tma_situacao', Matricula::SITUACAO_ATIVA)
-                  ->orWhere(fn ($s) => $s->whereNotNull('tma_tas_cod_saida')->where('tma_tas_cod_saida', '!=', Matricula::TAS_REMANEJADO));
+                    ->orWhere(fn ($s) => $s->whereNotNull('tma_tas_cod_saida')->where('tma_tas_cod_saida', '!=', Matricula::TAS_REMANEJADO));
             })
             ->whereNull('tma_deleted_at')
-            ->with(['aluno:aln_id,aln_nome', 'situacaoSaida:tas_cod,tas_descricao'])
+            ->with(['aluno:aln_id,aln_nome', 'situacaoSaida:tas_cod,tas_descricao,tas_descricao_enturmacao'])
             ->get()
             ->filter(fn ($m) => $m->aluno)
             // Sem dedup por aluno: 2 matrículas (saída + nova) na mesma turma aparecem
             // ambas (ex.: aluno transferido e depois rematriculado), como no modelo.
-            ->sortBy(fn ($m) => \Illuminate\Support\Str::ascii(mb_strtolower((string) $m->aluno->aln_nome)))
+            ->sortBy(fn ($m) => Str::ascii(mb_strtolower((string) $m->aluno->aln_nome)))
             ->values();
 
         $turno = $turma->tur_turno
@@ -121,7 +124,7 @@ class BoletimAvaliativoController extends Controller
             ? (float) $mediaEscola
             : ($ano->anl_media_geral !== null ? (float) $ano->anl_media_geral : null);
 
-        $blocos = $disciplinas->map(function ($d) use ($turma, $unidades, $alunos, $mediaAprov) {
+        $blocos = $disciplinas->map(function ($d) use ($turma, $unidades, $alunos) {
             $disId = (int) $d->dis_id;
 
             // Professor(es) da disciplina na turma.
@@ -145,7 +148,7 @@ class BoletimAvaliativoController extends Controller
             // Recuperação final desta disciplina: [aln] => valor (vale como MF se maior).
             $recRow = CalculoNota::recuperacoesFinais((int) $turma->tur_id)[$disId] ?? [];
 
-            $linhas = $alunos->map(function (Matricula $m) use ($unidades, $res, $faltas, $mediaAprov, $recRow) {
+            $linhas = $alunos->map(function (Matricula $m) use ($unidades, $res, $faltas, $recRow) {
                 $alnId = (int) $m->aluno->aln_id;
                 $saiu = $m->tma_situacao !== Matricula::SITUACAO_ATIVA;
 
@@ -160,28 +163,34 @@ class BoletimAvaliativoController extends Controller
                 $consol = CalculoNota::consolidar($porUnidade, $recRow[$alnId] ?? null);
                 $mfTexto = $this->celula($consol)['texto'];
 
-                // Resultado: saída => situação; numérica => compara com a média; senão placeholder.
+                // Resultado final SÓ existe depois do encerramento (tma_dt_encerramento):
+                // é o tma_tas_cod_saida gravado lá, que já considera conselho, progressão
+                // automática, etc. Não recalcular por MF aqui — turma em curso não tem
+                // resultado, e inventar um dá "Aprovado" antes da hora.
+                $encerrado = ! $saiu && $m->tma_dt_encerramento !== null;
+                $situacao = $m->situacaoSaida?->tas_descricao_enturmacao ?: $m->situacaoSaida?->tas_descricao;
+
                 if ($saiu) {
-                    $resultado = $m->situacaoSaida?->tas_descricao ?? 'Saída';
-                } elseif ($consol['tipo'] === 'numerica' && $consol['valor'] !== null && $mediaAprov !== null) {
-                    $resultado = (float) $consol['valor'] >= $mediaAprov ? 'Aprovado (a)' : 'Reprovado (a)';
+                    $resultado = $situacao ?? 'Saída';       // movimentação (transferido, desistente, ...)
+                } elseif ($encerrado) {
+                    $resultado = $situacao ?? '—';           // resultado do encerramento
                 } else {
-                    $resultado = 'Aprovado (a)';
+                    $resultado = '—';                        // turma ainda não encerrada
                 }
 
                 return [
-                    'aln_nome'  => $m->aluno->aln_nome,
-                    'faltas'    => (int) ($faltas[$alnId] ?? 0),
-                    'medias'    => $medias,
-                    'mf'        => $saiu ? '-' : ($mfTexto === '—' ? '' : $mfTexto),
+                    'aln_nome' => $m->aluno->aln_nome,
+                    'faltas' => (int) ($faltas[$alnId] ?? 0),
+                    'medias' => $medias,
+                    'mf' => $saiu ? '-' : ($mfTexto === '—' ? '' : $mfTexto),
                     'resultado' => $resultado,
                 ];
             });
 
             return [
-                'dis_nome'   => $d->dis_nome,
-                'professor'  => $professor ?: '—',
-                'alunos'     => $linhas->values(),
+                'dis_nome' => $d->dis_nome,
+                'professor' => $professor ?: '—',
+                'alunos' => $linhas->values(),
             ];
         });
 
@@ -189,24 +198,24 @@ class BoletimAvaliativoController extends Controller
 
         return Inertia::render('relatorios/BoletimAvaliativo/Resultado', [
             'parametros' => $p ? [
-                'estado'        => $p->par_msg_cab_estado,
-                'entidade'      => $p->par_nome_entidade,
-                'secretaria'    => $p->par_msg_cab_secretaria,
+                'estado' => $p->par_msg_cab_estado,
+                'entidade' => $p->par_nome_entidade,
+                'secretaria' => $p->par_msg_cab_secretaria,
                 'logomarca_url' => $p->par_logomarca_url,
             ] : null,
             'escola' => [
-                'nome'     => $e->esc_nome,
+                'nome' => $e->esc_nome,
                 'endereco' => $endereco ?: null,
             ],
             'cabecalho' => [
-                'anl_ano'         => $ano->anl_ano,
-                'turma'           => trim(($turma->serie?->ser_nome ? $turma->serie->ser_nome . ' ' : '') . $turma->tur_nome),
-                'turno'           => $turno,
+                'anl_ano' => $ano->anl_ano,
+                'turma' => trim(($turma->serie?->ser_nome ? $turma->serie->ser_nome.' ' : '').$turma->tur_nome),
+                'turno' => $turno,
                 'media_aprovacao' => $mediaAprov,
             ],
-            'unidades'    => $unidades,
+            'unidades' => $unidades,
             'disciplinas' => $blocos->values(),
-            'esc_nome'    => $escola->esc_nome,
+            'esc_nome' => $escola->esc_nome,
         ]);
     }
 }

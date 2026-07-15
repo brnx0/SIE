@@ -7,14 +7,23 @@ import type { BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
 import { ScrollText } from 'lucide-vue-next';
 import { ref } from 'vue';
+import { useFiltrosRelatorio } from '@/composables/useFiltrosRelatorio';
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Histórico Escolar', href: '/relatorios/historico-escolar' }];
 
-const alnId = ref<number | null>(null);
-const escId = ref<number | null>(null);
+// Mantém os filtros ao voltar do resultado (gerar outro sem refazer tudo).
+const { restaurar, salvar } = useFiltrosRelatorio('historico-escolar', {
+    aln_id: null as number | null,
+    esc_id: null as number | null,
+});
+const salvos = restaurar();
+
+const alnId = ref<number | null>(salvos.aln_id ?? null);
+const escId = ref<number | null>(salvos.esc_id ?? null);
 
 const gerar = () => {
     if (!alnId.value || !escId.value) return;
+    salvar({ aln_id: alnId.value, esc_id: escId.value });
     window.open(`/alunos/${alnId.value}/historico?esc_id=${escId.value}`, '_blank');
 };
 </script>

@@ -105,7 +105,6 @@ const relatoriosMenu = [
         children: [
             { title: 'Central de Relatórios', href: '/relatorios' },
             { title: 'Relatórios Gerais', href: '/relatorios-escola' },
-            { title: 'Relatórios da Secretaria', href: '/relatorios-secretaria' },
         ],
     },
 ];
@@ -135,6 +134,7 @@ const secretariaMenu = [
             },
             { title: 'Renovação de Matrícula', href: '/secretaria/renovacao-matricula' },
             { title: 'Motivo Baixa Frequência', href: '/secretaria/motivos-baixa-frequencia' },
+            { title: 'Relatórios', href: '/relatorios-secretaria' },
         ],
     },
 ];
@@ -146,7 +146,6 @@ const encerramentoMenu = [
             { title: 'Encerramento de Turmas', href: '/encerramento-turmas' },
             { title: 'Duplicar Turmas', href: '/duplicar-turmas' },
             { title: 'Confirmação de Renovação', href: '/confirmacao-renovacao' },
-            { title: 'Relatórios', href: '/relatorios-encerramento' },
         ],
     },
 ];

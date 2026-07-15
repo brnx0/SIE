@@ -6,7 +6,8 @@ import LocalCombobox from '@/components/common/LocalCombobox.vue';
 import type { BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
 import { Accessibility, Loader2 } from 'lucide-vue-next';
-import { computed, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
+import { useFiltrosRelatorio } from '@/composables/useFiltrosRelatorio';
 
 interface AnoLetivo { anl_id: number; anl_ano: number; anl_fl_em_exercicio: boolean }
 interface Escola { esc_id: number; esc_nome: string }
@@ -25,8 +26,18 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const anoDefault = props.anosLetivos.find((a) => a.anl_fl_em_exercicio) ?? props.anosLetivos[0];
 
-const anlId = ref<number | ''>(anoDefault?.anl_id ?? '');
-const escId = ref<number | null>(props.userEscola?.esc_id ?? null);
+// Mantém os filtros ao voltar do resultado (gerar outro sem refazer tudo).
+const { restaurar, salvar } = useFiltrosRelatorio('desempenho-aee', {
+    anl_id: null as number | '' | null,
+    esc_id: null as number | null,
+    tur_id: null as number | '' | null,
+});
+const salvos = restaurar();
+// Enquanto restaura, as cascatas ficam mudas (senão zeram o que foi restaurado).
+let restaurando = true;
+
+const anlId = ref<number | ''>(salvos.anl_id ?? anoDefault?.anl_id ?? '');
+const escId = ref<number | null>(salvos.esc_id ?? props.userEscola?.esc_id ?? null);
 const itemsEscola = computed(() => props.escolas.map((e) => ({ id: e.esc_id, label: e.esc_nome })));
 const turId = ref<number | ''>('');
 const turmas = ref<TurmaAee[]>([]);
@@ -43,10 +54,19 @@ const fetchTurmas = async () => {
     if (r.ok) turmas.value = await r.json();
 };
 
-watch([anlId, escId], fetchTurmas, { immediate: true });
+onMounted(async () => {
+    await fetchTurmas();
+    // Só restaura o que ainda existe na lista carregada.
+    if (salvos.tur_id && turmas.value.some((t) => t.tur_id === salvos.tur_id)) {
+        turId.value = salvos.tur_id;
+    }
+    restaurando = false;
+});
+watch([anlId, escId], () => { if (!restaurando) fetchTurmas(); });
 
 function gerar() {
     if (!anlId.value) return;
+    salvar({ anl_id: anlId.value, esc_id: escId.value, tur_id: turId.value });
     gerando.value = true;
     const payload: Record<string, any> = { anl_id: Number(anlId.value) };
     if (escId.value) payload.esc_id = Number(escId.value);

@@ -7,7 +7,7 @@ import InputError from '@/components/common/InputError.vue';
 import RemoteCombobox from '@/components/common/RemoteCombobox.vue';
 import MunicipioCombobox from '@/components/aluno/MunicipioCombobox.vue';
 import type { Municipio } from '@/types/aluno';
-import { router } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 import { LoaderCircle, Plus, Trash2, Pencil, X, Save } from 'lucide-vue-next';
 import { computed, reactive, ref, watch } from 'vue';
 
@@ -33,6 +33,10 @@ interface Lancamento {
 
 const props = defineProps<{ open: boolean; aluno: { aln_id: number; aln_nome: string } | null }>();
 const emit = defineEmits<{ (e: 'update:open', v: boolean): void }>();
+
+const page = usePage();
+const params = computed(() => (page.props as any).params ?? {});
+const escolaUppercase = computed(() => !!params.value.nome_escola_caixa_alta);
 
 const loading = ref(false);
 const processing = ref(false);
@@ -100,6 +104,20 @@ const onFreqInput = (e: Event) => {
     el.value = s;
     form.hmn_frequencia = s;
 };
+
+// Nome da escola fora da rede nunca aceita acentos — removidos em tempo real,
+// igual ao cadastro de escola (EscolaForm). Strip é sempre aplicado; só o caixa
+// alta é que segue o parâmetro nome_escola_caixa_alta.
+const stripAccents = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '');
+watch(
+    () => form.hmn_esc_nome,
+    (v) => {
+        if (typeof v !== 'string') return;
+        let out = stripAccents(v);
+        if (escolaUppercase.value) out = out.toLocaleUpperCase('pt-BR');
+        if (out !== v) form.hmn_esc_nome = out;
+    },
+);
 
 // Série filtrada pelo segmento escolhido (seg_id vira query da busca remota).
 const serieFetchUrl = computed(() =>

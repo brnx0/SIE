@@ -9,10 +9,14 @@ import { useIsActiveTab } from '@/composables/useIsActiveTab';
 
 interface Linha {
     aln_id: number | null;
-    nr_matricula: number | null;
     nome: string | null;
+    turma: string | null;
     cpf: string | null;
-    idade: number | null;
+    sexo: string | null;
+    endereco: string | null;
+    deficiencia: string | null;
+    dt_nascimento: string | null;
+    mae: string | null;
 }
 
 interface Parametros {
@@ -50,10 +54,11 @@ const isActiveTab = useIsActiveTab();
 const imprimir = () => window.print();
 
 const exportarCsv = () => {
-    const headers = ['Matrícula', 'Nome', 'CPF', 'Idade'];
+    const headers = ['Nome', 'Turma', 'CPF', 'Sexo', 'Endereço', 'Deficiência', 'Data de Nascimento', 'Nome da Mãe'];
     const sep = ';';
     const linhas = props.linhas.map(l => [
-        l.nr_matricula ?? '', l.nome ?? '', formatCpf(l.cpf), l.idade ?? '',
+        l.nome ?? '', l.turma ?? '', formatCpf(l.cpf), l.sexo ?? '',
+        l.endereco ?? '', l.deficiencia ?? '', l.dt_nascimento ?? '', l.mae ?? '',
     ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(sep));
     const csv = '﻿' + [headers.join(sep), ...linhas].join('\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
@@ -103,22 +108,41 @@ const exportarExcel = () => {
         </div>
 
         <table class="tabela-impressao">
+            <colgroup>
+                <col class="w-num" />
+                <col class="w-nome" />
+                <col class="w-turma" />
+                <col class="w-cpf" />
+                <col class="w-sexo" />
+                <col class="w-endereco" />
+                <col class="w-defic" />
+                <col class="w-nasc" />
+                <col class="w-mae" />
+            </colgroup>
             <thead>
                 <tr>
                     <th class="col-num">#</th>
-                    <th>Matrícula</th>
                     <th>Nome</th>
+                    <th>Turma</th>
                     <th>CPF</th>
-                    <th class="centro">Idade</th>
+                    <th class="centro">Sexo</th>
+                    <th>Endereço</th>
+                    <th class="centro">Defic.</th>
+                    <th class="centro">Nascimento</th>
+                    <th>Nome da Mãe</th>
                 </tr>
             </thead>
             <tbody>
                 <tr v-for="(a, i) in linhas" :key="`p-${a.aln_id ?? i}`">
                     <td class="col-num">{{ i + 1 }}</td>
-                    <td>{{ a.nr_matricula ?? '—' }}</td>
                     <td class="celula-nome">{{ a.nome ?? '—' }}</td>
+                    <td>{{ a.turma ?? '—' }}</td>
                     <td>{{ formatCpf(a.cpf) }}</td>
-                    <td class="centro">{{ a.idade ?? '—' }}</td>
+                    <td class="centro">{{ a.sexo ?? '—' }}</td>
+                    <td>{{ a.endereco ?? '—' }}</td>
+                    <td class="centro">{{ a.deficiencia ?? '—' }}</td>
+                    <td class="centro">{{ a.dt_nascimento ?? '—' }}</td>
+                    <td>{{ a.mae ?? '—' }}</td>
                 </tr>
             </tbody>
         </table>
@@ -159,23 +183,42 @@ const exportarExcel = () => {
 
             <div v-else class="rounded-xl border bg-card shadow-sm overflow-hidden">
                 <div class="overflow-x-auto">
-                    <table class="w-full text-sm">
+                    <table class="w-full table-fixed text-sm" style="min-width: 1180px">
+                        <colgroup>
+                            <col style="width: 48px" />
+                            <col style="width: 260px" />
+                            <col style="width: 90px" />
+                            <col style="width: 130px" />
+                            <col style="width: 60px" />
+                            <col style="width: 300px" />
+                            <col style="width: 80px" />
+                            <col style="width: 110px" />
+                            <col style="width: 240px" />
+                        </colgroup>
                         <thead class="bg-muted/40">
                             <tr>
-                                <th class="px-3 py-2 text-left w-12">#</th>
-                                <th class="px-3 py-2 text-left">Matrícula</th>
+                                <th class="px-3 py-2 text-left">#</th>
                                 <th class="px-3 py-2 text-left">Nome</th>
+                                <th class="px-3 py-2 text-left">Turma</th>
                                 <th class="px-3 py-2 text-left">CPF</th>
-                                <th class="px-3 py-2 text-center">Idade</th>
+                                <th class="px-3 py-2 text-center">Sexo</th>
+                                <th class="px-3 py-2 text-left">Endereço</th>
+                                <th class="px-3 py-2 text-center">Defic.</th>
+                                <th class="px-3 py-2 text-center">Nascimento</th>
+                                <th class="px-3 py-2 text-left">Nome da Mãe</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y">
                             <tr v-for="(a, i) in linhas" :key="a.aln_id ?? i">
                                 <td class="px-3 py-1.5 text-muted-foreground tabular-nums">{{ i + 1 }}</td>
-                                <td class="px-3 py-1.5 tabular-nums">{{ a.nr_matricula ?? '—' }}</td>
-                                <td class="px-3 py-1.5 font-medium">{{ a.nome ?? '—' }}</td>
-                                <td class="px-3 py-1.5">{{ formatCpf(a.cpf) }}</td>
-                                <td class="px-3 py-1.5 text-center tabular-nums">{{ a.idade ?? '—' }}</td>
+                                <td class="px-3 py-1.5 font-medium break-words">{{ a.nome ?? '—' }}</td>
+                                <td class="px-3 py-1.5 break-words">{{ a.turma ?? '—' }}</td>
+                                <td class="px-3 py-1.5 tabular-nums">{{ formatCpf(a.cpf) }}</td>
+                                <td class="px-3 py-1.5 text-center">{{ a.sexo ?? '—' }}</td>
+                                <td class="px-3 py-1.5 break-words">{{ a.endereco ?? '—' }}</td>
+                                <td class="px-3 py-1.5 text-center">{{ a.deficiencia ?? '—' }}</td>
+                                <td class="px-3 py-1.5 text-center tabular-nums">{{ a.dt_nascimento ?? '—' }}</td>
+                                <td class="px-3 py-1.5 break-words">{{ a.mae ?? '—' }}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -192,7 +235,7 @@ const exportarExcel = () => {
 #print-area { display: none; }
 
 @media print {
-    @page { size: A4 portrait; margin: 3mm 10mm 8mm 10mm; }
+    @page { size: A4 landscape; margin: 3mm 8mm 8mm 8mm; }
     body > *:not(#print-area) { display: none !important; }
     #print-area {
         display: block !important;
@@ -242,10 +285,23 @@ const exportarExcel = () => {
     .tabela-impressao {
         width: 100%;
         border-collapse: collapse;
-        font-size: 9pt;
+        /* Colunas de tamanho fixo: respeita as larguras do <colgroup>. */
+        table-layout: fixed;
+        font-size: 8pt;
         border: 1px solid #000;
         margin-top: 8px;
     }
+
+    /* Larguras fixas — soma ≈ 265mm (A4 paisagem útil ≈ 281mm). */
+    .tabela-impressao .w-num      { width: 8mm; }
+    .tabela-impressao .w-nome     { width: 52mm; }
+    .tabela-impressao .w-turma    { width: 18mm; }
+    .tabela-impressao .w-cpf      { width: 26mm; }
+    .tabela-impressao .w-sexo     { width: 10mm; }
+    .tabela-impressao .w-endereco { width: 61mm; }
+    .tabela-impressao .w-defic    { width: 14mm; }
+    .tabela-impressao .w-nasc     { width: 22mm; }
+    .tabela-impressao .w-mae      { width: 52mm; }
     .tabela-impressao th {
         background: transparent;
         color: #000;
@@ -258,12 +314,16 @@ const exportarExcel = () => {
         letter-spacing: 0.3px;
     }
     .tabela-impressao td {
-        padding: 3px 6px;
+        padding: 3px 4px;
         border: 1px solid #000;
         vertical-align: top;
+        /* Coluna fixa: quebra o texto em vez de estourar a largura. */
+        overflow-wrap: break-word;
+        word-break: break-word;
     }
+    .tabela-impressao th { overflow-wrap: break-word; }
     .tabela-impressao .centro { text-align: center; }
-    .tabela-impressao .col-num { width: 28px; text-align: center; }
+    .tabela-impressao .col-num { text-align: center; }
     .tabela-impressao .celula-nome { font-weight: 600; }
 
     .resumo-sexo-impressao {

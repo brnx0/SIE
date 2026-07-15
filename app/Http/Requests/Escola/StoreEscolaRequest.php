@@ -96,6 +96,7 @@ class StoreEscolaRequest extends FormRequest
             'esc_orgao_regional_ensino' => ['nullable', 'string', 'max:120'],
             'esc_fl_predio_compartilhado' => ['boolean'],
             'esc_fl_sorteio_vagas' => ['boolean'],
+            'esc_fl_oferece_merenda' => ['boolean'],
             'esc_fl_ativo' => ['boolean'],
 
             // Ata de autorização
@@ -143,6 +144,7 @@ class StoreEscolaRequest extends FormRequest
             'esc_orgao_regional_ensino' => 'órgão regional de ensino',
             'esc_fl_predio_compartilhado' => 'prédio compartilhado',
             'esc_fl_sorteio_vagas' => 'participa do sorteio de vagas',
+            'esc_fl_oferece_merenda' => 'oferece merenda',
             'esc_resolucao_num' => 'resolução nº',
             'esc_cme_portaria_num' => 'CME portaria nº',
             'esc_dt_publicacao' => 'data de publicação',

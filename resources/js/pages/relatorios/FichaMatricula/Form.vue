@@ -8,6 +8,7 @@ import type { BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
 import { ClipboardList, Loader2 } from 'lucide-vue-next';
 import { computed, onMounted, ref, watch } from 'vue';
+import { useFiltrosRelatorio } from '@/composables/useFiltrosRelatorio';
 
 interface AnoLetivo { anl_id: number; anl_ano: number; anl_fl_em_exercicio: boolean }
 interface Escola { esc_id: number; esc_nome: string }
@@ -27,8 +28,19 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const anoDefault = props.anosLetivos.find(a => a.anl_fl_em_exercicio) ?? props.anosLetivos[0];
 
-const anlId = ref<number | ''>(anoDefault?.anl_id ?? '');
-const escId = ref<number | null>(props.userEscola?.esc_id ?? null);
+// Mantém os filtros ao voltar do resultado (gerar outro sem refazer tudo).
+const { restaurar, salvar } = useFiltrosRelatorio('ficha-matricula', {
+    anl_id: null as number | null,
+    esc_id: null as number | null,
+    tur_id: null as number | null,
+    aln_id: null as number | null,
+});
+const salvos = restaurar();
+// Enquanto restaura, as cascatas ficam mudas (senão zeram o que foi restaurado).
+let restaurando = true;
+
+const anlId = ref<number | ''>(salvos.anl_id ?? anoDefault?.anl_id ?? '');
+const escId = ref<number | null>(salvos.esc_id ?? props.userEscola?.esc_id ?? null);
 const itemsEscola = computed(() => props.escolas.map((e) => ({ id: e.esc_id, label: e.esc_nome })));
 const turId = ref<number | ''>('');
 const alnId = ref<number | null>(null);
@@ -77,12 +89,29 @@ async function loadAlunos() {
     }
 }
 
-onMounted(loadTurmas);
-watch([escId, anlId], loadTurmas);
-watch(turId, loadAlunos);
+onMounted(async () => {
+    await loadTurmas();
+    // Só restaura o que ainda existe nas listas carregadas.
+    if (salvos.tur_id && turmas.value.some((t) => t.tur_id === salvos.tur_id)) {
+        turId.value = salvos.tur_id;
+        await loadAlunos();
+        if (salvos.aln_id && alunos.value.some((a) => a.aln_id === salvos.aln_id)) {
+            alnId.value = salvos.aln_id;
+        }
+    }
+    restaurando = false;
+});
+watch([escId, anlId], () => { if (!restaurando) loadTurmas(); });
+watch(turId, () => { if (!restaurando) loadAlunos(); });
 
 function gerar() {
     if (!escId.value || !anlId.value || !turId.value) return;
+    salvar({
+        anl_id: Number(anlId.value),
+        esc_id: Number(escId.value),
+        tur_id: Number(turId.value),
+        aln_id: alnId.value,
+    });
     gerando.value = true;
     const payload: Record<string, any> = {
         anl_id: Number(anlId.value),
