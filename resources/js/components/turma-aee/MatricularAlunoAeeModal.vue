@@ -147,7 +147,7 @@ const confirmar = async () => {
 
             <div class="grid gap-4 lg:grid-cols-2">
                 <!-- Lista -->
-                <div class="rounded-lg border bg-background">
+                <div class="min-w-0 rounded-lg border bg-background">
                     <div class="border-b px-3 py-2 text-xs font-semibold text-muted-foreground">
                         Alunos elegíveis ({{ lista.length }})
                     </div>
@@ -185,8 +185,8 @@ const confirmar = async () => {
                     <p v-if="!selecionado" class="py-10 text-center text-sm text-muted-foreground">
                         Selecione um aluno para ver detalhes.
                     </p>
-                    <div v-else class="grid gap-4">
-                        <div class="flex items-center gap-3">
+                    <div v-else class="grid min-w-0 gap-4">
+                        <div class="flex min-w-0 items-center gap-3">
                             <div class="grid size-12 shrink-0 place-items-center overflow-hidden rounded-full bg-indigo-100 font-semibold text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300">
                                 <img v-if="selecionado.aln_foto_url" :src="selecionado.aln_foto_url" class="size-full object-cover" />
                                 <span v-else>{{ initials(selecionado.aln_nome) }}</span>
@@ -208,7 +208,7 @@ const confirmar = async () => {
                         </div>
 
                         <!-- Matricula regular -->
-                        <div v-if="selecionado.matricula_regular" class="rounded-md border bg-muted/40 p-3 text-sm">
+                        <div v-if="selecionado.matricula_regular" class="min-w-0 rounded-md border bg-muted/40 p-3 text-sm">
                             <div class="mb-1 flex items-center gap-2 text-xs font-semibold text-muted-foreground">
                                 <GraduationCap class="size-4" /> Vínculo Regular
                             </div>
@@ -219,10 +219,10 @@ const confirmar = async () => {
                         <!-- Cross-escola -->
                         <div
                             v-if="cross"
-                            class="flex items-start gap-2 rounded-md border border-amber-300 bg-amber-50/70 p-3 text-sm text-amber-900 dark:bg-amber-900/20 dark:text-amber-200"
+                            class="flex min-w-0 items-start gap-2 rounded-md border border-amber-300 bg-amber-50/70 p-3 text-sm text-amber-900 dark:bg-amber-900/20 dark:text-amber-200"
                         >
                             <School class="mt-0.5 size-4 shrink-0" />
-                            <div>
+                            <div class="min-w-0">
                                 <p class="font-medium">Atendimento em outra escola</p>
                                 <p class="text-xs">
                                     Regular em <b>{{ selecionado.matricula_regular?.esc_nome }}</b>, AEE em <b>{{ turEscNome }}</b>.
@@ -231,7 +231,7 @@ const confirmar = async () => {
                         </div>
 
                         <!-- Saúde -->
-                        <div v-if="selecionado.saude" class="rounded-md border bg-muted/40 p-3 text-xs">
+                        <div v-if="selecionado.saude" class="min-w-0 rounded-md border bg-muted/40 p-3 text-xs">
                             <div class="mb-1 font-semibold text-muted-foreground">Quadro de Saúde</div>
                             <p v-if="selecionado.saude.als_deficiencias.length">
                                 <span class="text-muted-foreground">Deficiências:</span> {{ selecionado.saude.als_deficiencias.join(', ') }}
