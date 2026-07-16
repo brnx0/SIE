@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Diario;
 
+use App\Http\Requests\Concerns\ValidaPeriodoDaUnidade;
 use App\Models\Diario\DiarioPlanoAula;
 use App\Models\Turma\Turma;
 use Illuminate\Foundation\Http\FormRequest;
@@ -9,6 +10,8 @@ use Illuminate\Validation\Validator;
 
 class StorePlanoAulaRequest extends FormRequest
 {
+    use ValidaPeriodoDaUnidade;
+
     public function authorize(): bool
     {
         $user = $this->user();
@@ -54,6 +57,9 @@ class StorePlanoAulaRequest extends FormRequest
             $anlId = (int) $this->input('dpa_anl_id');
             $dtIni = $this->input('dpa_dt_inicio');
             $dtFim = $this->input('dpa_dt_fim');
+
+            // Antes dos returns abaixo: a data fora do período independe dos demais vínculos.
+            $this->validarDatasNaUnidade($v, (int) $this->input('dpa_uni_id'), $dtIni, $dtFim, 'dpa_dt_inicio', 'dpa_dt_fim');
 
             // A série precisa ter turma REGULAR nesta escola/ano (o plano é por série vinculada às turmas).
             $temTurmaRegular = \DB::table('edu_turma')
