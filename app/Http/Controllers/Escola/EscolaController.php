@@ -174,7 +174,8 @@ class EscolaController extends Controller
             fputcsv($out, ['Apelido', 'Nome', 'INEP', 'CNPJ', 'Município', 'UF', 'Situação'], ';');
             foreach ($escolas as $e) {
                 $cnpj = $e->esc_cnpj
-                    ? preg_replace('/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/', '$1.$2.$3/$4-$5', $e->esc_cnpj)
+                    // CNPJ alfanumérico (jul/2026): 12 posições [0-9A-Z] + DV numérico.
+                    ? preg_replace('/^([0-9A-Z]{2})([0-9A-Z]{3})([0-9A-Z]{3})([0-9A-Z]{4})(\d{2})$/', '$1.$2.$3/$4-$5', $e->esc_cnpj)
                     : '';
                 fputcsv($out, [
                     $e->esc_apelido ?? $e->esc_nome,
