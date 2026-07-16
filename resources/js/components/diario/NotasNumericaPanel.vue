@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { CheckCircle2, Loader2, Pencil, Plus, RefreshCw, Search, Trash2, TriangleAlert, X } from 'lucide-vue-next';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
+import { usePermissao } from '@/composables/usePermissao';
 
 const props = defineProps<{
     anlId: number;
@@ -42,6 +43,10 @@ interface AlunoRow {
 const carregando = ref(true);
 const erro = ref<string | null>(null);
 const periodoAberto = ref(true);
+const { isReadOnly } = usePermissao();
+// Perfis de supervisão (secretaria/coordenação) consultam o diário mas não lançam.
+// O backend já barra a escrita; aqui é para a tela não oferecer o que vai dar 403.
+const podeLancar = computed(() => periodoAberto.value && !isReadOnly.value);
 const turmaAberta = ref(true);
 const tipoDisponivel = ref(true);
 const avaliacoes = ref<Avaliacao[]>([]);
@@ -168,7 +173,7 @@ const salvarNota = async (row: AlunoRow, ava: Avaliacao) => {
     const key = ck(row.aln_id, ava.ava_id);
     const st = ensureCell(key);
     if (st.timer) { clearTimeout(st.timer); st.timer = null; }
-    if (!periodoAberto.value || !turmaAberta.value || isFutura(ava) || row.bloqueado || saiuAntes(row, ava)) return;
+    if (!podeLancar.value || !turmaAberta.value || isFutura(ava) || row.bloqueado || saiuAntes(row, ava)) return;
 
     const raw = row.notas[ava.ava_id];
     const valor = raw === null || (raw as any) === '' ? null : Number(raw);
@@ -193,7 +198,7 @@ const salvarNota = async (row: AlunoRow, ava: Avaliacao) => {
 };
 
 const aoDigitarNota = (row: AlunoRow, ava: Avaliacao) => {
-    if (!periodoAberto.value || !turmaAberta.value || isFutura(ava) || row.bloqueado || saiuAntes(row, ava)) return;
+    if (!podeLancar.value || !turmaAberta.value || isFutura(ava) || row.bloqueado || saiuAntes(row, ava)) return;
     // Não deixa passar do valor máximo da avaliação (nem negativo). NÃO clampa pro
     // máximo: rejeita o excesso removendo o último dígito digitado (ex.: "40" volta a "4").
     const v = row.notas[ava.ava_id];
@@ -331,7 +336,7 @@ const limitarValor1Casa = (e: Event) => {
                 >
                     <RefreshCw :class="['size-3.5', carregando && 'animate-spin']" /> Atualizar
                 </button>
-                <Button type="button" size="sm" class="bg-indigo-600 hover:bg-indigo-700" :disabled="!periodoAberto || !turmaAberta" @click="abrirNovo">
+                <Button type="button" size="sm" class="bg-indigo-600 hover:bg-indigo-700" :disabled="!podeLancar || !turmaAberta" @click="abrirNovo">
                     <Plus class="mr-1.5 size-4" /> Nova avaliação
                 </Button>
             </div>
@@ -393,7 +398,7 @@ const limitarValor1Casa = (e: Event) => {
                                         <button type="button" class="rounded p-0.5 hover:bg-muted" title="Editar" @click="abrirEdit(a)">
                                             <Pencil class="size-3 text-muted-foreground" />
                                         </button>
-                                        <button type="button" class="rounded p-0.5 hover:bg-muted" title="Excluir" :disabled="!periodoAberto" @click="excluirAvaliacao(a)">
+                                        <button type="button" class="rounded p-0.5 hover:bg-muted" title="Excluir" :disabled="!podeLancar" @click="excluirAvaliacao(a)">
                                             <Trash2 class="size-3 text-rose-500" />
                                         </button>
                                     </div>
@@ -423,7 +428,7 @@ const limitarValor1Casa = (e: Event) => {
                                             step="0.01"
                                             min="0"
                                             :max="a.ava_valor"
-                                            :disabled="!periodoAberto || !turmaAberta || isFutura(a) || row.bloqueado || saiuAntes(row, a)"
+                                            :disabled="!podeLancar || !turmaAberta || isFutura(a) || row.bloqueado || saiuAntes(row, a)"
                                             :title="!turmaAberta ? 'Turma não está aberta.' : saiuAntes(row, a) ? `Aluno saiu em ${fmtSaida(row.dt_saida)} — bloqueado.` : (row.bloqueado ? 'Aluno já possui notas conceituais nesta matéria.' : (isFutura(a) ? 'Avaliação agendada — lançamento liberado a partir da data.' : ''))"
                                             :class="[
                                                 'h-8 w-16 rounded-md border bg-background px-1.5 text-center text-sm tabular-nums shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:opacity-60',

@@ -24,7 +24,7 @@ class FaltaController extends Controller
 {
     public function contexto(Request $request): JsonResponse
     {
-        $this->abortIfNotProfessor();
+        $this->abortIfNaoPodeVerDiario();
 
         $turId = (int) $request->input('tur_id');
         $uniId = (int) $request->input('uni_id');
@@ -35,6 +35,9 @@ class FaltaController extends Controller
 
         $user  = $request->user();
         $funId = (int) $user->fun_id;
+        // Supervisão (secretaria/coordenação) consulta tudo e não edita nada — nem os
+        // tempos do funcionário ligado ao seu usuário, quando esse funcionário é professor.
+        $soConsulta = $this->soConsultaDiario();
 
         // TODOS os tempos da turma; o professor edita só os seus (pode_editar).
         $tempos = DB::table('edu_turma_horario as trh')
@@ -53,7 +56,7 @@ class FaltaController extends Controller
                 'trh_dis_id'  => $t->trh_dis_id,
                 'dis_nome'    => $t->dis_nome,
                 'fun_nome'    => $t->fun_nome,
-                'pode_editar' => $user->isAdmin() || (int) $t->trh_fun_id === $funId,
+                'pode_editar' => ! $soConsulta && ($user->isAdmin() || (int) $t->trh_fun_id === $funId),
             ]);
 
         // Janela do período (inclui extensão) para a lista de datas no frontend.

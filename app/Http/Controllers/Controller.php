@@ -46,6 +46,41 @@ abstract class Controller
     }
 
     /**
+     * Guard de LEITURA das telas do Diário: libera o professor lotado, admin/gestor
+     * global e os perfis de supervisão (secretaria/coordenação) que têm a tela como
+     * só-visualização na matriz.
+     *
+     * Só serve para leitura. Os endpoints do diário vivem em `api/*`, que o middleware
+     * `tela` ignora de propósito, então cada endpoint de escrita mantém o seu próprio
+     * guard de professor — não dá para confiar na matriz para barrar escrita aqui.
+     */
+    protected function abortIfNaoPodeVerDiario(string $rota = '/diario', string $role = 'professor'): void
+    {
+        $user = request()->user();
+        abort_unless($user, 403, 'Acesso restrito.');
+
+        if ($user->isAdmin() || $this->veTudoNoDiario($user, $rota)) {
+            return;
+        }
+
+        abort_unless($user->hasRole($role), 403, 'Acesso restrito a professores.');
+    }
+
+    /**
+     * True quando o usuário apenas consulta o Diário e não lança nada.
+     *
+     * Checa o ROLE, e não o users.fun_id: um usuário de secretaria pode estar ligado
+     * a um funcionário que também é professor, e nesse caso os filtros por fun_id o
+     * tratariam como regente da turma.
+     */
+    protected function soConsultaDiario(string $role = 'professor'): bool
+    {
+        $user = request()->user();
+
+        return $user && ! $user->isAdmin() && ! $user->hasRole($role);
+    }
+
+    /**
      * Data de saída (tma_dt_saida) do aluno na turma — string Y-m-d — ou null
      * se o aluno está ativo / sem saída registrada. Saída = tma_tas_cod_saida preenchido.
      */
