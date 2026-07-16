@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Diario;
 
 use App\Http\Controllers\Controller;
+use App\Models\Diario\DiarioAula;
 use App\Models\Disciplina\Disciplina;
 use App\Models\Parametro\AnoLetivo;
 use App\Models\Parametro\GradeDisciplinar;
@@ -259,11 +260,24 @@ class QuadroHorarioController extends Controller
             }
         }
 
-        $existing = TurmaHorario::withTrashed()
+        $slot = fn ($q) => $q
             ->where('trh_tur_id', $turma->tur_id)
             ->where('trh_tempo', $data['trh_tempo'])
-            ->where('trh_dia', $data['trh_dia'])
-            ->first();
+            ->where('trh_dia', $data['trh_dia']);
+
+        // A unique de tempo/dia é parcial, então o slot pode ter 1 ativo + N soft-deletados.
+        // Reaproveita o ativo; senão revive um soft-deletado, mas nunca um que tenha aula
+        // lançada — esse guarda o diário de outro professor e precisa continuar de fora.
+        $existing = TurmaHorario::where($slot)->first()
+            ?? TurmaHorario::onlyTrashed()
+                ->where($slot)
+                ->whereNotExists(fn ($q) => $q
+                    ->selectRaw('1')
+                    ->from('edu_diario_aula')
+                    ->whereColumn('aul_trh_id', 'edu_turma_horario.trh_id')
+                )
+                ->orderByDesc('trh_id')
+                ->first();
 
         $payload = [
             'trh_grh_id' => null,
@@ -295,7 +309,13 @@ class QuadroHorarioController extends Controller
 
         abort_unless((int) $turmaHorario->trh_tur_id === (int) $turma->tur_id, 404);
 
-        $turmaHorario->forceDelete();
+        // Horário com aula lançada é alvo da FK edu_diario_aula.aul_trh_id (RESTRICT).
+        // Soft delete preserva o diário e libera o slot (unique de tempo/dia é parcial).
+        $temAula = DiarioAula::withTrashed()
+            ->where('aul_trh_id', $turmaHorario->trh_id)
+            ->exists();
+
+        $temAula ? $turmaHorario->delete() : $turmaHorario->forceDelete();
 
         return back()->with('success', 'Horário removido com sucesso.');
     }

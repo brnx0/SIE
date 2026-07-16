@@ -2,7 +2,9 @@
 
 namespace App\Models\Diario;
 
+use App\Models\Funcionario\Funcionario;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class DiarioAula extends Model
@@ -19,6 +21,7 @@ class DiarioAula extends Model
 
     protected $fillable = [
         'aul_user_id',
+        'aul_fun_id',
         'aul_esc_id',
         'aul_anl_id',
         'aul_tur_id',
@@ -37,4 +40,10 @@ class DiarioAula extends Model
         'aul_fl_nao_executada' => 'boolean',
         'aul_fl_migrada'       => 'boolean',
     ];
+
+    /** Professor que deu a aula, congelado no lançamento (não segue trocas na grade). */
+    public function funcionario(): BelongsTo
+    {
+        return $this->belongsTo(Funcionario::class, 'aul_fun_id', 'fun_id');
+    }
 }

@@ -398,7 +398,7 @@ class FaltaController extends Controller
     {
         $turma = DB::table('edu_turma')->where('tur_id', $data['tur_id'])->first(['tur_esc_id', 'tur_anl_id']);
 
-        return DiarioAula::updateOrCreate(
+        $aula = DiarioAula::updateOrCreate(
             [
                 'aul_tur_id' => $data['tur_id'],
                 'aul_trh_id' => $data['trh_id'],
@@ -412,6 +412,14 @@ class FaltaController extends Controller
                 'aul_dis_id'  => $slot->trh_dis_id,
             ],
         );
+
+        // Autoria só no primeiro lançamento: se o professor da grade mudar depois, a aula
+        // continua atribuída a quem a deu.
+        if ($aula->aul_fun_id === null) {
+            $aula->update(['aul_fun_id' => $slot->trh_fun_id]);
+        }
+
+        return $aula;
     }
 
     /** Garante que o professor está lotado em algum tempo da turma (ou admin). */
