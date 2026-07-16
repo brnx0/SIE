@@ -9,14 +9,20 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem, type Paginated } from '@/types';
 import type { PlanoAula, PlanoStatus } from '@/types/diario';
 import { Head, Link, router } from '@inertiajs/vue3';
+import { usePermissao } from '@/composables/usePermissao';
 import { BookOpen, Pencil, Plus, Printer, Search, Trash2 } from 'lucide-vue-next';
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 const props = defineProps<{
     planos: Paginated<PlanoAula>;
     filters: { search: string; status: string; ser_id: string; dis_id: string; uni_id: string; per_page: number };
     statuses: PlanoStatus[];
 }>();
+
+// Nível 2 na tela = só consulta (coordenação/pedagógico). Quem cria é admin,
+// gestor da secretaria e professor — todos nível 1.
+const { isReadOnly } = usePermissao();
+const podeCriar = computed(() => !isReadOnly.value);
 
 const search = ref(props.filters.search ?? '');
 const status = ref<string>(props.filters.status ?? '');
@@ -88,7 +94,7 @@ const fmtDate = (d: string) => {
                     <h1 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">Planos de Aula</h1>
                     <p class="text-sm text-slate-500 dark:text-slate-400">Diário online — planejamento de aulas.</p>
                 </div>
-                <Link href="/diario/planos/create">
+                <Link v-if="podeCriar" href="/diario/planos/create">
                     <Button class="bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400">
                         <Plus class="mr-2 size-4" /> Novo plano
                     </Button>
