@@ -331,7 +331,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                         <Input :model-value="professor.fun_nome" readonly />
                     </div>
 
-                    <div class="md:col-span-8">
+                    <div class="md:col-span-12">
                         <Label>Tema <span class="text-rose-600">*</span></Label>
                         <Input v-model="form.dpa_tema" :disabled="readonly" maxlength="50" />
                         <InputError :message="form.errors.dpa_tema" />

@@ -38,6 +38,7 @@ const gerar = () => {
             </p>
 
             <div class="grid gap-4 rounded-xl border bg-card p-6 shadow-sm">
+                <div>
                     <FormLabel :required="true">Aluno</FormLabel>
                     <RemoteCombobox
                         v-model="alnId"

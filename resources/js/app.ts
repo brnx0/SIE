@@ -1,6 +1,7 @@
 import '../css/app.css';
 
 import { createInertiaApp, router } from '@inertiajs/vue3';
+import { focarPrimeiroErroAposRender } from './lib/focoErro';
 import { triggerSessionExpired } from './lib/session';
 import { vMaska } from 'maska/vue';
 import { createPinia } from 'pinia';
@@ -78,6 +79,13 @@ createInertiaApp({
                 event.preventDefault();
                 triggerSessionExpired();
             }
+        });
+
+        // Erro de validação: leva o usuário até o primeiro campo inválido. Fica aqui,
+        // e não em cada formulário, porque o Inertia emite este evento em toda visita
+        // que volta com erros — vale para as telas de formulário sem tocar em nenhuma.
+        router.on('error', () => {
+            focarPrimeiroErroAposRender();
         });
     },
     progress: {
