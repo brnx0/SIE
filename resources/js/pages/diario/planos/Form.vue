@@ -331,27 +331,11 @@ const breadcrumbs: BreadcrumbItem[] = [
                         <Input :model-value="professor.fun_nome" readonly />
                     </div>
 
-                    <div class="md:col-span-8">
+                    <div class="md:col-span-12">
                         <Label>Tema <span class="text-rose-600">*</span></Label>
                         <Input v-model="form.dpa_tema" :disabled="readonly" maxlength="255" />
                         <InputError :message="form.errors.dpa_tema" />
                     </div>
-                    <div class="md:col-span-2">
-                        <Label>Data Inicial <span class="text-rose-600">*</span></Label>
-                        <Input type="date" v-model="form.dpa_dt_inicio" :disabled="readonly || !form.dpa_uni_id"
-                            :min="periodoMin" :max="periodoMax" />
-                        <InputError :message="form.errors.dpa_dt_inicio" />
-                    </div>
-                    <div class="md:col-span-2">
-                        <Label>Data Final <span class="text-rose-600">*</span></Label>
-                        <Input type="date" v-model="form.dpa_dt_fim" :disabled="readonly || !form.dpa_uni_id"
-                            :min="periodoMin" :max="periodoMax" />
-                        <InputError :message="form.errors.dpa_dt_fim" />
-                    </div>
-                    <p v-if="!readonly" class="text-xs text-muted-foreground md:col-span-4">
-                        <template v-if="!form.dpa_uni_id">Selecione {{ artigoUnidade }} {{ labelUnidade.toLowerCase() }} abaixo para liberar as datas.</template>
-                        <template v-else>Datas permitidas: {{ fmtDate(periodoMin) }} até {{ fmtDate(periodoMax) }}.</template>
-                    </p>
 
                     <div class="md:col-span-3">
                         <Label>Ano Letivo <span class="text-rose-600">*</span></Label>
@@ -378,12 +362,33 @@ const breadcrumbs: BreadcrumbItem[] = [
                         <InputError :message="form.errors.dpa_dis_id" />
                     </div>
 
+                    <!-- Ordem = dependência: o Ano Letivo carrega as unidades, a unidade
+                         define o intervalo das datas. Por isso o período vem antes delas. -->
                     <div class="md:col-span-12">
                         <Label>{{ labelUnidade }} <span class="text-rose-600">*</span></Label>
                         <LocalCombobox v-model="form.dpa_uni_id" :items="itemsUnidade"
                             placeholder="Selecione..." :invalid="!!form.errors.dpa_uni_id" />
                         <InputError :message="form.errors.dpa_uni_id" />
                     </div>
+
+                    <div class="md:col-span-2">
+                        <Label>Data Inicial <span class="text-rose-600">*</span></Label>
+                        <Input type="date" v-model="form.dpa_dt_inicio" :disabled="readonly || !form.dpa_uni_id"
+                            :min="periodoMin" :max="periodoMax" />
+                        <InputError :message="form.errors.dpa_dt_inicio" />
+                    </div>
+                    <div class="md:col-span-2">
+                        <Label>Data Final <span class="text-rose-600">*</span></Label>
+                        <Input type="date" v-model="form.dpa_dt_fim" :disabled="readonly || !form.dpa_uni_id"
+                            :min="periodoMin" :max="periodoMax" />
+                        <InputError :message="form.errors.dpa_dt_fim" />
+                    </div>
+                    <!-- Completa a linha das datas (2+2+8=12): fora disso o hint invade a
+                         linha seguinte e desalinha os campos. -->
+                    <p v-if="!readonly" class="self-center text-xs text-muted-foreground md:col-span-8">
+                        <template v-if="!form.dpa_uni_id">Selecione {{ artigoUnidade }} {{ labelUnidade.toLowerCase() }} acima para liberar as datas.</template>
+                        <template v-else>Datas permitidas: {{ fmtDate(periodoMin) }} até {{ fmtDate(periodoMax) }}.</template>
+                    </p>
                 </div>
             </section>
 
