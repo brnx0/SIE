@@ -320,7 +320,7 @@ const periodo = (ini: number | null | '', fim: number | null | ''): string => {
                 </select>
                 <InputError :message="errText(i, 'fes_nivel')" />
                 <p v-if="ehPos(row.fes_nivel) && !temSuperiorCompletoCreate" class="text-xs text-amber-600 dark:text-amber-400">
-                    Pós exige ao menos um ensino superior completo (Superior Completo ou Graduação com Licenciatura) entre as escolaridades.
+                    Pós exige ao menos um Ensino Superior Completo entre as escolaridades.
                 </p>
             </div>
 
@@ -439,7 +439,7 @@ const periodo = (ini: number | null | '', fim: number | null | ''): string => {
                 </select>
                 <InputError :message="errs.fes_nivel" />
                 <p v-if="posSemPreRequisito" class="text-xs text-amber-600 dark:text-amber-400">
-                    Pós exige ao menos um ensino superior completo (Superior Completo ou Graduação com Licenciatura) já cadastrado.
+                    Pós exige ao menos um Ensino Superior Completo já cadastrado.
                 </p>
             </div>
 

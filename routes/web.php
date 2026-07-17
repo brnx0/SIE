@@ -139,8 +139,7 @@ Route::middleware(['auth', 'verified', 'tela'])->group(function () {
 
     Route::get('alunos/export', [AlunoController::class, 'export'])->name('alunos.export');
     // Histórico Escolar / Certificado (só secretaria/diretor/admin — guard no controller)
-    Route::get('alunos/{aluno}/historico/escolas', [\App\Http\Controllers\Aluno\HistoricoEscolarController::class, 'escolas'])->name('alunos.historico.escolas');
-    Route::get('alunos/{aluno}/historico', [\App\Http\Controllers\Aluno\HistoricoEscolarController::class, 'pdf'])->name('alunos.historico.pdf');
+    Route::get('alunos/{aluno}/historico',[\App\Http\Controllers\Aluno\HistoricoEscolarController::class, 'pdf'])->name('alunos.historico.pdf');
     // Lançamento MANUAL de anos do histórico (só secretaria/diretor/admin — guard no controller)
     Route::get('alunos/{aluno}/historico-manual', [\App\Http\Controllers\Aluno\HistoricoManualController::class, 'listar'])->name('alunos.historico-manual.listar');
     Route::post('alunos/{aluno}/historico-manual', [\App\Http\Controllers\Aluno\HistoricoManualController::class, 'salvar'])->name('alunos.historico-manual.salvar');

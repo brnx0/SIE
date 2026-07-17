@@ -58,9 +58,27 @@ class TelaPermissaoSeeder extends Seeder
         ['/diario-atividade', 'Diário Atividade', 'Diário', 21, [1, 1, 0, 0, 0, 0, 0, 2, 0, 1, 0]],
         ['/diario/instrumentos-avaliativos', 'Instrumentos Avaliativos', 'Diário', 22, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
         ['/sabados-letivos', 'Sábados Letivos', 'Diário', 23, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
-        ['/diario/planos', 'Planos de Aula', 'Diário', 24, [1, 1, 1, 0, 2, 2, 0, 0, 2, 0, 0]],
-        ['/diario/planos-aee', 'Planos de Aula AEE', 'Diário', 25, [1, 1, 0, 1, 0, 2, 0, 0, 2, 0, 0]],
+        ['/diario/planos', 'Planos de Aula', 'Diário', 24, [1, 2, 1, 0, 2, 2, 0, 0, 2, 0, 0]],
+        ['/diario/planos-aee', 'Planos de Aula AEE', 'Diário', 25, [1, 2, 0, 1, 0, 2, 0, 0, 2, 0, 0]],
         ['/relatorios-diario', 'Relatórios Diário', 'Diário', 26, [1, 1, 2, 2, 2, 2, 0, 2, 2, 0, 0]],
+
+        // Relatórios do Diário: uma tela por relatório, e não o /relatorios genérico.
+        // Todos moram sob /relatorios/*, então sem estas linhas eles resolveriam (por
+        // prefixo mais longo) para a tela /relatorios — onde Professor, Professor AEE
+        // e Coordenador são nível 0 e levavam 403 nos cards que a tela /relatorios-diario
+        // já lhes mostrava. Dar nível na /relatorios resolveria em uma linha só, mas
+        // arrastaria junto os relatórios do grupo "central" (Ficha de Matrícula,
+        // Declaração de Matrícula, Alunos por Escola...), que não são desses perfis.
+        // Os demais perfis mantêm os níveis do /relatorios — ninguém perde acesso.
+        ['/relatorios/parecer-descritivo', 'Parecer Descritivo', 'Diário', 47, [1, 1, 2, 2, 2, 2, 2, 2, 2, 0, 2]],
+        ['/relatorios/boletim', 'Boletim do Aluno', 'Diário', 48, [1, 1, 2, 2, 2, 2, 2, 2, 2, 0, 2]],
+        ['/relatorios/notas-por-unidade', 'Notas por Unidade', 'Diário', 49, [1, 1, 2, 2, 2, 2, 2, 2, 2, 0, 2]],
+        ['/relatorios/mapa-notas-disciplina', 'Mapa de Notas', 'Diário', 50, [1, 1, 2, 2, 2, 2, 2, 2, 2, 0, 2]],
+        ['/relatorios/boletim-avaliativo', 'Boletim Avaliativo', 'Diário', 51, [1, 1, 2, 2, 2, 2, 2, 2, 2, 0, 2]],
+        ['/relatorios/conteudo-ministrado', 'Conteúdo Ministrado', 'Diário', 52, [1, 1, 2, 2, 2, 2, 2, 2, 2, 0, 2]],
+        ['/relatorios/frequencia-mensal', 'Diário de Frequência Mensal', 'Diário', 53, [1, 1, 2, 2, 2, 2, 2, 2, 2, 0, 2]],
+        ['/relatorios/diagnostico', 'Avaliações por Diagnóstico', 'Diário', 54, [1, 1, 2, 2, 2, 2, 2, 2, 2, 0, 2]],
+        ['/relatorios/desempenho-aee', 'Desempenho AEE', 'Diário', 55, [1, 1, 2, 2, 2, 2, 2, 2, 2, 0, 2]],
 
         ['/coordenador/planos', 'Validação de Planos', 'Pedagógico', 27, [1, 2, 0, 0, 1, 1, 0, 0, 1, 0, 0]],
         ['/coordenador-interno/planos-aee', 'Validação de Planos AEE', 'Pedagógico', 28, [1, 2, 0, 0, 0, 1, 0, 0, 1, 0, 0]],

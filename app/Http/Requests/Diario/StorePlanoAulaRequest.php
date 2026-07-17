@@ -12,15 +12,12 @@ class StorePlanoAulaRequest extends FormRequest
 {
     use ValidaPeriodoDaUnidade;
 
-    /** Quem registra plano de aula: admin, gestor da secretaria e professor. */
-    public const ROLES_QUE_REGISTRAM = ['gestor_secretaria', 'professor'];
-
     public function authorize(): bool
     {
         $user = $this->user();
         if (!$user) return false;
         if ($user->isAdmin()) return true;
-        if (!$user->hasAnyRole(self::ROLES_QUE_REGISTRAM)) return false;
+        if (!$user->hasRole('professor')) return false;
 
         // Edição: apenas o autor do próprio plano
         $plano = $this->route('plano');

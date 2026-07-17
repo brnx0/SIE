@@ -10,15 +10,12 @@ use Illuminate\Validation\Validator;
 
 class StorePlanoAeeRequest extends FormRequest
 {
-    /** Quem registra plano AEE: admin, gestor da secretaria e professor AEE (não o professor comum). */
-    public const ROLES_QUE_REGISTRAM = ['gestor_secretaria', 'professor_aee'];
-
     public function authorize(): bool
     {
         $user = $this->user();
         if (!$user) return false;
         if ($user->isAdmin()) return true;
-        if (!$user->hasAnyRole(self::ROLES_QUE_REGISTRAM)) return false;
+        if (!$user->hasAnyRole(['professor', 'professor_aee'])) return false;
 
         // Edição: apenas o autor do próprio plano
         $plano = $this->route('plano');
