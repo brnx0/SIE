@@ -29,6 +29,9 @@ use App\Http\Controllers\Alimentacao\TipoVisitaController;
 use App\Http\Controllers\Alimentacao\VisitaController;
 use App\Http\Controllers\Alimentacao\TipoRetiradaController;
 use App\Http\Controllers\Alimentacao\UnidadeMedidaController;
+use App\Http\Controllers\Relatorio\Alimentacao\ItensVencimentoController;
+use App\Http\Controllers\Relatorio\Alimentacao\ProtocoloDistribuicaoController;
+use App\Http\Controllers\Relatorio\Alimentacao\RetiradaAlimentosController;
 use App\Http\Controllers\Api\Alimentacao\ContratoController as ContratoApiController;
 use App\Http\Controllers\Api\Alimentacao\FornecedorController as FornecedorApiController;
 use App\Http\Controllers\Api\Alimentacao\ItemController as ItemApiController;
@@ -283,6 +286,31 @@ Route::middleware(['auth', 'verified', 'tela'])
                 Route::delete('{id}', [$controller, 'destroy'])->whereNumber('id')->name('destroy');
             });
         }
+    });
+
+/*
+| Relatórios da alimentação.
+|
+| Moram sob `/relatorios/*` (fora do prefixo `alimentacao`) porque saem pelos
+| cards da central, como o resto dos relatórios do sistema — o card de cada um
+| está em `config/relatorios.php`, no grupo `alimentacao`.
+|
+| Cada rota tem linha própria na matriz `cfg_tela`: sem isso o middleware `tela`
+| resolveria por prefixo para a tela `/relatorios`, onde nutricionista e
+| almoxarife não têm nível e levariam 403.
+*/
+Route::middleware(['auth', 'verified', 'tela'])
+    ->prefix('relatorios')
+    ->name('relatorios.')
+    ->group(function () {
+        Route::get('protocolo-distribuicao', [ProtocoloDistribuicaoController::class, 'form'])->name('protocolo-distribuicao.form');
+        Route::get('protocolo-distribuicao/gerar', [ProtocoloDistribuicaoController::class, 'gerar'])->name('protocolo-distribuicao.gerar');
+
+        Route::get('itens-vencimento', [ItensVencimentoController::class, 'form'])->name('itens-vencimento.form');
+        Route::get('itens-vencimento/gerar', [ItensVencimentoController::class, 'gerar'])->name('itens-vencimento.gerar');
+
+        Route::get('retirada-alimentos', [RetiradaAlimentosController::class, 'form'])->name('retirada-alimentos.form');
+        Route::get('retirada-alimentos/gerar', [RetiradaAlimentosController::class, 'gerar'])->name('retirada-alimentos.gerar');
     });
 
 // Lookups da alimentação. Ficam fora do prefixo `alimentacao` (e da matriz de

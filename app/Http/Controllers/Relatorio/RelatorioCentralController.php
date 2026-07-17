@@ -58,6 +58,16 @@ class RelatorioCentralController extends Controller
         ]);
     }
 
+    public function alimentacao(): Response
+    {
+        return Inertia::render('relatorios/Index', [
+            'relatorios' => $this->filtrar('alimentacao'),
+            'titulo' => 'Relatórios da Alimentação',
+            'subtitulo' => 'Relatórios da alimentação escolar (PNAE).',
+            'grupo' => 'alimentacao',
+        ]);
+    }
+
     private function filtrar(string $grupo): array
     {
         return array_values(array_filter(

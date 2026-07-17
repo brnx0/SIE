@@ -226,6 +226,9 @@ Route::middleware(['auth', 'verified', 'tela'])->group(function () {
     Route::get('relatorios-diario', [RelatorioCentralController::class, 'diario'])->name('relatorios.diario');
     Route::get('relatorios-secretaria', [RelatorioCentralController::class, 'secretaria'])->name('relatorios.secretaria')->middleware('role:admin,gestor_secretaria,diretor,secretaria_escola');
     Route::get('relatorios-pedagogico', [RelatorioCentralController::class, 'pedagogico'])->name('relatorios.pedagogico');
+    // Cards dos relatórios da alimentação. Os relatórios em si moram em
+    // routes/alimentacao.php, junto do resto do módulo.
+    Route::get('relatorios-alimentacao', [RelatorioCentralController::class, 'alimentacao'])->name('relatorios.alimentacao');
 
     // Encerramento do Ano Letivo — acesso governado pela matriz de telas.
     Route::group([], function () {

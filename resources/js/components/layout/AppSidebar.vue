@@ -205,6 +205,13 @@ const alimentacaoMenu = [
 
         ],
     },
+    {
+        title: 'Relatórios',
+        icon: FileBarChart,
+        children: [
+            { title: 'Relatórios da Alimentação', href: '/relatorios-alimentacao' },
+        ],
+    },
 ];
 const administracao = [
     {

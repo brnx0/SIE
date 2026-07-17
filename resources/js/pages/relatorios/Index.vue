@@ -2,7 +2,7 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/vue3';
-import { Users, FileBarChart, FileText, LayoutGrid, Accessibility, Activity, ClipboardList, Table, NotebookPen, GraduationCap, BookOpenText, CalendarCheck, ScrollText, Baby, Brain, Stethoscope, ListChecks } from 'lucide-vue-next';
+import { Users, FileBarChart, FileText, LayoutGrid, Accessibility, Activity, ClipboardList, Table, NotebookPen, GraduationCap, BookOpenText, CalendarCheck, ScrollText, Baby, Brain, Stethoscope, ListChecks, Truck, CalendarClock, PackageMinus } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 interface Relatorio {
@@ -30,6 +30,7 @@ const breadcrumbs = computed<BreadcrumbItem[]>(() => {
     if (props.grupo === 'diario') return [{ title: 'Relatórios do Diário', href: '/relatorios-diario' }];
     if (props.grupo === 'secretaria') return [{ title: 'Relatórios da Secretaria', href: '/relatorios-secretaria' }];
     if (props.grupo === 'pedagogico') return [{ title: 'Relatórios Pedagógicos', href: '/relatorios-pedagogico' }];
+    if (props.grupo === 'alimentacao') return [{ title: 'Relatórios da Alimentação', href: '/relatorios-alimentacao' }];
     return [{ title: 'Relatórios', href: '/relatorios' }];
 });
 
@@ -41,7 +42,7 @@ const grupos = computed(() => {
     return Object.entries(map);
 });
 
-const iconMap: Record<string, any> = { Users, FileBarChart, FileText, LayoutGrid, Accessibility, Activity, ClipboardList, Table, NotebookPen, GraduationCap, BookOpenText, CalendarCheck, ScrollText, Baby, Brain, Stethoscope, ListChecks };
+const iconMap: Record<string, any> = { Users, FileBarChart, FileText, LayoutGrid, Accessibility, Activity, ClipboardList, Table, NotebookPen, GraduationCap, BookOpenText, CalendarCheck, ScrollText, Baby, Brain, Stethoscope, ListChecks, Truck, CalendarClock, PackageMinus };
 </script>
 
 <template>

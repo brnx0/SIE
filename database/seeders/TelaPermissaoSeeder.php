@@ -149,6 +149,20 @@ class TelaPermissaoSeeder extends Seeder
         ['/alimentacao/marcas', 'Marcas', 'Alimentação Escolar', 57, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 1]],
         ['/alimentacao/tipos-retirada', 'Tipos de Retirada', 'Alimentação Escolar', 58, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1]],
 
+        // Relatórios da alimentação. Uma tela por relatório, pelo mesmo motivo dos
+        // relatórios do Diário: todos moram sob /relatorios/*, então sem estas
+        // linhas eles resolveriam (por prefixo mais longo) para a tela /relatorios,
+        // onde nutricionista e almoxarife são nível 0 — justamente os perfis que
+        // vivem destes relatórios. Diretor e secretaria entram como visualização:
+        // o controller já prende cada um ao estoque da própria escola, via lotação.
+        // Ordem das roles: admin, gestor_secretaria, professor, professor_aee,
+        // coordenador, coordenador_interno, diretor, secretaria_escola,
+        // pedagogico, monitor, matricula_censo, nutricionista, almoxarife
+        ['/relatorios-alimentacao', 'Relatórios da Alimentação', 'Alimentação Escolar', 59, [1, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 2, 2]],
+        ['/relatorios/protocolo-distribuicao', 'Protocolo da Central de Distribuição', 'Alimentação Escolar', 60, [1, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 2, 2]],
+        ['/relatorios/itens-vencimento', 'Itens Próximos do Vencimento', 'Alimentação Escolar', 61, [1, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 2, 2]],
+        ['/relatorios/retirada-alimentos', 'Retirada de Alimentos', 'Alimentação Escolar', 62, [1, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 2, 2]],
+
         ['/users', 'Usuários', 'Sistema', 41, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
         ['/parametros', 'Parâmetros', 'Sistema', 42, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
         ['/permissoes', 'Permissões de Telas', 'Sistema', 43, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
