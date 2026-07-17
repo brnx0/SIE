@@ -162,6 +162,9 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar item' : 'Salvar altera�
                         <option :value="null" disabled>Selecione...</option>
                         <option v-for="t in tipos" :key="t.tpi_id" :value="t.tpi_id">{{ t.tpi_nome }}</option>
                     </select>
+                    <p class="text-xs text-muted-foreground">
+                        Que espécie de coisa é o item (ex.: Alimento, Material de limpeza, Descartável, Gás).
+                    </p>
                     <InputError :message="form.errors.itm_tpi_id" />
                 </div>
 
@@ -171,6 +174,9 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar item' : 'Salvar altera�
                         <option :value="null" disabled>Selecione...</option>
                         <option v-for="c in categorias" :key="c.cat_id" :value="c.cat_id">{{ c.cat_nome }}</option>
                     </select>
+                    <p class="text-xs text-muted-foreground">
+                        Grupo do alimento para cardápio e PNAE (ex.: Cereais, Laticínios, Hortifruti, Carnes).
+                    </p>
                     <InputError :message="form.errors.itm_cat_id" />
                 </div>
 
