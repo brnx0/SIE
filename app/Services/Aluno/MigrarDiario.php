@@ -101,6 +101,7 @@ class MigrarDiario
                 ],
                 [
                     'aul_user_id'       => $aula->aul_user_id,
+                    'aul_fun_id'        => $aula->aul_fun_id,
                     'aul_esc_id'        => $turDestino->tur_esc_id,
                     'aul_anl_id'        => $turDestino->tur_anl_id,
                     'aul_uni_id'        => $aula->aul_uni_id,

@@ -2,6 +2,7 @@
 import { Input } from '@/components/ui/input';
 import { CheckCircle2, ChevronDown, Circle, Loader2, RefreshCw, Search, TriangleAlert, Users } from 'lucide-vue-next';
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
+import { usePermissao } from '@/composables/usePermissao';
 
 const props = defineProps<{
     anlId: number;
@@ -30,6 +31,10 @@ const erroCarregar = ref<string | null>(null);
 const alunos = ref<AlunoRow[]>([]);
 const modo = ref<'por_aluno' | 'por_disciplina'>('por_disciplina');
 const periodoAberto = ref(true);
+const { isReadOnly } = usePermissao();
+// Perfis de supervisão (secretaria/coordenação) consultam o diário mas não lançam.
+// O backend já barra a escrita; aqui é para a tela não oferecer o que vai dar 403.
+const podeLancar = computed(() => periodoAberto.value && !isReadOnly.value);
 const tipoConfigurado = ref(true);
 const busca = ref('');
 const abertoId = ref<number | null>(null);
@@ -92,7 +97,7 @@ const salvar = async (row: AlunoRow) => {
         row._timer = null;
     }
     if (!tipoConfigurado.value) return; // série sem tipo de avaliação descritiva configurado
-    if (!periodoAberto.value) return; // fora da janela de lançamento
+    if (!podeLancar.value) return; // fora da janela de lançamento / perfil só consulta
     if (row.bloqueado) return; // aluno saiu antes do período
     if (row.descricao === row._original) return; // nada mudou
     row._status = 'saving';
@@ -124,7 +129,7 @@ const salvar = async (row: AlunoRow) => {
 
 // Autosave: debounce enquanto digita + flush imediato ao sair do campo.
 const aoDigitar = (row: AlunoRow) => {
-    if (!periodoAberto.value) return;
+    if (!podeLancar.value) return;
     row._status = row.descricao === row._original ? 'saved' : 'dirty';
     if (row._timer) clearTimeout(row._timer);
     row._timer = window.setTimeout(() => salvar(row), 1500);
@@ -296,7 +301,7 @@ const avaliados = computed(() => alunos.value.filter((a) => a.descricao.trim().l
                             v-model="row.descricao"
                             rows="5"
                             maxlength="20000"
-                            :disabled="!periodoAberto || row.bloqueado"
+                            :disabled="!podeLancar || row.bloqueado"
                             :placeholder="row.bloqueado ? 'Aluno saiu antes deste período — lançamento bloqueado.' : 'Descreva o desenvolvimento do aluno neste período...'"
                             class="w-full resize-none overflow-y-auto rounded-md border bg-background p-2.5 text-sm leading-relaxed outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 disabled:cursor-not-allowed disabled:opacity-60 dark:focus:ring-indigo-950"
                             @input="() => aoDigitar(row)"

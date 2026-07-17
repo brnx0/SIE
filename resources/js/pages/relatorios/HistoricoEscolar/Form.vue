@@ -14,17 +14,15 @@ const breadcrumbs: BreadcrumbItem[] = [{ title: 'Histórico Escolar', href: '/re
 // Mantém os filtros ao voltar do resultado (gerar outro sem refazer tudo).
 const { restaurar, salvar } = useFiltrosRelatorio('historico-escolar', {
     aln_id: null as number | null,
-    esc_id: null as number | null,
 });
 const salvos = restaurar();
 
 const alnId = ref<number | null>(salvos.aln_id ?? null);
-const escId = ref<number | null>(salvos.esc_id ?? null);
 
 const gerar = () => {
-    if (!alnId.value || !escId.value) return;
-    salvar({ aln_id: alnId.value, esc_id: escId.value });
-    window.open(`/alunos/${alnId.value}/historico?esc_id=${escId.value}`, '_blank');
+    if (!alnId.value) return;
+    salvar({ aln_id: alnId.value });
+    window.open(`/alunos/${alnId.value}/historico`, '_blank');
 };
 </script>
 
@@ -36,11 +34,10 @@ const gerar = () => {
                 <ScrollText class="size-5 text-indigo-600" /> Histórico Escolar / Certificado
             </h1>
             <p class="mb-6 text-sm text-muted-foreground">
-                Busque o aluno e escolha a escola emissora. O histórico inclui os anos do sistema e os lançados manualmente (até o último ano do aluno na escola emissora).
+                Busque o aluno e gere o PDF. O histórico inclui os anos do sistema e os lançados manualmente, e é emitido pela escola do último ano escolar do aluno.
             </p>
 
-            <div class="grid gap-4 rounded-xl border bg-card p-6 shadow-sm sm:grid-cols-2">
-                <div class="grid gap-1.5">
+            <div class="grid gap-4 rounded-xl border bg-card p-6 shadow-sm">
                     <FormLabel :required="true">Aluno</FormLabel>
                     <RemoteCombobox
                         v-model="alnId"
@@ -50,17 +47,8 @@ const gerar = () => {
                         placeholder="Digite o nome, matrícula ou CPF..."
                     />
                 </div>
-                <div class="grid gap-1.5">
-                    <FormLabel :required="true">Escola emissora</FormLabel>
-                    <RemoteCombobox
-                        v-model="escId"
-                        fetch-url="/api/escolas"
-                        id-key="esc_id" label-key="esc_nome"
-                        placeholder="Buscar escola..."
-                    />
-                </div>
-                <div class="flex items-end justify-end sm:col-span-2">
-                    <Button :disabled="!alnId || !escId" class="bg-indigo-600 text-white hover:bg-indigo-700" @click="gerar">
+                <div class="flex items-end justify-end">
+                    <Button :disabled="!alnId" class="bg-indigo-600 text-white hover:bg-indigo-700" @click="gerar">
                         <ScrollText class="mr-1 size-4" /> Gerar PDF
                     </Button>
                 </div>

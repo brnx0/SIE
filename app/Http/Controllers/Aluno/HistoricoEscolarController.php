@@ -4,12 +4,8 @@ namespace App\Http\Controllers\Aluno;
 
 use App\Http\Controllers\Controller;
 use App\Models\Aluno\Aluno;
-use App\Models\Turma\Turma;
 use App\Services\Aluno\HistoricoEscolar;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
-use Illuminate\Support\Facades\DB;
 use Mpdf\Mpdf;
 
 class HistoricoEscolarController extends Controller
@@ -34,35 +30,12 @@ class HistoricoEscolarController extends Controller
         return \Inertia\Inertia::render('relatorios/HistoricoEscolar/Form');
     }
 
-    /** Escolas em que o aluno teve ano APROVADO — opções de escola emissora. */
-    public function escolas(Aluno $aluno): JsonResponse
+    /** Gera o PDF do histórico/certificado. A emissora é a escola do último ano do aluno. */
+    public function pdf(Aluno $aluno, HistoricoEscolar $service): HttpResponse
     {
         $this->autorizar();
 
-        $escolas = DB::table('edu_turma_aluno as tma')
-            ->join('edu_turma as t', 't.tur_id', '=', 'tma.tma_tur_id')
-            ->join('edu_escola as e', 'e.esc_id', '=', 't.tur_esc_id')
-            ->where('tma.tma_aln_id', $aluno->aln_id)
-            ->where('tma.tma_modalidade', Turma::MODALIDADE_REGULAR)
-            ->whereIn('tma.tma_tas_cod_saida', HistoricoEscolar::APROVADO)
-            ->whereNull('tma.tma_deleted_at')
-            ->distinct()
-            ->orderBy('e.esc_nome')
-            ->get(['e.esc_id', 'e.esc_nome']);
-
-        return response()->json($escolas);
-    }
-
-    /** Gera o PDF do histórico/certificado emitido por uma escola. */
-    public function pdf(Request $request, Aluno $aluno, HistoricoEscolar $service): HttpResponse
-    {
-        $this->autorizar();
-
-        $data = $request->validate([
-            'esc_id' => ['required', 'integer', 'exists:edu_escola,esc_id'],
-        ]);
-
-        $dados = $service->gerar((int) $aluno->aln_id, (int) $data['esc_id']);
+        $dados = $service->gerar((int) $aluno->aln_id);
 
         $html = view('exports.historico_escolar_pdf', ['h' => $dados])->render();
 

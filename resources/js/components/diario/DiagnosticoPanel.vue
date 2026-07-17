@@ -2,6 +2,7 @@
 import { ChevronLeft, ChevronRight, Loader2, RefreshCw, Search, TriangleAlert } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
+import { usePermissao } from '@/composables/usePermissao';
 
 const props = defineProps<{ anlId: number; escId: number; turId: number; disId: number; uniId: number }>();
 
@@ -26,7 +27,10 @@ const alunoSel = ref<number | null>(null);
 const valorMap = reactive<Record<string, string>>({});
 const status = reactive<Record<string, 'idle' | 'saving' | 'saved' | 'error'>>({});
 
-const editavel = computed(() => periodoAberto.value && turmaAberta.value);
+// Perfis de supervisão (secretaria/coordenação) consultam o diário mas não lançam.
+// O backend já barra a escrita; aqui é para a tela não oferecer o que vai dar 403.
+const { isReadOnly } = usePermissao();
+const editavel = computed(() => periodoAberto.value && turmaAberta.value && !isReadOnly.value);
 const ck = (aln: number, ind: number) => `${aln}|${ind}`;
 
 // Cor por opção (feedback rápido).
