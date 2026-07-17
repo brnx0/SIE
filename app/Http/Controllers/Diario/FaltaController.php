@@ -24,7 +24,7 @@ class FaltaController extends Controller
 {
     public function contexto(Request $request): JsonResponse
     {
-        $this->abortIfNotProfessor();
+        $this->abortIfNaoPodeVerDiario();
 
         $turId = (int) $request->input('tur_id');
         $uniId = (int) $request->input('uni_id');
@@ -35,6 +35,9 @@ class FaltaController extends Controller
 
         $user  = $request->user();
         $funId = (int) $user->fun_id;
+        // Supervisão (secretaria/coordenação) consulta tudo e não edita nada — nem os
+        // tempos do funcionário ligado ao seu usuário, quando esse funcionário é professor.
+        $soConsulta = $this->soConsultaDiario();
 
         // TODOS os tempos da turma; o professor edita só os seus (pode_editar).
         $tempos = DB::table('edu_turma_horario as trh')
@@ -53,7 +56,7 @@ class FaltaController extends Controller
                 'trh_dis_id'  => $t->trh_dis_id,
                 'dis_nome'    => $t->dis_nome,
                 'fun_nome'    => $t->fun_nome,
-                'pode_editar' => $user->isAdmin() || (int) $t->trh_fun_id === $funId,
+                'pode_editar' => ! $soConsulta && ($user->isAdmin() || (int) $t->trh_fun_id === $funId),
             ]);
 
         // Janela do período (inclui extensão) para a lista de datas no frontend.
@@ -398,7 +401,7 @@ class FaltaController extends Controller
     {
         $turma = DB::table('edu_turma')->where('tur_id', $data['tur_id'])->first(['tur_esc_id', 'tur_anl_id']);
 
-        return DiarioAula::updateOrCreate(
+        $aula = DiarioAula::updateOrCreate(
             [
                 'aul_tur_id' => $data['tur_id'],
                 'aul_trh_id' => $data['trh_id'],
@@ -412,6 +415,14 @@ class FaltaController extends Controller
                 'aul_dis_id'  => $slot->trh_dis_id,
             ],
         );
+
+        // Autoria só no primeiro lançamento: se o professor da grade mudar depois, a aula
+        // continua atribuída a quem a deu.
+        if ($aula->aul_fun_id === null) {
+            $aula->update(['aul_fun_id' => $slot->trh_fun_id]);
+        }
+
+        return $aula;
     }
 
     /** Garante que o professor está lotado em algum tempo da turma (ou admin). */

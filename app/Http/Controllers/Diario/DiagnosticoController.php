@@ -22,7 +22,7 @@ class DiagnosticoController extends Controller
 
     public function contexto(Request $request): JsonResponse
     {
-        $this->abortIfNotProfessor();
+        $this->abortIfNaoPodeVerDiario();
 
         $turId = (int) $request->input('tur_id');
         $disId = (int) $request->input('dis_id');
@@ -32,7 +32,10 @@ class DiagnosticoController extends Controller
             return response()->json(['indicadores' => [], 'alunos' => [], 'valores' => [], 'opcoes' => DiarioDiagnostico::OPCOES, 'tipo_disponivel' => false, 'periodo_aberto' => false, 'turma_aberta' => false]);
         }
 
-        $this->abortIfNotLeciona($request, $turId, $disId);
+        // Supervisão consulta qualquer turma; o vínculo de regência só vale para quem lança.
+        if (! $this->soConsultaDiario()) {
+            $this->abortIfNotLeciona($request, $turId, $disId);
+        }
 
         $serId = (int) DB::table('edu_turma')->where('tur_id', $turId)->value('tur_ser_id');
 

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Turma;
 
 use App\Http\Controllers\Controller;
+use App\Models\Diario\DiarioAula;
 use App\Models\Funcionario\Funcionario;
 use App\Models\Turma\Turma;
 use App\Models\Turma\TurmaHorario;
@@ -131,12 +132,22 @@ class TurmaProfessorController extends Controller
     {
         DB::transaction(function () use ($turma, $turmaProfessor) {
             // Libera slots de horário desta combinação professor+disciplina nesta turma.
-            // forceDelete: unique constraint (trh_tur_id, trh_tempo, trh_dia) ignora soft delete.
-            TurmaHorario::withTrashed()
+            $horarios = TurmaHorario::withTrashed()
                 ->where('trh_tur_id', $turma->tur_id)
                 ->where('trh_fun_id', $turmaProfessor->tup_fun_id)
                 ->where('trh_dis_id', $turmaProfessor->tup_dis_id)
-                ->forceDelete();
+                ->get();
+
+            foreach ($horarios as $horario) {
+                // Horário com aula lançada é alvo da FK edu_diario_aula.aul_trh_id (RESTRICT):
+                // apagá-lo destruiria o diário do professor. Soft delete preserva a aula e,
+                // como a unique de tempo/dia é parcial, libera o slot para o substituto.
+                $temAula = DiarioAula::withTrashed()
+                    ->where('aul_trh_id', $horario->trh_id)
+                    ->exists();
+
+                $temAula ? $horario->delete() : $horario->forceDelete();
+            }
 
             $turmaProfessor->forceDelete();
         });

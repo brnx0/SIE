@@ -151,6 +151,9 @@ class PlanoAulaController extends Controller
     public function create(Request $request): Response
     {
         $this->abortIfNotProfessor();
+        // O middleware `tela` deixa passar todo GET, então sem isto um perfil de
+        // só-visualização abre o formulário pela URL e só descobre no salvar.
+        abort_if($this->soVisualizacaoTela($request), 403, 'Seu perfil não pode criar planos de aula.');
 
         $funId = (int) $request->user()->fun_id;
 

@@ -24,7 +24,7 @@ class AvaliacaoDescritivaController extends Controller
      */
     public function alunos(Request $request): JsonResponse
     {
-        $this->abortIfNotProfessor();
+        $this->abortIfNaoPodeVerDiario();
 
         $turId = (int) $request->input('tur_id');
         $disId = (int) $request->input('dis_id');
@@ -34,7 +34,10 @@ class AvaliacaoDescritivaController extends Controller
             return response()->json(['modo' => 'por_disciplina', 'periodo_aberto' => false, 'alunos' => []]);
         }
 
-        $this->abortIfNotLeciona($request, $turId, $disId);
+        // Supervisão consulta qualquer turma; o vínculo de regência só vale para quem lança.
+        if (! $this->soConsultaDiario()) {
+            $this->abortIfNotLeciona($request, $turId, $disId);
+        }
 
         // Sem tipo de avaliação descritiva configurado na série => não há regra: bloqueia.
         $tipo = $this->tipoDescritivaSerie($turId);

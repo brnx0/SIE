@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { CheckCircle2, Loader2, Pencil, Plus, RefreshCw, Search, TriangleAlert, X } from 'lucide-vue-next';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
+import { usePermissao } from '@/composables/usePermissao';
 
 const props = defineProps<{
     anlId: number;
@@ -46,6 +47,10 @@ interface AlunoRow {
 const carregando = ref(true);
 const erro = ref<string | null>(null);
 const periodoAberto = ref(true);
+const { isReadOnly } = usePermissao();
+// Perfis de supervisão (secretaria/coordenação) consultam o diário mas não lançam.
+// O backend já barra a escrita; aqui é para a tela não oferecer o que vai dar 403.
+const podeLancar = computed(() => periodoAberto.value && !isReadOnly.value);
 const turmaAberta = ref(true);
 const tipoDisponivel = ref(true);
 const modo = ref<'faixa' | 'conceito'>('faixa');
@@ -239,7 +244,7 @@ const salvarNota = async (row: AlunoRow, ava: Avaliacao) => {
     const key = ck(row.aln_id, ava.ava_id);
     const st = ensureCell(key);
     if (st.timer) { clearTimeout(st.timer); st.timer = null; }
-    if (!periodoAberto.value || !turmaAberta.value || isFutura(ava) || row.bloqueado || semValor(ava)) return;
+    if (!podeLancar.value || !turmaAberta.value || isFutura(ava) || row.bloqueado || semValor(ava)) return;
 
     const body: Record<string, unknown> = { nta_ava_id: ava.ava_id, nta_aln_id: row.aln_id };
     if (modo.value === 'conceito') {
@@ -281,7 +286,7 @@ const salvarNota = async (row: AlunoRow, ava: Avaliacao) => {
 const erroLinha = ref<string | null>(null);
 
 const aoDigitarNota = (row: AlunoRow, ava: Avaliacao, e?: Event) => {
-    if (!periodoAberto.value || !turmaAberta.value || isFutura(ava) || row.bloqueado || semValor(ava)) return;
+    if (!podeLancar.value || !turmaAberta.value || isFutura(ava) || row.bloqueado || semValor(ava)) return;
     if (modo.value === 'faixa') {
         // Não permite 2 casas decimais (corta a partir da 2ª) já na digitação.
         const el = e?.target as HTMLInputElement | undefined;
@@ -420,7 +425,7 @@ const limitarValor1Casa = (e: Event) => {
                 <button type="button" class="inline-flex items-center gap-1.5 rounded-md border border-input px-2.5 py-1.5 text-xs font-medium text-muted-foreground transition hover:bg-muted" :disabled="carregando" @click="carregar">
                     <RefreshCw :class="['size-3.5', carregando && 'animate-spin']" /> Atualizar
                 </button>
-                <Button type="button" size="sm" class="bg-fuchsia-600 hover:bg-fuchsia-700" :disabled="!periodoAberto || !turmaAberta" @click="abrirNovo">
+                <Button type="button" size="sm" class="bg-fuchsia-600 hover:bg-fuchsia-700" :disabled="!podeLancar || !turmaAberta" @click="abrirNovo">
                     <Plus class="mr-1.5 size-4" /> Nova avaliação
                 </Button>
             </div>
@@ -470,7 +475,7 @@ const limitarValor1Casa = (e: Event) => {
                                     </button>
                                     <div class="mt-1 flex items-center justify-center gap-1">
                                         <button type="button" class="rounded p-0.5 hover:bg-muted" title="Editar" @click="abrirEdit(a)"><Pencil class="size-3 text-muted-foreground" /></button>
-                                        <button type="button" class="rounded p-0.5 hover:bg-muted" title="Excluir" :disabled="!periodoAberto" @click="excluirAvaliacao(a)"><X class="size-3 text-rose-500" /></button>
+                                        <button type="button" class="rounded p-0.5 hover:bg-muted" title="Excluir" :disabled="!podeLancar" @click="excluirAvaliacao(a)"><X class="size-3 text-rose-500" /></button>
                                     </div>
                                 </th>
                                 <th class="border-b border-l-2 border-fuchsia-200 bg-fuchsia-50/70 px-3 py-2 text-center text-xs font-semibold uppercase tracking-wide text-fuchsia-700 dark:border-fuchsia-900 dark:bg-fuchsia-950/40 dark:text-fuchsia-300">
@@ -492,7 +497,7 @@ const limitarValor1Casa = (e: Event) => {
                                             v-if="modo === 'faixa'"
                                             v-model="row.notas[a.ava_id].valor"
                                             type="number" step="0.1" min="0" :max="a.ava_valor ?? undefined"
-                                            :disabled="!periodoAberto || !turmaAberta || isFutura(a) || row.bloqueado || semValor(a)"
+                                            :disabled="!podeLancar || !turmaAberta || isFutura(a) || row.bloqueado || semValor(a)"
                                             :title="!turmaAberta ? 'Turma não está aberta.' : (semValor(a) ? 'Defina o valor da avaliação antes de lançar notas.' : '')"
                                             :class="['h-8 w-16 rounded-md border bg-background px-1.5 text-center text-sm tabular-nums shadow-sm focus:outline-none focus:ring-1 focus:ring-fuchsia-500 disabled:opacity-60', statusDe(row.aln_id, a.ava_id) === 'invalid' || statusDe(row.aln_id, a.ava_id) === 'error' ? 'border-rose-400' : 'border-input']"
                                             @input="aoDigitarNota(row, a, $event)"
@@ -502,7 +507,7 @@ const limitarValor1Casa = (e: Event) => {
                                         <select
                                             v-else
                                             v-model.number="row.notas[a.ava_id].cnc_id"
-                                            :disabled="!periodoAberto || !turmaAberta || isFutura(a) || row.bloqueado"
+                                            :disabled="!podeLancar || !turmaAberta || isFutura(a) || row.bloqueado"
                                             class="h-8 w-16 rounded-md border border-input bg-background px-1 text-center text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-fuchsia-500 disabled:opacity-60"
                                             @change="salvarNota(row, a)"
                                         >

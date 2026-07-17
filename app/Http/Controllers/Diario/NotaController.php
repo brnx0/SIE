@@ -25,7 +25,7 @@ class NotaController extends Controller
 {
     public function contexto(\Illuminate\Http\Request $request): JsonResponse
     {
-        $this->abortIfNotProfessor();
+        $this->abortIfNaoPodeVerDiario();
 
         $turId = (int) $request->input('tur_id');
         $disId = (int) $request->input('dis_id');
@@ -36,7 +36,10 @@ class NotaController extends Controller
             return response()->json(['tipo_disponivel' => false, 'periodo_aberto' => false, 'avaliacoes' => [], 'alunos' => []]);
         }
 
-        $this->abortIfNotLeciona($request, $turId, $disId);
+        // Supervisão consulta qualquer turma; o vínculo de regência só vale para quem lança.
+        if (! $this->soConsultaDiario()) {
+            $this->abortIfNotLeciona($request, $turId, $disId);
+        }
 
         $tipos = $this->tiposSerie($turId);
         if (! in_array($tipo, $tipos, true)) {
@@ -206,6 +209,10 @@ class NotaController extends Controller
 
     public function destroyAvaliacao(\Illuminate\Http\Request $request, DiarioAvaliacao $avaliacao): JsonResponse
     {
+        // Diferente de store/update/salvarNota, aqui não há FormRequest com authorize()
+        // para exigir o role — sem este guard, basta o users.fun_id estar alocado na
+        // turma/disciplina para qualquer perfil excluir a avaliação.
+        $this->abortIfNotProfessor();
         $this->abortIfNotLeciona($request, (int) $avaliacao->ava_tur_id, (int) $avaliacao->ava_dis_id);
         $this->assertTurmaAberta((int) $avaliacao->ava_tur_id);
         $this->assertPeriodoAberto((int) $avaliacao->ava_uni_id);

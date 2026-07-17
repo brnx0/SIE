@@ -7,6 +7,7 @@ use App\Models\Aluno\HistoricoManual;
 use App\Models\Escola\Escola;
 use App\Models\Matricula\Matricula;
 use App\Models\Turma\Turma;
+use App\Support\CalculoEncerramento;
 use App\Support\CalculoNota;
 use Illuminate\Support\Facades\DB;
 
@@ -17,8 +18,10 @@ use Illuminate\Support\Facades\DB;
  * - Só entram anos com APROVAÇÃO ({6,7,8,40}).
  * - MF anual por componente = CalculoNota::consolidar (diário do professor ou
  *   lançamento manual da secretaria; média dos períodos arredondada ao 0,5).
- * - Corte por escola emissora: só os anos que o aluno cursou nessa escola e
- *   anteriores — nunca anos posteriores em outra escola.
+ * - Aprovado pelo Conselho (saída 7): MF abaixo da média mínima é exibida COMO a
+ *   média mínima, igual à Ata Final. Só apresentação — a nota real fica no banco.
+ * - A escola emissora não é escolhida: é a do último ano escolar do aluno (maior
+ *   ano letivo aprovado). Anos manuais posteriores a esse ano não entram.
  */
 class HistoricoEscolar
 {
@@ -53,14 +56,25 @@ class HistoricoEscolar
             // Série efetiva: matrícula (tma_ser_id) ou, quando nula, a da turma.
             ->filter(fn (Matricula $m) => $m->turma && $m->serieEfetiva && $m->turma->anoLetivo);
 
-        // Corte pela escola emissora: último ano (anl_ano) do aluno nessa escola.
-        $anoCorte = $matriculas
-            ->filter(fn (Matricula $m) => (int) $m->turma->tur_esc_id === $escEmissoraId)
-            ->max(fn (Matricula $m) => (int) $m->turma->anoLetivo->anl_ano);
+        abort_if(
+            $matriculas->isEmpty(),
+            422,
+            'O aluno não possui ano escolar aprovado — não há histórico a emitir.'
+        );
 
-        if ($anoCorte !== null) {
-            $matriculas = $matriculas->filter(fn (Matricula $m) => (int) $m->turma->anoLetivo->anl_ano <= $anoCorte);
-        }
+        // A emissora é a escola do último ano escolar do aluno: maior ano letivo e,
+        // no mesmo ano, a série mais adiantada (desempate final pela matrícula mais nova).
+        $ultimoAno = $matriculas
+            ->sortBy(fn (Matricula $m) => [
+                (int) $m->turma->anoLetivo->anl_ano,
+                (int) ($m->serieEfetiva->ser_ordem_no_segmento ?? 0),
+                (int) $m->tma_id,
+            ])
+            ->last();
+
+        $anoCorte = (int) $ultimoAno->turma->anoLetivo->anl_ano;
+        $emissora = Escola::with('municipio:mun_id,mun_nome,mun_uf', 'bairro:bai_id,bai_nome')
+            ->findOrFail((int) $ultimoAno->turma->tur_esc_id);
 
         // Ordena por ordem da série no segmento, depois ano letivo.
         $matriculas = $matriculas
@@ -102,7 +116,7 @@ class HistoricoEscolar
                 continue;
             }
             $ano = (int) $h->hmn_ano;
-            if ($anoCorte !== null && $ano > $anoCorte) {
+            if ($ano > $anoCorte) {
                 continue;
             }
             $itens[] = [
@@ -278,6 +292,11 @@ class HistoricoEscolar
         $turId = (int) $m->turma->tur_id;
         $anlId = (int) $m->turma->anoLetivo->anl_id;
 
+        // Aprovado pelo Conselho: nas disciplinas abaixo da média mínima, a MF sai
+        // como a própria média — mesma regra da Ata Final (AtaFinalController).
+        $conselho = (int) $m->tma_tas_cod_saida === CalculoEncerramento::CONSELHO;
+        $mediaRef = $conselho ? $this->mediaMinima($anlId, (int) $m->turma->tur_esc_id) : null;
+
         $uniIds = DB::table('cfg_unidade')->where('uni_anl_id', $anlId)
             ->orderBy('uni_numero')->pluck('uni_id')->map(fn ($v) => (int) $v)->all();
 
@@ -348,6 +367,28 @@ class HistoricoEscolar
             'dias_letivos' => $diasLetivos,
             'frequencia' => $frequencia,
         ];
+    }
+
+    /**
+     * Média mínima de aprovação: da ESCOLA (cfg_media_escola) ou, na falta, a da
+     * REDE (ano letivo). `null` quando nenhuma das duas está configurada — aí não
+     * há régua e a MF real é preservada.
+     */
+    private function mediaMinima(int $anlId, int $escId): ?float
+    {
+        $chave = "{$anlId}:{$escId}";
+
+        if (! array_key_exists($chave, $this->mediasMinimas)) {
+            $mde = DB::table('cfg_media_escola')
+                ->where('mde_anl_id', $anlId)->where('mde_esc_id', $escId)
+                ->value('mde_media');
+            $rede = DB::table('cfg_ano_letivo')->where('anl_id', $anlId)->value('anl_media_geral');
+
+            $media = $mde ?? $rede;
+            $this->mediasMinimas[$chave] = $media !== null ? (float) $media : null;
+        }
+
+        return $this->mediasMinimas[$chave];
     }
 
     /** Formata a MF consolidada: numérica "5,0" · conceito "H" · vazio "-". */

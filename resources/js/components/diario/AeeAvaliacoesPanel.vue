@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ArrowLeft, ChevronRight, ClipboardList, LoaderCircle, Pencil, Plus, Save, Search, Trash2, X } from 'lucide-vue-next';
 import { computed, onMounted, ref } from 'vue';
+import { usePermissao } from '@/composables/usePermissao';
 
 const props = defineProps<{
     anlId: number;
@@ -34,7 +35,11 @@ const formDescricao = ref('');
 const processing = ref(false);
 const erro = ref<string | null>(null);
 
-const podeEditar = computed(() => periodoAberto.value && turmaAberta.value);
+// Secretaria escolar tem nível 2 em /diario-aee: consulta e não lança. O backend
+// já barra a escrita; aqui é para a tela não oferecer o que vai dar 403.
+// (gestor_secretaria tem nível 1 e segue editando.)
+const { isReadOnly } = usePermissao();
+const podeEditar = computed(() => periodoAberto.value && turmaAberta.value && !isReadOnly.value);
 
 const alunoSel = computed(() => alunos.value.find((a) => a.aln_id === selectedAlnId.value) ?? null);
 const nomeAluno = (id: number) => alunos.value.find((a) => a.aln_id === id)?.aln_nome ?? '—';

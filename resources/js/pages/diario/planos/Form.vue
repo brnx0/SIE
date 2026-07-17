@@ -181,6 +181,7 @@ const labelUnidade = computed(() => {
     if (t.includes('trim')) return 'Trimestre';
     return 'Unidade';
 });
+const artigoUnidade = computed(() => (labelUnidade.value === 'Unidade' ? 'a' : 'o'));
 
 const formatDateTime = (d?: string | null) => {
     if (!d) return '—';
@@ -188,7 +189,7 @@ const formatDateTime = (d?: string | null) => {
     if (isNaN(dt.getTime())) return '—';
     return dt.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
 };
-const fmtDate = (d: string) => {
+const fmtDate = (d?: string | null) => {
     if (!d) return '';
     const [y, m, day] = d.substring(0, 10).split('-');
     return `${day}/${m}/${y}`;
@@ -222,6 +223,24 @@ const itemsEscola = computed(() => {
     const s = props.plano?.escola;
     if (s && !list.some((i) => i.id === s.esc_id)) list.unshift({ id: s.esc_id, label: s.esc_nome });
     return list;
+});
+
+// Período selecionado: limita o seletor de data ao intervalo da unidade.
+const unidadeSelecionada = computed<PlanoUnidade | null>(() => {
+    if (!form.dpa_uni_id) return null;
+    return unidades.value.find((u) => u.uni_id === form.dpa_uni_id)
+        ?? (props.plano?.unidade?.uni_id === form.dpa_uni_id ? props.plano.unidade : null);
+});
+const periodoMin = computed(() => unidadeSelecionada.value?.uni_dt_inicio?.substring(0, 10) ?? undefined);
+const periodoMax = computed(() => unidadeSelecionada.value?.uni_dt_fim?.substring(0, 10) ?? undefined);
+
+// Trocar de período invalida data já digitada fora dele — limpa em vez de deixar submeter e falhar.
+const foraDoPeriodo = (d: string) => !!d && !!periodoMin.value && !!periodoMax.value
+    && (d < periodoMin.value || d > periodoMax.value);
+
+watch(() => form.dpa_uni_id, () => {
+    if (foraDoPeriodo(form.dpa_dt_inicio)) form.dpa_dt_inicio = '';
+    if (foraDoPeriodo(form.dpa_dt_fim)) form.dpa_dt_fim = '';
 });
 const itemsAno = computed(() => {
     const list = props.anosLetivos.map((a) => ({ id: a.anl_id, label: String(a.anl_ano) }));
@@ -312,21 +331,34 @@ const breadcrumbs: BreadcrumbItem[] = [
                         <Input :model-value="professor.fun_nome" readonly />
                     </div>
 
-                    <div class="md:col-span-8">
+                    <div class="md:col-span-12">
                         <Label>Tema <span class="text-rose-600">*</span></Label>
-                        <Input v-model="form.dpa_tema" :disabled="readonly" maxlength="255" />
+                        <Input v-model="form.dpa_tema" :disabled="readonly" maxlength="50" />
                         <InputError :message="form.errors.dpa_tema" />
                     </div>
+                    <div class="md:col-span-4">
+                        <Label>{{ labelUnidade }} <span class="text-rose-600">*</span></Label>
+                        <LocalCombobox v-model="form.dpa_uni_id" :items="itemsUnidade"
+                            placeholder="Selecione..." :invalid="!!form.errors.dpa_uni_id" />
+                        <InputError :message="form.errors.dpa_uni_id" />
+                    </div>
+
                     <div class="md:col-span-2">
                         <Label>Data Inicial <span class="text-rose-600">*</span></Label>
-                        <Input type="date" v-model="form.dpa_dt_inicio" :disabled="readonly" />
+                        <Input type="date" v-model="form.dpa_dt_inicio" :disabled="readonly || !form.dpa_uni_id"
+                            :min="periodoMin" :max="periodoMax" />
                         <InputError :message="form.errors.dpa_dt_inicio" />
                     </div>
                     <div class="md:col-span-2">
                         <Label>Data Final <span class="text-rose-600">*</span></Label>
-                        <Input type="date" v-model="form.dpa_dt_fim" :disabled="readonly" />
+                        <Input type="date" v-model="form.dpa_dt_fim" :disabled="readonly || !form.dpa_uni_id"
+                            :min="periodoMin" :max="periodoMax" />
                         <InputError :message="form.errors.dpa_dt_fim" />
                     </div>
+                    <p v-if="!readonly" class="text-xs text-muted-foreground md:col-span-8">
+                        <template v-if="!form.dpa_uni_id">Selecione {{ artigoUnidade }} {{ labelUnidade.toLowerCase() }} acima para liberar as datas.</template>
+                        <template v-else>Datas permitidas: {{ fmtDate(periodoMin) }} até {{ fmtDate(periodoMax) }}.</template>
+                    </p>
 
                     <div class="md:col-span-3">
                         <Label>Ano Letivo <span class="text-rose-600">*</span></Label>
@@ -351,13 +383,6 @@ const breadcrumbs: BreadcrumbItem[] = [
                         <LocalCombobox v-model="form.dpa_dis_id" :items="itemsDisciplina"
                             placeholder="Selecione..." :invalid="!!form.errors.dpa_dis_id" />
                         <InputError :message="form.errors.dpa_dis_id" />
-                    </div>
-
-                    <div class="md:col-span-12">
-                        <Label>{{ labelUnidade }} <span class="text-rose-600">*</span></Label>
-                        <LocalCombobox v-model="form.dpa_uni_id" :items="itemsUnidade"
-                            placeholder="Selecione..." :invalid="!!form.errors.dpa_uni_id" />
-                        <InputError :message="form.errors.dpa_uni_id" />
                     </div>
                 </div>
             </section>
