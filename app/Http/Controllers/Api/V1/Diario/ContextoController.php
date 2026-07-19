@@ -11,7 +11,8 @@ use Illuminate\Http\Request;
  * Contexto "minhas turmas" do Diário de Classe (regular) para o app mobile.
  * Toda a regra vive no ContextoDiarioService (fonte única). Somente leitura.
  *
- * Autorização: rota gateada por `role:professor` (admin passa) — ver routes/api.php.
+ * Autorização: rota gateada por `app.access` (EnsureAppAccess) — SOMENTE
+ * professor/professor_aee, SEM bypass de admin — ver routes/api.php.
  */
 class ContextoController extends Controller
 {
