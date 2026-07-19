@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Middleware\EnsureAppAccess;
 use App\Http\Requests\Api\V1\LoginApiRequest;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -42,6 +43,14 @@ class AuthController extends Controller
 
             throw ValidationException::withMessages([
                 'login' => 'Usuário inativo. Procure a secretaria.',
+            ]);
+        }
+
+        // Acesso ao app é restrito a professor / professor_aee (por enquanto).
+        // Sem bypass de admin — mesma regra do middleware app.access.
+        if (! $user->hasAnyRole(EnsureAppAccess::ROLES)) {
+            throw ValidationException::withMessages([
+                'login' => 'Acesso restrito a professores. Use o sistema web.',
             ]);
         }
 

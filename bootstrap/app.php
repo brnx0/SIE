@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureAppAccess;
 use App\Http\Middleware\EnsureUserHasRole;
 use App\Http\Middleware\ForceHttps;
 use App\Http\Middleware\HandleInertiaRequests;
@@ -38,6 +39,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => EnsureUserHasRole::class,
             'tela' => VerificaPermissaoTela::class,
+            'app.access' => EnsureAppAccess::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
