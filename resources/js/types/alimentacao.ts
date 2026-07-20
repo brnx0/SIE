@@ -13,6 +13,7 @@ export interface CatalogoConfig {
     col_id: string;
     col_nome: string;
     col_ativo: string;
+    sem_acento?: boolean;
 }
 
 export interface UnidadeMedida {

@@ -35,6 +35,12 @@ abstract class CatalogoSimplesController extends Controller
      */
     abstract protected function config(): array;
 
+    /** Se true, o nome não pode conter acentos/diacríticos (ex.: marcas). */
+    protected function semAcento(): bool
+    {
+        return false;
+    }
+
     private function coluna(string $sufixo): string
     {
         return $this->prefixo().'_'.$sufixo;
@@ -140,15 +146,24 @@ abstract class CatalogoSimplesController extends Controller
 
         $cfg = $this->config();
 
+        $regrasNome = [
+            'required', 'string', 'max:80',
+            Rule::unique($this->tabela(), $nome)->ignore($ignorarId, $this->coluna('id')),
+        ];
+        $mensagens = [];
+
+        if ($this->semAcento()) {
+            // Bloqueia diacríticos do latim (À-Ö, Ø-ö, ø-ÿ), incluindo cedilha.
+            $regrasNome[]                     = 'not_regex:/[À-ÖØ-öø-ÿ]/u';
+            $mensagens["{$nome}.not_regex"]   = "{$cfg['singular']} não pode conter acentos.";
+        }
+
         return $request->validate(
             [
-                $nome => [
-                    'required', 'string', 'max:80',
-                    Rule::unique($this->tabela(), $nome)->ignore($ignorarId, $this->coluna('id')),
-                ],
+                $nome  => $regrasNome,
                 $ativo => ['boolean'],
             ],
-            [],
+            $mensagens,
             [
                 $nome  => mb_strtolower($cfg['singular'], 'UTF-8'),
                 $ativo => 'situação',
@@ -170,9 +185,10 @@ abstract class CatalogoSimplesController extends Controller
     private function configParaTela(): array
     {
         return $this->config() + [
-            'col_id'    => $this->coluna('id'),
-            'col_nome'  => $this->coluna('nome'),
-            'col_ativo' => $this->coluna('fl_ativo'),
+            'col_id'     => $this->coluna('id'),
+            'col_nome'   => $this->coluna('nome'),
+            'col_ativo'  => $this->coluna('fl_ativo'),
+            'sem_acento' => $this->semAcento(),
         ];
     }
 

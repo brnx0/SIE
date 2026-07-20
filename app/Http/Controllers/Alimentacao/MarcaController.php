@@ -16,6 +16,11 @@ class MarcaController extends CatalogoSimplesController
         return 'mrc';
     }
 
+    protected function semAcento(): bool
+    {
+        return true;
+    }
+
     protected function config(): array
     {
         return [

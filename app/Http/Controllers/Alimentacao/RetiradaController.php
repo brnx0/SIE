@@ -52,6 +52,7 @@ class RetiradaController extends Controller
                 'esc_id'  => ['nullable', 'integer', 'exists:edu_escola,esc_id'],
                 'tpr_id'  => ['required', 'integer', 'exists:ali_tipo_retirada,tpr_id'],
                 'fun_id'  => ['nullable', 'integer', 'exists:edu_funcionario,fun_id'],
+                'responsavel' => ['nullable', 'string', 'max:120'],
                 'dt'      => ['required', 'date'],
                 'obs'     => ['nullable', 'string'],
                 'itens'          => ['required', 'array', 'min:1'],
@@ -73,11 +74,17 @@ class RetiradaController extends Controller
 
         $escId = $this->resolverEstoque($request, $dados['esc_id'] ?? null);
 
+        // Responsável cadastrado (fun_id) e nome digitado são exclusivos: escolhido
+        // um funcionário, ignora-se o texto livre, para não guardar as duas versões.
+        $responsavel = isset($dados['fun_id'])
+            ? null
+            : (trim((string) ($dados['responsavel'] ?? '')) ?: null);
+
         $estoque = app(MovimentaEstoque::class);
 
         // Transação única: retirada que grava parte dos itens deixaria o saldo
         // refletindo uma operação que não aconteceu inteira.
-        DB::transaction(function () use ($dados, $escId, $estoque, $request) {
+        DB::transaction(function () use ($dados, $escId, $estoque, $request, $responsavel) {
             foreach ($dados['itens'] as $linha) {
                 $item = Item::findOrFail($linha['itm_id']);
 
@@ -90,11 +97,12 @@ class RetiradaController extends Controller
                     Movimento::TIPO_RETIRADA,
                     $dados['dt'],
                     [
-                        'mov_tpr_id' => (int) $dados['tpr_id'],
-                        'mov_fun_id' => $dados['fun_id'] ?? null,
-                        'mov_usr_id' => $request->user()?->id,
-                        'mov_obs'    => $dados['obs'] ?? null,
-                        'mov_origem' => 'retirada',
+                        'mov_tpr_id'      => (int) $dados['tpr_id'],
+                        'mov_fun_id'      => $dados['fun_id'] ?? null,
+                        'mov_responsavel' => $responsavel,
+                        'mov_usr_id'      => $request->user()?->id,
+                        'mov_obs'         => $dados['obs'] ?? null,
+                        'mov_origem'      => 'retirada',
                     ],
                 );
             }

@@ -55,6 +55,7 @@ class Movimento extends Model
         'mov_ofn_id',
         'mov_tpr_id',
         'mov_fun_id',
+        'mov_responsavel',
         'mov_usr_id',
         'mov_tipo',
         'mov_qtd',

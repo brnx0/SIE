@@ -9,7 +9,7 @@ import { useErrorFocus } from '@/composables/useErrorFocus';
 import type { CatalogoConfig, CatalogoRegistro } from '@/types/alimentacao';
 import { Link, useForm } from '@inertiajs/vue3';
 import { ChevronLeft, LoaderCircle, PlusCircle, Save } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 
 const props = defineProps<{
     mode: 'create' | 'edit';
@@ -33,6 +33,18 @@ const form = useForm<Record<string, any>>({
     continue_new: false,
     _method: props.mode === 'edit' ? 'put' : undefined,
 });
+
+// Alguns catálogos (ex.: marcas) não aceitam acentos — removemos os diacríticos
+// enquanto o usuário digita, para o valor nunca chegar acentuado ao backend.
+if (props.config.sem_acento) {
+    watch(
+        () => form[colNome],
+        (valor) => {
+            const semAcento = String(valor ?? '').normalize('NFD').replace(/\p{Diacritic}/gu, '');
+            if (semAcento !== valor) form[colNome] = semAcento;
+        },
+    );
+}
 
 const submit = (continueNew = false) => {
     if (isReadOnly.value) return;

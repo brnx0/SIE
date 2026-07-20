@@ -31,6 +31,7 @@ const form = useForm<Record<string, any>>({
     esc_id: (props.escolaAtual?.esc_id ?? null) as number | null,
     tpr_id: null as number | null,
     fun_id: null as number | null,
+    responsavel: '',
     dt: new Date().toISOString().slice(0, 10),
     obs: '',
     itens: [] as Linha[],
@@ -55,6 +56,18 @@ watch(() => form.esc_id, (novo, antigo) => {
 const itmId = ref<number | null>(null);
 const qtd   = ref<number | string>('');
 const responsavel = ref<{ id: number; label: string } | null>(null);
+
+// O responsável pode ser um funcionário cadastrado ou, quando não houver, um nome
+// digitado à mão. Só um dos dois vai no payload — o outro é sempre zerado.
+const naoCadastrado = ref(false);
+watch(naoCadastrado, (livre) => {
+    if (livre) {
+        form.fun_id = null;
+        responsavel.value = null;
+    } else {
+        form.responsavel = '';
+    }
+});
 
 const itemEscolhido = computed(() => props.itens.find((i) => i.itm_id === itmId.value));
 
@@ -179,8 +192,15 @@ const submit = () => {
                     </div>
 
                     <div class="grid gap-2 sm:col-span-3">
-                        <FormLabel>Responsável pela retirada</FormLabel>
+                        <div class="flex items-center justify-between gap-2">
+                            <FormLabel>Responsável pela retirada</FormLabel>
+                            <label class="flex cursor-pointer items-center gap-1.5 text-xs text-muted-foreground">
+                                <input type="checkbox" v-model="naoCadastrado" class="size-3.5 rounded border-input" />
+                                Não cadastrado no sistema
+                            </label>
+                        </div>
                         <RemoteCombobox
+                            v-if="!naoCadastrado"
                             v-model="form.fun_id"
                             fetch-url="/api/funcionarios"
                             id-key="fun_id"
@@ -190,7 +210,14 @@ const submit = () => {
                             :selected-label="responsavel?.label ?? null"
                             @selected="responsavel = $event"
                         />
-                        <InputError :message="form.errors.fun_id" />
+                        <Input
+                            v-else
+                            v-model="form.responsavel"
+                            maxlength="120"
+                            placeholder="Nome de quem retirou"
+                            :class="form.errors.responsavel ? 'border-red-500' : ''"
+                        />
+                        <InputError :message="form.errors.fun_id || form.errors.responsavel" />
                     </div>
 
                     <div class="grid gap-2 sm:col-span-3">

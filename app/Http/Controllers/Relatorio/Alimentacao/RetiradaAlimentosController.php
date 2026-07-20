@@ -87,7 +87,7 @@ class RetiradaAlimentosController extends Controller
             'qtd'           => (float) $m->mov_qtd_base,
             'umd_sigla'     => $m->item?->unidadeMedida?->umd_sigla,
             'tipo_retirada' => $m->tipoRetirada?->tpr_nome ?? '—',
-            'responsavel'   => $m->funcionario?->fun_nome ?? $m->usuario?->name,
+            'responsavel'   => $m->funcionario?->fun_nome ?? $m->mov_responsavel ?? $m->usuario?->name,
             'vl_total'      => $m->mov_vl_total !== null ? (float) $m->mov_vl_total : null,
             'mov_obs'       => $m->mov_obs,
         ])->values();
