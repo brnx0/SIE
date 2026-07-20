@@ -99,6 +99,13 @@ class TelaPermissaoSeeder extends Seeder
         ['/relatorios', 'Central de Relatórios', 'Relatórios', 39, [1, 1, 0, 0, 0, 2, 2, 2, 2, 0, 2]],
         ['/relatorios-escola', 'Relatórios Gerais', 'Relatórios', 40, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 2]],
 
+        // Transporte Escolar — Fase 1 (cadastros). Edição: admin e gestor_secretaria.
+        ['/transporte/veiculos', 'Veículos (Transporte)', 'Transporte', 60, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
+        ['/transporte/motoristas', 'Motoristas (Transporte)', 'Transporte', 61, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
+        ['/transporte/monitores', 'Monitores (Transporte)', 'Transporte', 62, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
+        ['/transporte/instituicoes', 'Instituições (Transporte)', 'Transporte', 63, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
+        ['/transporte/usuarios', 'Usuários do Transporte', 'Transporte', 64, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
+
         ['/users', 'Usuários', 'Sistema', 41, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
         ['/parametros', 'Parâmetros', 'Sistema', 42, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
         ['/permissoes', 'Permissões de Telas', 'Sistema', 43, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],

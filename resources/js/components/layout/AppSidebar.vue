@@ -5,7 +5,7 @@ import NavSearch, { type FlatNavLeaf } from '@/components/layout/NavSearch.vue';
 import NavUser from '@/components/layout/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { Link } from '@inertiajs/vue3';
-import { LayoutDashboard, LifeBuoy, UserPlus, Cog, ClipboardList, FileBarChart, BookOpen, ClipboardCheck, KeyRound, Archive, ArrowRightLeft } from 'lucide-vue-next';
+import { LayoutDashboard, LifeBuoy, UserPlus, Cog, ClipboardList, FileBarChart, BookOpen, ClipboardCheck, KeyRound, Archive, ArrowRightLeft, Bus } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import { usePermissao } from '@/composables/usePermissao';
 import AppLogo from './AppLogo.vue';
@@ -149,6 +149,24 @@ const encerramentoMenu = [
         ],
     },
 ];
+const transporteMenu = [
+    {
+        title: 'Transporte Escolar',
+        icon: Bus,
+        children: [
+            {
+                title: 'Cadastros',
+                children: [
+                    { title: 'Veículos', href: '/transporte/veiculos' },
+                    { title: 'Motoristas', href: '/transporte/motoristas' },
+                    { title: 'Monitores', href: '/transporte/monitores' },
+                    { title: 'Instituições', href: '/transporte/instituicoes' },
+                    { title: 'Usuários Externos', href: '/transporte/usuarios' },
+                ],
+            },
+        ],
+    },
+];
 const administracao = [
     {
         title: 'Sistema',
@@ -171,6 +189,7 @@ const diarioF = computed(() => filtrarMenu(diarioMenu));
 const coordenadorF = computed(() => filtrarMenu(coordenadorMenu));
 const secretariaF = computed(() => filtrarMenu(secretariaMenu));
 const encerramentoF = computed(() => filtrarMenu(encerramentoMenu));
+const transporteF = computed(() => filtrarMenu(transporteMenu));
 const relatoriosF = computed(() => filtrarMenu(relatoriosMenu));
 const administracaoF = computed(() => filtrarMenu(administracao));
 
@@ -202,6 +221,7 @@ const flatLeaves = computed<FlatNavLeaf[]>(() => [
     ...flattenItems(coordenadorF.value),
     ...flattenItems(secretariaF.value),
     ...flattenItems(encerramentoF.value),
+    ...flattenItems(transporteF.value),
     ...flattenItems(relatoriosF.value),
     ...flattenItems(administracaoF.value),
 ]);
@@ -234,6 +254,7 @@ const searching = computed(() => search.value.trim().length > 0);
                 <NavMain v-if="coordenadorF.length" label="Pedagógico" :items="coordenadorF" />
                 <NavMain v-if="secretariaF.length" label="Secretaria Escolar" :items="secretariaF" />
                 <NavMain v-if="encerramentoF.length" label="Encerramento" :items="encerramentoF" />
+                <NavMain v-if="transporteF.length" label="Transporte" :items="transporteF" />
                 <NavMain v-if="relatoriosF.length" label="Relatórios" :items="relatoriosF" />
                 <NavMain v-if="administracaoF.length" label="Administração" :items="administracaoF" />
             </template>
