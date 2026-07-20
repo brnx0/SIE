@@ -40,6 +40,13 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+
+        // Guard de token para o app mobile (Diário). Emitido por Laravel Sanctum
+        // (personal access tokens). Usado nas rotas api/v1/* — ver routes/api.php.
+        'sanctum' => [
+            'driver' => 'sanctum',
+            'provider' => 'users',
+        ],
     ],
 
     /*

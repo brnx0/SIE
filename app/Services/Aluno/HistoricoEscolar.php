@@ -28,12 +28,14 @@ class HistoricoEscolar
     /** Situações de saída consideradas aprovação. */
     public const APROVADO = [6, 7, 8, 40];
 
-    /** Cache da média mínima por "anl_id:esc_id" (o mesmo ano se repete entre componentes). */
-    private array $mediasMinimas = [];
+    /** Aprovado pelo Conselho — MF exibida sobe até a média de aprovação. */
+    private const CONSELHO = 7;
 
-    public function gerar(int $alnId): array
+    public function gerar(int $alnId, int $escEmissoraId): array
     {
         $aluno = Aluno::with('municipioNascimento:mun_id,mun_nome,mun_uf')->findOrFail($alnId);
+        $emissora = Escola::with('municipio:mun_id,mun_nome,mun_uf', 'bairro:bai_id,bai_nome')
+            ->findOrFail($escEmissoraId);
 
         // Matrículas REGULAR aprovadas do aluno (qualquer escola da rede).
         $matriculas = Matricula::query()
@@ -84,17 +86,17 @@ class HistoricoEscolar
             $dados = $this->anoEscolar($m, $alnId);
 
             return [
-                'ordem'         => $m->serieEfetiva->ser_ordem_no_segmento ?? 0,
-                'ano'           => (int) $m->turma->anoLetivo->anl_ano,
-                'ano_escolar'   => $m->serieEfetiva->ser_nome,
-                'frequencia'    => $dados['frequencia'],
-                'dias_letivos'  => $dados['dias_letivos'],
+                'ordem' => $m->serieEfetiva->ser_ordem_no_segmento ?? 0,
+                'ano' => (int) $m->turma->anoLetivo->anl_ano,
+                'ano_escolar' => $m->serieEfetiva->ser_nome,
+                'frequencia' => $dados['frequencia'],
+                'dias_letivos' => $dados['dias_letivos'],
                 'carga_horaria' => $m->serieEfetiva->ser_carga_horaria,
-                'situacao'      => $m->situacaoSaida?->tas_descricao ?? 'Aprovado(a)',
-                'curso'         => $m->turma->segmento?->seg_nome_completo ?? $m->turma->segmento?->seg_nome_reduzido,
+                'situacao' => $m->situacaoSaida?->tas_descricao ?? 'Aprovado(a)',
+                'curso' => $m->turma->segmento?->seg_nome_completo ?? $m->turma->segmento?->seg_nome_reduzido,
                 'estabelecimento' => $m->turma->escola?->esc_nome,
-                'municipio_uf'  => $this->municipioUf($m->turma->escola?->esc_mun_id),
-                'componentes'   => $dados['componentes'],
+                'municipio_uf' => $this->municipioUf($m->turma->escola?->esc_mun_id),
+                'componentes' => $dados['componentes'],
             ];
         })->all();
 
@@ -118,21 +120,21 @@ class HistoricoEscolar
                 continue;
             }
             $itens[] = [
-                'ordem'         => $h->serie->ser_ordem_no_segmento ?? 0,
-                'ano'           => $ano,
-                'ano_escolar'   => $h->serie->ser_nome,
-                'frequencia'    => $h->hmn_frequencia !== null ? (int) round((float) $h->hmn_frequencia) : null,
-                'dias_letivos'  => $h->hmn_dias_letivos,
+                'ordem' => $h->serie->ser_ordem_no_segmento ?? 0,
+                'ano' => $ano,
+                'ano_escolar' => $h->serie->ser_nome,
+                'frequencia' => $h->hmn_frequencia !== null ? (int) round((float) $h->hmn_frequencia) : null,
+                'dias_letivos' => $h->hmn_dias_letivos,
                 'carga_horaria' => $h->hmn_carga_horaria ?? $h->serie->ser_carga_horaria,
-                'situacao'      => $h->situacao?->tas_descricao ?? 'Aprovado(a)',
-                'curso'         => $h->serie->segmento?->seg_nome_completo ?? $h->serie->segmento?->seg_nome_reduzido,
+                'situacao' => $h->situacao?->tas_descricao ?? 'Aprovado(a)',
+                'curso' => $h->serie->segmento?->seg_nome_completo ?? $h->serie->segmento?->seg_nome_reduzido,
                 'estabelecimento' => $h->escola?->esc_nome ?? $h->hmn_esc_nome,
-                'municipio_uf'  => $h->escola ? $this->municipioUf($h->escola->esc_mun_id) : $this->municipioUf($h->hmn_mun_id),
-                'componentes'   => $h->disciplinas->map(fn ($d) => [
-                    'dis_id'     => (int) $d->hmd_dis_id,
-                    'nome'       => $d->disciplina?->dis_nome ?? '—',
-                    'ordem'      => (int) $d->hmd_ordem,
-                    'mf'         => $d->hmd_cnc_id
+                'municipio_uf' => $h->escola ? $this->municipioUf($h->escola->esc_mun_id) : $this->municipioUf($h->hmn_mun_id),
+                'componentes' => $h->disciplinas->map(fn ($d) => [
+                    'dis_id' => (int) $d->hmd_dis_id,
+                    'nome' => $d->disciplina?->dis_nome ?? '—',
+                    'ordem' => (int) $d->hmd_ordem,
+                    'mf' => $d->hmd_cnc_id
                         ? ($d->conceito?->cnc_sigla ?? '-')
                         : ($d->hmd_mf !== null ? number_format((float) $d->hmd_mf, 1, ',', '') : '-'),
                     'conceitual' => (bool) $d->hmd_cnc_id,
@@ -144,11 +146,11 @@ class HistoricoEscolar
         usort($itens, fn ($a, $b) => [$a['ordem'], $a['ano']] <=> [$b['ordem'], $b['ano']]);
 
         // Colunas (anos escolares) + matriz de componentes.
-        $colunas    = [];
+        $colunas = [];
         $componentes = [];  // dis_id => ['nome'=>, 'ordem'=>]
-        $matriz      = [];  // dis_id => [colIndex => celula string]
-        $relacao     = [];
-        $conceitual  = false;
+        $matriz = [];  // dis_id => [colIndex => celula string]
+        $relacao = [];
+        $conceitual = false;
 
         foreach ($itens as $i => $it) {
             foreach ($it['componentes'] as $dis) {
@@ -157,23 +159,25 @@ class HistoricoEscolar
                     $componentes[$dis['dis_id']]['ordem'] = $dis['ordem'];
                 }
                 $matriz[$dis['dis_id']][$i] = $dis['mf'];
-                if (! empty($dis['conceitual'])) $conceitual = true;
+                if (! empty($dis['conceitual'])) {
+                    $conceitual = true;
+                }
             }
 
             $colunas[] = [
-                'ano_escolar'   => $it['ano_escolar'],
-                'frequencia'    => $it['frequencia'],
-                'dias_letivos'  => $it['dias_letivos'],
+                'ano_escolar' => $it['ano_escolar'],
+                'frequencia' => $it['frequencia'],
+                'dias_letivos' => $it['dias_letivos'],
                 'carga_horaria' => $it['carga_horaria'],
-                'situacao'      => $it['situacao'],
+                'situacao' => $it['situacao'],
             ];
 
             $relacao[] = [
-                'etapa'           => $it['ano_escolar'],
-                'ano_conclusao'   => $it['ano'],
-                'curso'           => $it['curso'],
+                'etapa' => $it['ano_escolar'],
+                'ano_conclusao' => $it['ano'],
+                'curso' => $it['curso'],
                 'estabelecimento' => $it['estabelecimento'],
-                'municipio_uf'    => $it['municipio_uf'],
+                'municipio_uf' => $it['municipio_uf'],
             ];
         }
 
@@ -193,27 +197,27 @@ class HistoricoEscolar
         $ultima = $matriculas->last();
 
         return [
-            'escola'    => $this->dadosEscola($emissora),
-            'aluno'     => [
-                'nome'         => $aluno->aln_nome,
+            'escola' => $this->dadosEscola($emissora),
+            'aluno' => [
+                'nome' => $aluno->aln_nome,
                 'dt_nascimento' => optional($aluno->aln_dt_nascimento)->format('d/m/Y'),
                 'naturalidade' => $this->municipioUf($aluno->aln_mun_id_nasc),
-                'filiacao_1'   => $aluno->aln_filiacao_1,
-                'filiacao_2'   => $aluno->aln_filiacao_2,
+                'filiacao_1' => $aluno->aln_filiacao_1,
+                'filiacao_2' => $aluno->aln_filiacao_2,
             ],
             'conclusao' => [
                 'ano_escolar' => $ultima?->serieEfetiva->ser_nome,
-                'segmento'    => $ultima?->turma->segmento?->seg_nome_completo,
+                'segmento' => $ultima?->turma->segmento?->seg_nome_completo,
             ],
-            'colunas'     => $colunas,
+            'colunas' => $colunas,
             'componentes' => $linhasMatriz,
-            'relacao'     => $relacao,
-            'conceitual'  => $conceitual,
-            'legenda'     => DB::table('cfg_conceito')->orderBy('cnc_peso', 'desc')
+            'relacao' => $relacao,
+            'conceitual' => $conceitual,
+            'legenda' => DB::table('cfg_conceito')->orderBy('cnc_peso', 'desc')
                 ->get(['cnc_sigla', 'cnc_descricao'])->all(),
-            'emissao'     => [
+            'emissao' => [
                 'municipio_uf' => $this->municipioUf($emissora->esc_mun_id),
-                'data'         => now()->format('d/m/Y'),
+                'data' => now()->format('d/m/Y'),
             ],
         ];
     }
@@ -248,11 +252,11 @@ class HistoricoEscolar
                 $dados = $this->anoEscolar($m, $alnId);
 
                 return [
-                    'anl_id'      => (int) $m->turma->tur_anl_id,
-                    'anl_ano'     => (int) $m->turma->anoLetivo->anl_ano,
-                    'serie'       => $m->serieEfetiva->ser_nome,
-                    'escola'      => $m->turma->escola?->esc_nome,
-                    'situacao'    => $m->situacaoSaida?->tas_descricao ?? 'Aprovado(a)',
+                    'anl_id' => (int) $m->turma->tur_anl_id,
+                    'anl_ano' => (int) $m->turma->anoLetivo->anl_ano,
+                    'serie' => $m->serieEfetiva->ser_nome,
+                    'escola' => $m->turma->escola?->esc_nome,
+                    'situacao' => $m->situacaoSaida?->tas_descricao ?? 'Aprovado(a)',
                     'disciplinas' => collect($dados['componentes'])
                         ->map(fn ($c) => ['nome' => $c['nome'], 'mf' => $c['mf']])
                         ->values()->all(),
@@ -260,6 +264,26 @@ class HistoricoEscolar
             })
             ->values()
             ->all();
+    }
+
+    /**
+     * Média de aprovação do ano: a da escola tem precedência sobre a geral da rede.
+     * null = média não configurada (não há a que elevar).
+     */
+    private function mediaAprovacao(int $anlId, int $escId): ?float
+    {
+        $mde = DB::table('cfg_media_escola')
+            ->where('mde_anl_id', $anlId)
+            ->where('mde_esc_id', $escId)
+            ->value('mde_media');
+
+        if ($mde !== null) {
+            return (float) $mde;
+        }
+
+        $geral = DB::table('cfg_ano_letivo')->where('anl_id', $anlId)->value('anl_media_geral');
+
+        return $geral !== null ? (float) $geral : null;
     }
 
     /** MF por componente + resumo (frequência/dias letivos) de uma matrícula/ano. */
@@ -289,6 +313,12 @@ class HistoricoEscolar
 
         $recs = CalculoNota::recuperacoesFinais($turId);
 
+        // Aprovado pelo Conselho: a MF exibida nunca fica abaixo da média de
+        // aprovação — mesma regra da Ata Final e do CalculoEncerramento. Sem isso
+        // o histórico mostraria a nota crua e contradiria o resultado "Aprovado".
+        $conselho = (int) $m->tma_tas_cod_saida === self::CONSELHO;
+        $mediaRef = $conselho ? $this->mediaAprovacao($anlId, (int) $m->turma->tur_esc_id) : null;
+
         $componentes = [];
         foreach ($disciplinas as $d) {
             $disId = (int) $d->dis_id;
@@ -298,16 +328,16 @@ class HistoricoEscolar
             }
             $consol = CalculoNota::consolidar($porUni, $recs[$disId][$alnId] ?? null);
 
-            if ($mediaRef !== null && $consol['tipo'] === 'numerica' && $consol['valor'] !== null
-                && (float) $consol['valor'] < $mediaRef) {
+            if ($mediaRef !== null && $consol['tipo'] === 'numerica'
+                && $consol['valor'] !== null && (float) $consol['valor'] < $mediaRef) {
                 $consol['valor'] = $mediaRef;
             }
 
             $componentes[] = [
-                'dis_id'     => $disId,
-                'nome'       => $d->dis_nome,
-                'ordem'      => (int) $d->grd_ordem,
-                'mf'         => $this->formatarMf($consol),
+                'dis_id' => $disId,
+                'nome' => $d->dis_nome,
+                'ordem' => (int) $d->grd_ordem,
+                'mf' => $this->formatarMf($consol),
                 'conceitual' => $consol['tipo'] === 'conceitual',
             ];
         }
@@ -333,9 +363,9 @@ class HistoricoEscolar
             : 0;
 
         return [
-            'componentes'  => $componentes,
+            'componentes' => $componentes,
             'dias_letivos' => $diasLetivos,
-            'frequencia'   => $frequencia,
+            'frequencia' => $frequencia,
         ];
     }
 
@@ -364,37 +394,43 @@ class HistoricoEscolar
     /** Formata a MF consolidada: numérica "5,0" · conceito "H" · vazio "-". */
     private function formatarMf(array $consol): string
     {
-        if ($consol['tipo'] === null) return '-';
+        if ($consol['tipo'] === null) {
+            return '-';
+        }
         if ($consol['conceito'] && ($consol['conceito']['sigla'] ?? null)) {
             return $consol['conceito']['sigla'];
         }
         if ($consol['valor'] !== null) {
             return number_format((float) $consol['valor'], 1, ',', '');
         }
+
         return '-';
     }
 
     private function municipioUf(?int $munId): ?string
     {
-        if (! $munId) return null;
+        if (! $munId) {
+            return null;
+        }
         $m = DB::table('edu_municipio')->where('mun_id', $munId)->first(['mun_nome', 'mun_uf']);
+
         return $m ? "{$m->mun_nome}/{$m->mun_uf}" : null;
     }
 
     private function dadosEscola(Escola $e): array
     {
         return [
-            'nome'            => $e->esc_nome,
-            'municipio_uf'    => $this->municipioUf($e->esc_mun_id),
-            'endereco'        => trim(implode(', ', array_filter([
+            'nome' => $e->esc_nome,
+            'municipio_uf' => $this->municipioUf($e->esc_mun_id),
+            'endereco' => trim(implode(', ', array_filter([
                 $e->esc_logradouro, $e->esc_numero, $e->bairro?->bai_nome,
             ]))),
-            'telefone'        => $e->esc_telefone_fixo,
+            'telefone' => $e->esc_telefone_fixo,
             // Ato autorizativo — labels sempre exibidos no template, valor pode ser nulo.
-            'resolucao_num'   => $e->esc_resolucao_num,
-            'portaria_num'    => $e->esc_cme_portaria_num,
-            'dt_publicacao'   => optional($e->esc_dt_publicacao)->format('d/m/Y'),
-            'fundamentacao'   => $e->esc_fundamentacao_legal,
+            'resolucao_num' => $e->esc_resolucao_num,
+            'portaria_num' => $e->esc_cme_portaria_num,
+            'dt_publicacao' => optional($e->esc_dt_publicacao)->format('d/m/Y'),
+            'fundamentacao' => $e->esc_fundamentacao_legal,
         ];
     }
 }

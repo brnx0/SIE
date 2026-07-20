@@ -130,6 +130,7 @@ const secretariaMenu = [
                 children: [
                     { title: 'Notas e Faltas', href: '/secretaria/lancamento-manual' },
                     { title: 'Justificativa de Falta', href: '/secretaria/justificativas-falta' },
+                    { title: 'Histórico Escolar', href: '/secretaria/historico-escolar' },
                 ],
             },
             { title: 'Renovação de Matrícula', href: '/secretaria/renovacao-matricula' },

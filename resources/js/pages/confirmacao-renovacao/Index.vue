@@ -17,6 +17,7 @@ interface TurmaDestino { tur_id: number; turma: string; serie: string | null }
 interface AlunoLinha {
     tma_id: number; aln_id: number; nome: string; matricula: string | null;
     situacao_final: string; quer_renovar: boolean | null; aprovado: boolean; destinos: SerieDestino[];
+    destino_sem_turma: boolean;
     ja_renovado: boolean; destino_ser_id: number | null; destino_tur_id: number | null;
 }
 
@@ -319,7 +320,9 @@ const nomeTurmaDestino = (serId: number | null, turId: number | null): string =>
                                     <!-- Pendente -->
                                     <template v-else>
                                         <td class="px-3 py-2">
-                                            <span v-if="!a.destinos.length" class="text-[11px] text-amber-700 dark:text-amber-300">Sem série de destino configurada</span>
+                                            <span v-if="!a.destinos.length" class="text-[11px] text-amber-700 dark:text-amber-300">
+                                                {{ a.destino_sem_turma ? 'Nenhuma turma de destino no ano seguinte — crie/duplique antes.' : 'Sem série de destino configurada' }}
+                                            </span>
                                             <span v-else-if="a.destinos.length === 1" class="text-sm">{{ a.destinos[0].ser_nome }}</span>
                                             <select v-else :value="serDestino[a.aln_id] ?? ''" class="h-8 rounded-md border border-input bg-background px-2 text-sm" @change="escolherSerie(a, ($event.target as HTMLSelectElement).value ? Number(($event.target as HTMLSelectElement).value) : '')">
                                                 <option value="">Selecione...</option>

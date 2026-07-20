@@ -333,7 +333,12 @@ class EncerramentoTurmaController extends Controller
         if ($origemTmaIds === null || count($origemTmaIds) === 0) {
             return;
         }
-        Matricula::whereIn('tma_origem_tma_id', $origemTmaIds)->delete();
+        // forceDelete (não soft): ao cancelar o encerramento a matrícula do ano
+        // seguinte deve sumir de fato. Com soft delete a linha permaneceria em
+        // edu_turma_aluno e, pela FK restrictOnDelete de tma_tur_id, a turma de
+        // destino nunca poderia ser excluída — acusaria "alunos alocados" (o
+        // destroy checa matriculas()->withTrashed()) mesmo sem aluno ativo.
+        Matricula::whereIn('tma_origem_tma_id', $origemTmaIds)->forceDelete();
     }
 
     /** Situação exibida: encerrado → situação final (saída); ativo → entrada; demais → saída. Descrição de enturmação. */

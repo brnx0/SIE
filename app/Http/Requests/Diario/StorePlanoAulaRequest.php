@@ -32,7 +32,7 @@ class StorePlanoAulaRequest extends FormRequest
             'dpa_ser_id'              => ['required', 'integer', 'exists:edu_serie,ser_id'],
             'dpa_dis_id'              => ['required', 'integer', 'exists:edu_disciplina,dis_id'],
             'dpa_uni_id'              => ['required', 'integer', 'exists:cfg_unidade,uni_id'],
-            'dpa_tema'                => ['required', 'string', 'max:255'],
+            'dpa_tema'                => ['required', 'string', 'max:50'],
             'dpa_dt_inicio'           => ['required', 'date'],
             'dpa_dt_fim'              => ['required', 'date', 'after_or_equal:dpa_dt_inicio'],
             'dpa_objeto_conhecimento' => ['required', 'string', 'max:5000'],

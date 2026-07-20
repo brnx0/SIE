@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import Switch from '@/components/common/Switch.vue';
 import { ChevronLeft, ChevronRight, Loader2, RefreshCw, Search, TriangleAlert } from 'lucide-vue-next';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
+import { usePermissao } from '@/composables/usePermissao';
 
 const props = defineProps<{ anlId: number; escId: number; turId: number; uniId: number }>();
 
@@ -111,7 +112,11 @@ const irData = (delta: number) => {
     if (i >= 0 && i < diasComAtendimento.value.length) dataSel.value = diasComAtendimento.value[i].dt;
 };
 
-const editavel = computed(() => periodoAberto.value && turmaAberta.value);
+// Secretaria escolar tem nível 2 em /diario-aee: consulta e não lança. O backend
+// já barra a escrita; aqui é para a tela não oferecer o que vai dar 403.
+// (gestor_secretaria tem nível 1 e segue editando.)
+const { isReadOnly } = usePermissao();
+const editavel = computed(() => periodoAberto.value && turmaAberta.value && !isReadOnly.value);
 const presente = (aln: number) => {
     const key = k(dataSel.value, aln);
     return key in presencaMap ? presencaMap[key] : true; // default presente
