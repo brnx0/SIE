@@ -93,6 +93,7 @@ class TelaPermissaoSeeder extends Seeder
         ['/secretaria/acessos-professores', 'Acessos de Professores', 'Secretaria Escolar', 30, [1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0]],
         ['/secretaria/lancamento-manual', 'Notas e Faltas', 'Secretaria Escolar', 31, [1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0]],
         ['/secretaria/justificativas-falta', 'Justificativa de Falta', 'Secretaria Escolar', 32, [1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0]],
+        ['/secretaria/historico-escolar', 'Histórico Escolar', 'Secretaria Escolar', 56, [1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0]],
         ['/secretaria/renovacao-matricula', 'Renovação de Matrícula', 'Secretaria Escolar', 33, [1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0]],
         ['/secretaria/motivos-baixa-frequencia', 'Motivo Baixa Frequência', 'Secretaria Escolar', 34, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
         // Vive no menu Secretaria Escolar (não mais em Relatórios) — grupo acompanha.

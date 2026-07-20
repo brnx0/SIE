@@ -24,8 +24,12 @@ class DesfazerMovimentacao
         return DB::transaction(function () use ($mva, $motivo) {
             // Remove matrícula de destino ANTES de reativar origem,
             // senão índice parcial "1 ATIVA por ano" dispara unique violation.
+            // forceDelete (não soft): a linha deve sumir de fato. Um soft delete
+            // deixaria a matrícula em edu_turma_aluno e, pela FK restrictOnDelete
+            // de tma_tur_id, impediria excluir a turma de destino (acusaria
+            // "alunos alocados" via matriculas()->withTrashed()).
             if ($mva->mva_tma_id_destino) {
-                Matricula::where('tma_id', $mva->mva_tma_id_destino)->delete();
+                Matricula::where('tma_id', $mva->mva_tma_id_destino)->forceDelete();
             }
 
             // Reativa matrícula de origem

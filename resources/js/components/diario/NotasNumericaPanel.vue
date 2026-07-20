@@ -43,6 +43,9 @@ interface AlunoRow {
 const carregando = ref(true);
 const erro = ref<string | null>(null);
 const periodoAberto = ref(true);
+// Intervalo do período (fim já com extensão) → min/max do seletor de data.
+const periodoInicio = ref<string | null>(null);
+const periodoFim = ref<string | null>(null);
 const { isReadOnly } = usePermissao();
 // Perfis de supervisão (secretaria/coordenação) consultam o diário mas não lançam.
 // O backend já barra a escrita; aqui é para a tela não oferecer o que vai dar 403.
@@ -87,6 +90,8 @@ const carregar = async () => {
         const data = await r.json();
         tipoDisponivel.value = data.tipo_disponivel ?? false;
         periodoAberto.value = data.periodo_aberto ?? false;
+        periodoInicio.value = data.periodo_inicio ?? null;
+        periodoFim.value = data.periodo_fim ?? null;
         turmaAberta.value = data.turma_aberta ?? true;
         avaliacoes.value = data.avaliacoes ?? [];
         instrumentos.value = data.instrumentos ?? [];
@@ -150,8 +155,9 @@ const media = (row: AlunoRow): number | null => {
         }
     }
     const total = recNota !== null && recNota > base ? recNota : base;
-    // Arredondamento ao 0,5 só na média final.
-    return Math.round(total * 2) / 2;
+    // Média do PERÍODO não é arredondada ao 0,5 (só a média final do ano é).
+    // Mantém 2 casas, igual ao backend (CalculoNota) e à secretaria.
+    return Math.round(total * 100) / 100;
 };
 
 const filtrados = computed(() => {
@@ -456,7 +462,7 @@ const limitarValor1Casa = (e: Event) => {
                         </tbody>
                     </table>
                     <p class="mt-2 text-xs text-muted-foreground">
-                        Média = soma das notas das avaliações regulares. Recuperação (âmbar) substitui a média se a nota dela for maior. Média final arredondada ao 0,5.
+                        Média do período = soma das notas das avaliações regulares (sem arredondar). Recuperação (âmbar) substitui a média se a nota dela for maior. O arredondamento ao 0,5 é aplicado apenas na média final do ano.
                     </p>
                 </div>
             </template>
@@ -487,7 +493,7 @@ const limitarValor1Casa = (e: Event) => {
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <Label>Data <span class="text-rose-600">*</span></Label>
-                            <Input v-model="form.dt" type="date" />
+                            <Input v-model="form.dt" type="date" :min="periodoInicio ?? undefined" :max="periodoFim ?? undefined" />
                         </div>
                         <div>
                             <Label>Valor <span class="text-rose-600">*</span></Label>

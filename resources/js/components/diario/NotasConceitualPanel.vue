@@ -47,6 +47,9 @@ interface AlunoRow {
 const carregando = ref(true);
 const erro = ref<string | null>(null);
 const periodoAberto = ref(true);
+// Intervalo do período (fim já com extensão) → min/max do seletor de data.
+const periodoInicio = ref<string | null>(null);
+const periodoFim = ref<string | null>(null);
 const { isReadOnly } = usePermissao();
 // Perfis de supervisão (secretaria/coordenação) consultam o diário mas não lançam.
 // O backend já barra a escrita; aqui é para a tela não oferecer o que vai dar 403.
@@ -89,6 +92,8 @@ const carregar = async () => {
         const data = await r.json();
         tipoDisponivel.value = data.tipo_disponivel ?? false;
         periodoAberto.value = data.periodo_aberto ?? false;
+        periodoInicio.value = data.periodo_inicio ?? null;
+        periodoFim.value = data.periodo_fim ?? null;
         turmaAberta.value = data.turma_aberta ?? true;
         modo.value = data.modo === 'conceito' ? 'conceito' : 'faixa';
         avaliacoes.value = data.avaliacoes ?? [];
@@ -566,7 +571,7 @@ const limitarValor1Casa = (e: Event) => {
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <Label>Data <span class="text-rose-600">*</span></Label>
-                            <Input v-model="form.dt" type="date" />
+                            <Input v-model="form.dt" type="date" :min="periodoInicio ?? undefined" :max="periodoFim ?? undefined" />
                         </div>
                         <div v-if="modo === 'faixa'">
                             <Label>Valor <span class="text-rose-600">*</span></Label>

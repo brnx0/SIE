@@ -58,6 +58,7 @@ const PATH_LABELS: Record<string, string> = {
     '/secretaria/lancamento-manual': 'Notas e Faltas',
     '/secretaria/motivos-baixa-frequencia': 'Motivo Baixa Frequência',
     '/secretaria/justificativas-falta': 'Justificativa de Falta',
+    '/secretaria/historico-escolar': 'Histórico Escolar',
     '/secretaria/conteudo-ministrado': 'Conteúdo Ministrado',
     '/grade-disciplinar':  'Grade Disciplinar',
     '/sabados-letivos':   'Sábados Letivos',

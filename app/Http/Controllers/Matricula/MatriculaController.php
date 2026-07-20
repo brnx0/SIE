@@ -14,7 +14,9 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Mpdf\Mpdf;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -181,6 +183,10 @@ class MatriculaController extends Controller
             ], 422);
         }
 
+        // Valida idade × série quando o parâmetro estiver ativo (mesma regra do
+        // front, mas aqui é a barreira real: o JS pode ser burlado).
+        $this->validarIdadeSerie($request, $turma);
+
         // Verifica capacidade
         if ($turma->tur_capacidade !== null) {
             $ativos = Matricula::where('tma_tur_id', $turma->tur_id)
@@ -245,6 +251,55 @@ class MatriculaController extends Controller
             ]);
         } catch (\Illuminate\Database\UniqueConstraintViolationException $e) {
             return response()->json(['message' => 'Este aluno já possui matrícula ativa neste ano letivo.'], 422);
+        }
+    }
+
+    /**
+     * Quando o parâmetro par_fl_validar_idade_serie está ativo, exige que o aluno
+     * tenha a idade da série (ser_idade) COMPLETA na data de corte do ano letivo
+     * (anl_dt_corte). Regra idêntica à validação do front (MatriculaModal /
+     * matriculas/Index), aplicada aqui como barreira real de servidor.
+     */
+    private function validarIdadeSerie(StoreMatriculaRequest $request, Turma $turma): void
+    {
+        if (! ParametroEntidade::current()->par_fl_validar_idade_serie) {
+            return;
+        }
+
+        // Série de referência: multi → série informada do aluno; regular → série da turma.
+        $serId = $turma->serie?->ser_fl_multi
+            ? ($request->integer('tma_ser_id') ?: null)
+            : $turma->tur_ser_id;
+        if (! $serId) {
+            return;
+        }
+
+        $serIdade = DB::table('edu_serie')->where('ser_id', $serId)->value('ser_idade');
+        $dtCorte  = DB::table('cfg_ano_letivo')->where('anl_id', $turma->tur_anl_id)->value('anl_dt_corte');
+        // Série sem idade exigida ou ano sem data de corte → sem restrição (igual ao front).
+        if ($serIdade === null || ! $dtCorte) {
+            return;
+        }
+
+        // Data de nascimento: do payload (aluno novo/edição) ou do aluno já cadastrado.
+        $dtNasc = $request->input('aluno.aln_dt_nascimento');
+        if (! $dtNasc && $request->integer('tma_aln_id')) {
+            $dtNasc = optional(Aluno::find($request->integer('tma_aln_id')))->aln_dt_nascimento;
+        }
+        if (! $dtNasc) {
+            return;
+        }
+
+        // Idade completa na data de corte (diffInYears já trunca para anos completos).
+        $idade = Carbon::parse($dtNasc)->diffInYears(Carbon::parse($dtCorte));
+        if ($idade < (int) $serIdade) {
+            throw ValidationException::withMessages([
+                'aluno.aln_dt_nascimento' => sprintf(
+                    'Idade insuficiente: %d ano%s na data de corte. A série exige ter completado %d ano%s até essa data.',
+                    $idade, $idade !== 1 ? 's' : '',
+                    (int) $serIdade, (int) $serIdade !== 1 ? 's' : '',
+                ),
+            ]);
         }
     }
 

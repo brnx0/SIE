@@ -85,7 +85,7 @@ class ConfirmacaoRenovacaoController extends Controller
     {
         $data = $request->validate(['tur_id' => ['required', 'integer', 'exists:edu_turma,tur_id']]);
 
-        $tur = DB::table('edu_turma')->where('tur_id', $data['tur_id'])->first(['tur_esc_id', 'tur_ser_id']);
+        $tur = DB::table('edu_turma')->where('tur_id', $data['tur_id'])->first(['tur_esc_id', 'tur_ser_id', 'tur_anl_id']);
         abort_unless($tur, 404);
         $this->autorizarEscola((int) $tur->tur_esc_id);
 
@@ -109,37 +109,62 @@ class ConfirmacaoRenovacaoController extends Controller
             ->keyBy('ser_id');
         $nomes = DB::table('edu_serie')->pluck('ser_nome', 'ser_id');
 
+        // Séries que já possuem turma REGULAR criada no ano seguinte (mesma escola).
+        // Uma série de destino só é oferecida se houver turma para ela — sem turma
+        // não há para onde renovar. Mesma regra de turmasDestino().
+        $proxAnlId = $this->proximoAno((int) $tur->tur_anl_id)?->anl_id;
+        $seriesComTurma = $proxAnlId
+            ? DB::table('edu_turma')
+                ->where('tur_anl_id', $proxAnlId)
+                ->where('tur_esc_id', $tur->tur_esc_id)
+                ->where('tur_modalidade', 'REGULAR')
+                ->whereNull('tur_deleted_at')
+                ->distinct()
+                ->pluck('tur_ser_id')
+                ->filter()
+                ->map(fn ($v) => (int) $v)
+                ->all()
+            : [];
+
         // Matrículas filhas já criadas (renovação feita) por origem.
         $filhasPorOrigem = Matricula::whereIn('tma_origem_tma_id', $matriculas->pluck('tma_id'))
             ->whereNull('tma_deleted_at')
             ->get(['tma_origem_tma_id', 'tma_tur_id', 'tma_ser_id'])
             ->keyBy('tma_origem_tma_id');
 
-        $alunos = $matriculas->map(function (Matricula $m) use ($tur, $series, $nomes, $filhasPorOrigem) {
+        $alunos = $matriculas->map(function (Matricula $m) use ($tur, $series, $nomes, $filhasPorOrigem, $seriesComTurma) {
             $serId    = (int) ($m->tma_ser_id ?? $tur->tur_ser_id);
             $cod      = $m->tma_tas_cod_saida !== null ? (int) $m->tma_tas_cod_saida : null;
             $aprovado = $cod !== null && in_array($cod, self::APROVADO, true);
             $s        = $series->get($serId);
 
             $destIds = $aprovado
-                ? [$s->ser_promo_ser_id_1 ?? null, $s->ser_promo_ser_id_2 ?? null]
-                : [$s->ser_cons_ser_id_1 ?? null, $s->ser_cons_ser_id_2 ?? null];
-            $destinos = collect($destIds)->filter()->unique()->map(fn ($id) => ['ser_id' => (int) $id, 'ser_nome' => $nomes[$id] ?? ('Série '.$id)])->values();
+                ? [$s?->ser_promo_ser_id_1 ?? null, $s?->ser_promo_ser_id_2 ?? null]
+                : [$s?->ser_cons_ser_id_1 ?? null, $s?->ser_cons_ser_id_2 ?? null];
+            // Séries de destino configuradas na série (promoção/conservação).
+            $configuradas = collect($destIds)->filter()->unique()->map(fn ($id) => (int) $id)->values();
+            // Oferece apenas as que já têm turma criada no ano seguinte.
+            $destinos = $configuradas
+                ->filter(fn ($id) => in_array($id, $seriesComTurma, true))
+                ->map(fn ($id) => ['ser_id' => $id, 'ser_nome' => $nomes[$id] ?? ('Série '.$id)])
+                ->values();
 
             $filha = $filhasPorOrigem->get($m->tma_id);
 
             return [
-                'tma_id'         => (int) $m->tma_id,
-                'aln_id'         => (int) $m->aluno->aln_id,
-                'nome'           => $m->aluno->aln_nome,
-                'matricula'      => $m->aluno->aln_nr_matricula,
-                'situacao_final' => $m->situacaoSaida?->tas_descricao_enturmacao ?: ($m->situacaoSaida?->tas_descricao ?? '—'),
-                'quer_renovar'   => $m->tma_fl_renovado === null ? null : (bool) $m->tma_fl_renovado,
-                'aprovado'       => $aprovado,
-                'destinos'       => $destinos,
-                'ja_renovado'    => (bool) $filha,
-                'destino_ser_id' => $filha ? (int) $filha->tma_ser_id : null,
-                'destino_tur_id' => $filha ? (int) $filha->tma_tur_id : null,
+                'tma_id'            => (int) $m->tma_id,
+                'aln_id'            => (int) $m->aluno->aln_id,
+                'nome'             => $m->aluno->aln_nome,
+                'matricula'        => $m->aluno->aln_nr_matricula,
+                'situacao_final'   => $m->situacaoSaida?->tas_descricao_enturmacao ?: ($m->situacaoSaida?->tas_descricao ?? '—'),
+                'quer_renovar'     => $m->tma_fl_renovado === null ? null : (bool) $m->tma_fl_renovado,
+                'aprovado'         => $aprovado,
+                'destinos'         => $destinos,
+                // Série de destino existe na config, mas nenhuma tem turma no ano seguinte ainda.
+                'destino_sem_turma' => $configuradas->isNotEmpty() && $destinos->isEmpty(),
+                'ja_renovado'      => (bool) $filha,
+                'destino_ser_id'   => $filha ? (int) $filha->tma_ser_id : null,
+                'destino_tur_id'   => $filha ? (int) $filha->tma_tur_id : null,
             ];
         });
 

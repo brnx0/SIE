@@ -567,7 +567,7 @@ const isLast = computed(() => activeTab.value === TABS.value[TABS.value.length -
 
                     <div class="flex items-center gap-3 sm:col-span-2">
                         <Switch id="esc_fl_oferece_merenda" v-model="form.esc_fl_oferece_merenda" />
-                        <Label for="esc_fl_oferece_merenda" class="text-sm font-normal">Oferece Merenda</Label>
+                        <Label for="esc_fl_oferece_merenda" class="text-sm font-normal">Oferta Merenda</Label>
                     </div>
 
                     <div class="flex items-center gap-3 sm:col-span-2">

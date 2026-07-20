@@ -297,10 +297,10 @@ const exportarExcel = () => {
     .tabela-impressao .w-nome     { width: 52mm; }
     .tabela-impressao .w-turma    { width: 18mm; }
     .tabela-impressao .w-cpf      { width: 26mm; }
-    .tabela-impressao .w-sexo     { width: 10mm; }
+    .tabela-impressao .w-sexo     { width: 12mm; }
     .tabela-impressao .w-endereco { width: 61mm; }
     .tabela-impressao .w-defic    { width: 14mm; }
-    .tabela-impressao .w-nasc     { width: 22mm; }
+    .tabela-impressao .w-nasc     { width: 25mm; }
     .tabela-impressao .w-mae      { width: 52mm; }
     .tabela-impressao th {
         background: transparent;
@@ -321,7 +321,9 @@ const exportarExcel = () => {
         overflow-wrap: break-word;
         word-break: break-word;
     }
-    .tabela-impressao th { overflow-wrap: break-word; }
+    /* Cabeçalhos nunca quebram (ex.: o "O" de SEXO/NASCIMENTO caía p/ a linha
+       de baixo); as larguras acima já comportam os títulos numa única linha. */
+    .tabela-impressao th { white-space: nowrap; }
     .tabela-impressao .centro { text-align: center; }
     .tabela-impressao .col-num { text-align: center; }
     .tabela-impressao .celula-nome { font-weight: 600; }

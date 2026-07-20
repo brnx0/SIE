@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureAppAccess;
 use App\Http\Middleware\EnsureUserHasRole;
 use App\Http\Middleware\ForceHttps;
 use App\Http\Middleware\HandleInertiaRequests;
@@ -15,6 +16,7 @@ use Illuminate\Http\Request;
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
+        api: __DIR__.'/../routes/api.php',
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
@@ -37,6 +39,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => EnsureUserHasRole::class,
             'tela' => VerificaPermissaoTela::class,
+            'app.access' => EnsureAppAccess::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

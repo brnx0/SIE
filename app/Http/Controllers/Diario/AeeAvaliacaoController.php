@@ -23,7 +23,7 @@ class AeeAvaliacaoController extends Controller
 
     public function contexto(Request $request): JsonResponse
     {
-        $this->abortIfNotProfessorAee();
+        $this->abortIfNaoPodeVerDiario('/diario-aee', 'professor_aee');
 
         $turId = (int) $request->input('tur_id');
         $uniId = (int) $request->input('uni_id');
@@ -154,6 +154,19 @@ class AeeAvaliacaoController extends Controller
         abort_unless($user->hasRole('professor_aee'), 403, 'Acesso restrito ao professor AEE.');
     }
 
+    /**
+     * True quando o usuário só consulta o diário AEE (secretaria escolar).
+     *
+     * Espelha o abortIfNotProfessorAee acima: quem passa por aquele guard lança de
+     * fato, então quem chega aqui com `true` nunca está numa rota de escrita.
+     */
+    private function soConsultaAee(Request $request): bool
+    {
+        $user = $request->user();
+
+        return ! $user->isGestorGlobal() && ! $user->hasRole('professor_aee');
+    }
+
     private function assertProfessorDaTurmaAee(Request $request, int $turId): void
     {
         $modAee = DB::table('edu_turma')->where('tur_id', $turId)->value('tur_modalidade') === 'AEE';
@@ -161,6 +174,11 @@ class AeeAvaliacaoController extends Controller
 
         $user = $request->user();
         if ($user->isGestorGlobal()) {
+            return;
+        }
+        // Supervisão consulta qualquer turma AEE — o vínculo de atendimento só
+        // restringe quem lança. A checagem de modalidade acima continua valendo.
+        if ($this->soConsultaAee($request)) {
             return;
         }
         $funId = (int) $user->fun_id;
