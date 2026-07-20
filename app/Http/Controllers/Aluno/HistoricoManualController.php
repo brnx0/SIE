@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use Inertia\Inertia;
+use Inertia\Response;
 
 /**
  * Lançamento MANUAL de anos do histórico escolar (escolaridade anterior / fora
@@ -63,6 +65,18 @@ class HistoricoManualController extends Controller
             ->sortBy('anl_ano')
             ->values()
             ->all();
+    }
+
+    /**
+     * Tela da Secretaria → Lançamentos: mesma funcionalidade do modal do cadastro
+     * do aluno, mas com filtro de aluno. Os dados (listar/salvar/remover) usam as
+     * mesmas rotas alunos/{aluno}/historico-manual.
+     */
+    public function form(): Response
+    {
+        $this->autorizar();
+
+        return Inertia::render('secretaria/historico-escolar/Index');
     }
 
     public function listar(Aluno $aluno, HistoricoEscolar $service): JsonResponse

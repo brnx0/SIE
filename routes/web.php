@@ -582,6 +582,10 @@ Route::middleware(['auth', 'verified', 'tela'])->group(function () {
         Route::post('lancamento-manual/salvar', [LancamentoManualController::class, 'salvar'])->name('lancamento-manual.salvar');
         Route::post('lancamento-manual/salvar-recuperacao', [LancamentoManualController::class, 'salvarRecuperacao'])->name('lancamento-manual.salvar-recuperacao');
 
+        // Lançamento manual de histórico escolar (mesma tela do cadastro do aluno).
+        // Dados via alunos/{aluno}/historico-manual (HistoricoManualController).
+        Route::get('historico-escolar', [\App\Http\Controllers\Aluno\HistoricoManualController::class, 'form'])->name('historico-escolar.form');
+
         // Interesse de renovação de matrícula
         Route::get('renovacao-matricula', [RenovacaoMatriculaController::class, 'index'])->name('renovacao-matricula.index');
         Route::get('renovacao-matricula/turmas', [RenovacaoMatriculaController::class, 'turmas'])->name('renovacao-matricula.turmas');

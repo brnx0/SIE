@@ -134,11 +134,16 @@ class NotaController extends Controller
             ->orderBy('cnc_peso')
             ->get(['cnc_id', 'cnc_sigla', 'cnc_descricao', 'cnc_limite_inferior', 'cnc_limite_superior', 'cnc_peso']);
 
+        $intervalo = $this->periodoIntervalo($uniId);
+
         return response()->json([
             'tipo_disponivel' => true,
             'periodo_aberto'  => $this->periodoAberto($uniId),
             'turma_aberta'    => $this->turmaAberta($turId),
             'modo'            => $this->conceitoModo($uniId),
+            // Intervalo do período (fim já com extensão) → min/max do seletor de data.
+            'periodo_inicio'  => $intervalo['inicio'],
+            'periodo_fim'     => $intervalo['fim'],
             'instrumentos'    => $instrumentos,
             'conceitos'       => $conceitos,
             'avaliacoes'      => $avaliacoes->map(fn ($a) => $this->mapAvaliacao($a)),
@@ -153,6 +158,7 @@ class NotaController extends Controller
         $this->assertTurmaAberta((int) $data['ava_tur_id']);
         $this->assertTipoSerie((int) $data['ava_tur_id'], $data['ava_tipo']);
         $this->assertPeriodoAberto((int) $data['ava_uni_id']);
+        $this->assertDataNoPeriodo((int) $data['ava_uni_id'], $data['ava_dt'] ?? null);
 
         $recuperacao = $this->instrumentoRecuperacao((int) $data['ava_iav_id']);
         $valor = $this->resolverValor($data['ava_tipo'], (int) $data['ava_uni_id'], $data['ava_valor'] ?? null);
@@ -184,6 +190,7 @@ class NotaController extends Controller
         $this->abortIfNotLeciona($request, (int) $avaliacao->ava_tur_id, (int) $avaliacao->ava_dis_id);
         $this->assertTurmaAberta((int) $avaliacao->ava_tur_id);
         $this->assertPeriodoAberto((int) $avaliacao->ava_uni_id);
+        $this->assertDataNoPeriodo((int) $avaliacao->ava_uni_id, $data['ava_dt'] ?? null);
 
         $recuperacao = $this->instrumentoRecuperacao((int) $data['ava_iav_id']);
         $valor = $this->resolverValor($avaliacao->ava_tipo, (int) $avaliacao->ava_uni_id, $data['ava_valor'] ?? null);
@@ -401,6 +408,61 @@ class NotaController extends Controller
             $this->periodoAberto($uniId),
             422,
             'Fora do período de lançamento. A edição só é permitida dentro do período selecionado (incluindo a extensão).'
+        );
+    }
+
+    /**
+     * Intervalo do período (fim já com a extensão), como Y-m-d ou null quando a
+     * unidade não tem datas. Usado pela validação e pelo contexto (min/max no
+     * seletor de data dos painéis).
+     *
+     * @return array{inicio: ?string, fim: ?string}
+     */
+    private function periodoIntervalo(int $uniId): array
+    {
+        $uni = DB::table('cfg_unidade')
+            ->where('uni_id', $uniId)
+            ->first(['uni_dt_inicio', 'uni_dt_fim', 'uni_dias_extensao']);
+
+        if (! $uni || ! $uni->uni_dt_inicio || ! $uni->uni_dt_fim) {
+            return ['inicio' => null, 'fim' => null];
+        }
+
+        return [
+            'inicio' => Carbon::parse($uni->uni_dt_inicio)->toDateString(),
+            'fim'    => Carbon::parse($uni->uni_dt_fim)->addDays((int) $uni->uni_dias_extensao)->toDateString(),
+        ];
+    }
+
+    /**
+     * Garante que a DATA da avaliação cai dentro do período selecionado
+     * (uni_dt_inicio .. uni_dt_fim + extensão). Sem isso o professor conseguia
+     * datar uma avaliação fora da unidade, desde que hoje estivesse na janela.
+     */
+    private function assertDataNoPeriodo(int $uniId, ?string $avaDt): void
+    {
+        if (! $avaDt) {
+            return;
+        }
+
+        $iv = $this->periodoIntervalo($uniId);
+        // Sem datas configuradas → não valida (mesma leniência do periodoAberto).
+        if (! $iv['inicio'] || ! $iv['fim']) {
+            return;
+        }
+
+        $data   = Carbon::parse($avaDt)->startOfDay();
+        $inicio = Carbon::parse($iv['inicio'])->startOfDay();
+        $fim    = Carbon::parse($iv['fim'])->startOfDay();
+
+        abort_if(
+            $data->lt($inicio) || $data->gt($fim),
+            422,
+            sprintf(
+                'A data da avaliação deve estar dentro do período selecionado (%s a %s).',
+                $inicio->format('d/m/Y'),
+                $fim->format('d/m/Y'),
+            ),
         );
     }
 
