@@ -14,6 +14,19 @@ class Rota extends Model
     use \App\Models\Concerns\Auditable;
     use SoftDeletes;
 
+    // Domínio alinhado ao turno de edu_turma.
+    public const TURNOS = [
+        'MATUTINO'   => 'Matutino',
+        'VESPERTINO' => 'Vespertino',
+        'NOTURNO'    => 'Noturno',
+        'INTEGRAL'   => 'Integral',
+    ];
+
+    public const ZONAS = [
+        'urbana' => 'Urbana',
+        'rural'  => 'Rural',
+    ];
+
     protected $table = 'edu_transporte_rota';
     protected $primaryKey = 'rot_id';
 

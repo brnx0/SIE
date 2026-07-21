@@ -105,6 +105,8 @@ class TelaPermissaoSeeder extends Seeder
         ['/transporte/monitores', 'Monitores (Transporte)', 'Transporte', 62, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
         ['/transporte/instituicoes', 'Instituições (Transporte)', 'Transporte', 63, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
         ['/transporte/usuarios', 'Usuários do Transporte', 'Transporte', 64, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
+        // Fase 2 (rotas).
+        ['/transporte/rotas', 'Rotas (Transporte)', 'Transporte', 65, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
 
         ['/users', 'Usuários', 'Sistema', 41, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
         ['/parametros', 'Parâmetros', 'Sistema', 42, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],

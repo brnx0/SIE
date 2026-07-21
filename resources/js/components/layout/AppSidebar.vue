@@ -164,6 +164,7 @@ const transporteMenu = [
                     { title: 'Usuários Externos', href: '/transporte/usuarios' },
                 ],
             },
+            { title: 'Rotas', href: '/transporte/rotas' },
         ],
     },
 ];

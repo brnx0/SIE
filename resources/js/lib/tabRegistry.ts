@@ -93,6 +93,7 @@ const PATH_LABELS: Record<string, string> = {
     '/transporte/monitores': 'Monitores',
     '/transporte/instituicoes': 'Instituições',
     '/transporte/usuarios': 'Usuários do Transporte',
+    '/transporte/rotas': 'Rotas',
 };
 
 export function prettifyPath(path: string): string {
