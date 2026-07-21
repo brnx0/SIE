@@ -9,6 +9,7 @@ use App\Models\Diario\DiarioPlanoIndicador;
 use App\Models\Parametro\AnoLetivo;
 use App\Models\Parametro\Unidade;
 use App\Models\Serie\SerieIndicador;
+use App\Support\UserAccess;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -311,18 +312,10 @@ class PlanoAulaController extends Controller
         $funId = (int) $user->fun_id;
         $anlId = (int) $request->input('anl_id');
 
+        // Gestor global (admin/gestor_secretaria) supervisiona toda a rede: lista
+        // TODAS as escolas ativas, e não apenas as que já têm turma no ano.
         if ($user->isGestorGlobal() || ! $funId) {
-            $escolas = DB::table('edu_turma as t')
-                ->join('edu_escola as e', 'e.esc_id', '=', 't.tur_esc_id')
-                ->whereNull('t.tur_deleted_at')
-                ->where('t.tur_modalidade', 'REGULAR')
-                ->when($anlId, fn ($q) => $q->where('t.tur_anl_id', $anlId))
-                ->select('e.esc_id', 'e.esc_nome')
-                ->distinct()
-                ->orderBy('e.esc_nome')
-                ->get();
-
-            return response()->json($escolas);
+            return response()->json(UserAccess::escolasVisiveis($user));
         }
 
         $escolas = DB::table('edu_turma_professor as tp')
