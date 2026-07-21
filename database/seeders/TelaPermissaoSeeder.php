@@ -109,6 +109,8 @@ class TelaPermissaoSeeder extends Seeder
         ['/transporte/rotas', 'Rotas (Transporte)', 'Transporte', 65, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
         // Fase 3 (diário de bordo).
         ['/transporte/diario-bordo', 'Diário de Bordo (Transporte)', 'Transporte', 66, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
+        // Fase 5 (simulador de rotas).
+        ['/transporte/simulador', 'Simulador de Rotas (Transporte)', 'Transporte', 67, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
 
         ['/users', 'Usuários', 'Sistema', 41, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
         ['/parametros', 'Parâmetros', 'Sistema', 42, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],

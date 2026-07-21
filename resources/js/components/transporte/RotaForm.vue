@@ -11,6 +11,7 @@ import MotoristaCombobox from '@/components/transporte/MotoristaCombobox.vue';
 import VeiculoCombobox from '@/components/transporte/VeiculoCombobox.vue';
 import RotaPontosTab from '@/components/transporte/RotaPontosTab.vue';
 import RotaPassageirosTab from '@/components/transporte/RotaPassageirosTab.vue';
+import MapaRota from '@/components/transporte/MapaRota.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { usePermissao } from '@/composables/usePermissao';
@@ -18,8 +19,8 @@ import { useErrorFocus } from '@/composables/useErrorFocus';
 import type { AnoLetivo } from '@/types/parametro';
 import type { PassageiroRota, PontoRota, Rota, VeiculoResumo } from '@/types/transporte';
 import { Link, useForm } from '@inertiajs/vue3';
-import { ChevronLeft, LoaderCircle, Save } from 'lucide-vue-next';
-import { computed, ref } from 'vue';
+import { ChevronLeft, LoaderCircle, Map as MapIcon, Save } from 'lucide-vue-next';
+import { computed, nextTick, ref, watch } from 'vue';
 
 const props = defineProps<{
     mode: 'create' | 'edit';
@@ -35,6 +36,12 @@ const { isReadOnly } = usePermissao();
 const { focusFirstError } = useErrorFocus();
 
 const activeTab = ref('dados');
+
+// Mapa da aba Trajeto vive num painel v-show; recalcula tamanho ao ativar.
+const mapaRef = ref<InstanceType<typeof MapaRota> | null>(null);
+watch(activeTab, (v) => {
+    if (v === 'trajeto') nextTick(() => mapaRef.value?.invalidate());
+});
 
 const form = useForm({
     rot_anl_id:  props.initial?.rot_anl_id ?? (props.anosLetivos[0]?.anl_id ?? null),
@@ -108,6 +115,7 @@ const selectClass = (hasError: boolean) =>
                 <TabsTrigger value="dados" :has-error="Object.keys(form.errors).length > 0">Dados</TabsTrigger>
                 <TabsTrigger value="pontos">Pontos de Parada</TabsTrigger>
                 <TabsTrigger value="passageiros">Passageiros</TabsTrigger>
+                <TabsTrigger value="trajeto">Trajeto</TabsTrigger>
             </TabsList>
 
             <fieldset :disabled="isReadOnly" class="contents">
@@ -261,6 +269,32 @@ const selectClass = (hasError: boolean) =>
                     :passageiros="passageiros ?? []"
                     :capacidade="capacidade"
                 />
+            </TabsContent>
+
+            <TabsContent v-if="mode === 'edit'" value="trajeto">
+                <div class="grid gap-3">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-sm font-semibold">Trajeto da rota</h3>
+                            <p class="text-xs text-muted-foreground">Visualização dos pontos e do percurso. Edite no simulador georreferenciado.</p>
+                        </div>
+                        <Link :href="`/transporte/simulador?rot_id=${initial!.rot_id}`">
+                            <Button type="button" variant="outline" size="sm">
+                                <MapIcon class="mr-1 size-4" /> Abrir no Simulador
+                            </Button>
+                        </Link>
+                    </div>
+                    <MapaRota
+                        ref="mapaRef"
+                        :pontos="(pontos ?? []) as any"
+                        :trajeto="initial?.rot_trajeto ?? null"
+                        :editable="false"
+                        height="560px"
+                    />
+                    <p v-if="!(pontos ?? []).some((p) => p.pto_latitude != null)" class="text-center text-xs text-muted-foreground">
+                        Nenhum ponto georreferenciado ainda. Use o simulador para posicionar os pontos no mapa.
+                    </p>
+                </div>
             </TabsContent>
         </Tabs>
     </div>

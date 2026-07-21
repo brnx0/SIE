@@ -9,7 +9,9 @@ use App\Http\Controllers\Transporte\RotaController;
 use App\Http\Controllers\Transporte\RotaPontoController;
 use App\Http\Controllers\Transporte\RotaPassageiroController;
 use App\Http\Controllers\Transporte\DiarioBordoController;
+use App\Http\Controllers\Transporte\SimuladorController;
 use App\Http\Controllers\Api\Transporte\InstituicaoController as InstituicaoApiController;
+use App\Http\Controllers\Api\Transporte\GeoController as TransporteGeoController;
 use App\Http\Controllers\Api\Transporte\VeiculoController as VeiculoApiController;
 use App\Http\Controllers\Api\Transporte\MotoristaController as MotoristaApiController;
 use App\Http\Controllers\Api\Transporte\MonitorController as MonitorApiController;
@@ -70,6 +72,10 @@ Route::prefix('transporte')->name('transporte.')->group(function () {
     Route::put('diario-bordo/{diario}/sincronizar-chamada', [DiarioBordoController::class, 'sincronizarChamada'])->name('diario-bordo.sincronizar-chamada');
     Route::post('diario-bordo/{diario}/ocorrencias', [DiarioBordoController::class, 'storeOcorrencia'])->name('diario-bordo.ocorrencias.store');
     Route::delete('diario-bordo/{diario}/ocorrencias/{ocorrencia}', [DiarioBordoController::class, 'destroyOcorrencia'])->name('diario-bordo.ocorrencias.destroy');
+
+    // Simulador georreferenciado (Fase 5)
+    Route::get('simulador', [SimuladorController::class, 'index'])->name('simulador');
+    Route::put('simulador/{rota}/efetivar', [SimuladorController::class, 'efetivar'])->name('simulador.efetivar');
 });
 
 // Lookups de API (padrão do projeto: em routes web sob prefixo api/)
@@ -79,3 +85,9 @@ Route::get('api/transporte/motoristas/search', [MotoristaApiController::class, '
 Route::get('api/transporte/monitores/search', [MonitorApiController::class, 'search'])->name('api.transporte.monitores.search');
 Route::get('api/transporte/rotas/search', [RotaApiController::class, 'search'])->name('api.transporte.rotas.search');
 Route::get('api/transporte/usuarios/search', [UsuarioExternoApiController::class, 'search'])->name('api.transporte.usuarios.search');
+
+// Proxies de georreferenciamento (Fase 5) — rate-limit por respeito aos serviços públicos.
+Route::middleware('throttle:60,1')->group(function () {
+    Route::get('api/transporte/geo/geocode', [TransporteGeoController::class, 'geocode'])->name('api.transporte.geo.geocode');
+    Route::post('api/transporte/geo/rotear', [TransporteGeoController::class, 'rotear'])->name('api.transporte.geo.rotear');
+});

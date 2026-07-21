@@ -131,6 +131,7 @@ export interface Rota {
     rot_tmo_id: number | null;
     rot_km: number | null;
     rot_tempo_min: number | null;
+    rot_trajeto: GeoJsonLineString | null;
     rot_obs: string | null;
     rot_fl_ativo: boolean;
     anoLetivo?: { anl_id: number; anl_ano: number } | null;
@@ -244,4 +245,37 @@ export interface OcorrenciaItem {
     toc_tipo: string;
     toc_hr: string | null;
     toc_descricao: string;
+}
+
+// ── Simulador georreferenciado (Fase 5) ─────────────────────────────────────
+export interface GeoJsonLineString {
+    type: 'LineString';
+    coordinates: [number, number][]; // [lon, lat]
+}
+
+export interface SimuladorPonto {
+    pto_id: number | null; // null = ponto novo criado no mapa
+    pto_ordem: number;
+    pto_nome: string;
+    pto_latitude: number | null;
+    pto_longitude: number | null;
+    instituicao?: { tin_id: number; tin_nome: string } | null;
+}
+
+export interface InstituicaoGeo {
+    tin_id: number;
+    tin_nome: string;
+    tin_latitude: number;
+    tin_longitude: number;
+}
+
+export interface SimuladorRota {
+    rot_id: number;
+    rot_nome: string;
+    rot_km: number | null;
+    rot_tempo_min: number | null;
+    rot_trajeto: GeoJsonLineString | null;
+    capacidade: number | null;
+    total_passageiros: number;
+    pontos: SimuladorPonto[];
 }
