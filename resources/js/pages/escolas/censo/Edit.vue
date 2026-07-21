@@ -12,22 +12,21 @@ const props = defineProps<{
 }>();
 
 const escolaNome = computed(() => props.escola.esc_apelido || props.escola.esc_nome);
-const ano = computed(() => props.censo.ano_letivo?.anl_ano ?? '');
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Escolas', href: '/escolas' },
     { title: escolaNome.value, href: `/escolas/${props.escola.esc_id}/edit` },
-    { title: `Censo ${ano.value}`, href: '' },
+    { title: 'Censo Escolar', href: '' },
 ];
 </script>
 
 <template>
-    <Head :title="`Censo ${ano} — ${escolaNome}`" />
+    <Head :title="`Censo Escolar — ${escolaNome}`" />
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="mx-auto flex w-[95%] flex-col gap-2 p-4 md:p-6">
             <div>
                 <h1 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
-                    Censo Escolar {{ ano }}
+                    Censo Escolar
                 </h1>
                 <p class="text-sm text-slate-500 dark:text-slate-400">{{ escolaNome }}</p>
             </div>

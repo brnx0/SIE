@@ -1,19 +1,13 @@
-import type { AnoLetivo } from '@/types/parametro';
-
-export type CensoStatus = 'em_preenchimento' | 'finalizado';
 export type PppValue = 0 | 1 | 2 | null;
 
 export interface CensoEscolarResumo {
     cen_id: number;
-    cen_anl_id: number;
-    cen_created_at: string | null;
+    cen_esc_id: number;
+    cen_created_at?: string | null;
     cen_updated_at: string | null;
-    ano_letivo?: Pick<AnoLetivo, 'anl_id' | 'anl_ano' | 'anl_dt_censo'> | null;
 }
 
 export interface CensoEscolar extends CensoEscolarResumo {
-    cen_esc_id: number;
-
     // Seção 1
     cen_dep_almoxarifado: boolean;
     cen_dep_vegetacao: boolean;

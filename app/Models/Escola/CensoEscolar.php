@@ -2,10 +2,8 @@
 
 namespace App\Models\Escola;
 
-use App\Models\Parametro\AnoLetivo;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Carbon;
 
 class CensoEscolar extends Model
 {
@@ -17,7 +15,7 @@ class CensoEscolar extends Model
     const UPDATED_AT = 'cen_updated_at';
 
     protected $fillable = [
-        'cen_esc_id', 'cen_anl_id',
+        'cen_esc_id',
         // Seção 1
         'cen_dep_almoxarifado', 'cen_dep_vegetacao', 'cen_dep_auditorio',
         'cen_dep_ban_pcd', 'cen_dep_ban_infantil', 'cen_dep_ban_funcionarios',
@@ -190,20 +188,5 @@ class CensoEscolar extends Model
     public function escola(): BelongsTo
     {
         return $this->belongsTo(Escola::class, 'cen_esc_id', 'esc_id');
-    }
-
-    public function anoLetivo(): BelongsTo
-    {
-        return $this->belongsTo(AnoLetivo::class, 'cen_anl_id', 'anl_id');
-    }
-
-    /** Retorna 'em_preenchimento' | 'finalizado' conforme prazo do ano letivo. */
-    public function getStatusAttribute(): string
-    {
-        $prazo = $this->anoLetivo?->anl_dt_censo;
-        if ($prazo && Carbon::today()->isAfter($prazo)) {
-            return 'finalizado';
-        }
-        return 'em_preenchimento';
     }
 }

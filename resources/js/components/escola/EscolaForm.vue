@@ -36,7 +36,6 @@ import EscolaSegmentosTab from '@/components/escola/tabs/EscolaSegmentosTab.vue'
 import EscolaCensoTab from '@/components/escola/tabs/EscolaCensoTab.vue';
 import type { AnoLetivoOption, EscolaSegmento } from '@/types/escola_segmento';
 import type { CensoEscolarResumo } from '@/types/censo';
-import type { AnoLetivo } from '@/types/parametro';
 import type { Segmento } from '@/types/segmento';
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 import { usePermissao } from '@/composables/usePermissao';
@@ -51,10 +50,7 @@ const props = defineProps<{
     escolaSegmentos?: EscolaSegmento[];
     segmentos?: Pick<Segmento, 'seg_id' | 'seg_nome_reduzido'>[];
     anosLetivos?: AnoLetivoOption[];
-    anoLetivoAtual?: Pick<AnoLetivo, 'anl_id' | 'anl_ano' | 'anl_dt_censo' | 'anl_fl_em_exercicio'> | null;
-    censoHistorico?: CensoEscolarResumo[];
-    censoAtual?: Pick<CensoEscolarResumo, 'cen_id' | 'cen_anl_id'> | null;
-    censoPreviousExists?: boolean;
+    censo?: Pick<CensoEscolarResumo, 'cen_id' | 'cen_updated_at'> | null;
 }>();
 
 const page = usePage<SharedData>();
@@ -769,10 +765,7 @@ const isLast = computed(() => activeTab.value === TABS.value[TABS.value.length -
             <TabsContent v-if="mode === 'edit' && initial" value="censo">
                 <EscolaCensoTab
                     :esc-id="initial.esc_id"
-                    :ano-letivo-atual="anoLetivoAtual ?? null"
-                    :censo-historico="censoHistorico ?? []"
-                    :censo-atual="censoAtual ?? null"
-                    :censo-previous-exists="censoPreviousExists ?? false"
+                    :censo="censo ?? null"
                 />
             </TabsContent>
 

@@ -151,7 +151,6 @@ Route::middleware(['auth', 'verified', 'tela'])->group(function () {
     Route::prefix('escolas/{escola}/censo')->name('escolas.censo.')->group(function () {
         Route::post('/', [EscolaCensoController::class, 'store'])->name('store');
         Route::get('/{censoEscolar}/edit', [EscolaCensoController::class, 'edit'])->name('edit');
-        Route::get('/{censoEscolar}', [EscolaCensoController::class, 'show'])->name('show');
         Route::put('/{censoEscolar}', [EscolaCensoController::class, 'update'])->name('update');
     });
     Route::prefix('escolas/{escola}/segmentos')->name('escolas.segmentos.')->group(function () {
