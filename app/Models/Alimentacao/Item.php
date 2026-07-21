@@ -27,6 +27,7 @@ class Item extends Model
         'itm_cat_id',
         'itm_umd_id',
         'itm_cd_item',
+        'itm_ncm',
         'itm_nome',
         'itm_especificacao',
         'itm_fl_perecivel',

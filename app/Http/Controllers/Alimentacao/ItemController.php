@@ -189,10 +189,11 @@ class ItemController extends Controller
         return response()->streamDownload(function () use ($itens) {
             $out = fopen('php://output', 'w');
             fprintf($out, chr(0xEF).chr(0xBB).chr(0xBF));
-            fputcsv($out, ['Código', 'Item', 'Tipo', 'Categoria', 'Unidade', 'Perecível', 'Agric. Familiar', 'Validade (dias)', 'Estoque Mínimo', 'Situação'], ';');
+            fputcsv($out, ['Código', 'NCM', 'Item', 'Tipo', 'Categoria', 'Unidade', 'Perecível', 'Agric. Familiar', 'Validade (dias)', 'Estoque Mínimo', 'Situação'], ';');
             foreach ($itens as $i) {
                 fputcsv($out, [
                     $i->itm_cd_item ?? '',
+                    $i->itm_ncm ?? '',
                     $i->itm_nome,
                     $i->tipoItem?->tpi_nome ?? '',
                     $i->categoria?->cat_nome ?? '',

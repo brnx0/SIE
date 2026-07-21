@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AnexosPanel from '@/components/alimentacao/AnexosPanel.vue';
 import RemoteCombobox from '@/components/common/RemoteCombobox.vue';
 import FormLabel from '@/components/common/FormLabel.vue';
 import InputError from '@/components/common/InputError.vue';
@@ -8,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { usePermissao } from '@/composables/usePermissao';
 import type { BreadcrumbItem } from '@/types';
-import type { RespostaLinha, VisitaCabecalho } from '@/types/alimentacao';
+import type { Anexo, RespostaLinha, VisitaCabecalho } from '@/types/alimentacao';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { Ban, Check, ChevronLeft, CircleCheck, Lock, LoaderCircle, ShieldCheck, TriangleAlert } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
@@ -18,6 +19,7 @@ const props = defineProps<{
     respostas: RespostaLinha[];
     editavel: boolean;
     podeAtestar: boolean;
+    anexos: Anexo[];
 }>();
 
 const { isReadOnly } = usePermissao();
@@ -280,6 +282,15 @@ const cancelar = () => {
                     </div>
                 </div>
             </div>
+
+            <!-- Anexos (evidências: fotos, PDF) -->
+            <AnexosPanel
+                :base-url="`/alimentacao/visitas/${visita.vis_id}/anexos`"
+                :anexos="anexos"
+                :readonly="isReadOnly || !editavel"
+                titulo="Anexos da visita"
+                descricao="Evidências e documentos (fotos, relatório, PDF assinado), até 10 MB cada."
+            />
 
             <!-- Realizar -->
             <div

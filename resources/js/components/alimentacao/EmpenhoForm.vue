@@ -32,8 +32,13 @@ const form = useForm<Record<string, any>>({
     _method: props.mode === 'edit' ? 'put' : undefined,
 });
 
+// Mesmo formato do `rotulo` da API de contratos (contrato + fornecedor). Sem o
+// fornecedor aqui, ao voltar da edição (inclusive logo após cadastrar) o combobox
+// mostraria só o número do contrato, perdendo o nome do fornecedor concatenado.
 const contratoLabel = ref<string | null>(
-    props.initial?.contrato ? `${props.initial.contrato.ctr_nr_contrato}/${props.initial.contrato.ctr_ano}` : null,
+    props.initial?.contrato
+        ? `${props.initial.contrato.ctr_nr_contrato}/${props.initial.contrato.ctr_ano} — ${props.initial.contrato.fornecedor?.frn_razao_social ?? 'sem fornecedor'}`
+        : null,
 );
 
 const clampAno = (e: Event) => {

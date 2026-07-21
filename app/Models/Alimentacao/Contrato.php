@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
@@ -85,6 +86,11 @@ class Contrato extends Model
     public function ordens(): HasMany
     {
         return $this->hasMany(OrdemFornecimento::class, 'ofn_ctr_id', 'ctr_id');
+    }
+
+    public function anexos(): MorphMany
+    {
+        return $this->morphMany(Anexo::class, 'anexavel', 'anx_anexavel_type', 'anx_anexavel_id', 'ctr_id');
     }
 
     /** Contrato que aceita novas ordens de fornecimento. */

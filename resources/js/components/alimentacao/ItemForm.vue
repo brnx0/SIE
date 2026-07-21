@@ -28,6 +28,7 @@ const form = useForm<{
     itm_cat_id: number | null;
     itm_umd_id: number | null;
     itm_cd_item: string;
+    itm_ncm: string;
     itm_nome: string;
     itm_especificacao: string;
     itm_fl_perecivel: boolean;
@@ -42,6 +43,7 @@ const form = useForm<{
     itm_cat_id:                  props.initial?.itm_cat_id ?? null,
     itm_umd_id:                  props.initial?.itm_umd_id ?? null,
     itm_cd_item:                 props.initial?.itm_cd_item ?? '',
+    itm_ncm:                     props.initial?.itm_ncm ?? '',
     itm_nome:                    props.initial?.itm_nome ?? '',
     itm_especificacao:           props.initial?.itm_especificacao ?? '',
     itm_fl_perecivel:            props.initial?.itm_fl_perecivel ?? false,
@@ -150,7 +152,20 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar item' : 'Salvar alteraÃ
                     <InputError :message="form.errors.itm_cd_item" />
                 </div>
 
-                <div class="grid gap-2 sm:col-span-5">
+                <div class="grid gap-2 sm:col-span-1">
+                    <FormLabel for="itm_ncm">CÃ³digo NCM</FormLabel>
+                    <Input
+                        id="itm_ncm"
+                        v-model="form.itm_ncm"
+                        maxlength="8"
+                        inputmode="numeric"
+                        placeholder="Opcional"
+                        @input="form.itm_ncm = form.itm_ncm.replace(/\D/g, '').slice(0, 8)"
+                    />
+                    <InputError :message="form.errors.itm_ncm" />
+                </div>
+
+                <div class="grid gap-2 sm:col-span-4">
                     <FormLabel for="itm_nome" :required="true">Nome do item</FormLabel>
                     <Input id="itm_nome" v-model="form.itm_nome" maxlength="120" autofocus class="uppercase" placeholder="ARROZ BRANCO TIPO 1" />
                     <InputError :message="form.errors.itm_nome" />

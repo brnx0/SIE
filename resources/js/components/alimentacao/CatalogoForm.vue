@@ -15,6 +15,8 @@ const props = defineProps<{
     mode: 'create' | 'edit';
     config: CatalogoConfig;
     initial?: CatalogoRegistro;
+    /** Catálogo ordenável: posição sugerida (fim da lista) ao cadastrar. */
+    proximaOrdem?: number | null;
 }>();
 
 const { isReadOnly } = usePermissao();
@@ -26,10 +28,13 @@ const base = computed(() => '/' + props.config.rota.replace(/\./g, '/'));
 // com as chaves que o backend informou — é o que permite uma tela servir os quatro.
 const colNome  = props.config.col_nome;
 const colAtivo = props.config.col_ativo;
+const colOrdem = props.config.col_ordem;
 
 const form = useForm<Record<string, any>>({
     [colNome]:  props.initial?.[colNome] ?? '',
     [colAtivo]: props.initial?.[colAtivo] ?? true,
+    // Ordenável: na criação já vem com a próxima posição livre; na edição, a atual.
+    ...(colOrdem ? { [colOrdem]: props.initial?.[colOrdem] ?? props.proximaOrdem ?? 1 } : {}),
     continue_new: false,
     _method: props.mode === 'edit' ? 'put' : undefined,
 });
@@ -55,6 +60,8 @@ const submit = (continueNew = false) => {
             if (continueNew && props.mode === 'create') {
                 form.reset();
                 form[colAtivo] = true;
+                // A próxima posição livre já mudou após o cadastro — repõe a sugestão.
+                if (colOrdem) form[colOrdem] = props.proximaOrdem ?? 1;
                 form.continue_new = false;
             }
         },
@@ -129,7 +136,7 @@ const submitLabel = computed(() =>
                     </span>
                 </div>
 
-                <div class="grid gap-2 sm:col-span-4">
+                <div class="grid gap-2" :class="colOrdem ? 'sm:col-span-3' : 'sm:col-span-4'">
                     <FormLabel :for="colNome" :required="true">Nome</FormLabel>
                     <Input
                         :id="colNome"
@@ -139,6 +146,20 @@ const submitLabel = computed(() =>
                         class="uppercase"
                     />
                     <InputError :message="form.errors[colNome]" />
+                </div>
+
+                <div v-if="colOrdem" class="grid gap-2 sm:col-span-1">
+                    <FormLabel :for="colOrdem" :required="true">Ordem</FormLabel>
+                    <Input
+                        :id="colOrdem"
+                        v-model.number="form[colOrdem] as number"
+                        type="number"
+                        min="1"
+                        step="1"
+                        inputmode="numeric"
+                    />
+                    <p class="text-xs text-muted-foreground">Posição de exibição. Repetir uma posição empurra as seguintes.</p>
+                    <InputError :message="form.errors[colOrdem]" />
                 </div>
             </div>
         </fieldset>

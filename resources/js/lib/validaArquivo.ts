@@ -2,6 +2,7 @@
 // Retorna a mensagem de erro, ou null se o arquivo é válido.
 
 export const TIPOS_IMAGEM = ['image/jpeg', 'image/png', 'image/webp'] as const;
+export const TIPOS_ANEXO = ['application/pdf', ...TIPOS_IMAGEM] as const;
 
 const NOME_TIPO: Record<string, string> = {
     'image/jpeg': 'JPG',
@@ -23,3 +24,6 @@ export const validarArquivo = (file: File, tipos: readonly string[], maxMb = 5):
 
 /** Atalho para imagens (JPG/PNG/WEBP). */
 export const validarImagem = (file: File, maxMb = 5): string | null => validarArquivo(file, TIPOS_IMAGEM, maxMb);
+
+/** Atalho para anexos (PDF ou imagem). Máximo padrão de 10 MB. */
+export const validarAnexo = (file: File, maxMb = 10): string | null => validarArquivo(file, TIPOS_ANEXO, maxMb);

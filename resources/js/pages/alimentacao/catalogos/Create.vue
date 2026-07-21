@@ -6,7 +6,7 @@ import type { CatalogoConfig } from '@/types/alimentacao';
 import { Head } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
-const props = defineProps<{ config: CatalogoConfig }>();
+const props = defineProps<{ config: CatalogoConfig; proximaOrdem?: number | null }>();
 
 const base = computed(() => '/' + props.config.rota.replace(/\./g, '/'));
 
@@ -26,7 +26,7 @@ const breadcrumbs = computed<BreadcrumbItem[]>(() => [
                 </h1>
                 <p class="text-sm text-slate-500 dark:text-slate-400">{{ config.descricao }}</p>
             </div>
-            <CatalogoForm mode="create" :config="config" />
+            <CatalogoForm mode="create" :config="config" :proxima-ordem="proximaOrdem" />
         </div>
     </AppLayout>
 </template>

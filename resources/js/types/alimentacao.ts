@@ -1,4 +1,14 @@
 /** Registro de um catálogo simples (nome + situação). Colunas variam por prefixo. */
+export interface Anexo {
+    anx_id: number;
+    anx_nome: string;
+    anx_mime: string;
+    anx_tamanho: number;
+    eh_imagem: boolean;
+    usuario: string | null;
+    criado_em: string | null;
+}
+
 export interface CatalogoRegistro {
     [coluna: string]: string | number | boolean | null;
 }
@@ -13,7 +23,9 @@ export interface CatalogoConfig {
     col_id: string;
     col_nome: string;
     col_ativo: string;
+    col_ordem?: string | null;
     sem_acento?: boolean;
+    tem_ordem?: boolean;
 }
 
 export interface UnidadeMedida {
@@ -42,6 +54,7 @@ export interface Item {
     itm_cat_id: number;
     itm_umd_id: number;
     itm_cd_item: string | null;
+    itm_ncm: string | null;
     itm_nome: string;
     itm_especificacao: string | null;
     itm_fl_perecivel: boolean;
@@ -243,6 +256,8 @@ export interface MovimentoLinha {
     /** +1 entra no saldo, -1 sai. */
     sinal: number;
     transferencia: boolean;
+    /** Agrupador da transferência; quando presente, há guia de remessa em PDF. */
+    transferencia_id: string | null;
     estorno_de: number | null;
 }
 

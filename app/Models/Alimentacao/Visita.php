@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
@@ -98,6 +99,11 @@ class Visita extends Model
     public function respostas(): HasMany
     {
         return $this->hasMany(VisitaResposta::class, 'vre_vis_id', 'vis_id');
+    }
+
+    public function anexos(): MorphMany
+    {
+        return $this->morphMany(Anexo::class, 'anexavel', 'anx_anexavel_type', 'anx_anexavel_id', 'vis_id');
     }
 
     /** Visita atestada é registro fechado: nem dados nem respostas mudam mais. */

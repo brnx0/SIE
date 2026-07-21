@@ -16,6 +16,11 @@ class TipoQuestionarioController extends CatalogoSimplesController
         return 'tpq';
     }
 
+    protected function temOrdem(): bool
+    {
+        return true;
+    }
+
     protected function config(): array
     {
         return [

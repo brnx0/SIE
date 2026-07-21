@@ -17,6 +17,8 @@ class StoreItemRequest extends FormRequest
         $this->merge([
             'itm_nome'                    => mb_strtoupper(trim((string) $this->input('itm_nome', '')), 'UTF-8'),
             'itm_cd_item'                 => trim((string) $this->input('itm_cd_item', '')) ?: null,
+            // NCM é numérico (8 dígitos): descarta qualquer separador digitado.
+            'itm_ncm'                     => preg_replace('/\D/', '', (string) $this->input('itm_ncm', '')) ?: null,
             'itm_fl_perecivel'            => $this->boolean('itm_fl_perecivel'),
             'itm_fl_agricultura_familiar' => $this->boolean('itm_fl_agricultura_familiar'),
             'itm_fl_ativo'                => $this->boolean('itm_fl_ativo'),
@@ -35,6 +37,7 @@ class StoreItemRequest extends FormRequest
                 'nullable', 'string', 'max:20',
                 Rule::unique('ali_item', 'itm_cd_item')->whereNull('itm_deleted_at')->ignore($id, 'itm_id'),
             ],
+            'itm_ncm' => ['nullable', 'digits_between:1,8'],
             'itm_nome' => [
                 'required', 'string', 'max:120',
                 Rule::unique('ali_item', 'itm_nome')->whereNull('itm_deleted_at')->ignore($id, 'itm_id'),
@@ -70,6 +73,7 @@ class StoreItemRequest extends FormRequest
             'itm_cat_id'                  => 'categoria',
             'itm_umd_id'                  => 'unidade de medida',
             'itm_cd_item'                 => 'código',
+            'itm_ncm'                     => 'código NCM',
             'itm_nome'                    => 'nome',
             'itm_especificacao'           => 'especificação técnica',
             'itm_fl_perecivel'            => 'perecível',

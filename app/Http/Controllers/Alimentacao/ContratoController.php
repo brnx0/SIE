@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers\Alimentacao;
 
+use App\Http\Controllers\Concerns\ComAnexos;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Alimentacao\StoreContratoRequest;
+use App\Models\Alimentacao\Anexo;
 use App\Models\Alimentacao\Contrato;
 use App\Models\Alimentacao\ContratoAditivo;
 use App\Models\Alimentacao\UnidadeMedida;
@@ -18,6 +20,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ContratoController extends Controller
 {
+    use ComAnexos;
+
     /** Campos que, depois do contrato ter movimento, só mudam via aditivo. */
     private const CAMPOS_SO_POR_ADITIVO = [
         'ctr_vl_total' => 'valor total',
@@ -72,6 +76,7 @@ class ContratoController extends Controller
             'contrato' => $contrato,
             'itens'    => $this->itensDoContrato($contrato),
             'aditivos' => $this->aditivosDoContrato($contrato),
+            'anexos'   => $this->anexosPara($contrato),
             'unidades' => UnidadeMedida::where('umd_fl_ativo', true)->orderBy('umd_sigla')->get(['umd_id', 'umd_sigla', 'umd_nome']),
             'situacoes' => Contrato::SITUACOES,
             'tiposAditivo' => ContratoAditivo::TIPOS,
@@ -108,6 +113,27 @@ class ContratoController extends Controller
 
         return $this->safeDelete($contrato)
             ?? to_route('alimentacao.contratos.index')->with('success', 'Contrato removido com sucesso.');
+    }
+
+    // ---- Anexos (PDF/imagem do contrato) ----------------------------------
+
+    public function anexosStore(Request $request, int $id): RedirectResponse
+    {
+        $this->guardarAnexos($request, Contrato::findOrFail($id), 'contratos');
+
+        return back()->with('success', 'Anexo(s) enviado(s) com sucesso.');
+    }
+
+    public function anexoDownload(int $id, Anexo $anexo): \Symfony\Component\HttpFoundation\BinaryFileResponse
+    {
+        return $this->baixarAnexoDe(Contrato::findOrFail($id), $anexo);
+    }
+
+    public function anexoDestroy(int $id, Anexo $anexo): RedirectResponse
+    {
+        $this->excluirAnexoDe(Contrato::findOrFail($id), $anexo);
+
+        return back()->with('success', 'Anexo removido.');
     }
 
     public function export(Request $request): StreamedResponse|HttpResponse

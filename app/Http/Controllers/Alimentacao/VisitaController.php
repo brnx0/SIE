@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Alimentacao;
 
+use App\Http\Controllers\Concerns\ComAnexos;
 use App\Http\Controllers\Controller;
+use App\Models\Alimentacao\Anexo;
 use App\Models\Alimentacao\Pergunta;
 use App\Models\Alimentacao\TipoQuestionario;
 use App\Models\Alimentacao\TipoVisita;
@@ -26,6 +28,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  */
 class VisitaController extends Controller
 {
+    use ComAnexos;
+
     public function index(Request $request): Response
     {
         $perPage = in_array((int) $request->input('per_page'), [10, 25, 50])
@@ -180,6 +184,7 @@ class VisitaController extends Controller
                 ]),
             'editavel'    => $visita->editavel(),
             'podeAtestar' => $visita->podeAtestar(),
+            'anexos'      => $this->anexosPara($visita),
         ]);
     }
 
@@ -207,6 +212,39 @@ class VisitaController extends Controller
         $visita->update($dados);
 
         return back()->with('success', 'Visita atualizada.');
+    }
+
+    // ---- Anexos (evidências/documentos da visita: PDF ou imagem) ----------
+
+    public function anexosStore(Request $request, int $id): RedirectResponse
+    {
+        $visita = Visita::findOrFail($id);
+        $this->assertPodeVer($visita);
+        // Visita atestada/cancelada é registro fechado — sem novos anexos.
+        $this->assertEditavel($visita);
+
+        $this->guardarAnexos($request, $visita, 'visitas');
+
+        return back()->with('success', 'Anexo(s) enviado(s) com sucesso.');
+    }
+
+    public function anexoDownload(int $id, Anexo $anexo): \Symfony\Component\HttpFoundation\BinaryFileResponse
+    {
+        $visita = Visita::findOrFail($id);
+        $this->assertPodeVer($visita);
+
+        return $this->baixarAnexoDe($visita, $anexo);
+    }
+
+    public function anexoDestroy(int $id, Anexo $anexo): RedirectResponse
+    {
+        $visita = Visita::findOrFail($id);
+        $this->assertPodeVer($visita);
+        $this->assertEditavel($visita);
+
+        $this->excluirAnexoDe($visita, $anexo);
+
+        return back()->with('success', 'Anexo removido.');
     }
 
     /** Resposta de uma pergunta. */
@@ -431,8 +469,9 @@ class VisitaController extends Controller
             ->where('tpq_fl_ativo', true)
             ->whereHas('perguntas', fn ($q) => $q->where('prg_fl_ativo', true))
             ->withCount(['perguntas' => fn ($q) => $q->where('prg_fl_ativo', true)])
+            ->orderBy('tpq_ordem')
             ->orderBy('tpq_nome')
-            ->get(['tpq_id', 'tpq_nome'])
+            ->get(['tpq_id', 'tpq_nome', 'tpq_ordem'])
             ->map(fn ($q) => [
                 'tpq_id'   => $q->tpq_id,
                 'tpq_nome' => $q->tpq_nome,

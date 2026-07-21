@@ -66,6 +66,13 @@ Route::middleware(['auth', 'verified', 'tela'])
             Route::post('{id}/realizar', [VisitaController::class, 'realizar'])->name('realizar');
             Route::post('{id}/atestar', [VisitaController::class, 'atestar'])->name('atestar');
             Route::post('{id}/cancelar', [VisitaController::class, 'cancelar'])->name('cancelar');
+
+            // Anexos (evidências/documentos: PDF ou imagem).
+            Route::prefix('{id}/anexos')->name('anexos.')->group(function () {
+                Route::post('/', [VisitaController::class, 'anexosStore'])->whereNumber('id')->name('store');
+                Route::get('{anexo}', [VisitaController::class, 'anexoDownload'])->whereNumber(['id', 'anexo'])->name('download');
+                Route::delete('{anexo}', [VisitaController::class, 'anexoDestroy'])->whereNumber(['id', 'anexo'])->name('destroy');
+            });
         });
 
         // Perguntas do questionário (+ opções da múltipla escolha).
@@ -113,6 +120,8 @@ Route::middleware(['auth', 'verified', 'tela'])
         // Transferência do central para a escola (par de movimentos via FEFO).
         Route::prefix('transferencias')->name('transferencias.')->group(function () {
             Route::get('create', [TransferenciaController::class, 'create'])->name('create');
+            Route::get('{transferencia}/pdf', [TransferenciaController::class, 'pdf'])
+                ->whereUuid('transferencia')->name('pdf');
             Route::get('/', fn () => redirect()->route('alimentacao.transferencias.create'))->name('index');
             Route::post('/', [TransferenciaController::class, 'store'])->name('store');
         });
@@ -155,6 +164,13 @@ Route::middleware(['auth', 'verified', 'tela'])
             // reverte o contrato e fica registrado com autor e justificativa.
             Route::post('{id}/aditivos', [ContratoAditivoController::class, 'store'])->name('aditivos.store');
             Route::post('{id}/aditivos/{aditivo}/cancelar', [ContratoAditivoController::class, 'cancelar'])->name('aditivos.cancelar');
+
+            // Anexos (PDF/imagem). Aninhados sob {id} para herdar a permissão da tela.
+            Route::prefix('{id}/anexos')->name('anexos.')->group(function () {
+                Route::post('/', [ContratoController::class, 'anexosStore'])->whereNumber('id')->name('store');
+                Route::get('{anexo}', [ContratoController::class, 'anexoDownload'])->whereNumber(['id', 'anexo'])->name('download');
+                Route::delete('{anexo}', [ContratoController::class, 'anexoDestroy'])->whereNumber(['id', 'anexo'])->name('destroy');
+            });
         });
 
         // Empenhos (reserva orçamentária que custeia as ordens).

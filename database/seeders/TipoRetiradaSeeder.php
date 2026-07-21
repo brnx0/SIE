@@ -18,7 +18,7 @@ class TipoRetiradaSeeder extends Seeder
         'VENCIMENTO',
         'AVARIA',
         'DESCARTE',
-        'DEVOLUCAO AO CENTRAL',
+        'DEVOLUCAO AO ESTOQUE CENTRAL',
         'OUTROS',
     ];
 

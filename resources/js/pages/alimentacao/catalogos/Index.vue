@@ -45,6 +45,7 @@ const breadcrumbs = computed<BreadcrumbItem[]>(() => [{ title: props.config.plur
 const nomeDe = (r: CatalogoRegistro) => String(r[props.config.col_nome] ?? '');
 const idDe   = (r: CatalogoRegistro) => Number(r[props.config.col_id]);
 const ativoDe = (r: CatalogoRegistro) => Boolean(r[props.config.col_ativo]);
+const ordemDe = (r: CatalogoRegistro) => (props.config.col_ordem ? r[props.config.col_ordem] : null);
 
 const remove = (r: CatalogoRegistro) => {
     if (!confirm(`Remover ${props.config.singular.toLowerCase()} "${nomeDe(r)}"?`)) return;
@@ -89,6 +90,7 @@ const remove = (r: CatalogoRegistro) => {
                 <table class="w-full text-sm">
                     <thead class="bg-muted/50 text-left text-xs uppercase tracking-wide text-muted-foreground">
                         <tr>
+                            <th v-if="config.col_ordem" class="px-4 py-3 w-20 text-center">Ordem</th>
                             <th class="px-4 py-3">{{ config.singular }}</th>
                             <th class="px-4 py-3 text-center">Situação</th>
                             <th class="px-4 py-3 text-right">Ações</th>
@@ -96,11 +98,14 @@ const remove = (r: CatalogoRegistro) => {
                     </thead>
                     <tbody class="divide-y">
                         <tr v-if="registros.data.length === 0">
-                            <td colspan="3" class="px-4 py-12 text-center text-muted-foreground">
+                            <td :colspan="config.col_ordem ? 4 : 3" class="px-4 py-12 text-center text-muted-foreground">
                                 Nenhum registro cadastrado.
                             </td>
                         </tr>
                         <tr v-for="r in registros.data" :key="idDe(r)" class="transition-colors hover:bg-muted/30">
+                            <td v-if="config.col_ordem" class="px-4 py-3 text-center tabular-nums font-medium text-muted-foreground">
+                                {{ ordemDe(r) }}
+                            </td>
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-3">
                                     <div class="grid size-9 place-items-center rounded-lg bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300">

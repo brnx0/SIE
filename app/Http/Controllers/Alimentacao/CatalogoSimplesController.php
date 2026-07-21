@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -41,6 +42,16 @@ abstract class CatalogoSimplesController extends Controller
         return false;
     }
 
+    /**
+     * Se true, o catálogo é ordenável: ganha a coluna *_ordem, obrigatória, com
+     * reordenação por inserção — informar uma posição já ocupada empurra a
+     * existente (e as seguintes) uma casa para frente (ex.: tipo de questionário).
+     */
+    protected function temOrdem(): bool
+    {
+        return false;
+    }
+
     private function coluna(string $sufixo): string
     {
         return $this->prefixo().'_'.$sufixo;
@@ -58,7 +69,7 @@ abstract class CatalogoSimplesController extends Controller
             : 10;
 
         $registros = $this->baseQuery($request)
-            ->orderBy($this->coluna('nome'))
+            ->orderBy($this->coluna($this->temOrdem() ? 'ordem' : 'nome'))
             ->paginate($perPage)
             ->withQueryString();
 
@@ -76,7 +87,8 @@ abstract class CatalogoSimplesController extends Controller
     public function create(): Response
     {
         return Inertia::render('alimentacao/catalogos/Create', [
-            'config' => $this->configParaTela(),
+            'config'       => $this->configParaTela(),
+            'proximaOrdem' => $this->temOrdem() ? $this->proximaOrdem() : null,
         ]);
     }
 
@@ -85,7 +97,19 @@ abstract class CatalogoSimplesController extends Controller
         $dados = $this->validar($request);
         $cfg   = $this->config();
 
-        $this->model()::create($dados);
+        if ($this->temOrdem()) {
+            DB::transaction(function () use ($dados) {
+                $ordem = $this->coluna('ordem');
+                // A posição pedida não pode passar do fim da lista (nº de itens + 1).
+                $nova  = max(1, min((int) $dados[$ordem], $this->model()::count() + 1));
+                // Abre espaço: quem está na posição pedida (e adiante) anda +1.
+                $this->model()::query()->where($ordem, '>=', $nova)->increment($ordem);
+                $dados[$ordem] = $nova;
+                $this->model()::create($dados);
+            });
+        } else {
+            $this->model()::create($dados);
+        }
 
         if ($request->boolean('continue_new')) {
             return to_route($cfg['rota'].'.create')
@@ -107,12 +131,44 @@ abstract class CatalogoSimplesController extends Controller
     public function update(Request $request, int $id): RedirectResponse
     {
         $registro = $this->model()::findOrFail($id);
-        $registro->update($this->validar($request, $id));
+        $dados    = $this->validar($request, $id);
+
+        if ($this->temOrdem()) {
+            DB::transaction(fn () => $this->reordenarNaEdicao($registro, $dados, $id));
+        } else {
+            $registro->update($dados);
+        }
 
         $cfg = $this->config();
 
         return to_route($cfg['rota'].'.edit', $id)
             ->with('success', "{$cfg['singular']} atualizad{$cfg['artigo']} com sucesso.");
+    }
+
+    /**
+     * Move o registro para a nova posição sem deixar buraco: quem estava entre a
+     * posição antiga e a nova desliza uma casa para o lado contrário do movimento.
+     */
+    private function reordenarNaEdicao(mixed $registro, array $dados, int $id): void
+    {
+        $ordem  = $this->coluna('ordem');
+        $idCol  = $this->coluna('id');
+        $antiga = (int) $registro->{$ordem};
+        // Na edição a lista não cresce: a posição vai de 1 ao total de itens.
+        $nova   = max(1, min((int) $dados[$ordem], $this->model()::count()));
+
+        if ($nova < $antiga) {
+            $this->model()::query()
+                ->where($ordem, '>=', $nova)->where($ordem, '<', $antiga)
+                ->where($idCol, '!=', $id)->increment($ordem);
+        } elseif ($nova > $antiga) {
+            $this->model()::query()
+                ->where($ordem, '>', $antiga)->where($ordem, '<=', $nova)
+                ->where($idCol, '!=', $id)->decrement($ordem);
+        }
+
+        $dados[$ordem] = $nova;
+        $registro->update($dados);
     }
 
     public function destroy(int $id): RedirectResponse
@@ -127,7 +183,9 @@ abstract class CatalogoSimplesController extends Controller
 
     public function export(Request $request): StreamedResponse|HttpResponse
     {
-        $registros = $this->baseQuery($request)->orderBy($this->coluna('nome'))->get();
+        $registros = $this->baseQuery($request)
+            ->orderBy($this->coluna($this->temOrdem() ? 'ordem' : 'nome'))
+            ->get();
 
         return $request->input('format') === 'pdf'
             ? $this->exportPdf($registros, $request)
@@ -139,10 +197,10 @@ abstract class CatalogoSimplesController extends Controller
         $nome  = $this->coluna('nome');
         $ativo = $this->coluna('fl_ativo');
 
-        $request->merge([
+        $merge = [
             $nome  => mb_strtoupper(trim((string) $request->input($nome, '')), 'UTF-8'),
             $ativo => $request->boolean($ativo),
-        ]);
+        ];
 
         $cfg = $this->config();
 
@@ -158,17 +216,31 @@ abstract class CatalogoSimplesController extends Controller
             $mensagens["{$nome}.not_regex"]   = "{$cfg['singular']} não pode conter acentos.";
         }
 
-        return $request->validate(
-            [
-                $nome  => $regrasNome,
-                $ativo => ['boolean'],
-            ],
-            $mensagens,
-            [
-                $nome  => mb_strtolower($cfg['singular'], 'UTF-8'),
-                $ativo => 'situação',
-            ],
-        );
+        $regras = [
+            $nome  => $regrasNome,
+            $ativo => ['boolean'],
+        ];
+        $labels = [
+            $nome  => mb_strtolower($cfg['singular'], 'UTF-8'),
+            $ativo => 'situação',
+        ];
+
+        if ($this->temOrdem()) {
+            $ordem            = $this->coluna('ordem');
+            $merge[$ordem]    = (int) $request->input($ordem, 1);
+            $regras[$ordem]   = ['required', 'integer', 'min:1'];
+            $labels[$ordem]   = 'ordem';
+        }
+
+        $request->merge($merge);
+
+        return $request->validate($regras, $mensagens, $labels);
+    }
+
+    /** Próxima posição livre no fim da lista (maior ordem + 1). */
+    private function proximaOrdem(): int
+    {
+        return (int) $this->model()::max($this->coluna('ordem')) + 1;
     }
 
     private function baseQuery(Request $request)
@@ -188,7 +260,9 @@ abstract class CatalogoSimplesController extends Controller
             'col_id'     => $this->coluna('id'),
             'col_nome'   => $this->coluna('nome'),
             'col_ativo'  => $this->coluna('fl_ativo'),
+            'col_ordem'  => $this->temOrdem() ? $this->coluna('ordem') : null,
             'sem_acento' => $this->semAcento(),
+            'tem_ordem'  => $this->temOrdem(),
         ];
     }
 
@@ -199,12 +273,18 @@ abstract class CatalogoSimplesController extends Controller
         $ativo    = $this->coluna('fl_ativo');
         $filename = str_replace('/', '_', $cfg['rota']).'_'.now()->format('Ymd_His').'.csv';
 
-        return response()->streamDownload(function () use ($registros, $nome, $ativo, $cfg) {
+        $ordem = $this->temOrdem() ? $this->coluna('ordem') : null;
+
+        return response()->streamDownload(function () use ($registros, $nome, $ativo, $ordem, $cfg) {
             $out = fopen('php://output', 'w');
             fprintf($out, chr(0xEF).chr(0xBB).chr(0xBF));
-            fputcsv($out, [$cfg['singular'], 'Situação'], ';');
+            fputcsv($out, array_filter([$ordem ? 'Ordem' : null, $cfg['singular'], 'Situação']), ';');
             foreach ($registros as $r) {
-                fputcsv($out, [$r->{$nome}, $r->{$ativo} ? 'Ativo' : 'Inativo'], ';');
+                fputcsv($out, array_filter([
+                    $ordem ? $r->{$ordem} : null,
+                    $r->{$nome},
+                    $r->{$ativo} ? 'Ativo' : 'Inativo',
+                ], fn ($v) => $v !== null), ';');
             }
             fclose($out);
         }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);

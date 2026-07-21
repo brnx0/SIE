@@ -280,6 +280,7 @@ class EstoqueController extends Controller
             'mov_obs'         => $m->mov_obs,
             'sinal'           => $m->sinal(),
             'transferencia'   => $m->mov_trf_par_id !== null,
+            'transferencia_id' => $m->mov_transferencia_id,
             'estorno_de'      => $m->mov_estorno_de_id,
         ];
     }

@@ -18,9 +18,9 @@ class TipoQuestionario extends Model
     const CREATED_AT = 'tpq_created_at';
     const UPDATED_AT = 'tpq_updated_at';
 
-    protected $fillable = ['tpq_nome', 'tpq_fl_ativo'];
+    protected $fillable = ['tpq_nome', 'tpq_ordem', 'tpq_fl_ativo'];
 
-    protected $casts = ['tpq_fl_ativo' => 'boolean'];
+    protected $casts = ['tpq_ordem' => 'integer', 'tpq_fl_ativo' => 'boolean'];
 
     public function perguntas(): HasMany
     {

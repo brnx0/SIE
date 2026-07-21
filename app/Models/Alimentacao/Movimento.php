@@ -64,6 +64,7 @@ class Movimento extends Model
         'mov_vl_total',
         'mov_dt',
         'mov_trf_par_id',
+        'mov_transferencia_id',
         'mov_estorno_de_id',
         'mov_origem',
         'mov_obs',

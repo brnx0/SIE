@@ -9,7 +9,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem, type Paginated } from '@/types';
 import type { MovimentoLinha } from '@/types/alimentacao';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { ArrowLeftRight, Package, Search, Undo2 } from 'lucide-vue-next';
+import { ArrowLeftRight, FileText, Package, Search, Undo2 } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
 
 const props = defineProps<{
@@ -166,6 +166,16 @@ const clampAno = (e: Event) => {
                                         {{ rotulo(m.mov_tipo) }}
                                     </span>
                                     <ArrowLeftRight v-if="m.transferencia" class="size-3.5 text-muted-foreground" title="Transferência entre estoques" />
+                                    <a
+                                        v-if="m.transferencia_id"
+                                        :href="`/alimentacao/transferencias/${m.transferencia_id}/pdf`"
+                                        target="_blank"
+                                        rel="noopener"
+                                        class="text-indigo-600 hover:text-indigo-700 dark:text-indigo-400"
+                                        title="Guia de remessa (PDF)"
+                                    >
+                                        <FileText class="size-3.5" />
+                                    </a>
                                     <Undo2 v-if="m.estorno_de" class="size-3.5 text-rose-500" :title="`Estorno do movimento #${m.estorno_de}`" />
                                 </div>
                             </td>
