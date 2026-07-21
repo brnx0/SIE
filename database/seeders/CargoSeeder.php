@@ -75,7 +75,7 @@ class CargoSeeder extends Seeder
             'Assistente de Alfabetização',
             'Auxiliar de Ensino',
             'Auxiliar de Classe',
-            'Monitor(a) Docente de Atividades',
+            'Monitor(a) de Transporte',
             'Monitor(a) de Laboratório',
             'Inspetor(a) Escolar',
             'Inspetor(a) de Disciplina',
