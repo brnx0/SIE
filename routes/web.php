@@ -86,12 +86,6 @@ use App\Http\Controllers\Secretaria\AcessoProfessorController;
 use App\Http\Controllers\Secretaria\ConteudoMinistradoController as SecretariaConteudoMinistradoController;
 use App\Http\Controllers\Secretaria\LancamentoManualController;
 use App\Http\Controllers\Secretaria\RenovacaoMatriculaController;
-use App\Http\Controllers\Transporte\VeiculoController as TransporteVeiculoController;
-use App\Http\Controllers\Transporte\MotoristaController as TransporteMotoristaController;
-use App\Http\Controllers\Transporte\MonitorController as TransporteMonitorController;
-use App\Http\Controllers\Transporte\InstituicaoController as TransporteInstituicaoController;
-use App\Http\Controllers\Transporte\UsuarioExternoController as TransporteUsuarioExternoController;
-use App\Http\Controllers\Api\Transporte\InstituicaoController as TransporteInstituicaoApiController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -218,30 +212,8 @@ Route::middleware(['auth', 'verified', 'tela'])->group(function () {
     Route::get('disciplinas/export', [DisciplinaController::class, 'export'])->name('disciplinas.export');
     Route::resource('disciplinas', DisciplinaController::class)->except(['show']);
 
-    // Transporte Escolar — cadastros (governado pela matriz cfg_tela: /transporte/*)
-    Route::prefix('transporte')->name('transporte.')->group(function () {
-        Route::get('veiculos/export', [TransporteVeiculoController::class, 'export'])->name('veiculos.export');
-        Route::resource('veiculos', TransporteVeiculoController::class)->except(['show']);
-
-        Route::get('motoristas/export', [TransporteMotoristaController::class, 'export'])->name('motoristas.export');
-        Route::resource('motoristas', TransporteMotoristaController::class)->except(['show']);
-
-        Route::get('monitores/export', [TransporteMonitorController::class, 'export'])->name('monitores.export');
-        Route::resource('monitores', TransporteMonitorController::class)
-            ->parameters(['monitores' => 'monitor'])
-            ->except(['show']);
-
-        Route::get('instituicoes/export', [TransporteInstituicaoController::class, 'export'])->name('instituicoes.export');
-        Route::resource('instituicoes', TransporteInstituicaoController::class)
-            ->parameters(['instituicoes' => 'instituicao'])
-            ->except(['show']);
-
-        Route::get('usuarios/export', [TransporteUsuarioExternoController::class, 'export'])->name('usuarios.export');
-        Route::resource('usuarios', TransporteUsuarioExternoController::class)
-            ->parameters(['usuarios' => 'usuario'])
-            ->except(['show']);
-    });
-    Route::get('api/transporte/instituicoes/search', [TransporteInstituicaoApiController::class, 'search'])->name('api.transporte.instituicoes.search');
+    // Transporte Escolar — rotas em arquivo próprio (governadas pela matriz cfg_tela: /transporte/*)
+    require __DIR__.'/transporte.php';
 
     Route::prefix('series/{serie}/indicadores')->name('series.indicadores.')->group(function () {
         Route::post('replicar', [SerieIndicadorController::class, 'replicar'])->name('replicar');
