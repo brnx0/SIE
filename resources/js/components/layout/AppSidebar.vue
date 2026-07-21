@@ -165,6 +165,7 @@ const transporteMenu = [
                 ],
             },
             { title: 'Rotas', href: '/transporte/rotas' },
+            { title: 'Diário de Bordo', href: '/transporte/diario-bordo' },
         ],
     },
 ];

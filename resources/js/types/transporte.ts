@@ -175,3 +175,73 @@ export interface PassageiroRota {
     } | null;
     usuario_externo?: { tue_id: number; tue_nome: string } | null;
 }
+
+export interface RotaResumo {
+    rot_id: number;
+    rot_nome: string;
+    rot_turno: string;
+    rot_anl_id?: number;
+    rot_fl_ativo?: boolean;
+}
+
+// ── Diário de Bordo ─────────────────────────────────────────────────────────
+export const OCORRENCIA_TIPOS: Record<string, string> = {
+    atraso:          'Atraso',
+    pane:            'Pane/Avaria',
+    acidente:        'Acidente',
+    indisciplina:    'Indisciplina',
+    via_interditada: 'Via interditada',
+    outro:           'Outro',
+};
+
+export interface DiarioBordoLista {
+    tdb_id: number;
+    tdb_rot_id: number;
+    tdb_dt_viagem: string;
+    tdb_km_inicial: number | null;
+    tdb_km_final: number | null;
+    passageiros_count: number;
+    embarcados_count: number;
+    ocorrencias_count: number;
+    rota?: { rot_id: number; rot_nome: string; rot_turno: string } | null;
+    veiculo?: { vei_id: number; vei_placa: string; vei_capacidade: number } | null;
+    motorista?: { mot_id: number; mot_nome: string } | null;
+}
+
+export interface DiarioBordo {
+    tdb_id: number;
+    tdb_rot_id: number;
+    tdb_dt_viagem: string;
+    tdb_vei_id: number;
+    tdb_mot_id: number;
+    tdb_tmo_id: number | null;
+    tdb_hr_saida: string | null;
+    tdb_hr_chegada: string | null;
+    tdb_km_inicial: number | null;
+    tdb_km_final: number | null;
+    tdb_obs: string | null;
+    rota?: { rot_id: number; rot_nome: string; rot_turno: string; anl_ano: number | null } | null;
+    veiculo?: { vei_id: number; vei_placa: string; vei_capacidade: number } | null;
+    motorista?: { mot_id: number; mot_nome: string } | null;
+    monitor?: { tmo_id: number; tmo_nome: string } | null;
+}
+
+export interface ChamadaItem {
+    tdp_id: number;
+    tdp_pas_id: number;
+    tdp_fl_embarcou: boolean;
+    tdp_fl_desembarcou: boolean;
+    tdp_hr_embarque: string | null;
+    tdp_hr_desembarque: string | null;
+    tdp_obs: string | null;
+    nome: string;
+    tipo: 'aluno' | 'externo';
+    ponto?: { pto_id: number; pto_nome: string; pto_ordem: number } | null;
+}
+
+export interface OcorrenciaItem {
+    toc_id: number;
+    toc_tipo: string;
+    toc_hr: string | null;
+    toc_descricao: string;
+}
