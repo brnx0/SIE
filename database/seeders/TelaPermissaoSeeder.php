@@ -58,7 +58,7 @@ class TelaPermissaoSeeder extends Seeder
         ['/diario-atividade', 'Diário Atividade', 'Diário', 21, [1, 1, 0, 0, 0, 0, 0, 2, 0, 1, 0]],
         ['/diario/instrumentos-avaliativos', 'Instrumentos Avaliativos', 'Diário', 22, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
         ['/sabados-letivos', 'Sábados Letivos', 'Diário', 23, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
-        ['/diario/planos', 'Planos de Aula', 'Diário', 24, [1, 2, 1, 0, 2, 2, 0, 0, 2, 0, 0]],
+        ['/diario/planos', 'Planos de Aula', 'Diário', 24, [1, 1, 1, 0, 2, 2, 0, 0, 2, 0, 0]],
         ['/diario/planos-aee', 'Planos de Aula AEE', 'Diário', 25, [1, 2, 0, 1, 0, 2, 0, 0, 2, 0, 0]],
         ['/relatorios-diario', 'Relatórios Diário', 'Diário', 26, [1, 1, 2, 2, 2, 2, 0, 2, 2, 0, 0]],
 

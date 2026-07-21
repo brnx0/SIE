@@ -16,7 +16,10 @@ class StorePlanoAulaRequest extends FormRequest
     {
         $user = $this->user();
         if (!$user) return false;
-        if ($user->isAdmin()) return true;
+        // Gestor global (admin/gestor_secretaria) é equiparado ao administrador:
+        // cria/edita planos sem exigir vínculo de regência. O acesso à tela em si
+        // já é gateado pela matriz de permissão (middleware `tela`).
+        if ($user->isGestorGlobal()) return true;
         if (!$user->hasRole('professor')) return false;
 
         // Edição: apenas o autor do próprio plano
@@ -74,7 +77,9 @@ class StorePlanoAulaRequest extends FormRequest
                 return;
             }
 
-            if (! $user->isAdmin()) {
+            // Gestor global (admin/gestor_secretaria) cria para qualquer série/disciplina
+            // vinculada à escola/ano, sem precisar ser o professor regente.
+            if (! $user->isGestorGlobal()) {
                 if (! $funId) {
                     $v->errors()->add('dpa_ser_id', 'Seu usuário não possui vínculo de funcionário.');
                     return;

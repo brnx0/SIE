@@ -311,7 +311,7 @@ class PlanoAulaController extends Controller
         $funId = (int) $user->fun_id;
         $anlId = (int) $request->input('anl_id');
 
-        if ($user->isAdmin() || ! $funId) {
+        if ($user->isGestorGlobal() || ! $funId) {
             $escolas = DB::table('edu_turma as t')
                 ->join('edu_escola as e', 'e.esc_id', '=', 't.tur_esc_id')
                 ->whereNull('t.tur_deleted_at')
@@ -351,7 +351,7 @@ class PlanoAulaController extends Controller
         $anlId = (int) $request->input('anl_id');
         $escId = (int) $request->input('esc_id');
 
-        $base = ($funId && ! $user->isAdmin())
+        $base = ($funId && ! $user->isGestorGlobal())
             ? DB::table('edu_turma_professor as tp')
                 ->join('edu_turma as t', 't.tur_id', '=', 'tp.tup_tur_id')
                 ->where('tp.tup_fun_id', $funId)
@@ -387,7 +387,7 @@ class PlanoAulaController extends Controller
             return response()->json([]);
         }
 
-        if (! $funId || $user->isAdmin()) {
+        if (! $funId || $user->isGestorGlobal()) {
             $disciplinas = DB::table('edu_grade_disciplinar as gd')
                 ->join('edu_disciplina as d', 'd.dis_id', '=', 'gd.grd_dis_id')
                 ->where('gd.grd_ser_id', $serId)
@@ -499,7 +499,7 @@ class PlanoAulaController extends Controller
 
     private function anosLetivosDoProfessor(int $funId): array
     {
-        if (! $funId || request()->user()->isAdmin()) {
+        if (! $funId || request()->user()->isGestorGlobal()) {
             return AnoLetivo::query()
                 ->whereNull('anl_deleted_at')
                 ->orderByDesc('anl_ano')
