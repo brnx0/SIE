@@ -55,6 +55,9 @@ class StoreFuncionarioRequest extends FormRequest
             'fun_telefone' => $this->filled('fun_telefone') ? $strip($this->input('fun_telefone')) : null,
             'fun_celular' => $this->filled('fun_celular') ? $strip($this->input('fun_celular')) : null,
             'fun_cd_censo' => $this->filled('fun_cd_censo') ? $strip($this->input('fun_cd_censo')) : null,
+            'fun_cnh_numero' => $this->filled('fun_cnh_numero') ? $strip($this->input('fun_cnh_numero')) : null,
+            'fun_cnh_categoria' => $this->filled('fun_cnh_categoria') ? strtoupper($this->input('fun_cnh_categoria')) : null,
+            'fun_cnh_dt_validade' => $this->input('fun_cnh_dt_validade') ?: null,
             'fun_uf' => $this->filled('fun_uf') ? strtoupper($this->input('fun_uf')) : null,
             'fun_rg_uf' => $this->filled('fun_rg_uf') ? strtoupper($this->input('fun_rg_uf')) : null,
         ]);
@@ -103,6 +106,11 @@ class StoreFuncionarioRequest extends FormRequest
             'fun_titulo_zona' => ['nullable', 'string', 'max:5'],
             'fun_titulo_secao' => ['nullable', 'string', 'max:5'],
             'fun_certificado_reservista' => ['nullable', 'string', 'max:20'],
+
+            // CNH — obrigatória para quem for vinculado como motorista de rota
+            'fun_cnh_numero' => ['nullable', 'digits_between:9,11'],
+            'fun_cnh_categoria' => ['nullable', Rule::in(Funcionario::CNH_CATEGORIAS)],
+            'fun_cnh_dt_validade' => ['nullable', 'date'],
 
             // Endereço
             'fun_cep' => ['nullable', 'digits:8'],
@@ -250,6 +258,9 @@ class StoreFuncionarioRequest extends FormRequest
             'fun_rg_dt_emissao' => 'data de emissão do RG',
             'fun_rg_uf' => 'UF do RG',
             'fun_rg_orgao_emissor' => 'órgão emissor do RG',
+            'fun_cnh_numero' => 'número da CNH',
+            'fun_cnh_categoria' => 'categoria da CNH',
+            'fun_cnh_dt_validade' => 'validade da CNH',
             'fun_cep' => 'CEP',
             'fun_logradouro' => 'logradouro',
             'fun_numero' => 'número',

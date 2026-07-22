@@ -1,28 +1,31 @@
 <script setup lang="ts">
-import { useMotoristasTransporte } from '@/composables/useMotoristasTransporte';
-import type { MotoristaResumo } from '@/types/transporte';
+import { useFuncionariosTransporte, type PapelTransporte } from '@/composables/useFuncionariosTransporte';
+import type { FuncionarioTransporte } from '@/types/transporte';
 import { IdCard, Loader2, Search, X } from 'lucide-vue-next';
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
 const props = defineProps<{
     modelValue: number | null;
-    initial?: { mot_id: number; mot_nome: string } | null;
+    papel: PapelTransporte;
+    initial?: { fun_id: number; fun_nome: string } | null;
     placeholder?: string;
     invalid?: boolean;
 }>();
 
 const emit = defineEmits<{
     (e: 'update:modelValue', value: number | null): void;
-    (e: 'selected', value: MotoristaResumo | null): void;
+    (e: 'selected', value: FuncionarioTransporte | null): void;
 }>();
 
-const { loading, items, search } = useMotoristasTransporte();
+const { loading, items, search } = useFuncionariosTransporte(props.papel);
 
 const open = ref(false);
 const query = ref('');
-const selected = ref<{ mot_id: number; mot_nome: string } | null>(props.initial ?? null);
+const selected = ref<{ fun_id: number; fun_nome: string } | null>(props.initial ?? null);
 const wrapper = ref<HTMLElement | null>(null);
 const inputEl = ref<HTMLInputElement | null>(null);
+
+const vazio = props.papel === 'motoristas' ? 'Nenhum motorista encontrado.' : 'Nenhum monitor encontrado.';
 
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -36,13 +39,13 @@ watch(query, (q) => {
 watch(
     () => props.initial,
     (i) => {
-        if (i && i.mot_id !== selected.value?.mot_id) selected.value = i;
+        if (i && i.fun_id !== selected.value?.fun_id) selected.value = i;
     },
 );
 
-const choose = (i: MotoristaResumo) => {
-    selected.value = { mot_id: i.mot_id, mot_nome: i.mot_nome };
-    emit('update:modelValue', i.mot_id);
+const choose = (i: FuncionarioTransporte) => {
+    selected.value = { fun_id: i.fun_id, fun_nome: i.fun_nome };
+    emit('update:modelValue', i.fun_id);
     emit('selected', i);
     open.value = false;
     query.value = '';
@@ -83,9 +86,9 @@ onBeforeUnmount(() => document.removeEventListener('mousedown', handleOutside));
         >
             <span v-if="selected" class="flex items-center gap-2 truncate">
                 <IdCard class="size-4 text-indigo-600 dark:text-indigo-400" />
-                <span class="truncate">{{ selected.mot_nome }}</span>
+                <span class="truncate">{{ selected.fun_nome }}</span>
             </span>
-            <span v-else class="text-muted-foreground">{{ placeholder ?? 'Buscar motorista...' }}</span>
+            <span v-else class="text-muted-foreground">{{ placeholder ?? 'Buscar funcionário...' }}</span>
 
             <button v-if="selected" type="button" class="ml-2 rounded p-0.5 hover:bg-muted" @click.stop="clear">
                 <X class="size-4" />
@@ -100,23 +103,25 @@ onBeforeUnmount(() => document.removeEventListener('mousedown', handleOutside));
                     v-model="query"
                     type="text"
                     class="h-10 w-full bg-transparent px-2 text-sm placeholder:text-muted-foreground focus:outline-none"
-                    placeholder="Nome, CPF ou CNH..."
+                    placeholder="Nome ou CPF..."
                 />
                 <Loader2 v-if="loading" class="size-4 animate-spin text-muted-foreground" />
             </div>
 
             <ul class="max-h-64 overflow-y-auto py-1 text-sm">
                 <li v-if="!loading && items.length === 0" class="px-3 py-2 text-muted-foreground">
-                    Nenhum motorista encontrado.
+                    {{ vazio }}
                 </li>
                 <li
                     v-for="i in items"
-                    :key="i.mot_id"
+                    :key="i.fun_id"
                     class="flex cursor-pointer items-center gap-2 px-3 py-2 hover:bg-muted"
                     @mousedown.prevent="choose(i)"
                 >
-                    <span class="flex-1">{{ i.mot_nome }}</span>
-                    <span class="text-xs text-muted-foreground">CNH {{ i.mot_cnh_categoria }}</span>
+                    <span class="flex-1">{{ i.fun_nome }}</span>
+                    <span v-if="papel === 'motoristas' && i.fun_cnh_categoria" class="text-xs text-muted-foreground">
+                        CNH {{ i.fun_cnh_categoria }}
+                    </span>
                 </li>
             </ul>
         </div>

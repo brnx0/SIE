@@ -17,7 +17,7 @@ class StoreRotaRequest extends FormRequest
     {
         $this->merge([
             'rot_nome'     => is_string($this->input('rot_nome')) ? trim($this->input('rot_nome')) : $this->input('rot_nome'),
-            'rot_tmo_id'   => $this->input('rot_tmo_id') ?: null,
+            'rot_fun_id_monitor' => $this->input('rot_fun_id_monitor') ?: null,
             'rot_zona'     => $this->input('rot_zona') ?: null,
             'rot_fl_ativo' => $this->boolean('rot_fl_ativo'),
         ]);
@@ -37,8 +37,8 @@ class StoreRotaRequest extends FormRequest
             'rot_turno'  => ['required', Rule::in(array_keys(Rota::TURNOS))],
             'rot_zona'   => ['nullable', Rule::in(array_keys(Rota::ZONAS))],
             'rot_vei_id' => ['required', 'integer', 'exists:edu_transporte_veiculo,vei_id'],
-            'rot_mot_id' => ['required', 'integer', 'exists:edu_transporte_motorista,mot_id'],
-            'rot_tmo_id' => ['nullable', 'integer', 'exists:edu_transporte_monitor,tmo_id'],
+            'rot_fun_id_motorista' => ['required', 'integer', 'exists:edu_funcionario,fun_id'],
+            'rot_fun_id_monitor'   => ['nullable', 'integer', 'exists:edu_funcionario,fun_id'],
             'rot_obs'    => ['nullable', 'string', 'max:2000'],
             'rot_fl_ativo' => ['boolean'],
         ];
@@ -59,8 +59,8 @@ class StoreRotaRequest extends FormRequest
             'rot_turno'  => 'turno',
             'rot_zona'   => 'zona',
             'rot_vei_id' => 'veículo',
-            'rot_mot_id' => 'motorista',
-            'rot_tmo_id' => 'monitor',
+            'rot_fun_id_motorista' => 'motorista',
+            'rot_fun_id_monitor'   => 'monitor',
             'rot_obs'    => 'observações',
             'rot_fl_ativo' => 'situação',
         ];

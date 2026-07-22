@@ -6,8 +6,7 @@ import Tabs from '@/components/common/Tabs.vue';
 import TabsContent from '@/components/common/TabsContent.vue';
 import TabsList from '@/components/common/TabsList.vue';
 import TabsTrigger from '@/components/common/TabsTrigger.vue';
-import MonitorCombobox from '@/components/transporte/MonitorCombobox.vue';
-import MotoristaCombobox from '@/components/transporte/MotoristaCombobox.vue';
+import FuncionarioTransporteCombobox from '@/components/transporte/FuncionarioTransporteCombobox.vue';
 import VeiculoCombobox from '@/components/transporte/VeiculoCombobox.vue';
 import RotaPontosTab from '@/components/transporte/RotaPontosTab.vue';
 import RotaPassageirosTab from '@/components/transporte/RotaPassageirosTab.vue';
@@ -49,8 +48,8 @@ const form = useForm({
     rot_turno:   props.initial?.rot_turno ?? '',
     rot_zona:    props.initial?.rot_zona ?? '',
     rot_vei_id:  props.initial?.rot_vei_id ?? (null as number | null),
-    rot_mot_id:  props.initial?.rot_mot_id ?? (null as number | null),
-    rot_tmo_id:  props.initial?.rot_tmo_id ?? (null as number | null),
+    rot_fun_id_motorista: props.initial?.rot_fun_id_motorista ?? (null as number | null),
+    rot_fun_id_monitor:   props.initial?.rot_fun_id_monitor ?? (null as number | null),
     rot_obs:     props.initial?.rot_obs ?? '',
     rot_fl_ativo: props.initial?.rot_fl_ativo ?? true,
     _method: props.mode === 'edit' ? 'put' : undefined,
@@ -190,28 +189,32 @@ const selectClass = (hasError: boolean) =>
 
                             <!-- Motorista -->
                             <div class="grid gap-2 sm:col-span-3">
-                                <FormLabel for="rot_mot_id" :required="true">Motorista titular</FormLabel>
-                                <MotoristaCombobox
-                                    id="rot_mot_id"
-                                    :model-value="form.rot_mot_id"
-                                    :initial="initial?.motorista ? { mot_id: initial.motorista.mot_id, mot_nome: initial.motorista.mot_nome } : null"
-                                    :invalid="!!form.errors.rot_mot_id"
-                                    @update:model-value="(v) => (form.rot_mot_id = v)"
+                                <FormLabel for="rot_fun_id_motorista" :required="true">Motorista titular</FormLabel>
+                                <FuncionarioTransporteCombobox
+                                    id="rot_fun_id_motorista"
+                                    papel="motoristas"
+                                    placeholder="Buscar motorista..."
+                                    :model-value="form.rot_fun_id_motorista"
+                                    :initial="initial?.motorista ? { fun_id: initial.motorista.fun_id, fun_nome: initial.motorista.fun_nome } : null"
+                                    :invalid="!!form.errors.rot_fun_id_motorista"
+                                    @update:model-value="(v) => (form.rot_fun_id_motorista = v)"
                                 />
-                                <InputError :message="form.errors.rot_mot_id" />
+                                <InputError :message="form.errors.rot_fun_id_motorista" />
                             </div>
 
                             <!-- Monitor -->
                             <div class="grid gap-2 sm:col-span-3">
-                                <FormLabel for="rot_tmo_id">Monitor</FormLabel>
-                                <MonitorCombobox
-                                    id="rot_tmo_id"
-                                    :model-value="form.rot_tmo_id"
-                                    :initial="initial?.monitor ? { tmo_id: initial.monitor.tmo_id, tmo_nome: initial.monitor.tmo_nome } : null"
-                                    :invalid="!!form.errors.rot_tmo_id"
-                                    @update:model-value="(v) => (form.rot_tmo_id = v)"
+                                <FormLabel for="rot_fun_id_monitor">Monitor</FormLabel>
+                                <FuncionarioTransporteCombobox
+                                    id="rot_fun_id_monitor"
+                                    papel="monitores"
+                                    placeholder="Buscar monitor (opcional)..."
+                                    :model-value="form.rot_fun_id_monitor"
+                                    :initial="initial?.monitor ? { fun_id: initial.monitor.fun_id, fun_nome: initial.monitor.fun_nome } : null"
+                                    :invalid="!!form.errors.rot_fun_id_monitor"
+                                    @update:model-value="(v) => (form.rot_fun_id_monitor = v)"
                                 />
-                                <InputError :message="form.errors.rot_tmo_id" />
+                                <InputError :message="form.errors.rot_fun_id_monitor" />
                             </div>
                         </div>
 

@@ -23,6 +23,9 @@ class Funcionario extends Model
     const UPDATED_AT = 'fun_updated_at';
     const DELETED_AT = 'fun_deleted_at';
 
+    /** Categorias válidas de CNH. */
+    public const CNH_CATEGORIAS = ['A', 'B', 'C', 'D', 'E', 'AB', 'AC', 'AD', 'AE'];
+
     protected $fillable = [
         // Dados pessoais
         'fun_nome',
@@ -61,6 +64,11 @@ class Funcionario extends Model
         'fun_titulo_secao',
         'fun_certificado_reservista',
 
+        // CNH — habilita o funcionário a conduzir veículo do transporte escolar
+        'fun_cnh_numero',
+        'fun_cnh_categoria',
+        'fun_cnh_dt_validade',
+
         // Endereço
         'fun_cep',
         'fun_logradouro',
@@ -86,6 +94,7 @@ class Funcionario extends Model
         'fun_dt_nascimento' => 'date',
         'fun_rg_dt_emissao' => 'date',
         'fun_certidao_dt_emissao' => 'date',
+        'fun_cnh_dt_validade' => 'date',
         'fun_cor_raca' => 'integer',
         'fun_estado_civil' => 'integer',
         'fun_fl_usa_transporte' => 'boolean',

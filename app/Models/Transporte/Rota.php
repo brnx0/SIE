@@ -2,6 +2,7 @@
 
 namespace App\Models\Transporte;
 
+use App\Models\Funcionario\Funcionario;
 use App\Models\Parametro\AnoLetivo;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -42,8 +43,8 @@ class Rota extends Model
         'rot_turno',
         'rot_zona',
         'rot_vei_id',
-        'rot_mot_id',
-        'rot_tmo_id',
+        'rot_fun_id_motorista',
+        'rot_fun_id_monitor',
         'rot_km',
         'rot_tempo_min',
         'rot_trajeto',
@@ -54,8 +55,8 @@ class Rota extends Model
     protected $casts = [
         'rot_anl_id'    => 'integer',
         'rot_vei_id'    => 'integer',
-        'rot_mot_id'    => 'integer',
-        'rot_tmo_id'    => 'integer',
+        'rot_fun_id_motorista' => 'integer',
+        'rot_fun_id_monitor'   => 'integer',
         'rot_km'        => 'float',
         'rot_tempo_min' => 'integer',
         'rot_trajeto'   => 'array',
@@ -74,12 +75,12 @@ class Rota extends Model
 
     public function motorista(): BelongsTo
     {
-        return $this->belongsTo(Motorista::class, 'rot_mot_id', 'mot_id');
+        return $this->belongsTo(Funcionario::class, 'rot_fun_id_motorista', 'fun_id');
     }
 
     public function monitor(): BelongsTo
     {
-        return $this->belongsTo(Monitor::class, 'rot_tmo_id', 'tmo_id');
+        return $this->belongsTo(Funcionario::class, 'rot_fun_id_monitor', 'fun_id');
     }
 
     public function pontos(): HasMany

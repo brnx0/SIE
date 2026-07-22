@@ -16,8 +16,8 @@ return new class extends Migration
             $table->string('rot_turno', 20); // alinhado ao domínio de turno de edu_turma
             $table->string('rot_zona', 10)->nullable(); // urbana|rural
             $table->unsignedBigInteger('rot_vei_id'); // veículo titular
-            $table->unsignedBigInteger('rot_mot_id'); // motorista titular
-            $table->unsignedBigInteger('rot_tmo_id')->nullable(); // monitor titular (opcional)
+            $table->unsignedBigInteger('rot_fun_id_motorista'); // funcionário condutor titular
+            $table->unsignedBigInteger('rot_fun_id_monitor')->nullable(); // funcionário monitor titular (opcional)
             $table->decimal('rot_km', 8, 2)->nullable(); // preenchível pelo simulador
             $table->integer('rot_tempo_min')->nullable(); // idem
             $table->jsonb('rot_trajeto')->nullable(); // GeoJSON LineString (simulador)
@@ -29,8 +29,8 @@ return new class extends Migration
 
             $table->foreign('rot_anl_id')->references('anl_id')->on('cfg_ano_letivo');
             $table->foreign('rot_vei_id')->references('vei_id')->on('edu_transporte_veiculo');
-            $table->foreign('rot_mot_id')->references('mot_id')->on('edu_transporte_motorista');
-            $table->foreign('rot_tmo_id')->references('tmo_id')->on('edu_transporte_monitor');
+            $table->foreign('rot_fun_id_motorista')->references('fun_id')->on('edu_funcionario');
+            $table->foreign('rot_fun_id_monitor')->references('fun_id')->on('edu_funcionario');
             $table->index('rot_anl_id');
         });
 

@@ -1,10 +1,16 @@
-import type { MonitorResumo } from '@/types/transporte';
+import type { FuncionarioTransporte } from '@/types/transporte';
 import { ref } from 'vue';
 import { apiFetch } from '@/lib/apiFetch';
 
-export function useMonitoresTransporte() {
+export type PapelTransporte = 'motoristas' | 'monitores';
+
+/**
+ * Lookup de pessoal do transporte. Motorista e monitor não têm cadastro
+ * próprio: são funcionários da rede lotados no cargo correspondente.
+ */
+export function useFuncionariosTransporte(papel: PapelTransporte) {
     const loading = ref(false);
-    const items = ref<MonitorResumo[]>([]);
+    const items = ref<FuncionarioTransporte[]>([]);
     let controller: AbortController | null = null;
 
     async function search(q: string, incluirIds: number[] = []): Promise<void> {
@@ -17,7 +23,7 @@ export function useMonitoresTransporte() {
             if (q) params.set('q', q);
             if (incluirIds.length) params.set('incluir_ids', incluirIds.join(','));
 
-            const res = await apiFetch(`/api/transporte/monitores/search?${params.toString()}`, {
+            const res = await apiFetch(`/api/transporte/${papel}/search?${params.toString()}`, {
                 signal: controller.signal,
                 headers: { Accept: 'application/json' },
             });

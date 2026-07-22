@@ -14,7 +14,7 @@ class StoreDiarioBordoRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->merge([
-            'tdb_tmo_id'     => $this->input('tdb_tmo_id') ?: null,
+            'tdb_fun_id_monitor' => $this->input('tdb_fun_id_monitor') ?: null,
             'tdb_hr_saida'   => $this->input('tdb_hr_saida') ?: null,
             'tdb_hr_chegada' => $this->input('tdb_hr_chegada') ?: null,
             'tdb_km_inicial' => $this->filled('tdb_km_inicial') ? $this->input('tdb_km_inicial') : null,
@@ -26,8 +26,8 @@ class StoreDiarioBordoRequest extends FormRequest
     {
         return [
             'tdb_vei_id'     => ['required', 'integer', 'exists:edu_transporte_veiculo,vei_id'],
-            'tdb_mot_id'     => ['required', 'integer', 'exists:edu_transporte_motorista,mot_id'],
-            'tdb_tmo_id'     => ['nullable', 'integer', 'exists:edu_transporte_monitor,tmo_id'],
+            'tdb_fun_id_motorista' => ['required', 'integer', 'exists:edu_funcionario,fun_id'],
+            'tdb_fun_id_monitor'   => ['nullable', 'integer', 'exists:edu_funcionario,fun_id'],
             'tdb_hr_saida'   => ['nullable', 'date_format:H:i'],
             'tdb_hr_chegada' => ['nullable', 'date_format:H:i', 'after_or_equal:tdb_hr_saida'],
             'tdb_km_inicial' => ['nullable', 'numeric', 'min:0'],
@@ -48,8 +48,8 @@ class StoreDiarioBordoRequest extends FormRequest
     {
         return [
             'tdb_vei_id'     => 'veículo',
-            'tdb_mot_id'     => 'motorista',
-            'tdb_tmo_id'     => 'monitor',
+            'tdb_fun_id_motorista' => 'motorista',
+            'tdb_fun_id_monitor'   => 'monitor',
             'tdb_hr_saida'   => 'hora de saída',
             'tdb_hr_chegada' => 'hora de chegada',
             'tdb_km_inicial' => 'km inicial',
