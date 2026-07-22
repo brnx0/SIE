@@ -12,6 +12,7 @@ const props = defineProps<{
     diario: DiarioBordo;
     ocorrencias: OcorrenciaItem[];
     tipos: Record<string, string>;
+    bloqueado?: boolean;
 }>();
 
 const list = computed<OcorrenciaItem[]>(() => props.ocorrencias ?? []);
@@ -25,6 +26,16 @@ const form = reactive<{ toc_tipo: string; toc_hr: string; toc_descricao: string 
     toc_hr: '',
     toc_descricao: '',
 });
+
+const descricaoEl = ref<HTMLTextAreaElement | null>(null);
+
+// Ajusta a altura do textarea ao conteúdo enquanto digita.
+const autosize = () => {
+    const el = descricaoEl.value;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = `${el.scrollHeight}px`;
+};
 
 const resetForm = () => {
     form.toc_tipo = '';
@@ -66,7 +77,7 @@ const selectClass = 'flex h-10 w-full rounded-md border border-input bg-backgrou
     <div class="grid gap-4">
         <div class="flex items-center justify-between">
             <h3 class="text-sm font-semibold">Ocorrências da viagem</h3>
-            <Button v-if="!showForm" type="button" size="sm" variant="outline" @click="openForm">
+            <Button v-if="!showForm && !bloqueado" type="button" size="sm" variant="outline" @click="openForm">
                 <Plus class="mr-1 size-4" /> Registrar ocorrência
             </Button>
         </div>
@@ -91,8 +102,18 @@ const selectClass = 'flex h-10 w-full rounded-md border border-input bg-backgrou
                     <InputError :message="errors.toc_hr" />
                 </div>
                 <div class="grid gap-1.5 sm:col-span-12">
-                    <FormLabel :required="true">Descrição</FormLabel>
-                    <textarea v-model="form.toc_descricao" rows="3" maxlength="2000" :class="selectClass + ' py-2'" placeholder="Descreva a ocorrência..."></textarea>
+                    <div class="flex items-center justify-between">
+                        <FormLabel :required="true">Descrição</FormLabel>
+                        <span class="text-xs tabular-nums text-muted-foreground">{{ form.toc_descricao.length }}/500</span>
+                    </div>
+                    <textarea
+                        ref="descricaoEl"
+                        v-model="form.toc_descricao"
+                        maxlength="500"
+                        :class="selectClass + ' min-h-[80px] resize-none overflow-hidden py-2'"
+                        placeholder="Descreva a ocorrência..."
+                        @input="autosize"
+                    ></textarea>
                     <InputError :message="errors.toc_descricao" />
                 </div>
             </div>
@@ -119,7 +140,7 @@ const selectClass = 'flex h-10 w-full rounded-md border border-input bg-backgrou
                 </div>
                 <p class="mt-1 whitespace-pre-wrap text-sm text-muted-foreground">{{ o.toc_descricao }}</p>
             </div>
-            <button type="button" class="rounded p-1.5 hover:bg-muted" title="Remover" @click="remove(o)"><Trash2 class="size-4 text-rose-500" /></button>
+            <button v-if="!bloqueado" type="button" class="rounded p-1.5 hover:bg-muted" title="Remover" @click="remove(o)"><Trash2 class="size-4 text-rose-500" /></button>
         </div>
     </div>
 </template>

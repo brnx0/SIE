@@ -9,10 +9,14 @@ use App\Models\Transporte\Ocorrencia;
 use App\Models\Transporte\Rota;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response as HttpResponse;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
+use Mpdf\Mpdf;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class DiarioBordoController extends Controller
 {
@@ -22,22 +26,7 @@ class DiarioBordoController extends Controller
             ? (int) $request->input('per_page')
             : 10;
 
-        $diarios = DiarioBordo::query()
-            ->with([
-                'rota:rot_id,rot_nome,rot_turno',
-                'veiculo:vei_id,vei_placa,vei_capacidade',
-                'motorista:mot_id,mot_nome',
-            ])
-            ->withCount([
-                'passageiros',
-                'passageiros as embarcados_count' => fn ($q) => $q->where('tdp_fl_embarcou', true),
-                'ocorrencias',
-            ])
-            ->when($request->integer('rot_id'), fn ($q, $v) => $q->where('tdb_rot_id', $v))
-            ->when($request->integer('vei_id'), fn ($q, $v) => $q->where('tdb_vei_id', $v))
-            ->when($request->integer('mot_id'), fn ($q, $v) => $q->where('tdb_mot_id', $v))
-            ->when($request->date('dt_inicio'), fn ($q, $v) => $q->whereDate('tdb_dt_viagem', '>=', $v))
-            ->when($request->date('dt_fim'), fn ($q, $v) => $q->whereDate('tdb_dt_viagem', '<=', $v))
+        $diarios = $this->listaQuery($request)
             ->orderByDesc('tdb_dt_viagem')
             ->orderByDesc('tdb_id')
             ->paginate($perPage)
@@ -46,9 +35,94 @@ class DiarioBordoController extends Controller
         return Inertia::render('transporte/diario-bordo/Index', [
             'diarios' => $diarios,
             'filters' => array_merge(
-                $request->only(['rot_id', 'vei_id', 'mot_id', 'dt_inicio', 'dt_fim']),
+                $request->only(['rot_id', 'vei_id', 'fun_id_motorista', 'dt_inicio', 'dt_fim']),
                 ['per_page' => $perPage],
             ),
+        ]);
+    }
+
+    private function listaQuery(Request $request)
+    {
+        return DiarioBordo::query()
+            ->with([
+                'rota:rot_id,rot_nome,rot_turno',
+                'veiculo:vei_id,vei_placa,vei_capacidade',
+                'motorista:fun_id,fun_nome',
+            ])
+            ->withCount([
+                'passageiros',
+                'passageiros as embarcados_count' => fn ($q) => $q->where('tdp_fl_embarcou', true),
+                'ocorrencias',
+            ])
+            ->when($request->integer('rot_id'), fn ($q, $v) => $q->where('tdb_rot_id', $v))
+            ->when($request->integer('vei_id'), fn ($q, $v) => $q->where('tdb_vei_id', $v))
+            ->when($request->integer('fun_id_motorista'), fn ($q, $v) => $q->where('tdb_fun_id_motorista', $v))
+            ->when($request->date('dt_inicio'), fn ($q, $v) => $q->whereDate('tdb_dt_viagem', '>=', $v))
+            ->when($request->date('dt_fim'), fn ($q, $v) => $q->whereDate('tdb_dt_viagem', '<=', $v));
+    }
+
+    public function export(Request $request): StreamedResponse|HttpResponse
+    {
+        $diarios = $this->listaQuery($request)
+            ->orderByDesc('tdb_dt_viagem')
+            ->orderByDesc('tdb_id')
+            ->get();
+
+        return $request->input('format') === 'pdf'
+            ? $this->exportListaPdf($diarios, $request)
+            : $this->exportListaCsv($diarios);
+    }
+
+    private function exportListaCsv($diarios): StreamedResponse
+    {
+        $filename = 'transporte_diario_' . now()->format('Ymd_His') . '.csv';
+        $fmt      = fn ($d) => $d ? Carbon::parse($d)->format('d/m/Y') : '';
+        $km       = fn ($d) => ($d->tdb_km_inicial !== null && $d->tdb_km_final !== null && $d->tdb_km_final >= $d->tdb_km_inicial)
+            ? number_format($d->tdb_km_final - $d->tdb_km_inicial, 1, ',', '.') : '';
+
+        return response()->streamDownload(function () use ($diarios, $fmt, $km) {
+            $out = fopen('php://output', 'w');
+            fprintf($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
+            fputcsv($out, ['Data', 'Rota', 'Veículo', 'Motorista', 'Km percorrido', 'Embarcados', 'Passageiros', 'Ocorrências', 'Situação'], ';');
+            foreach ($diarios as $d) {
+                fputcsv($out, [
+                    $fmt($d->tdb_dt_viagem),
+                    $d->rota?->rot_nome ?? '',
+                    $d->veiculo?->vei_placa ?? '',
+                    $d->motorista?->fun_nome ?? '',
+                    $km($d),
+                    $d->embarcados_count,
+                    $d->passageiros_count,
+                    $d->ocorrencias_count,
+                    $d->tdb_fl_fechado ? 'Fechado' : 'Aberto',
+                ], ';');
+            }
+            fclose($out);
+        }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
+    private function exportListaPdf($diarios, Request $request): HttpResponse
+    {
+        $collection = collect($diarios);
+        $filename   = 'transporte_diario_' . now()->format('Ymd_His') . '.pdf';
+
+        $html = view('exports.transporte_diario_pdf', [
+            'diarios'      => $collection,
+            'total'        => $collection->count(),
+            'totalFechados' => $collection->where('tdb_fl_fechado', true)->count(),
+            'totalOcorrencias' => $collection->sum('ocorrencias_count'),
+            'periodo'      => [
+                'inicio' => $request->input('dt_inicio'),
+                'fim'    => $request->input('dt_fim'),
+            ],
+        ])->render();
+
+        $mpdf = new Mpdf(['orientation' => 'L', 'format' => 'A4', 'margin_top' => 0, 'margin_bottom' => 0, 'margin_left' => 0, 'margin_right' => 0, 'tempDir' => sys_get_temp_dir()]);
+        $mpdf->WriteHTML($html);
+
+        return response($mpdf->Output($filename, 'S'), 200, [
+            'Content-Type'        => 'application/pdf',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
         ]);
     }
 
@@ -82,8 +156,8 @@ class DiarioBordoController extends Controller
                 'tdb_rot_id'    => $rota->rot_id,
                 'tdb_dt_viagem' => $data['tdb_dt_viagem'],
                 'tdb_vei_id'    => $rota->rot_vei_id,
-                'tdb_mot_id'    => $rota->rot_mot_id,
-                'tdb_tmo_id'    => $rota->rot_tmo_id,
+                'tdb_fun_id_motorista' => $rota->rot_fun_id_motorista,
+                'tdb_fun_id_monitor'   => $rota->rot_fun_id_monitor,
             ]);
 
             $this->snapshotChamada($diario);
@@ -95,14 +169,50 @@ class DiarioBordoController extends Controller
             ->with('success', 'Registro de viagem criado com a chamada dos passageiros ativos.');
     }
 
+    /** PDF individual da viagem: equipe, horários/km, chamada e ocorrências. */
+    public function pdf(DiarioBordo $diario): HttpResponse
+    {
+        $diario->load([
+            'rota:rot_id,rot_nome,rot_turno',
+            'veiculo:vei_id,vei_placa,vei_capacidade',
+            'motorista:fun_id,fun_nome',
+            'monitor:fun_id,fun_nome',
+            'passageiros.passageiro.ponto:pto_id,pto_nome,pto_ordem',
+            'passageiros.passageiro.aluno:aln_id,aln_nome',
+            'passageiros.passageiro.usuarioExterno:tue_id,tue_nome',
+            'ocorrencias',
+        ]);
+
+        $data = $diario->tdb_dt_viagem instanceof \DateTimeInterface
+            ? $diario->tdb_dt_viagem->format('Y-m-d')
+            : (string) $diario->tdb_dt_viagem;
+
+        $html = view('exports.transporte_diario_viagem_pdf', [
+            'diario'      => $diario,
+            'chamada'     => $this->chamadaSerializada($diario),
+            'ocorrencias' => $diario->ocorrencias,
+            'tipos'       => Ocorrencia::TIPOS,
+        ])->render();
+
+        $filename = 'diario_viagem_' . $data . '_' . $diario->tdb_id . '.pdf';
+
+        $mpdf = new Mpdf(['format' => 'A4', 'margin_top' => 0, 'margin_bottom' => 0, 'margin_left' => 0, 'margin_right' => 0, 'tempDir' => sys_get_temp_dir()]);
+        $mpdf->WriteHTML($html);
+
+        return response($mpdf->Output($filename, 'S'), 200, [
+            'Content-Type'        => 'application/pdf',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+        ]);
+    }
+
     public function edit(DiarioBordo $diario): Response
     {
         $diario->load([
-            'rota:rot_id,rot_nome,rot_turno,rot_anl_id,rot_vei_id,rot_mot_id,rot_tmo_id',
+            'rota:rot_id,rot_nome,rot_turno,rot_anl_id,rot_vei_id,rot_fun_id_motorista,rot_fun_id_monitor',
             'rota.anoLetivo:anl_id,anl_ano',
             'veiculo:vei_id,vei_placa,vei_capacidade',
-            'motorista:mot_id,mot_nome',
-            'monitor:tmo_id,tmo_nome',
+            'motorista:fun_id,fun_nome',
+            'monitor:fun_id,fun_nome',
             'passageiros.passageiro.ponto:pto_id,pto_nome,pto_ordem',
             'passageiros.passageiro.aluno:aln_id,aln_nome',
             'passageiros.passageiro.usuarioExterno:tue_id,tue_nome',
@@ -123,13 +233,14 @@ class DiarioBordoController extends Controller
                 'tdb_rot_id'     => $diario->tdb_rot_id,
                 'tdb_dt_viagem'  => $diario->tdb_dt_viagem instanceof \DateTimeInterface ? $diario->tdb_dt_viagem->format('Y-m-d') : (string) $diario->tdb_dt_viagem,
                 'tdb_vei_id'     => $diario->tdb_vei_id,
-                'tdb_mot_id'     => $diario->tdb_mot_id,
-                'tdb_tmo_id'     => $diario->tdb_tmo_id,
+                'tdb_fun_id_motorista' => $diario->tdb_fun_id_motorista,
+                'tdb_fun_id_monitor'   => $diario->tdb_fun_id_monitor,
                 'tdb_hr_saida'   => $diario->tdb_hr_saida ? substr($diario->tdb_hr_saida, 0, 5) : null,
                 'tdb_hr_chegada' => $diario->tdb_hr_chegada ? substr($diario->tdb_hr_chegada, 0, 5) : null,
                 'tdb_km_inicial' => $diario->tdb_km_inicial,
                 'tdb_km_final'   => $diario->tdb_km_final,
                 'tdb_obs'        => $diario->tdb_obs,
+                'tdb_fl_fechado' => (bool) $diario->tdb_fl_fechado,
                 'rota'           => $diario->rota ? [
                     'rot_id'    => $diario->rota->rot_id,
                     'rot_nome'  => $diario->rota->rot_nome,
@@ -137,8 +248,8 @@ class DiarioBordoController extends Controller
                     'anl_ano'   => $diario->rota->anoLetivo?->anl_ano,
                 ] : null,
                 'veiculo'   => $diario->veiculo ? ['vei_id' => $diario->veiculo->vei_id, 'vei_placa' => $diario->veiculo->vei_placa, 'vei_capacidade' => $diario->veiculo->vei_capacidade] : null,
-                'motorista' => $diario->motorista ? ['mot_id' => $diario->motorista->mot_id, 'mot_nome' => $diario->motorista->mot_nome] : null,
-                'monitor'   => $diario->monitor ? ['tmo_id' => $diario->monitor->tmo_id, 'tmo_nome' => $diario->monitor->tmo_nome] : null,
+                'motorista' => $diario->motorista ? ['fun_id' => $diario->motorista->fun_id, 'fun_nome' => $diario->motorista->fun_nome] : null,
+                'monitor'   => $diario->monitor ? ['fun_id' => $diario->monitor->fun_id, 'fun_nome' => $diario->monitor->fun_nome] : null,
             ],
             'chamada'       => $this->chamadaSerializada($diario),
             'ocorrencias'   => $diario->ocorrencias->map(fn ($o) => [
@@ -154,13 +265,39 @@ class DiarioBordoController extends Controller
 
     public function update(StoreDiarioBordoRequest $request, DiarioBordo $diario): RedirectResponse
     {
+        if ($diario->tdb_fl_fechado) {
+            return back()->with('error', 'Registro fechado — reabra para editar.');
+        }
+
         $diario->update($request->validated());
 
         return to_route('transporte.diario-bordo.edit', $diario)->with('success', 'Registro atualizado com sucesso.');
     }
 
+    /** Trava o registro: fica somente-leitura até ser reaberto. */
+    public function fechar(DiarioBordo $diario): RedirectResponse
+    {
+        $diario->update(['tdb_fl_fechado' => true]);
+
+        return back()->with('success', 'Registro fechado. Não é mais editável enquanto permanecer fechado.');
+    }
+
+    /** Reabre o registro (somente administrador). */
+    public function reabrir(Request $request, DiarioBordo $diario): RedirectResponse
+    {
+        abort_unless($request->user()?->isAdmin(), 403);
+
+        $diario->update(['tdb_fl_fechado' => false]);
+
+        return back()->with('success', 'Registro reaberto para edição.');
+    }
+
     public function destroy(DiarioBordo $diario): RedirectResponse
     {
+        if ($diario->tdb_fl_fechado) {
+            return back()->with('error', 'Registro fechado — reabra antes de excluir.');
+        }
+
         DB::transaction(function () use ($diario) {
             $diario->passageiros()->delete();  // chamada (hard delete)
             $diario->ocorrencias()->delete();  // ocorrências (hard delete)
@@ -175,6 +312,10 @@ class DiarioBordoController extends Controller
      */
     public function chamada(Request $request, DiarioBordo $diario): RedirectResponse
     {
+        if ($diario->tdb_fl_fechado) {
+            return back()->with('error', 'Registro fechado — reabra para editar a chamada.');
+        }
+
         $data = $request->validate([
             'itens'                     => ['required', 'array'],
             'itens.*.tdp_id'            => ['required', 'integer'],
@@ -182,7 +323,7 @@ class DiarioBordoController extends Controller
             'itens.*.fl_desembarcou'    => ['boolean'],
             'itens.*.hr_embarque'       => ['nullable', 'date_format:H:i'],
             'itens.*.hr_desembarque'    => ['nullable', 'date_format:H:i'],
-            'itens.*.obs'               => ['nullable', 'string', 'max:200'],
+            'itens.*.obs'               => ['nullable', 'string', 'max:120'],
         ]);
 
         $idsValidos = $diario->passageiros()->pluck('tdp_id')->all();
@@ -218,6 +359,10 @@ class DiarioBordoController extends Controller
      */
     public function sincronizarChamada(DiarioBordo $diario): RedirectResponse
     {
+        if ($diario->tdb_fl_fechado) {
+            return back()->with('error', 'Registro fechado — reabra para sincronizar a chamada.');
+        }
+
         $adicionados = $this->snapshotChamada($diario);
 
         return back()->with('success', $adicionados > 0
@@ -227,10 +372,14 @@ class DiarioBordoController extends Controller
 
     public function storeOcorrencia(Request $request, DiarioBordo $diario): RedirectResponse
     {
+        if ($diario->tdb_fl_fechado) {
+            return back()->with('error', 'Registro fechado — reabra para registrar ocorrências.');
+        }
+
         $data = $request->validate([
             'toc_tipo'      => ['required', 'string', 'in:' . implode(',', array_keys(Ocorrencia::TIPOS))],
             'toc_hr'        => ['nullable', 'date_format:H:i'],
-            'toc_descricao' => ['required', 'string', 'max:2000'],
+            'toc_descricao' => ['required', 'string', 'max:500'],
         ], [], [
             'toc_tipo'      => 'tipo',
             'toc_hr'        => 'hora',
@@ -249,6 +398,10 @@ class DiarioBordoController extends Controller
     public function destroyOcorrencia(DiarioBordo $diario, Ocorrencia $ocorrencia): RedirectResponse
     {
         abort_unless($ocorrencia->toc_tdb_id === $diario->tdb_id, 404);
+
+        if ($diario->tdb_fl_fechado) {
+            return back()->with('error', 'Registro fechado — reabra para remover ocorrências.');
+        }
 
         $ocorrencia->delete();
 

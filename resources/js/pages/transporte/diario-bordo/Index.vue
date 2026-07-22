@@ -1,9 +1,10 @@
 <script setup lang="ts">
+import ExportMenu from '@/components/common/ExportMenu.vue';
 import PerPageSelect from '@/components/common/PerPageSelect.vue';
 import RefreshButton from '@/components/common/RefreshButton.vue';
 import FormLabel from '@/components/common/FormLabel.vue';
 import InputError from '@/components/common/InputError.vue';
-import MotoristaCombobox from '@/components/transporte/MotoristaCombobox.vue';
+import FuncionarioTransporteCombobox from '@/components/transporte/FuncionarioTransporteCombobox.vue';
 import RotaCombobox from '@/components/transporte/RotaCombobox.vue';
 import VeiculoCombobox from '@/components/transporte/VeiculoCombobox.vue';
 import { Button } from '@/components/ui/button';
@@ -13,12 +14,12 @@ import { usePermissao } from '@/composables/usePermissao';
 import { type BreadcrumbItem, type Paginated } from '@/types';
 import { ROTA_TURNOS, type DiarioBordoLista } from '@/types/transporte';
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
-import { AlertTriangle, CalendarPlus, Pencil, Route as RouteIcon, Trash2, Users } from 'lucide-vue-next';
+import { AlertTriangle, CalendarPlus, Lock, Pencil, Route as RouteIcon, Trash2, Users } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
 
 const props = defineProps<{
     diarios: Paginated<DiarioBordoLista>;
-    filters: { rot_id: number | null; vei_id: number | null; mot_id: number | null; dt_inicio: string | null; dt_fim: string | null; per_page: number };
+    filters: { rot_id: number | null; vei_id: number | null; fun_id_motorista: number | null; dt_inicio: string | null; dt_fim: string | null; per_page: number };
 }>();
 
 const { isReadOnly } = usePermissao();
@@ -26,7 +27,7 @@ const { isReadOnly } = usePermissao();
 // ── Filtros ──────────────────────────────────────────────────────────────
 const rotId    = ref<number | null>(props.filters.rot_id ?? null);
 const veiId    = ref<number | null>(props.filters.vei_id ?? null);
-const motId    = ref<number | null>(props.filters.mot_id ?? null);
+const motId    = ref<number | null>(props.filters.fun_id_motorista ?? null);
 const dtInicio = ref(props.filters.dt_inicio ?? '');
 const dtFim    = ref(props.filters.dt_fim ?? '');
 const perPage  = ref(props.filters.per_page ?? 10);
@@ -35,7 +36,7 @@ const apply = (resetPage = false) => {
     const params: Record<string, string | number> = {
         rot_id: rotId.value ?? '',
         vei_id: veiId.value ?? '',
-        mot_id: motId.value ?? '',
+        fun_id_motorista: motId.value ?? '',
         dt_inicio: dtInicio.value,
         dt_fim: dtFim.value,
         per_page: perPage.value,
@@ -113,7 +114,7 @@ const fmtData = (d: string) => new Date(d + 'T00:00:00').toLocaleDateString('pt-
                 </div>
                 <div class="grid min-w-[12rem] gap-1.5">
                     <FormLabel>Motorista</FormLabel>
-                    <MotoristaCombobox :model-value="motId" @update:model-value="(v) => (motId = v)" placeholder="Todos" />
+                    <FuncionarioTransporteCombobox papel="motoristas" :model-value="motId" @update:model-value="(v) => (motId = v)" placeholder="Todos" />
                 </div>
                 <div class="grid gap-1.5">
                     <FormLabel>De</FormLabel>
@@ -125,6 +126,7 @@ const fmtData = (d: string) => new Date(d + 'T00:00:00').toLocaleDateString('pt-
                 </div>
                 <Button type="button" variant="outline" size="sm" @click="limparFiltros">Limpar</Button>
                 <div class="ml-auto flex items-center gap-3">
+                    <ExportMenu base-url="/transporte/diario-bordo/export" :filters="{ rot_id: rotId, vei_id: veiId, fun_id_motorista: motId, dt_inicio: dtInicio, dt_fim: dtFim }" />
                     <RefreshButton />
                     <PerPageSelect v-model="perPage" />
                 </div>
@@ -150,7 +152,12 @@ const fmtData = (d: string) => new Date(d + 'T00:00:00').toLocaleDateString('pt-
                             <td colspan="8" class="px-4 py-12 text-center text-muted-foreground">Nenhum registro no período.</td>
                         </tr>
                         <tr v-for="d in diarios.data" :key="d.tdb_id" class="transition-colors hover:bg-muted/30">
-                            <td class="px-4 py-3 font-medium">{{ fmtData(d.tdb_dt_viagem) }}</td>
+                            <td class="px-4 py-3 font-medium">
+                                <span class="inline-flex items-center gap-1.5">
+                                    {{ fmtData(d.tdb_dt_viagem) }}
+                                    <Lock v-if="d.tdb_fl_fechado" class="size-3.5 text-amber-600" title="Registro fechado (somente leitura)" />
+                                </span>
+                            </td>
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-2">
                                     <RouteIcon class="size-4 text-indigo-500" />
@@ -161,7 +168,7 @@ const fmtData = (d: string) => new Date(d + 'T00:00:00').toLocaleDateString('pt-
                                 </div>
                             </td>
                             <td class="px-4 py-3 text-muted-foreground">{{ d.veiculo?.vei_placa ?? '—' }}</td>
-                            <td class="px-4 py-3 text-muted-foreground">{{ d.motorista?.mot_nome ?? '—' }}</td>
+                            <td class="px-4 py-3 text-muted-foreground">{{ d.motorista?.fun_nome ?? '—' }}</td>
                             <td class="px-4 py-3 text-center">
                                 <span v-if="kmPercorrido(d)" class="tabular-nums">{{ kmPercorrido(d) }} km</span>
                                 <span v-else class="text-muted-foreground">—</span>
@@ -182,7 +189,7 @@ const fmtData = (d: string) => new Date(d + 'T00:00:00').toLocaleDateString('pt-
                                     <Link :href="`/transporte/diario-bordo/${d.tdb_id}/edit`">
                                         <Button variant="ghost" size="sm"><Pencil class="size-4" /></Button>
                                     </Link>
-                                    <Button v-if="!isReadOnly" variant="ghost" size="sm" class="text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:hover:bg-rose-900/30" @click="remove(d)">
+                                    <Button v-if="!isReadOnly && !d.tdb_fl_fechado" variant="ghost" size="sm" class="text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:hover:bg-rose-900/30" @click="remove(d)">
                                         <Trash2 class="size-4" />
                                     </Button>
                                 </div>

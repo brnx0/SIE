@@ -10,6 +10,7 @@ const props = defineProps<{
     diario: DiarioBordo;
     chamada: ChamadaItem[];
     pendentesSync: number;
+    bloqueado?: boolean;
 }>();
 
 type Linha = ChamadaItem & {};
@@ -107,10 +108,10 @@ const refresh = () => {
                 <Button type="button" size="sm" variant="outline" :disabled="refreshing" title="Atualizar" @click="refresh">
                     <RefreshCw :class="['mr-1 size-4', refreshing && 'animate-spin']" /> Atualizar
                 </Button>
-                <Button v-if="pendentesSync > 0" type="button" size="sm" variant="outline" :disabled="syncing" class="border-amber-400 text-amber-700 hover:bg-amber-50 dark:text-amber-300" @click="sincronizar">
+                <Button v-if="!bloqueado && pendentesSync > 0" type="button" size="sm" variant="outline" :disabled="syncing" class="border-amber-400 text-amber-700 hover:bg-amber-50 dark:text-amber-300" @click="sincronizar">
                     <RotateCw :class="['mr-1 size-4', syncing && 'animate-spin']" /> Sincronizar chamada ({{ pendentesSync }})
                 </Button>
-                <Button type="button" size="sm" variant="outline" @click="marcarTodosEmbarque">
+                <Button v-if="!bloqueado" type="button" size="sm" variant="outline" @click="marcarTodosEmbarque">
                     <CheckCheck class="mr-1 size-4" /> Marcar todos embarcados
                 </Button>
             </div>
@@ -144,20 +145,20 @@ const refresh = () => {
                             </span>
                         </td>
                         <td class="px-4 py-2 text-center">
-                            <input type="checkbox" v-model="l.tdp_fl_embarcou" class="size-4 accent-indigo-600" @change="onEmbarque(l)" />
+                            <input type="checkbox" v-model="l.tdp_fl_embarcou" :disabled="bloqueado" class="size-4 accent-indigo-600 disabled:opacity-40" @change="onEmbarque(l)" />
                         </td>
                         <td class="px-4 py-2 text-center">
-                            <input type="checkbox" v-model="l.tdp_fl_desembarcou" :disabled="!l.tdp_fl_embarcou" class="size-4 accent-emerald-600 disabled:opacity-40" />
+                            <input type="checkbox" v-model="l.tdp_fl_desembarcou" :disabled="bloqueado || !l.tdp_fl_embarcou" class="size-4 accent-emerald-600 disabled:opacity-40" />
                         </td>
                         <td class="px-4 py-2">
-                            <Input v-model="l.tdp_obs" maxlength="200" placeholder="—" class="h-8 text-xs" />
+                            <Input v-model="l.tdp_obs" maxlength="120" placeholder="—" class="h-8 text-xs" :disabled="bloqueado" />
                         </td>
                     </tr>
                 </tbody>
             </table>
         </div>
 
-        <div v-if="linhas.length > 0" class="flex justify-end">
+        <div v-if="linhas.length > 0 && !bloqueado" class="flex justify-end">
             <Button type="button" :disabled="processing" class="bg-indigo-600 text-white hover:bg-indigo-700" @click="salvar">
                 <Loader2 v-if="processing" class="mr-2 size-4 animate-spin" /> Gravar chamada
             </Button>

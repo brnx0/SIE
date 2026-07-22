@@ -14,21 +14,22 @@ return new class extends Migration
             $table->unsignedBigInteger('tdb_rot_id');
             $table->date('tdb_dt_viagem'); // um registro cobre o dia inteiro (D6)
             $table->unsignedBigInteger('tdb_vei_id'); // default = titular da rota (veículo reserva editável)
-            $table->unsignedBigInteger('tdb_mot_id'); // idem (substituição)
-            $table->unsignedBigInteger('tdb_tmo_id')->nullable();
+            $table->unsignedBigInteger('tdb_fun_id_motorista'); // idem (substituição)
+            $table->unsignedBigInteger('tdb_fun_id_monitor')->nullable();
             $table->time('tdb_hr_saida')->nullable();
             $table->time('tdb_hr_chegada')->nullable();
             $table->decimal('tdb_km_inicial', 10, 1)->nullable();
             $table->decimal('tdb_km_final', 10, 1)->nullable();
             $table->text('tdb_obs')->nullable();
+            $table->boolean('tdb_fl_fechado')->default(false);
             $table->timestamp('tdb_created_at')->nullable();
             $table->timestamp('tdb_updated_at')->nullable();
             $table->softDeletesTz('tdb_deleted_at');
 
             $table->foreign('tdb_rot_id')->references('rot_id')->on('edu_transporte_rota');
             $table->foreign('tdb_vei_id')->references('vei_id')->on('edu_transporte_veiculo');
-            $table->foreign('tdb_mot_id')->references('mot_id')->on('edu_transporte_motorista');
-            $table->foreign('tdb_tmo_id')->references('tmo_id')->on('edu_transporte_monitor');
+            $table->foreign('tdb_fun_id_motorista')->references('fun_id')->on('edu_funcionario');
+            $table->foreign('tdb_fun_id_monitor')->references('fun_id')->on('edu_funcionario');
             $table->index('tdb_rot_id');
             $table->index('tdb_dt_viagem');
         });

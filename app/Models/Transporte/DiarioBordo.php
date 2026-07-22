@@ -2,6 +2,7 @@
 
 namespace App\Models\Transporte;
 
+use App\Models\Funcionario\Funcionario;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -25,22 +26,24 @@ class DiarioBordo extends Model
         'tdb_rot_id',
         'tdb_dt_viagem',
         'tdb_vei_id',
-        'tdb_mot_id',
-        'tdb_tmo_id',
+        'tdb_fun_id_motorista',
+        'tdb_fun_id_monitor',
         'tdb_hr_saida',
         'tdb_hr_chegada',
         'tdb_km_inicial',
         'tdb_km_final',
         'tdb_obs',
+        'tdb_fl_fechado',
     ];
 
     protected $casts = [
         'tdb_rot_id'     => 'integer',
         'tdb_vei_id'     => 'integer',
-        'tdb_mot_id'     => 'integer',
-        'tdb_tmo_id'     => 'integer',
+        'tdb_fun_id_motorista' => 'integer',
+        'tdb_fun_id_monitor'   => 'integer',
         'tdb_km_inicial' => 'float',
         'tdb_km_final'   => 'float',
+        'tdb_fl_fechado' => 'boolean',
     ];
 
     public function rota(): BelongsTo
@@ -55,12 +58,12 @@ class DiarioBordo extends Model
 
     public function motorista(): BelongsTo
     {
-        return $this->belongsTo(Motorista::class, 'tdb_mot_id', 'mot_id');
+        return $this->belongsTo(Funcionario::class, 'tdb_fun_id_motorista', 'fun_id');
     }
 
     public function monitor(): BelongsTo
     {
-        return $this->belongsTo(Monitor::class, 'tdb_tmo_id', 'tmo_id');
+        return $this->belongsTo(Funcionario::class, 'tdb_fun_id_monitor', 'fun_id');
     }
 
     public function passageiros(): HasMany

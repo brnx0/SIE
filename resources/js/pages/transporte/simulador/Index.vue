@@ -8,15 +8,15 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { usePermissao } from '@/composables/usePermissao';
 import { useGeoTransporte } from '@/composables/useGeoTransporte';
 import { type BreadcrumbItem } from '@/types';
-import type { GeoJsonLineString, InstituicaoGeo, SimuladorPonto, SimuladorRota } from '@/types/transporte';
+import type { EscolaGeo, GeoJsonLineString, SimuladorPonto, SimuladorRota } from '@/types/transporte';
 import { Head, router } from '@inertiajs/vue3';
-import { ArrowDown, ArrowUp, Loader2, MapPin, Navigation, Route as RouteIcon, Save, Search, Trash2, Users } from 'lucide-vue-next';
+import { ArrowDown, ArrowUp, Check, Copy, ExternalLink, Loader2, MapPin, Navigation, Route as RouteIcon, Save, Search, Users } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 
 const props = defineProps<{
     anosLetivos: { anl_id: number; anl_ano: number }[];
     rota: SimuladorRota | null;
-    instituicoes: InstituicaoGeo[];
+    escolas: EscolaGeo[];
 }>();
 
 const { isReadOnly } = usePermissao();
@@ -47,6 +47,27 @@ watch(() => props.rota, (r) => {
 const pontosComCoords = computed(() =>
     pontos.value.filter((p) => p.pto_latitude != null && p.pto_longitude != null),
 );
+
+// URL de direções do Google Maps com todos os pontos na ordem (origem → destino).
+// Formato de caminho /maps/dir/lat,lng/lat,lng/... aceita vários paradas.
+const googleMapsUrl = computed(() => {
+    const pts = pontosComCoords.value;
+    if (pts.length < 2) return null;
+    const path = pts.map((p) => `${p.pto_latitude},${p.pto_longitude}`).join('/');
+    return `https://www.google.com/maps/dir/${path}`;
+});
+
+const copiado = ref(false);
+const copiarLink = async () => {
+    if (!googleMapsUrl.value) return;
+    try {
+        await navigator.clipboard.writeText(googleMapsUrl.value);
+        copiado.value = true;
+        setTimeout(() => { copiado.value = false; }, 1800);
+    } catch {
+        // clipboard indisponível (ex.: contexto não seguro) — ignora silenciosamente
+    }
+};
 
 const ocupacao = computed(() => {
     const cap = props.rota?.capacidade ?? null;
@@ -93,7 +114,7 @@ const onMapClick = (lat: number, lng: number) => {
         pto_nome: `Novo ponto ${pontos.value.length + 1}`,
         pto_latitude: Math.round(lat * 1e7) / 1e7,
         pto_longitude: Math.round(lng * 1e7) / 1e7,
-        instituicao: null,
+        escola: null,
     });
     alterado.value = true;
     recalcular();
@@ -104,12 +125,6 @@ const mover = (index: number, delta: number) => {
     if (alvo < 0 || alvo >= pontos.value.length) return;
     const arr = pontos.value;
     [arr[index], arr[alvo]] = [arr[alvo], arr[index]];
-    alterado.value = true;
-    recalcular();
-};
-
-const remover = (index: number) => {
-    pontos.value.splice(index, 1);
     alterado.value = true;
     recalcular();
 };
@@ -127,7 +142,7 @@ const adicionarDoEndereco = (r: { nome: string; lat: number; lon: number }) => {
         pto_nome: r.nome.split(',').slice(0, 2).join(',').slice(0, 120) || `Ponto ${pontos.value.length + 1}`,
         pto_latitude: r.lat,
         pto_longitude: r.lon,
-        instituicao: null,
+        escola: null,
     });
     resultadosGeo.value = [];
     enderecoBusca.value = '';
@@ -188,7 +203,7 @@ const breadcrumbs: BreadcrumbItem[] = [{ title: 'Simulador de Rotas', href: '/tr
                 <!-- Mapa -->
                 <MapaRota
                     :pontos="pontos"
-                    :instituicoes="instituicoes"
+                    :escolas="escolas"
                     :trajeto="trajeto"
                     :editable="!isReadOnly"
                     height="620px"
@@ -224,6 +239,27 @@ const breadcrumbs: BreadcrumbItem[] = [{ title: 'Simulador de Rotas', href: '/tr
                             <Loader2 v-if="efetivando" class="mr-1 size-4 animate-spin" /><Save v-else class="mr-1 size-4" /> Efetivar
                         </Button>
                     </div>
+                    <div v-if="googleMapsUrl" class="flex items-center gap-2">
+                        <a
+                            :href="googleMapsUrl"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="inline-flex h-9 flex-1 items-center justify-center gap-1.5 rounded-md border border-input bg-background px-3 text-sm font-medium shadow-sm transition hover:bg-muted"
+                        >
+                            <ExternalLink class="size-4" /> Abrir no Google Maps
+                        </a>
+                        <button
+                            type="button"
+                            title="Copiar link da rota"
+                            class="inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-md border border-input bg-background px-3 text-sm font-medium shadow-sm transition hover:bg-muted"
+                            @click="copiarLink"
+                        >
+                            <Check v-if="copiado" class="size-4 text-emerald-600" />
+                            <Copy v-else class="size-4" />
+                            {{ copiado ? 'Copiado!' : 'Copiar link' }}
+                        </button>
+                    </div>
+
                     <p v-if="!isReadOnly" class="text-xs text-muted-foreground">Clique no mapa para adicionar um ponto; arraste os marcadores para reposicionar. "Efetivar" grava pontos, trajeto e estimativas na rota.</p>
 
                     <!-- Buscar endereço -->
@@ -264,7 +300,6 @@ const breadcrumbs: BreadcrumbItem[] = [{ title: 'Simulador de Rotas', href: '/tr
                                     <button type="button" class="rounded p-0.5 hover:bg-muted disabled:opacity-30" :disabled="i === 0" title="Subir" @click="mover(i, -1)"><ArrowUp class="size-3.5" /></button>
                                     <button type="button" class="rounded p-0.5 hover:bg-muted disabled:opacity-30" :disabled="i === pontos.length - 1" title="Descer" @click="mover(i, 1)"><ArrowDown class="size-3.5" /></button>
                                 </div>
-                                <button v-if="!isReadOnly" type="button" class="rounded p-1 hover:bg-muted" title="Remover da simulação" @click="remover(i)"><Trash2 class="size-4 text-rose-500" /></button>
                             </li>
                         </ul>
                     </div>
