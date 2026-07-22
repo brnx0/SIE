@@ -39,6 +39,15 @@ const form = useForm({
     _method: props.mode === 'edit' ? 'put' : undefined,
 });
 
+// Limita a quantidade de dígitos digitados em campos numéricos (type="number"
+// não respeita maxlength). Trunca o valor no input e reflete no formulário.
+const limitDigits = (event: Event, field: 'vei_capacidade' | 'vei_ano_fabricacao', max: number) => {
+    const el = event.target as HTMLInputElement;
+    const digits = el.value.replace(/\D/g, '').slice(0, max);
+    if (el.value !== digits) el.value = digits;
+    form[field] = digits === '' ? null : Number(digits);
+};
+
 const submit = (continueNew = false) => {
     if (isReadOnly.value) return;
     form.continue_new = continueNew;
@@ -139,7 +148,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar veículo' : 'Salvar alt
 
             <div class="grid gap-2">
                 <FormLabel for="vei_capacidade" :required="true">Capacidade (assentos)</FormLabel>
-                <Input id="vei_capacidade" type="number" min="1" max="200" step="1" inputmode="numeric" v-model.number="form.vei_capacidade" />
+                <Input id="vei_capacidade" type="number" min="1" max="999" step="1" inputmode="numeric" v-model.number="form.vei_capacidade" @input="limitDigits($event, 'vei_capacidade', 3)" />
                 <InputError :message="form.errors.vei_capacidade" />
             </div>
 
@@ -151,19 +160,19 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar veículo' : 'Salvar alt
 
             <div class="grid gap-2">
                 <FormLabel for="vei_marca">Marca</FormLabel>
-                <Input id="vei_marca" v-model="form.vei_marca" maxlength="60" placeholder="Opcional" />
+                <Input id="vei_marca" v-model="form.vei_marca" maxlength="20" placeholder="Opcional" />
                 <InputError :message="form.errors.vei_marca" />
             </div>
 
             <div class="grid gap-2">
                 <FormLabel for="vei_modelo">Modelo</FormLabel>
-                <Input id="vei_modelo" v-model="form.vei_modelo" maxlength="60" placeholder="Opcional" />
+                <Input id="vei_modelo" v-model="form.vei_modelo" maxlength="25" placeholder="Opcional" />
                 <InputError :message="form.errors.vei_modelo" />
             </div>
 
             <div class="grid gap-2">
                 <FormLabel for="vei_ano_fabricacao">Ano de fabricação</FormLabel>
-                <Input id="vei_ano_fabricacao" type="number" min="1950" :max="new Date().getFullYear() + 1" step="1" inputmode="numeric" v-model.number="form.vei_ano_fabricacao" placeholder="Opcional" />
+                <Input id="vei_ano_fabricacao" type="number" min="1950" :max="new Date().getFullYear() + 1" step="1" inputmode="numeric" v-model.number="form.vei_ano_fabricacao" placeholder="Opcional" @input="limitDigits($event, 'vei_ano_fabricacao', 4)" />
                 <InputError :message="form.errors.vei_ano_fabricacao" />
             </div>
 
@@ -189,7 +198,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar veículo' : 'Salvar alt
                     <FormLabel for="vei_dt_licenciamento">Licenciamento</FormLabel>
                     <DocVencimentoBadge :date="form.vei_dt_licenciamento || null" label="Validade" />
                 </div>
-                <Input id="vei_dt_licenciamento" type="date" v-model="form.vei_dt_licenciamento" />
+                <Input id="vei_dt_licenciamento" type="date" min="1950-01-01" max="9999-12-31" v-model="form.vei_dt_licenciamento" />
                 <InputError :message="form.errors.vei_dt_licenciamento" />
             </div>
 
@@ -198,7 +207,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar veículo' : 'Salvar alt
                     <FormLabel for="vei_dt_seguro">Seguro</FormLabel>
                     <DocVencimentoBadge :date="form.vei_dt_seguro || null" label="Validade" />
                 </div>
-                <Input id="vei_dt_seguro" type="date" v-model="form.vei_dt_seguro" />
+                <Input id="vei_dt_seguro" type="date" min="1950-01-01" max="9999-12-31" v-model="form.vei_dt_seguro" />
                 <InputError :message="form.errors.vei_dt_seguro" />
             </div>
 
@@ -207,7 +216,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar veículo' : 'Salvar alt
                     <FormLabel for="vei_dt_vistoria">Vistoria</FormLabel>
                     <DocVencimentoBadge :date="form.vei_dt_vistoria || null" label="Validade" />
                 </div>
-                <Input id="vei_dt_vistoria" type="date" v-model="form.vei_dt_vistoria" />
+                <Input id="vei_dt_vistoria" type="date" min="1950-01-01" max="9999-12-31" v-model="form.vei_dt_vistoria" />
                 <InputError :message="form.errors.vei_dt_vistoria" />
             </div>
 
@@ -217,7 +226,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar veículo' : 'Salvar alt
                     id="vei_obs"
                     v-model="form.vei_obs"
                     rows="3"
-                    maxlength="2000"
+                    maxlength="500"
                     class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground"
                     placeholder="Opcional"
                 ></textarea>
