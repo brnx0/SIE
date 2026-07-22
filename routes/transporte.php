@@ -1,20 +1,17 @@
 <?php
 
 use App\Http\Controllers\Transporte\VeiculoController;
-use App\Http\Controllers\Transporte\MotoristaController;
-use App\Http\Controllers\Transporte\MonitorController;
-use App\Http\Controllers\Transporte\InstituicaoController;
 use App\Http\Controllers\Transporte\UsuarioExternoController;
 use App\Http\Controllers\Transporte\RotaController;
 use App\Http\Controllers\Transporte\RotaPontoController;
 use App\Http\Controllers\Transporte\RotaPassageiroController;
 use App\Http\Controllers\Transporte\DiarioBordoController;
 use App\Http\Controllers\Transporte\SimuladorController;
-use App\Http\Controllers\Api\Transporte\InstituicaoController as InstituicaoApiController;
+use App\Http\Controllers\Transporte\RelatorioFrotaController;
+use App\Http\Controllers\Transporte\RelatorioOcorrenciasController;
 use App\Http\Controllers\Api\Transporte\GeoController as TransporteGeoController;
 use App\Http\Controllers\Api\Transporte\VeiculoController as VeiculoApiController;
-use App\Http\Controllers\Api\Transporte\MotoristaController as MotoristaApiController;
-use App\Http\Controllers\Api\Transporte\MonitorController as MonitorApiController;
+use App\Http\Controllers\Api\Transporte\FuncionarioTransporteController;
 use App\Http\Controllers\Api\Transporte\RotaController as RotaApiController;
 use App\Http\Controllers\Api\Transporte\UsuarioExternoController as UsuarioExternoApiController;
 use Illuminate\Support\Facades\Route;
@@ -34,18 +31,11 @@ Route::prefix('transporte')->name('transporte.')->group(function () {
     Route::get('veiculos/export', [VeiculoController::class, 'export'])->name('veiculos.export');
     Route::resource('veiculos', VeiculoController::class)->except(['show']);
 
-    Route::get('motoristas/export', [MotoristaController::class, 'export'])->name('motoristas.export');
-    Route::resource('motoristas', MotoristaController::class)->except(['show']);
+    // Motorista e monitor não têm cadastro próprio: são funcionários da rede
+    // lotados nos cargos de CargoTransporte (ver api/transporte/*/search).
 
-    Route::get('monitores/export', [MonitorController::class, 'export'])->name('monitores.export');
-    Route::resource('monitores', MonitorController::class)
-        ->parameters(['monitores' => 'monitor'])
-        ->except(['show']);
-
-    Route::get('instituicoes/export', [InstituicaoController::class, 'export'])->name('instituicoes.export');
-    Route::resource('instituicoes', InstituicaoController::class)
-        ->parameters(['instituicoes' => 'instituicao'])
-        ->except(['show']);
+    // Instituições de ensino: usa as escolas já cadastradas (edu_escola).
+    // Não há cadastro próprio — a seleção é feita via api/escolas.
 
     Route::get('usuarios/export', [UsuarioExternoController::class, 'export'])->name('usuarios.export');
     Route::resource('usuarios', UsuarioExternoController::class)
@@ -64,10 +54,14 @@ Route::prefix('transporte')->name('transporte.')->group(function () {
 
     // Diário de bordo (Fase 3)
     Route::get('diario-bordo', [DiarioBordoController::class, 'index'])->name('diario-bordo.index');
+    Route::get('diario-bordo/export', [DiarioBordoController::class, 'export'])->name('diario-bordo.export');
     Route::post('diario-bordo', [DiarioBordoController::class, 'store'])->name('diario-bordo.store');
     Route::get('diario-bordo/{diario}/edit', [DiarioBordoController::class, 'edit'])->name('diario-bordo.edit');
+    Route::get('diario-bordo/{diario}/pdf', [DiarioBordoController::class, 'pdf'])->name('diario-bordo.pdf');
     Route::put('diario-bordo/{diario}', [DiarioBordoController::class, 'update'])->name('diario-bordo.update');
     Route::delete('diario-bordo/{diario}', [DiarioBordoController::class, 'destroy'])->name('diario-bordo.destroy');
+    Route::put('diario-bordo/{diario}/fechar', [DiarioBordoController::class, 'fechar'])->name('diario-bordo.fechar');
+    Route::put('diario-bordo/{diario}/reabrir', [DiarioBordoController::class, 'reabrir'])->name('diario-bordo.reabrir');
     Route::put('diario-bordo/{diario}/chamada', [DiarioBordoController::class, 'chamada'])->name('diario-bordo.chamada');
     Route::put('diario-bordo/{diario}/sincronizar-chamada', [DiarioBordoController::class, 'sincronizarChamada'])->name('diario-bordo.sincronizar-chamada');
     Route::post('diario-bordo/{diario}/ocorrencias', [DiarioBordoController::class, 'storeOcorrencia'])->name('diario-bordo.ocorrencias.store');
@@ -76,13 +70,19 @@ Route::prefix('transporte')->name('transporte.')->group(function () {
     // Simulador georreferenciado (Fase 5)
     Route::get('simulador', [SimuladorController::class, 'index'])->name('simulador');
     Route::put('simulador/{rota}/efetivar', [SimuladorController::class, 'efetivar'])->name('simulador.efetivar');
+
+    // Relatórios
+    Route::get('relatorios/frota', [RelatorioFrotaController::class, 'index'])->name('relatorios.frota');
+    Route::get('relatorios/frota/export', [RelatorioFrotaController::class, 'export'])->name('relatorios.frota.export');
+    Route::get('relatorios/ocorrencias', [RelatorioOcorrenciasController::class, 'index'])->name('relatorios.ocorrencias');
+    Route::get('relatorios/ocorrencias/export', [RelatorioOcorrenciasController::class, 'export'])->name('relatorios.ocorrencias.export');
 });
 
 // Lookups de API (padrão do projeto: em routes web sob prefixo api/)
-Route::get('api/transporte/instituicoes/search', [InstituicaoApiController::class, 'search'])->name('api.transporte.instituicoes.search');
+// Instituições de ensino são escolas: usar api/escolas (EscolaController@search).
 Route::get('api/transporte/veiculos/search', [VeiculoApiController::class, 'search'])->name('api.transporte.veiculos.search');
-Route::get('api/transporte/motoristas/search', [MotoristaApiController::class, 'search'])->name('api.transporte.motoristas.search');
-Route::get('api/transporte/monitores/search', [MonitorApiController::class, 'search'])->name('api.transporte.monitores.search');
+Route::get('api/transporte/motoristas/search', [FuncionarioTransporteController::class, 'motoristas'])->name('api.transporte.motoristas.search');
+Route::get('api/transporte/monitores/search', [FuncionarioTransporteController::class, 'monitores'])->name('api.transporte.monitores.search');
 Route::get('api/transporte/rotas/search', [RotaApiController::class, 'search'])->name('api.transporte.rotas.search');
 Route::get('api/transporte/usuarios/search', [UsuarioExternoApiController::class, 'search'])->name('api.transporte.usuarios.search');
 

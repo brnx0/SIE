@@ -54,8 +54,8 @@
             <td>{{ $r->rot_zona ? ($zonas[$r->rot_zona] ?? $r->rot_zona) : '—' }}</td>
             <td>{{ $r->veiculo?->vei_placa ?? '—' }}</td>
             <td style="text-align:center">{{ $r->veiculo?->vei_capacidade ?? '—' }}</td>
-            <td>{{ $r->motorista?->mot_nome ?? '—' }}</td>
-            <td>{{ $r->monitor?->tmo_nome ?? '—' }}</td>
+            <td>{{ $r->motorista?->fun_nome ?? '—' }}</td>
+            <td>{{ $r->monitor?->fun_nome ?? '—' }}</td>
             <td style="text-align:center">{{ $r->passageiros_count }}</td>
             <td style="text-align:center">
                 <span class="badge {{ $r->rot_fl_ativo ? 'badge-active' : 'badge-inactive' }}">{{ $r->rot_fl_ativo ? 'Ativa' : 'Inativa' }}</span>

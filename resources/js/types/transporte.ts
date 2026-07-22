@@ -1,6 +1,3 @@
-import type { Municipio } from '@/types/aluno';
-import type { Bairro } from '@/types/escola';
-
 export interface Veiculo {
     vei_id: number;
     vei_placa: string;
@@ -25,52 +22,13 @@ export interface FuncionarioVinculo {
     fun_cpf: string | null;
 }
 
-export interface Motorista {
-    mot_id: number;
-    mot_nome: string;
-    mot_cpf: string | null;
-    mot_dt_nascimento: string | null;
-    mot_telefone: string | null;
-    mot_fun_id: number | null;
-    mot_cnh_numero: string;
-    mot_cnh_categoria: string;
-    mot_cnh_dt_validade: string;
-    mot_fl_ativo: boolean;
-    funcionario?: FuncionarioVinculo | null;
-}
-
-export interface MonitorTransporte {
-    tmo_id: number;
-    tmo_nome: string;
-    tmo_cpf: string | null;
-    tmo_dt_nascimento: string | null;
-    tmo_telefone: string | null;
-    tmo_fun_id: number | null;
-    tmo_fl_ativo: boolean;
-    funcionario?: FuncionarioVinculo | null;
-}
-
-export interface InstituicaoTransporte {
-    tin_id: number;
-    tin_nome: string;
-    tin_esc_id: number | null;
-    tin_esfera: string;
-    tin_endereco: string | null;
-    tin_bai_id: number | null;
-    tin_mun_id: number | null;
-    tin_telefone: string | null;
-    tin_latitude: number | null;
-    tin_longitude: number | null;
-    tin_fl_ativo: boolean;
-    escola?: { esc_id: number; esc_nome: string } | null;
-    bairro?: Bairro | null;
-    municipio?: Municipio | null;
-}
-
-export interface InstituicaoResumo {
-    tin_id: number;
-    tin_nome: string;
-    tin_esfera: string;
+/**
+ * Instituição de ensino no transporte = escola já cadastrada (edu_escola).
+ * Não há cadastro próprio; a seleção usa o EscolaCombobox (api/escolas).
+ */
+export interface EscolaResumo {
+    esc_id: number;
+    esc_nome: string;
 }
 
 export interface UsuarioTransporte {
@@ -79,10 +37,10 @@ export interface UsuarioTransporte {
     tue_cpf: string | null;
     tue_dt_nascimento: string | null;
     tue_telefone: string | null;
-    tue_tin_id: number | null;
+    tue_esc_id: number | null;
     tue_justificativa: string;
     tue_fl_ativo: boolean;
-    instituicao?: { tin_id: number; tin_nome: string } | null;
+    escola?: EscolaResumo | null;
 }
 
 // ── Rotas ──────────────────────────────────────────────────────────────────
@@ -106,18 +64,17 @@ export interface VeiculoResumo {
     vei_fl_ativo?: boolean;
 }
 
-export interface MotoristaResumo {
-    mot_id: number;
-    mot_nome: string;
-    mot_cnh_categoria: string;
-    mot_cnh_dt_validade: string;
-    mot_fl_ativo?: boolean;
-}
-
-export interface MonitorResumo {
-    tmo_id: number;
-    tmo_nome: string;
-    tmo_fl_ativo?: boolean;
+/**
+ * Motorista e monitor são funcionários da rede (edu_funcionario) lotados nos
+ * cargos de CargoTransporte — não há cadastro próprio no módulo.
+ */
+export interface FuncionarioTransporte {
+    fun_id: number;
+    fun_nome: string;
+    fun_cpf?: string | null;
+    fun_cnh_categoria?: string | null;
+    fun_cnh_dt_validade?: string | null;
+    fun_fl_ativo?: boolean;
 }
 
 export interface Rota {
@@ -127,8 +84,8 @@ export interface Rota {
     rot_turno: string;
     rot_zona: string | null;
     rot_vei_id: number;
-    rot_mot_id: number;
-    rot_tmo_id: number | null;
+    rot_fun_id_motorista: number;
+    rot_fun_id_monitor: number | null;
     rot_km: number | null;
     rot_tempo_min: number | null;
     rot_trajeto: GeoJsonLineString | null;
@@ -136,8 +93,8 @@ export interface Rota {
     rot_fl_ativo: boolean;
     anoLetivo?: { anl_id: number; anl_ano: number } | null;
     veiculo?: VeiculoResumo | null;
-    motorista?: MotoristaResumo | null;
-    monitor?: MonitorResumo | null;
+    motorista?: FuncionarioTransporte | null;
+    monitor?: FuncionarioTransporte | null;
     passageiros_count?: number;
 }
 
@@ -146,14 +103,15 @@ export interface PontoRota {
     pto_rot_id: number;
     pto_ordem: number;
     pto_nome: string;
+    pto_cep: string | null;
     pto_endereco: string | null;
     pto_bai_id: number | null;
     pto_latitude: number | null;
     pto_longitude: number | null;
     pto_hr_prevista: string | null;
-    pto_tin_id: number | null;
+    pto_esc_id: number | null;
     bairro?: { bai_id: number; bai_nome: string; bai_mun_id: number } | null;
-    instituicao?: { tin_id: number; tin_nome: string } | null;
+    escola?: EscolaResumo | null;
     total_passageiros?: number;
 }
 
@@ -204,9 +162,10 @@ export interface DiarioBordoLista {
     passageiros_count: number;
     embarcados_count: number;
     ocorrencias_count: number;
+    tdb_fl_fechado: boolean;
     rota?: { rot_id: number; rot_nome: string; rot_turno: string } | null;
     veiculo?: { vei_id: number; vei_placa: string; vei_capacidade: number } | null;
-    motorista?: { mot_id: number; mot_nome: string } | null;
+    motorista?: { fun_id: number; fun_nome: string } | null;
 }
 
 export interface DiarioBordo {
@@ -214,17 +173,18 @@ export interface DiarioBordo {
     tdb_rot_id: number;
     tdb_dt_viagem: string;
     tdb_vei_id: number;
-    tdb_mot_id: number;
-    tdb_tmo_id: number | null;
+    tdb_fun_id_motorista: number;
+    tdb_fun_id_monitor: number | null;
     tdb_hr_saida: string | null;
     tdb_hr_chegada: string | null;
     tdb_km_inicial: number | null;
     tdb_km_final: number | null;
     tdb_obs: string | null;
+    tdb_fl_fechado: boolean;
     rota?: { rot_id: number; rot_nome: string; rot_turno: string; anl_ano: number | null } | null;
     veiculo?: { vei_id: number; vei_placa: string; vei_capacidade: number } | null;
-    motorista?: { mot_id: number; mot_nome: string } | null;
-    monitor?: { tmo_id: number; tmo_nome: string } | null;
+    motorista?: { fun_id: number; fun_nome: string } | null;
+    monitor?: { fun_id: number; fun_nome: string } | null;
 }
 
 export interface ChamadaItem {
@@ -259,14 +219,14 @@ export interface SimuladorPonto {
     pto_nome: string;
     pto_latitude: number | null;
     pto_longitude: number | null;
-    instituicao?: { tin_id: number; tin_nome: string } | null;
+    escola?: EscolaResumo | null;
 }
 
-export interface InstituicaoGeo {
-    tin_id: number;
-    tin_nome: string;
-    tin_latitude: number;
-    tin_longitude: number;
+export interface EscolaGeo {
+    esc_id: number;
+    esc_nome: string;
+    esc_latitude: number;
+    esc_longitude: number;
 }
 
 export interface SimuladorRota {

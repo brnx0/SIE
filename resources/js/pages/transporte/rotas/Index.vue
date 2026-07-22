@@ -133,7 +133,7 @@ const ocupacaoClass = (rota: Rota) => {
                                 </span>
                                 <span v-else class="text-muted-foreground">—</span>
                             </td>
-                            <td class="px-4 py-3 text-muted-foreground">{{ rota.motorista?.mot_nome ?? '—' }}</td>
+                            <td class="px-4 py-3 text-muted-foreground">{{ rota.motorista?.fun_nome ?? '—' }}</td>
                             <td class="px-4 py-3 text-center">
                                 <span :class="['inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium', ocupacaoClass(rota)]">
                                     <Users class="size-3" />

@@ -101,9 +101,6 @@ class TelaPermissaoSeeder extends Seeder
 
         // Transporte Escolar — Fase 1 (cadastros). Edição: admin e gestor_secretaria.
         ['/transporte/veiculos', 'Veículos (Transporte)', 'Transporte', 60, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
-        ['/transporte/motoristas', 'Motoristas (Transporte)', 'Transporte', 61, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
-        ['/transporte/monitores', 'Monitores (Transporte)', 'Transporte', 62, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
-        ['/transporte/instituicoes', 'Instituições (Transporte)', 'Transporte', 63, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
         ['/transporte/usuarios', 'Usuários do Transporte', 'Transporte', 64, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
         // Fase 2 (rotas).
         ['/transporte/rotas', 'Rotas (Transporte)', 'Transporte', 65, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
@@ -111,6 +108,9 @@ class TelaPermissaoSeeder extends Seeder
         ['/transporte/diario-bordo', 'Diário de Bordo (Transporte)', 'Transporte', 66, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
         // Fase 5 (simulador de rotas).
         ['/transporte/simulador', 'Simulador de Rotas (Transporte)', 'Transporte', 67, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
+        // Relatórios do transporte.
+        ['/transporte/relatorios/frota', 'Situação da Frota (Transporte)', 'Transporte', 68, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
+        ['/transporte/relatorios/ocorrencias', 'Ocorrências (Transporte)', 'Transporte', 69, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
 
         ['/users', 'Usuários', 'Sistema', 41, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
         ['/parametros', 'Parâmetros', 'Sistema', 42, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
@@ -127,11 +127,12 @@ class TelaPermissaoSeeder extends Seeder
      */
     private const ROTAS_REMOVIDAS = [
         '/relatorios-encerramento',
+        '/transporte/instituicoes', // instituições de ensino passaram a usar edu_escola
     ];
 
     public function run(): void
     {
-        Tela::whereIn('tla_rota', self::ROTAS_REMOVIDAS)->delete();
+        Tela::query()->whereIn('tla_rota', self::ROTAS_REMOVIDAS)->delete();
 
         foreach (self::MATRIZ as [$rota, $nome, $grupo, $ordem, $niveis]) {
             // Metadados da tela são sempre atualizados (nome/grupo/ordem).

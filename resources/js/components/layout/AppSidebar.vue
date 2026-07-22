@@ -158,15 +158,19 @@ const transporteMenu = [
                 title: 'Cadastros',
                 children: [
                     { title: 'Veículos', href: '/transporte/veiculos' },
-                    { title: 'Motoristas', href: '/transporte/motoristas' },
-                    { title: 'Monitores', href: '/transporte/monitores' },
-                    { title: 'Instituições', href: '/transporte/instituicoes' },
                     { title: 'Usuários Externos', href: '/transporte/usuarios' },
                 ],
             },
             { title: 'Rotas', href: '/transporte/rotas' },
             { title: 'Diário de Bordo', href: '/transporte/diario-bordo' },
             { title: 'Simulador de Rotas', href: '/transporte/simulador' },
+            {
+                title: 'Relatórios',
+                children: [
+                    { title: 'Situação da Frota', href: '/transporte/relatorios/frota' },
+                    { title: 'Ocorrências', href: '/transporte/relatorios/ocorrencias' },
+                ],
+            },
         ],
     },
 ];
