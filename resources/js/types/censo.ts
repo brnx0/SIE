@@ -172,6 +172,23 @@ export interface CensoEscolar extends CensoEscolarResumo {
     cen_amb_projetos_transversais: boolean;
     cen_amb_nenhuma: boolean;
 
+    // Seção 30 — Água potável
+    cen_fl_agua_potavel: boolean;
+
+    // Seção 31 — Abastecimento de água
+    cen_agu_rede_publica: boolean;
+    cen_agu_poco_artesiano: boolean;
+    cen_agu_cacimba: boolean;
+    cen_agu_fonte_rio: boolean;
+    cen_agu_carro_pipa: boolean;
+    cen_agu_inexistente: boolean;
+
+    // Seção 32 — Fonte de energia elétrica
+    cen_ene_rede_publica: boolean;
+    cen_ene_gerador_fossil: boolean;
+    cen_ene_renovavel: boolean;
+    cen_ene_inexistente: boolean;
+
     // Seção 33 — Esgotamento sanitário
     cen_esg_rede_publica: boolean;
     cen_esg_fossa_septica: boolean;
@@ -356,6 +373,23 @@ export interface CensoFormData {
     cen_amb_eventos: boolean;
     cen_amb_projetos_transversais: boolean;
     cen_amb_nenhuma: boolean;
+
+    // Seção 30 — Água potável
+    cen_fl_agua_potavel: boolean;
+
+    // Seção 31 — Abastecimento de água
+    cen_agu_rede_publica: boolean;
+    cen_agu_poco_artesiano: boolean;
+    cen_agu_cacimba: boolean;
+    cen_agu_fonte_rio: boolean;
+    cen_agu_carro_pipa: boolean;
+    cen_agu_inexistente: boolean;
+
+    // Seção 32 — Fonte de energia elétrica
+    cen_ene_rede_publica: boolean;
+    cen_ene_gerador_fossil: boolean;
+    cen_ene_renovavel: boolean;
+    cen_ene_inexistente: boolean;
 
     // Seção 33 — Esgotamento sanitário
     cen_esg_rede_publica: boolean;

@@ -377,6 +377,11 @@ const isLast = computed(() => activeTab.value === TABS.value[TABS.value.length -
 
             <!-- Aba 1: Identificação -->
             <TabsContent value="identificacao" class="grid gap-6">
+                <div class="flex items-center justify-end gap-3 rounded-xl border bg-card px-6 py-3 shadow-sm">
+                    <Label for="esc_fl_ativo" class="text-sm font-medium">Escola ativa no sistema</Label>
+                    <Switch id="esc_fl_ativo" v-model="form.esc_fl_ativo" />
+                </div>
+
                 <div class="flex flex-col items-center gap-4 rounded-xl border bg-card p-6 shadow-sm sm:flex-row sm:items-start sm:gap-6">
                     <div class="relative">
                         <div class="grid size-32 place-items-center overflow-hidden rounded-xl border-4 border-sky-100 bg-sky-50 dark:border-sky-900/40 dark:bg-sky-900/20">
@@ -603,11 +608,6 @@ const isLast = computed(() => activeTab.value === TABS.value[TABS.value.length -
                                 <Label for="esc_fl_local_outros" class="text-sm font-normal">Outros</Label>
                             </div>
                         </div>
-                    </div>
-
-                    <div class="flex items-center gap-3 sm:col-span-2">
-                        <Switch id="esc_fl_ativo" v-model="form.esc_fl_ativo" />
-                        <Label for="esc_fl_ativo" class="text-sm font-normal">Escola ativa no sistema</Label>
                     </div>
                 </div>
             </TabsContent>

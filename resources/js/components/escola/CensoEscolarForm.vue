@@ -180,6 +180,23 @@ const form = useForm<CensoFormData>({
     cen_amb_projetos_transversais: props.censo.cen_amb_projetos_transversais,
     cen_amb_nenhuma: props.censo.cen_amb_nenhuma,
 
+    // Seção 30 — Água potável
+    cen_fl_agua_potavel: props.censo.cen_fl_agua_potavel ?? false,
+
+    // Seção 31 — Abastecimento de água
+    cen_agu_rede_publica:   props.censo.cen_agu_rede_publica   ?? false,
+    cen_agu_poco_artesiano: props.censo.cen_agu_poco_artesiano ?? false,
+    cen_agu_cacimba:        props.censo.cen_agu_cacimba        ?? false,
+    cen_agu_fonte_rio:      props.censo.cen_agu_fonte_rio      ?? false,
+    cen_agu_carro_pipa:     props.censo.cen_agu_carro_pipa     ?? false,
+    cen_agu_inexistente:    props.censo.cen_agu_inexistente    ?? false,
+
+    // Seção 32 — Fonte de energia elétrica
+    cen_ene_rede_publica:   props.censo.cen_ene_rede_publica   ?? false,
+    cen_ene_gerador_fossil: props.censo.cen_ene_gerador_fossil ?? false,
+    cen_ene_renovavel:      props.censo.cen_ene_renovavel      ?? false,
+    cen_ene_inexistente:    props.censo.cen_ene_inexistente    ?? false,
+
     // Seção 33 — Esgotamento sanitário
     cen_esg_rede_publica:     props.censo.cen_esg_rede_publica     ?? false,
     cen_esg_fossa_septica:    props.censo.cen_esg_fossa_septica    ?? false,
@@ -210,7 +227,7 @@ const prev = () => { const i = TABS.indexOf(activeTab.value); if (i > 0) activeT
 
 // Resolve a qual aba pertence um campo, para ativá-la antes de focar o erro.
 const tabForField = (field: string): TabId | null => {
-    if (/^cen_(dep|ace|esg|lxd|lxt)_/.test(field)) return 'dependencias';
+    if (/^cen_(dep|ace|esg|lxd|lxt|agu|ene)_/.test(field) || field === 'cen_fl_agua_potavel') return 'dependencias';
     if (/^cen_(sal|eqp|ens)_/.test(field)) return 'salas';
     if (/^cen_net/.test(field)) return 'internet';
     if (/^cen_pro_/.test(field)) return 'profissionais';
@@ -348,6 +365,61 @@ const cb = (field: keyof CensoFormData) => ({
                             { field: 'cen_ace_sinalizacao_visual', label: 'Sinalização visual' },
                             { field: 'cen_ace_alarme_luminoso',    label: 'Alarme luminoso' },
                             { field: 'cen_ace_nenhuma',            label: 'Nenhuma das anteriores' },
+                        ]" :key="item.field"
+                            class="flex cursor-pointer items-center gap-2 rounded-lg border bg-white p-2.5 hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800"
+                        >
+                            <Checkbox v-bind="cb(item.field as keyof CensoFormData)" />
+                            <span class="text-sm leading-tight text-slate-700 dark:text-slate-200">{{ item.label }}</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Seção 30: Água potável -->
+                <div class="rounded-xl border bg-card p-6 shadow-sm">
+                    <h3 class="mb-1 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                        Água potável
+                    </h3>
+                    <label class="flex w-fit cursor-pointer items-center gap-2 rounded-lg border bg-white p-2.5 hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800">
+                        <Checkbox v-bind="cb('cen_fl_agua_potavel')" />
+                        <span class="text-sm leading-tight text-slate-700 dark:text-slate-200">Fornece água potável para o consumo humano</span>
+                    </label>
+                </div>
+
+                <!-- Seção 31: Abastecimento de água -->
+                <div class="rounded-xl border bg-card p-6 shadow-sm">
+                    <h3 class="mb-1 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                        Abastecimento de água
+                    </h3>
+                    <p class="mb-3 text-xs text-muted-foreground">Assinalar mais de uma opção, se for o caso.</p>
+                    <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                        <label v-for="item in [
+                            { field: 'cen_agu_rede_publica',   label: 'Rede pública' },
+                            { field: 'cen_agu_poco_artesiano', label: 'Poço artesiano' },
+                            { field: 'cen_agu_cacimba',        label: 'Cacimba/cisterna/poço' },
+                            { field: 'cen_agu_fonte_rio',      label: 'Fonte/rio/igarapé/riacho/córrego' },
+                            { field: 'cen_agu_carro_pipa',     label: 'Carro-pipa' },
+                            { field: 'cen_agu_inexistente',    label: 'Não há abastecimento de água' },
+                        ]" :key="item.field"
+                            class="flex cursor-pointer items-center gap-2 rounded-lg border bg-white p-2.5 hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800"
+                        >
+                            <Checkbox v-bind="cb(item.field as keyof CensoFormData)" />
+                            <span class="text-sm leading-tight text-slate-700 dark:text-slate-200">{{ item.label }}</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Seção 32: Fonte de energia elétrica -->
+                <div class="rounded-xl border bg-card p-6 shadow-sm">
+                    <h3 class="mb-1 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                        Fonte de energia elétrica
+                    </h3>
+                    <p class="mb-3 text-xs text-muted-foreground">Assinalar mais de uma opção, se for o caso.</p>
+                    <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                        <label v-for="item in [
+                            { field: 'cen_ene_rede_publica',   label: 'Rede pública' },
+                            { field: 'cen_ene_gerador_fossil', label: 'Gerador movido a combustível fóssil' },
+                            { field: 'cen_ene_renovavel',      label: 'Fontes renováveis ou alternativas (biocombustível, eólica, solar, outras)' },
+                            { field: 'cen_ene_inexistente',    label: 'Não há energia elétrica' },
                         ]" :key="item.field"
                             class="flex cursor-pointer items-center gap-2 rounded-lg border bg-white p-2.5 hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800"
                         >
