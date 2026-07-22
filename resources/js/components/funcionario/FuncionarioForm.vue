@@ -98,6 +98,7 @@ const TAB_FIELDS: Record<TabId, string[]> = {
         'fun_ctps_numero', 'fun_ctps_serie', 'fun_pis_pasep',
         'fun_titulo_eleitor', 'fun_titulo_zona', 'fun_titulo_secao',
         'fun_certificado_reservista',
+        'fun_cnh_numero', 'fun_cnh_categoria', 'fun_cnh_dt_validade',
     ],
     'endereco-contato': [
         'fun_cep', 'fun_logradouro', 'fun_numero', 'fun_complemento',
@@ -133,6 +134,10 @@ const initialPovo = computed<PovoIndigena | null>(
 const dataNascBR = ref(formatDateBR(props.initial?.fun_dt_nascimento));
 const dataRgBR = ref(formatDateBR(props.initial?.fun_rg_dt_emissao));
 const dataCertidaoBR = ref(formatDateBR(props.initial?.fun_certidao_dt_emissao));
+const dataCnhBR = ref(formatDateBR(props.initial?.fun_cnh_dt_validade));
+
+// Categorias aceitas pelo backend (Funcionario::CNH_CATEGORIAS).
+const CNH_CATEGORIAS = ['A', 'B', 'C', 'D', 'E', 'AB', 'AC', 'AD', 'AE'];
 
 const form = useForm<FuncionarioFormData>({
     // Dados pessoais
@@ -171,6 +176,9 @@ const form = useForm<FuncionarioFormData>({
     fun_titulo_zona: props.initial?.fun_titulo_zona ?? '',
     fun_titulo_secao: props.initial?.fun_titulo_secao ?? '',
     fun_certificado_reservista: props.initial?.fun_certificado_reservista ?? '',
+    fun_cnh_numero: props.initial?.fun_cnh_numero ?? '',
+    fun_cnh_categoria: props.initial?.fun_cnh_categoria ?? '',
+    fun_cnh_dt_validade: props.initial?.fun_cnh_dt_validade ?? '',
 
     // Endereço
     fun_cep: props.initial?.fun_cep ?? '',
@@ -215,6 +223,15 @@ watch(dataRgBR, (v) => {
 });
 watch(dataCertidaoBR, (v) => {
     form.fun_certidao_dt_emissao = v && v.length === 10 ? parseDateBR(v) : '';
+});
+watch(dataCnhBR, (v) => {
+    form.fun_cnh_dt_validade = v && v.length === 10 ? parseDateBR(v) : '';
+});
+
+// Aviso (não bloqueia): CNH vencida impede o funcionário de conduzir rota.
+const cnhVencida = computed(() => {
+    if (!form.fun_cnh_dt_validade) return false;
+    return form.fun_cnh_dt_validade < new Date().toISOString().slice(0, 10);
 });
 
 // Uppercase / strip de acentos conforme parâmetros
@@ -916,6 +933,50 @@ const initials = computed(() => {
                         <Label for="fun_certificado_reservista">Certificado Reservista</Label>
                         <Input id="fun_certificado_reservista" v-model="form.fun_certificado_reservista" maxlength="20" />
                         <InputError :message="form.errors.fun_certificado_reservista" />
+                    </div>
+                </div>
+
+                <!-- CNH — habilita o funcionário a ser motorista de rota do transporte escolar -->
+                <div class="grid gap-4 rounded-xl border bg-card p-6 shadow-sm sm:grid-cols-4">
+                    <h3 class="text-sm font-semibold sm:col-span-4">Carteira Nacional de Habilitação (CNH)</h3>
+
+                    <p
+                        v-if="cnhVencida"
+                        class="rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-700 sm:col-span-4 dark:bg-amber-950/40 dark:text-amber-400"
+                    >
+                        CNH vencida — este funcionário não deve ser escalado como motorista de rota.
+                    </p>
+
+                    <div class="grid gap-2">
+                        <Label for="fun_cnh_numero">Número da CNH</Label>
+                        <Input id="fun_cnh_numero" v-model="form.fun_cnh_numero" inputmode="numeric" maxlength="11" />
+                        <InputError :message="form.errors.fun_cnh_numero" />
+                    </div>
+
+                    <div class="grid gap-2">
+                        <Label for="fun_cnh_categoria">Categoria</Label>
+                        <select
+                            id="fun_cnh_categoria"
+                            v-model="form.fun_cnh_categoria"
+                            class="h-10 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                        >
+                            <option value="">—</option>
+                            <option v-for="c in CNH_CATEGORIAS" :key="c" :value="c">{{ c }}</option>
+                        </select>
+                        <InputError :message="form.errors.fun_cnh_categoria" />
+                    </div>
+
+                    <div class="grid gap-2">
+                        <Label for="fun_cnh_dt_validade">Validade</Label>
+                        <Input
+                            id="fun_cnh_dt_validade"
+                            v-model="dataCnhBR"
+                            v-maska="'##/##/####'"
+                            inputmode="numeric"
+                            placeholder="DD/MM/AAAA"
+                            maxlength="10"
+                        />
+                        <InputError :message="form.errors.fun_cnh_dt_validade" />
                     </div>
                 </div>
             </TabsContent>

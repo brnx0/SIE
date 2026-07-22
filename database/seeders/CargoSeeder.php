@@ -138,6 +138,7 @@ class CargoSeeder extends Seeder
             'Porteiro(a)',
             'Vigia',
             'Motorista',
+            'Monitor(a) de Transporte',
 
             // Outros
             'Profissional de Atendimento Integrado',

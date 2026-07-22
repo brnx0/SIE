@@ -211,6 +211,9 @@ Route::middleware(['auth', 'verified', 'tela'])->group(function () {
     Route::get('disciplinas/export', [DisciplinaController::class, 'export'])->name('disciplinas.export');
     Route::resource('disciplinas', DisciplinaController::class)->except(['show']);
 
+    // Transporte Escolar — rotas em arquivo próprio (governadas pela matriz cfg_tela: /transporte/*)
+    require __DIR__.'/transporte.php';
+
     Route::prefix('series/{serie}/indicadores')->name('series.indicadores.')->group(function () {
         Route::post('replicar', [SerieIndicadorController::class, 'replicar'])->name('replicar');
         Route::post('replicar-ano', [SerieIndicadorController::class, 'replicarAno'])->name('replicar-ano');

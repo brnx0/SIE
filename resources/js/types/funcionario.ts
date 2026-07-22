@@ -135,6 +135,11 @@ export interface Funcionario {
     fun_titulo_secao: string | null;
     fun_certificado_reservista: string | null;
 
+    // CNH
+    fun_cnh_numero: string | null;
+    fun_cnh_categoria: string | null;
+    fun_cnh_dt_validade: string | null;
+
     // Endereço
     fun_cep: string | null;
     fun_logradouro: string | null;
@@ -199,6 +204,11 @@ export interface FuncionarioFormData {
     fun_titulo_zona: string;
     fun_titulo_secao: string;
     fun_certificado_reservista: string;
+
+    // CNH
+    fun_cnh_numero: string;
+    fun_cnh_categoria: string;
+    fun_cnh_dt_validade: string;
 
     // Endereço
     fun_cep: string;

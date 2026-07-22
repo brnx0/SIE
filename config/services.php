@@ -35,4 +35,14 @@ return [
         ],
     ],
 
+    // Serviços de georreferenciamento do transporte escolar (Fase 5).
+    // Padrão = servidores públicos; troque por self-host via env.
+    'osrm' => [
+        'url' => env('OSRM_URL', 'https://router.project-osrm.org'),
+    ],
+    'nominatim' => [
+        'url'        => env('NOMINATIM_URL', 'https://nominatim.openstreetmap.org'),
+        'user_agent' => env('NOMINATIM_USER_AGENT', 'SIE-Matricula/1.0 (transporte escolar)'),
+    ],
+
 ];
