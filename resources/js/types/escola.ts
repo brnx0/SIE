@@ -62,6 +62,12 @@ export interface Escola {
     esc_fl_predio_compartilhado: boolean;
     esc_fl_sorteio_vagas: boolean;
     esc_fl_oferece_merenda: boolean;
+    esc_fl_local_predio: boolean;
+    esc_fl_local_outra_escola: boolean;
+    esc_fl_local_galpao: boolean;
+    esc_fl_local_socioeducativa: boolean;
+    esc_fl_local_prisional: boolean;
+    esc_fl_local_outros: boolean;
     esc_fl_ativo: boolean;
 
     esc_resolucao_num: string | null;
@@ -113,6 +119,12 @@ export interface EscolaFormData {
     esc_fl_predio_compartilhado: boolean;
     esc_fl_sorteio_vagas: boolean;
     esc_fl_oferece_merenda: boolean;
+    esc_fl_local_predio: boolean;
+    esc_fl_local_outra_escola: boolean;
+    esc_fl_local_galpao: boolean;
+    esc_fl_local_socioeducativa: boolean;
+    esc_fl_local_prisional: boolean;
+    esc_fl_local_outros: boolean;
     esc_fl_ativo: boolean;
 
     esc_resolucao_num: string;
