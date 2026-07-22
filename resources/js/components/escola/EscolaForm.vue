@@ -84,6 +84,8 @@ const TAB_FIELDS: Record<TabId, string[]> = {
         'esc_situacao_func', 'esc_regulamentada_conselho', 'esc_turno_escolar',
         'esc_ger_id', 'esc_orgao_regional_ensino',
         'esc_fl_predio_compartilhado', 'esc_fl_sorteio_vagas', 'esc_fl_oferece_merenda',
+        'esc_fl_local_predio', 'esc_fl_local_outra_escola', 'esc_fl_local_galpao',
+        'esc_fl_local_socioeducativa', 'esc_fl_local_prisional', 'esc_fl_local_outros',
     ],
     contato: [
         'esc_cep', 'esc_logradouro', 'esc_numero', 'esc_complemento',
@@ -154,6 +156,12 @@ const form = useForm<EscolaFormData>({
     esc_fl_predio_compartilhado: props.initial?.esc_fl_predio_compartilhado ?? false,
     esc_fl_sorteio_vagas: props.initial?.esc_fl_sorteio_vagas ?? false,
     esc_fl_oferece_merenda: props.initial?.esc_fl_oferece_merenda ?? false,
+    esc_fl_local_predio: props.initial?.esc_fl_local_predio ?? false,
+    esc_fl_local_outra_escola: props.initial?.esc_fl_local_outra_escola ?? false,
+    esc_fl_local_galpao: props.initial?.esc_fl_local_galpao ?? false,
+    esc_fl_local_socioeducativa: props.initial?.esc_fl_local_socioeducativa ?? false,
+    esc_fl_local_prisional: props.initial?.esc_fl_local_prisional ?? false,
+    esc_fl_local_outros: props.initial?.esc_fl_local_outros ?? false,
     esc_fl_ativo: props.initial?.esc_fl_ativo ?? true,
 
     esc_resolucao_num: props.initial?.esc_resolucao_num ?? '',
@@ -564,6 +572,37 @@ const isLast = computed(() => activeTab.value === TABS.value[TABS.value.length -
                     <div class="flex items-center gap-3 sm:col-span-2">
                         <Switch id="esc_fl_oferece_merenda" v-model="form.esc_fl_oferece_merenda" />
                         <Label for="esc_fl_oferece_merenda" class="text-sm font-normal">Oferta Merenda</Label>
+                    </div>
+
+                    <div class="mt-2 grid gap-3 sm:col-span-2">
+                        <h4 class="text-sm font-semibold">Local de funcionamento (Censo)</h4>
+                        <p class="-mt-1 text-xs text-muted-foreground">Indique onde a escola funciona. Pode marcar mais de uma opção.</p>
+                        <div class="grid gap-3 sm:grid-cols-2">
+                            <div class="flex items-center gap-3">
+                                <Switch id="esc_fl_local_predio" v-model="form.esc_fl_local_predio" />
+                                <Label for="esc_fl_local_predio" class="text-sm font-normal">Prédio escolar</Label>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <Switch id="esc_fl_local_outra_escola" v-model="form.esc_fl_local_outra_escola" />
+                                <Label for="esc_fl_local_outra_escola" class="text-sm font-normal">Sala(s) em outra escola</Label>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <Switch id="esc_fl_local_galpao" v-model="form.esc_fl_local_galpao" />
+                                <Label for="esc_fl_local_galpao" class="text-sm font-normal">Galpão/rancho/paiol/barracão</Label>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <Switch id="esc_fl_local_socioeducativa" v-model="form.esc_fl_local_socioeducativa" />
+                                <Label for="esc_fl_local_socioeducativa" class="text-sm font-normal">Unidade de atendimento socioeducativa</Label>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <Switch id="esc_fl_local_prisional" v-model="form.esc_fl_local_prisional" />
+                                <Label for="esc_fl_local_prisional" class="text-sm font-normal">Unidade prisional</Label>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <Switch id="esc_fl_local_outros" v-model="form.esc_fl_local_outros" />
+                                <Label for="esc_fl_local_outros" class="text-sm font-normal">Outros</Label>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="flex items-center gap-3 sm:col-span-2">
