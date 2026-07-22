@@ -29,6 +29,7 @@ class SerieIndicador extends Model
     ];
 
     protected $casts = [
+        'ind_ser_id'   => 'integer',
         'ind_fl_ativo' => 'boolean',
     ];
 

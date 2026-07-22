@@ -91,6 +91,7 @@ class CensoEscolar extends Model
     ];
 
     protected $casts = [
+        'cen_esc_id'                 => 'integer',
         // booleans seção 1
         'cen_dep_almoxarifado'       => 'boolean', 'cen_dep_vegetacao'          => 'boolean',
         'cen_dep_auditorio'          => 'boolean', 'cen_dep_ban_pcd'            => 'boolean',

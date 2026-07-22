@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import CensoEscolarForm from '@/components/escola/CensoEscolarForm.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { usePermissao } from '@/composables/usePermissao';
 import { type BreadcrumbItem } from '@/types';
 import type { CensoEscolar } from '@/types/censo';
 import { Head } from '@inertiajs/vue3';
@@ -10,6 +11,9 @@ const props = defineProps<{
     escola: { esc_id: number; esc_nome: string; esc_apelido: string };
     censo: CensoEscolar;
 }>();
+
+// Nível 2 (somente leitura) na tela /escolas → formulário desabilitado, sem salvar.
+const { isReadOnly } = usePermissao();
 
 const escolaNome = computed(() => props.escola.esc_apelido || props.escola.esc_nome);
 
@@ -30,7 +34,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                 </h1>
                 <p class="text-sm text-slate-500 dark:text-slate-400">{{ escolaNome }}</p>
             </div>
-            <CensoEscolarForm :escola="escola" :censo="censo" />
+            <CensoEscolarForm :escola="escola" :censo="censo" :readonly="isReadOnly" />
         </div>
     </AppLayout>
 </template>
