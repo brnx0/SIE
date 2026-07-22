@@ -12,13 +12,16 @@ export const TAB_ID: InjectionKey<string> = Symbol('tab-id');
 
 // Identidade da aba.
 // Regra: usa 1º segmento para CRUD (2º segmento numérico ou "create"/"edit").
-// Usa 2 segmentos quando 2º segmento é uma rota nomeada (ex.: "segunda-via").
+// Estende para o 2º/3º segmento enquanto forem rotas nomeadas (nem numérico,
+// nem "create"/"edit"), permitindo abas distintas sob um mesmo grupo.
 // Ex.:
-//   /alunos                  → /alunos
-//   /alunos/create           → /alunos
-//   /alunos/123/edit         → /alunos
-//   /matriculas              → /matriculas
-//   /matriculas/segunda-via  → /matriculas/segunda-via  ← aba separada
+//   /alunos                          → /alunos
+//   /alunos/create                   → /alunos
+//   /alunos/123/edit                 → /alunos
+//   /matriculas/segunda-via          → /matriculas/segunda-via   ← aba separada
+//   /transporte/veiculos/create      → /transporte/veiculos
+//   /transporte/relatorios/frota     → /transporte/relatorios/frota       ← aba separada
+//   /transporte/relatorios/ocorrencias → /transporte/relatorios/ocorrencias ← aba separada
 export function pathOf(url: string): string {
     let pathname: string;
     try {
@@ -28,11 +31,16 @@ export function pathOf(url: string): string {
     }
     const segs = pathname.split('/').filter(Boolean);
     if (!segs.length) return '/';
-    const first = segs[0];
-    const second = segs[1];
 
-    // Segundo segmento existe, não é numérico e não é "create"/"edit" → rota nomeada → aba própria
-    if (second && !/^\d+$/.test(second) && second !== 'create' && second !== 'edit') {
+    // Rota nomeada = segmento que não é numérico nem ação CRUD.
+    const isNamed = (s: string | undefined): s is string =>
+        !!s && !/^\d+$/.test(s) && s !== 'create' && s !== 'edit';
+
+    const [first, second, third] = segs;
+
+    if (isNamed(second)) {
+        // 3º segmento também nomeado (ex.: relatórios/frota) → aba própria mais específica.
+        if (isNamed(third)) return `/${first}/${second}/${third}`;
         return `/${first}/${second}`;
     }
 
