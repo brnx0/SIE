@@ -15,14 +15,15 @@ return new class extends Migration
             $table->string('tue_cpf', 11)->nullable();
             $table->date('tue_dt_nascimento')->nullable();
             $table->string('tue_telefone', 20)->nullable();
-            $table->unsignedBigInteger('tue_tin_id')->nullable(); // instituição que frequenta
+            $table->unsignedBigInteger('tue_esc_id')->nullable(); // escola/instituição de ensino que frequenta
             $table->text('tue_justificativa'); // justificativa de utilização (obrigatória)
             $table->boolean('tue_fl_ativo')->default(true);
             $table->timestamp('tue_created_at')->nullable();
             $table->timestamp('tue_updated_at')->nullable();
             $table->softDeletesTz('tue_deleted_at');
 
-            $table->foreign('tue_tin_id')->references('tin_id')->on('edu_transporte_instituicao');
+            $table->foreign('tue_esc_id')->references('esc_id')->on('edu_escola');
+            $table->index('tue_esc_id');
         });
 
         DB::statement('CREATE UNIQUE INDEX edu_transporte_usuario_cpf_unique ON edu_transporte_usuario (tue_cpf) WHERE tue_cpf IS NOT NULL AND tue_deleted_at IS NULL');

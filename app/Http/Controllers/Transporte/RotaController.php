@@ -84,9 +84,9 @@ class RotaController extends Controller
         $rota->load([
             'anoLetivo:anl_id,anl_ano',
             'veiculo:vei_id,vei_placa,vei_capacidade,vei_fl_ativo',
-            'motorista:mot_id,mot_nome,mot_cnh_categoria,mot_cnh_dt_validade,mot_fl_ativo',
-            'monitor:tmo_id,tmo_nome,tmo_fl_ativo',
-            'pontos.instituicao:tin_id,tin_nome',
+            'motorista:fun_id,fun_nome,fun_cnh_categoria,fun_cnh_dt_validade,fun_fl_ativo',
+            'monitor:fun_id,fun_nome,fun_fl_ativo',
+            'pontos.escola:esc_id,esc_nome',
             'pontos.bairro:bai_id,bai_nome,bai_mun_id',
         ]);
 
@@ -97,14 +97,15 @@ class RotaController extends Controller
                 'pto_rot_id'     => $p->pto_rot_id,
                 'pto_ordem'      => $p->pto_ordem,
                 'pto_nome'       => $p->pto_nome,
+                'pto_cep'        => $p->pto_cep,
                 'pto_endereco'   => $p->pto_endereco,
                 'pto_bai_id'     => $p->pto_bai_id,
                 'pto_latitude'   => $p->pto_latitude,
                 'pto_longitude'  => $p->pto_longitude,
                 'pto_hr_prevista' => $p->pto_hr_prevista ? substr($p->pto_hr_prevista, 0, 5) : null,
-                'pto_tin_id'     => $p->pto_tin_id,
+                'pto_esc_id'     => $p->pto_esc_id,
                 'bairro'         => $p->bairro ? ['bai_id' => $p->bairro->bai_id, 'bai_nome' => $p->bairro->bai_nome, 'bai_mun_id' => $p->bairro->bai_mun_id] : null,
-                'instituicao'    => $p->instituicao ? ['tin_id' => $p->instituicao->tin_id, 'tin_nome' => $p->instituicao->tin_nome] : null,
+                'escola'         => $p->escola ? ['esc_id' => $p->escola->esc_id, 'esc_nome' => $p->escola->esc_nome] : null,
                 'total_passageiros' => $p->passageiros()->count(),
             ]),
             'passageiros' => $this->passageirosSerializados($rota),
@@ -199,8 +200,8 @@ class RotaController extends Controller
             ->with([
                 'anoLetivo:anl_id,anl_ano',
                 'veiculo:vei_id,vei_placa,vei_capacidade',
-                'motorista:mot_id,mot_nome,mot_cnh_categoria,mot_cnh_dt_validade',
-                'monitor:tmo_id,tmo_nome',
+                'motorista:fun_id,fun_nome,fun_cnh_categoria,fun_cnh_dt_validade',
+                'monitor:fun_id,fun_nome',
             ])
             ->withCount('passageiros')
             ->when($request->input('search'), fn ($q, $s) => $q->search($s))
@@ -226,8 +227,8 @@ class RotaController extends Controller
                     $r->rot_zona ? (Rota::ZONAS[$r->rot_zona] ?? $r->rot_zona) : '',
                     $r->veiculo?->vei_placa ?? '',
                     $r->veiculo?->vei_capacidade ?? '',
-                    $r->motorista?->mot_nome ?? '',
-                    $r->monitor?->tmo_nome ?? '',
+                    $r->motorista?->fun_nome ?? '',
+                    $r->monitor?->fun_nome ?? '',
                     $r->passageiros_count,
                     $r->rot_fl_ativo ? 'Ativa' : 'Inativa',
                 ], ';');

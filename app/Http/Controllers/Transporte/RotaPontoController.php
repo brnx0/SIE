@@ -71,22 +71,28 @@ class RotaPontoController extends Controller
 
     private function validated(Request $request): array
     {
+        // CEP chega mascarado (#####-###) do front — normaliza para dígitos.
+        $cep = preg_replace('/\D/', '', (string) $request->input('pto_cep', ''));
+        $request->merge(['pto_cep' => $cep !== '' ? $cep : null]);
+
         return $request->validate([
             'pto_nome'      => ['required', 'string', 'max:120'],
+            'pto_cep'       => ['nullable', 'digits:8'],
             'pto_endereco'  => ['nullable', 'string', 'max:200'],
             'pto_bai_id'    => ['nullable', 'integer', 'exists:edu_bairro,bai_id'],
             'pto_latitude'  => ['nullable', 'numeric', 'between:-90,90'],
             'pto_longitude' => ['nullable', 'numeric', 'between:-180,180'],
             'pto_hr_prevista' => ['nullable', 'date_format:H:i'],
-            'pto_tin_id'    => ['nullable', 'integer', 'exists:edu_transporte_instituicao,tin_id'],
+            'pto_esc_id'    => ['nullable', 'integer', 'exists:edu_escola,esc_id'],
         ], [], [
             'pto_nome'      => 'nome do ponto',
+            'pto_cep'       => 'CEP',
             'pto_endereco'  => 'endereço',
             'pto_bai_id'    => 'bairro',
             'pto_latitude'  => 'latitude',
             'pto_longitude' => 'longitude',
             'pto_hr_prevista' => 'horário previsto',
-            'pto_tin_id'    => 'instituição',
+            'pto_esc_id'    => 'instituição de ensino',
         ]);
     }
 }

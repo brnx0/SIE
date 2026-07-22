@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import type { GeoJsonLineString, InstituicaoGeo, SimuladorPonto } from '@/types/transporte';
+import type { EscolaGeo, GeoJsonLineString, SimuladorPonto } from '@/types/transporte';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
 const props = withDefaults(defineProps<{
     pontos: SimuladorPonto[];
-    instituicoes?: InstituicaoGeo[];
+    escolas?: EscolaGeo[];
     trajeto?: GeoJsonLineString | null;
     editable?: boolean;
     height?: string;
 }>(), {
-    instituicoes: () => [],
+    escolas: () => [],
     trajeto: null,
     editable: false,
     height: '520px',
@@ -51,9 +51,9 @@ const instIcon = () =>
 const desenharInstituicoes = () => {
     if (!map || !instLayer) return;
     instLayer.clearLayers();
-    for (const i of props.instituicoes ?? []) {
-        L.marker([i.tin_latitude, i.tin_longitude], { icon: instIcon(), interactive: true })
-            .bindTooltip(i.tin_nome, { direction: 'top' })
+    for (const e of props.escolas ?? []) {
+        L.marker([e.esc_latitude, e.esc_longitude], { icon: instIcon(), interactive: true })
+            .bindTooltip(e.esc_nome, { direction: 'top' })
             .addTo(instLayer);
     }
 };
@@ -142,7 +142,7 @@ onBeforeUnmount(() => {
 });
 
 watch(() => props.pontos, desenharPontos, { deep: true });
-watch(() => props.instituicoes, desenharInstituicoes, { deep: true });
+watch(() => props.escolas, desenharInstituicoes, { deep: true });
 watch(() => props.trajeto, desenharTrajeto, { deep: true });
 
 // Permite ao pai forçar recálculo de tamanho (ao ativar a aba do mapa).

@@ -23,7 +23,7 @@ class UsuarioExternoController extends Controller
             : 10;
 
         $usuarios = $this->baseQuery($request)
-            ->with('instituicao:tin_id,tin_nome')
+            ->with('escola:esc_id,esc_nome')
             ->orderBy('tue_nome')
             ->paginate($perPage)
             ->withQueryString();
@@ -40,7 +40,7 @@ class UsuarioExternoController extends Controller
     public function export(Request $request): StreamedResponse|HttpResponse
     {
         $usuarios = $this->baseQuery($request)
-            ->with('instituicao:tin_id,tin_nome')
+            ->with('escola:esc_id,esc_nome')
             ->orderBy('tue_nome')
             ->get();
 
@@ -69,7 +69,7 @@ class UsuarioExternoController extends Controller
 
     public function edit(UsuarioExterno $usuario): Response
     {
-        $usuario->load('instituicao:tin_id,tin_nome');
+        $usuario->load('escola:esc_id,esc_nome');
 
         return Inertia::render('transporte/usuarios/Edit', [
             'usuario' => $usuario,
@@ -110,7 +110,7 @@ class UsuarioExternoController extends Controller
                     $u->tue_cpf ?? '',
                     $fmt($u->tue_dt_nascimento),
                     $u->tue_telefone ?? '',
-                    $u->instituicao?->tin_nome ?? '',
+                    $u->escola?->esc_nome ?? '',
                     $u->tue_justificativa,
                     $u->tue_fl_ativo ? 'Ativo' : 'Inativo',
                 ], ';');

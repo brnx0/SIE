@@ -52,7 +52,7 @@
             <td>{{ $u->tue_cpf ?? '—' }}</td>
             <td style="text-align:center">{{ $fmt($u->tue_dt_nascimento) }}</td>
             <td>{{ $u->tue_telefone ?? '—' }}</td>
-            <td>{{ $u->instituicao?->tin_nome ?? '—' }}</td>
+            <td>{{ $u->escola?->esc_nome ?? '—' }}</td>
             <td>{{ \Illuminate\Support\Str::limit($u->tue_justificativa, 120) }}</td>
             <td style="text-align:center">
                 <span class="badge {{ $u->tue_fl_ativo ? 'badge-active' : 'badge-inactive' }}">{{ $u->tue_fl_ativo ? 'Ativo' : 'Inativo' }}</span>

@@ -97,7 +97,7 @@ const remove = (tue: UsuarioTransporte) => {
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-4 py-3 text-muted-foreground">{{ tue.instituicao?.tin_nome ?? '—' }}</td>
+                            <td class="px-4 py-3 text-muted-foreground">{{ tue.escola?.esc_nome ?? '—' }}</td>
                             <td class="px-4 py-3 text-muted-foreground">{{ tue.tue_telefone || '—' }}</td>
                             <td class="px-4 py-3 text-center">
                                 <span :class="['inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium', tue.tue_fl_ativo ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400']">

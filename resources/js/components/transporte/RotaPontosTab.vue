@@ -2,14 +2,19 @@
 import BairroCombobox from '@/components/escola/BairroCombobox.vue';
 import FormLabel from '@/components/common/FormLabel.vue';
 import InputError from '@/components/common/InputError.vue';
-import InstituicaoCombobox from '@/components/transporte/InstituicaoCombobox.vue';
+import EscolaCombobox from '@/components/funcionario/EscolaCombobox.vue';
 import MunicipioCombobox from '@/components/aluno/MunicipioCombobox.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useViaCep } from '@/composables/useViaCep';
+import { useMunicipios } from '@/composables/useMunicipios';
+import { useBairros } from '@/composables/useBairros';
+import { useGeoTransporte } from '@/composables/useGeoTransporte';
+import type { Municipio } from '@/types/aluno';
 import type { PontoRota, Rota } from '@/types/transporte';
 import { router } from '@inertiajs/vue3';
 import { ArrowDown, ArrowUp, Clock, Landmark, Loader2, MapPin, Pencil, Plus, RefreshCw, Trash2, X } from 'lucide-vue-next';
-import { computed, reactive, ref } from 'vue';
+import { computed, nextTick, reactive, ref, watch } from 'vue';
 
 const props = defineProps<{
     rota: Rota;
@@ -28,36 +33,103 @@ const munId = ref<number | null>(null);
 
 const form = reactive<{
     pto_nome: string;
+    pto_cep: string;
     pto_endereco: string;
     pto_bai_id: number | null;
     pto_latitude: number | null;
     pto_longitude: number | null;
     pto_hr_prevista: string;
-    pto_tin_id: number | null;
+    pto_esc_id: number | null;
 }>({
     pto_nome: '',
+    pto_cep: '',
     pto_endereco: '',
     pto_bai_id: null,
     pto_latitude: null,
     pto_longitude: null,
     pto_hr_prevista: '',
-    pto_tin_id: null,
+    pto_esc_id: null,
 });
 
 const bairroInitial = ref<{ bai_id: number; bai_nome: string; bai_mun_id?: number } | null>(null);
-const instituicaoInitial = ref<{ tin_id: number; tin_nome: string } | null>(null);
+const escolaInitial = ref<{ esc_id: number; esc_nome: string } | null>(null);
+const municipioInitial = ref<Municipio | null>(null);
+
+// Autopreenchimento por CEP (ViaCEP): logradouro, município e bairro.
+// O ViaCEP não retorna coordenadas — lat/long vêm da geocodificação (Nominatim).
+const { loading: cepLoading, error: cepError, lookup: cepLookup } = useViaCep();
+const { byIbge: municipioByIbge } = useMunicipios();
+const { create: createBairro } = useBairros();
+const { geocoding, geocode } = useGeoTransporte();
+
+// Evita disparar a busca ao carregar um ponto existente (openEdit).
+let suppressCepLookup = false;
+
+watch(() => form.pto_cep, async (v) => {
+    if (suppressCepLookup) return;
+    const digits = (v ?? '').replace(/\D/g, '');
+    if (digits.length !== 8) return;
+
+    const result = await cepLookup(digits);
+    if (!result) return;
+
+    if (result.logradouro) form.pto_endereco = result.logradouro;
+
+    if (result.ibge) {
+        const mun = await municipioByIbge(result.ibge);
+        if (mun) {
+            munId.value = mun.mun_id;
+            municipioInitial.value = mun;
+
+            if (result.bairro) {
+                const bairro = await createBairro(mun.mun_id, result.bairro);
+                if (bairro) {
+                    form.pto_bai_id = bairro.bai_id;
+                    bairroInitial.value = bairro;
+                }
+            }
+        }
+    }
+
+    // Geocodifica para obter latitude/longitude. O Nominatim falha com
+    // "rua, bairro, cidade - UF"; usamos vírgulas e um fallback progressivo
+    // (rua → bairro → cidade) para sempre obter ao menos uma coordenada.
+    const cidadeUf = [result.cidade, result.uf].filter(Boolean).join(', ');
+    const candidatos = [...new Set(
+        [
+            [result.logradouro, cidadeUf, 'Brasil'],
+            [result.bairro, cidadeUf, 'Brasil'],
+            [cidadeUf, 'Brasil'],
+        ]
+            .map((partes) => partes.filter(Boolean).join(', '))
+            .filter((q) => q.length >= 3),
+    )];
+
+    for (const q of candidatos) {
+        const geo = await geocode(q);
+        const hit = geo.find((g) => g.lat != null && g.lon != null);
+        if (hit) {
+            form.pto_latitude = Math.round(hit.lat * 1e7) / 1e7;
+            form.pto_longitude = Math.round(hit.lon * 1e7) / 1e7;
+            break;
+        }
+    }
+    await nextTick();
+});
 
 const resetForm = () => {
     form.pto_nome = '';
+    form.pto_cep = '';
     form.pto_endereco = '';
     form.pto_bai_id = null;
     form.pto_latitude = null;
     form.pto_longitude = null;
     form.pto_hr_prevista = '';
-    form.pto_tin_id = null;
+    form.pto_esc_id = null;
     munId.value = null;
     bairroInitial.value = null;
-    instituicaoInitial.value = null;
+    escolaInitial.value = null;
+    municipioInitial.value = null;
     errors.value = {};
     editingId.value = null;
     showForm.value = false;
@@ -72,16 +144,19 @@ const openEdit = (p: PontoRota) => {
     resetForm();
     editingId.value = p.pto_id;
     form.pto_nome = p.pto_nome;
+    suppressCepLookup = true;
+    form.pto_cep = p.pto_cep ?? '';
     form.pto_endereco = p.pto_endereco ?? '';
     form.pto_bai_id = p.pto_bai_id;
     form.pto_latitude = p.pto_latitude;
     form.pto_longitude = p.pto_longitude;
     form.pto_hr_prevista = p.pto_hr_prevista ?? '';
-    form.pto_tin_id = p.pto_tin_id;
+    form.pto_esc_id = p.pto_esc_id;
     munId.value = p.bairro?.bai_mun_id ?? null;
     bairroInitial.value = p.bairro ?? null;
-    instituicaoInitial.value = p.instituicao ?? null;
+    escolaInitial.value = p.escola ?? null;
     showForm.value = true;
+    nextTick(() => { suppressCepLookup = false; });
 };
 
 const submit = () => {
@@ -164,12 +239,20 @@ const refresh = () => {
             </div>
 
             <div class="grid gap-4 sm:grid-cols-12">
-                <div class="grid gap-1.5 sm:col-span-6">
+                <div class="grid gap-1.5 sm:col-span-5">
                     <FormLabel :required="true">Nome / referência</FormLabel>
                     <Input v-model="form.pto_nome" maxlength="120" placeholder="Ex.: Mercadinho do Zé" :class="{ 'border-rose-500': errors.pto_nome }" />
                     <InputError :message="errors.pto_nome" />
                 </div>
-                <div class="grid gap-1.5 sm:col-span-4">
+                <div class="grid gap-1.5 sm:col-span-2">
+                    <FormLabel>CEP</FormLabel>
+                    <div class="relative">
+                        <Input v-model="form.pto_cep" v-maska="'#####-###'" inputmode="numeric" maxlength="9" placeholder="00000-000" :class="{ 'border-rose-500': errors.pto_cep }" />
+                        <Loader2 v-if="cepLoading || geocoding" class="absolute right-2 top-1/2 size-4 -translate-y-1/2 animate-spin text-muted-foreground" />
+                    </div>
+                    <InputError :message="errors.pto_cep || cepError" />
+                </div>
+                <div class="grid gap-1.5 sm:col-span-3">
                     <FormLabel>Endereço</FormLabel>
                     <Input v-model="form.pto_endereco" maxlength="200" placeholder="Rua, número..." />
                     <InputError :message="errors.pto_endereco" />
@@ -182,7 +265,7 @@ const refresh = () => {
 
                 <div class="grid gap-1.5 sm:col-span-3">
                     <FormLabel>Município</FormLabel>
-                    <MunicipioCombobox v-model="munId" />
+                    <MunicipioCombobox v-model="munId" :initial="municipioInitial" />
                 </div>
                 <div class="grid gap-1.5 sm:col-span-3">
                     <FormLabel>Bairro</FormLabel>
@@ -190,9 +273,9 @@ const refresh = () => {
                     <InputError :message="errors.pto_bai_id" />
                 </div>
                 <div class="grid gap-1.5 sm:col-span-6">
-                    <FormLabel>Instituição (destino)</FormLabel>
-                    <InstituicaoCombobox v-model="form.pto_tin_id" :initial="instituicaoInitial" />
-                    <InputError :message="errors.pto_tin_id" />
+                    <FormLabel>Instituição de ensino (destino)</FormLabel>
+                    <EscolaCombobox v-model="form.pto_esc_id" :initial="escolaInitial" placeholder="Buscar escola de destino..." />
+                    <InputError :message="errors.pto_esc_id" />
                 </div>
 
                 <div class="grid gap-1.5 sm:col-span-3">
@@ -247,8 +330,8 @@ const refresh = () => {
                         </td>
                         <td class="px-4 py-3">
                             <div class="font-medium">{{ p.pto_nome }}</div>
-                            <div v-if="p.instituicao" class="mt-0.5 inline-flex items-center gap-1 text-xs text-muted-foreground">
-                                <Landmark class="size-3" /> {{ p.instituicao.tin_nome }}
+                            <div v-if="p.escola" class="mt-0.5 inline-flex items-center gap-1 text-xs text-muted-foreground">
+                                <Landmark class="size-3" /> {{ p.escola.esc_nome }}
                             </div>
                         </td>
                         <td class="px-4 py-3 text-xs text-muted-foreground">

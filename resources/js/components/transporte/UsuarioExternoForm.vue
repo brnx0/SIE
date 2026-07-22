@@ -2,7 +2,7 @@
 import FormLabel from '@/components/common/FormLabel.vue';
 import InputError from '@/components/common/InputError.vue';
 import Switch from '@/components/common/Switch.vue';
-import InstituicaoCombobox from '@/components/transporte/InstituicaoCombobox.vue';
+import EscolaCombobox from '@/components/funcionario/EscolaCombobox.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { usePermissao } from '@/composables/usePermissao';
@@ -29,7 +29,7 @@ const form = useForm({
     tue_cpf:           props.initial?.tue_cpf ?? '',
     tue_dt_nascimento: props.initial?.tue_dt_nascimento ?? '',
     tue_telefone:      props.initial?.tue_telefone ?? '',
-    tue_tin_id:        props.initial?.tue_tin_id ?? (null as number | null),
+    tue_esc_id:        props.initial?.tue_esc_id ?? (null as number | null),
     tue_justificativa: props.initial?.tue_justificativa ?? '',
     tue_fl_ativo:      props.initial?.tue_fl_ativo ?? true,
     continue_new:      false,
@@ -146,13 +146,13 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar usuário' : 'Salvar alt
             </div>
 
             <div class="grid gap-2 sm:col-span-3">
-                <FormLabel for="tue_tin_id">Instituição de ensino que frequenta</FormLabel>
-                <InstituicaoCombobox
-                    v-model="form.tue_tin_id"
-                    :initial="initial?.instituicao ?? null"
-                    :invalid="!!form.errors.tue_tin_id"
+                <FormLabel for="tue_esc_id">Instituição de ensino que frequenta</FormLabel>
+                <EscolaCombobox
+                    v-model="form.tue_esc_id"
+                    :initial="initial?.escola ?? null"
+                    :invalid="!!form.errors.tue_esc_id"
                 />
-                <InputError :message="form.errors.tue_tin_id" />
+                <InputError :message="form.errors.tue_esc_id" />
             </div>
 
             <div class="grid gap-2 sm:col-span-4">

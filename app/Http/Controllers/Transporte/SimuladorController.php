@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Transporte;
 
 use App\Http\Controllers\Controller;
+use App\Models\Escola\Escola;
 use App\Models\Parametro\AnoLetivo;
-use App\Models\Transporte\Instituicao;
 use App\Models\Transporte\Ponto;
 use App\Models\Transporte\Rota;
 use Illuminate\Http\RedirectResponse;
@@ -22,7 +22,7 @@ class SimuladorController extends Controller
             $rota = Rota::with([
                 'anoLetivo:anl_id,anl_ano',
                 'veiculo:vei_id,vei_placa,vei_capacidade',
-                'pontos.instituicao:tin_id,tin_nome',
+                'pontos.escola:esc_id,esc_nome',
             ])->find($rotId);
         }
 
@@ -42,16 +42,16 @@ class SimuladorController extends Controller
                     'pto_nome'      => $p->pto_nome,
                     'pto_latitude'  => $p->pto_latitude,
                     'pto_longitude' => $p->pto_longitude,
-                    'instituicao'   => $p->instituicao ? ['tin_id' => $p->instituicao->tin_id, 'tin_nome' => $p->instituicao->tin_nome] : null,
+                    'escola'        => $p->escola ? ['esc_id' => $p->escola->esc_id, 'esc_nome' => $p->escola->esc_nome] : null,
                 ])->values(),
             ] : null,
-            'instituicoes' => Instituicao::query()
-                ->where('tin_fl_ativo', true)
-                ->whereNotNull('tin_latitude')
-                ->whereNotNull('tin_longitude')
-                ->orderBy('tin_nome')
+            'escolas' => Escola::query()
+                ->where('esc_fl_ativo', true)
+                ->whereNotNull('esc_latitude')
+                ->whereNotNull('esc_longitude')
+                ->orderBy('esc_nome')
                 ->limit(500)
-                ->get(['tin_id', 'tin_nome', 'tin_latitude', 'tin_longitude']),
+                ->get(['esc_id', 'esc_nome', 'esc_latitude', 'esc_longitude']),
         ]);
     }
 

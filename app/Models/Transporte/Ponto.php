@@ -3,6 +3,7 @@
 namespace App\Models\Transporte;
 
 use App\Models\Escola\Bairro;
+use App\Models\Escola\Escola;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -26,12 +27,13 @@ class Ponto extends Model
         'pto_rot_id',
         'pto_ordem',
         'pto_nome',
+        'pto_cep',
         'pto_endereco',
         'pto_bai_id',
         'pto_latitude',
         'pto_longitude',
         'pto_hr_prevista',
-        'pto_tin_id',
+        'pto_esc_id',
     ];
 
     protected $casts = [
@@ -40,7 +42,7 @@ class Ponto extends Model
         'pto_bai_id'    => 'integer',
         'pto_latitude'  => 'float',
         'pto_longitude' => 'float',
-        'pto_tin_id'    => 'integer',
+        'pto_esc_id'    => 'integer',
     ];
 
     public function rota(): BelongsTo
@@ -53,9 +55,9 @@ class Ponto extends Model
         return $this->belongsTo(Bairro::class, 'pto_bai_id', 'bai_id');
     }
 
-    public function instituicao(): BelongsTo
+    public function escola(): BelongsTo
     {
-        return $this->belongsTo(Instituicao::class, 'pto_tin_id', 'tin_id');
+        return $this->belongsTo(Escola::class, 'pto_esc_id', 'esc_id');
     }
 
     public function passageiros(): HasMany

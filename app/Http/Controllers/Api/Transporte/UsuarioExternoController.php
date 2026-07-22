@@ -14,7 +14,7 @@ class UsuarioExternoController extends Controller
         $incluirIds = $this->incluirIds($request);
 
         $query = UsuarioExterno::query()
-            ->with('instituicao:tin_id,tin_nome')
+            ->with('escola:esc_id,esc_nome')
             ->orderBy('tue_nome');
 
         if ($q = trim((string) $request->input('q', ''))) {
@@ -24,7 +24,7 @@ class UsuarioExternoController extends Controller
         $this->filtroAtivoOuIncluso($query, 'tue_fl_ativo', 'tue_id', $incluirIds);
 
         return response()->json(
-            $query->limit(50)->get(['tue_id', 'tue_nome', 'tue_tin_id', 'tue_fl_ativo'])
+            $query->limit(50)->get(['tue_id', 'tue_nome', 'tue_esc_id', 'tue_fl_ativo'])
         );
     }
 }

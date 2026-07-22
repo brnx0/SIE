@@ -2,6 +2,7 @@
 
 namespace App\Models\Transporte;
 
+use App\Models\Escola\Escola;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -26,19 +27,19 @@ class UsuarioExterno extends Model
         'tue_cpf',
         'tue_dt_nascimento',
         'tue_telefone',
-        'tue_tin_id',
+        'tue_esc_id',
         'tue_justificativa',
         'tue_fl_ativo',
     ];
 
     protected $casts = [
-        'tue_tin_id'   => 'integer',
+        'tue_esc_id'   => 'integer',
         'tue_fl_ativo' => 'boolean',
     ];
 
-    public function instituicao(): BelongsTo
+    public function escola(): BelongsTo
     {
-        return $this->belongsTo(Instituicao::class, 'tue_tin_id', 'tin_id');
+        return $this->belongsTo(Escola::class, 'tue_esc_id', 'esc_id');
     }
 
     public function scopeSearch(Builder $query, string $q): Builder

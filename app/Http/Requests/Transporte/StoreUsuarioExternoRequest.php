@@ -27,7 +27,7 @@ class StoreUsuarioExternoRequest extends FormRequest
             'tue_nome'     => $nome,
             'tue_cpf'      => $this->filled('tue_cpf') ? $strip($this->input('tue_cpf')) : null,
             'tue_telefone' => $this->filled('tue_telefone') ? $strip($this->input('tue_telefone')) : null,
-            'tue_tin_id'   => $this->input('tue_tin_id') ?: null,
+            'tue_esc_id'   => $this->input('tue_esc_id') ?: null,
             'tue_fl_ativo' => $this->boolean('tue_fl_ativo'),
         ]);
     }
@@ -44,7 +44,7 @@ class StoreUsuarioExternoRequest extends FormRequest
             ],
             'tue_dt_nascimento' => ['nullable', 'date', 'before:today'],
             'tue_telefone'      => ['nullable', 'string', 'max:20'],
-            'tue_tin_id'        => ['nullable', 'integer', 'exists:edu_transporte_instituicao,tin_id'],
+            'tue_esc_id'        => ['nullable', 'integer', 'exists:edu_escola,esc_id'],
             'tue_justificativa' => ['required', 'string', 'max:2000'],
             'tue_fl_ativo'      => ['boolean'],
         ];
@@ -65,7 +65,7 @@ class StoreUsuarioExternoRequest extends FormRequest
             'tue_cpf'           => 'CPF',
             'tue_dt_nascimento' => 'data de nascimento',
             'tue_telefone'      => 'telefone',
-            'tue_tin_id'        => 'instituição de ensino',
+            'tue_esc_id'        => 'instituição de ensino',
             'tue_justificativa' => 'justificativa de utilização',
             'tue_fl_ativo'      => 'situação',
         ];
