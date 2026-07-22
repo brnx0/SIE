@@ -31,6 +31,7 @@ class FuncionarioEscolaridade extends Model
     ];
 
     protected $casts = [
+        'fes_fun_id'     => 'integer',
         'fes_nivel'      => 'integer',
         'fes_ano_inicio' => 'integer',
         'fes_ano_fim'    => 'integer',
