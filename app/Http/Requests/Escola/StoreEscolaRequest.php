@@ -90,7 +90,7 @@ class StoreEscolaRequest extends FormRequest
             'esc_proprietario_imovel' => ['required', 'integer', Rule::in([1, 2, 3, 4])],
             'esc_forma_ocupacao' => ['required', 'integer', Rule::in([1, 2, 3, 4])],
             'esc_situacao_func' => ['required', 'integer', Rule::in([1, 2, 3])],
-            'esc_regulamentada_conselho' => ['required', 'boolean'],
+            'esc_regulamentada_conselho' => ['required', 'integer', Rule::in([0, 1, 2])],
             'esc_turno_escolar' => ['nullable', 'string', 'max:20'],
             'esc_ger_id' => ['nullable', 'integer', 'exists:edu_gerencia_regional,ger_id'],
             'esc_orgao_regional_ensino' => ['nullable', 'string', 'max:120'],

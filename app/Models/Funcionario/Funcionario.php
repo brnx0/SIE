@@ -30,6 +30,10 @@ class Funcionario extends Model
         // Dados pessoais
         'fun_nome',
         'fun_nome_social',
+        'fun_filiacao_1',
+        'fun_filiacao_1_tipo',
+        'fun_filiacao_2',
+        'fun_filiacao_2_tipo',
         'fun_dt_nascimento',
         'fun_sexo',
         'fun_cor_raca',
@@ -76,7 +80,9 @@ class Funcionario extends Model
         'fun_complemento',
         'fun_bairro',
         'fun_cidade',
+        'fun_mun_id_resid',
         'fun_uf',
+        'fun_zona_residencia',
 
         // Contato
         'fun_telefone',
@@ -97,6 +103,7 @@ class Funcionario extends Model
         'fun_cnh_dt_validade' => 'date',
         'fun_cor_raca' => 'integer',
         'fun_estado_civil' => 'integer',
+        'fun_zona_residencia' => 'integer',
         'fun_fl_usa_transporte' => 'boolean',
         'fun_fl_ativo' => 'boolean',
     ];
@@ -114,6 +121,11 @@ class Funcionario extends Model
     public function municipioNascimento(): BelongsTo
     {
         return $this->belongsTo(Municipio::class, 'fun_mun_id_nasc', 'mun_id');
+    }
+
+    public function municipioResidencia(): BelongsTo
+    {
+        return $this->belongsTo(Municipio::class, 'fun_mun_id_resid', 'mun_id');
     }
 
     public function povoIndigena(): BelongsTo

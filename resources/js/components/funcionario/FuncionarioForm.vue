@@ -21,6 +21,7 @@ import { usePermissao } from '@/composables/usePermissao';
 import { useErrorFocus } from '@/composables/useErrorFocus';
 import { useToast } from '@/composables/useToast';
 import { useViaCep } from '@/composables/useViaCep';
+import { useMunicipios } from '@/composables/useMunicipios';
 import { validarImagem } from '@/lib/validaArquivo';
 import { COR_RACA } from '@/lib/corRaca';
 import { PAISES } from '@/lib/paises';
@@ -88,6 +89,7 @@ const TAB_FIELDS: Record<TabId, string[]> = {
         'fun_nacionalidade', 'fun_pais_origem', 'fun_mun_id_nasc',
         'fun_cpf', 'fun_religiao', 'fun_estado_civil',
         'fun_pin_id', 'fun_cd_censo',
+        'fun_filiacao_1', 'fun_filiacao_1_tipo', 'fun_filiacao_2', 'fun_filiacao_2_tipo',
     ],
     escolaridade: [],
     documentacao: [
@@ -102,7 +104,7 @@ const TAB_FIELDS: Record<TabId, string[]> = {
     ],
     'endereco-contato': [
         'fun_cep', 'fun_logradouro', 'fun_numero', 'fun_complemento',
-        'fun_bairro', 'fun_cidade', 'fun_uf',
+        'fun_bairro', 'fun_cidade', 'fun_mun_id_resid', 'fun_uf', 'fun_zona_residencia',
         'fun_telefone', 'fun_celular', 'fun_email',
     ],
     'admissao-lotacao': [],
@@ -127,6 +129,10 @@ const initialMunicipio = computed<Municipio | null>(
 const initialMunicipioCertidao = computed<Municipio | null>(
     () => props.initial?.municipio_certidao ?? null,
 );
+// Município de residência: ref mutável (CEP resolve e atualiza o display do combobox).
+const municipioResidenciaInitial = ref<Municipio | null>(
+    props.initial?.municipio_residencia ?? null,
+);
 const initialPovo = computed<PovoIndigena | null>(
     () => props.initial?.povo_indigena ?? null,
 );
@@ -143,6 +149,10 @@ const form = useForm<FuncionarioFormData>({
     // Dados pessoais
     fun_nome: props.initial?.fun_nome ?? '',
     fun_nome_social: props.initial?.fun_nome_social ?? '',
+    fun_filiacao_1: props.initial?.fun_filiacao_1 ?? '',
+    fun_filiacao_1_tipo: props.initial?.fun_filiacao_1_tipo ?? '',
+    fun_filiacao_2: props.initial?.fun_filiacao_2 ?? '',
+    fun_filiacao_2_tipo: props.initial?.fun_filiacao_2_tipo ?? '',
     fun_dt_nascimento: props.initial?.fun_dt_nascimento ?? '',
     fun_sexo: props.initial?.fun_sexo ?? '',
     fun_cor_raca: props.initial?.fun_cor_raca ?? null,
@@ -187,7 +197,9 @@ const form = useForm<FuncionarioFormData>({
     fun_complemento: props.initial?.fun_complemento ?? '',
     fun_bairro: props.initial?.fun_bairro ?? '',
     fun_cidade: props.initial?.fun_cidade ?? '',
+    fun_mun_id_resid: props.initial?.fun_mun_id_resid ?? null,
     fun_uf: props.initial?.fun_uf ?? '',
+    fun_zona_residencia: props.initial?.fun_zona_residencia ?? null,
 
     // Contato
     fun_telefone: props.initial?.fun_telefone ?? '',
@@ -261,6 +273,21 @@ FUNCIONARIO_TEXT_FIELDS_ACCENT.forEach((field) => {
     );
 });
 
+// Filiação segue o parâmetro de caixa alta do nome: marcado → MAIÚSCULO, senão → minúsculo.
+const FUNCIONARIO_FILIACAO_FIELDS = ['fun_filiacao_1', 'fun_filiacao_2'] as const;
+FUNCIONARIO_FILIACAO_FIELDS.forEach((field) => {
+    watch(
+        () => form[field] as string,
+        (v) => {
+            if (typeof v !== 'string') return;
+            let next = v;
+            if (alertarAcentos.value) next = stripAccents(next);
+            next = nomeUppercase.value ? next.toLocaleUpperCase('pt-BR') : next.toLocaleLowerCase('pt-BR');
+            if (next !== v) (form as any)[field] = next;
+        },
+    );
+});
+
 const activeTab = ref<TabId>('dados-pessoais');
 
 // CPF duplicado — dialog
@@ -318,6 +345,17 @@ const tabHasError = (tab: TabId): boolean => {
 // CEP autopreencher
 const numeroInput = ref<HTMLInputElement | null>(null);
 const { loading: cepLoading, error: cepError, lookup: cepLookup } = useViaCep();
+const { byIbge: municipioByIbge } = useMunicipios();
+
+// Seleção manual do município de residência: espelha cidade/UF nas colunas legadas.
+const onSelecionarMunicipioResidencia = (m: Municipio | null) => {
+    municipioResidenciaInitial.value = m;
+    form.fun_mun_id_resid = m?.mun_id ?? null;
+    if (m) {
+        form.fun_cidade = m.mun_nome;
+        form.fun_uf = m.mun_uf;
+    }
+};
 
 watch(
     () => form.fun_cep,
@@ -328,8 +366,14 @@ watch(
             if (result) {
                 form.fun_logradouro = result.logradouro || form.fun_logradouro;
                 form.fun_bairro = result.bairro || form.fun_bairro;
-                form.fun_cidade = result.cidade || form.fun_cidade;
                 form.fun_uf = result.uf || form.fun_uf;
+                // Casa o município do CEP (código IBGE) com a base local; cai no texto se não achar.
+                const mun = result.ibge ? await municipioByIbge(result.ibge) : null;
+                if (mun) {
+                    onSelecionarMunicipioResidencia(mun);
+                } else if (result.cidade) {
+                    form.fun_cidade = result.cidade;
+                }
                 await nextTick();
                 numeroInput.value?.focus();
             }
@@ -746,6 +790,59 @@ const initials = computed(() => {
                         <InputError :message="form.errors.fun_cd_censo" />
                     </div>
                 </div>
+
+                <!-- Filiação -->
+                <div class="grid gap-4 rounded-xl border bg-card p-6 shadow-sm sm:grid-cols-2">
+                    <div class="sm:col-span-2">
+                        <h3 class="text-sm font-semibold">Filiação</h3>
+                    </div>
+                    <div class="grid gap-2">
+                        <div class="flex items-center justify-between gap-4">
+                            <Label for="fun_filiacao_1">Filiação 1</Label>
+                            <div class="flex items-center gap-4 text-sm">
+                                <label class="flex cursor-pointer items-center gap-1.5">
+                                    <input type="radio" v-model="form.fun_filiacao_1_tipo" value="MAE" class="accent-sky-600" />
+                                    Mãe
+                                </label>
+                                <label class="flex cursor-pointer items-center gap-1.5">
+                                    <input type="radio" v-model="form.fun_filiacao_1_tipo" value="PAI" class="accent-sky-600" />
+                                    Pai
+                                </label>
+                            </div>
+                        </div>
+                        <Input id="fun_filiacao_1" v-model="form.fun_filiacao_1" maxlength="100" />
+                        <div class="flex justify-between gap-2">
+                            <div>
+                                <InputError :message="form.errors.fun_filiacao_1" />
+                                <InputError :message="(form.errors as any).fun_filiacao_1_tipo" />
+                            </div>
+                            <CharCounter :value="form.fun_filiacao_1" :max="100" />
+                        </div>
+                    </div>
+                    <div class="grid gap-2">
+                        <div class="flex items-center justify-between gap-4">
+                            <Label for="fun_filiacao_2">Filiação 2</Label>
+                            <div class="flex items-center gap-4 text-sm">
+                                <label class="flex cursor-pointer items-center gap-1.5">
+                                    <input type="radio" v-model="form.fun_filiacao_2_tipo" value="MAE" class="accent-sky-600" />
+                                    Mãe
+                                </label>
+                                <label class="flex cursor-pointer items-center gap-1.5">
+                                    <input type="radio" v-model="form.fun_filiacao_2_tipo" value="PAI" class="accent-sky-600" />
+                                    Pai
+                                </label>
+                            </div>
+                        </div>
+                        <Input id="fun_filiacao_2" v-model="form.fun_filiacao_2" maxlength="100" />
+                        <div class="flex justify-between gap-2">
+                            <div>
+                                <InputError :message="form.errors.fun_filiacao_2" />
+                                <InputError :message="(form.errors as any).fun_filiacao_2_tipo" />
+                            </div>
+                            <CharCounter :value="form.fun_filiacao_2" :max="100" />
+                        </div>
+                    </div>
+                </div>
             </TabsContent>
 
             <!-- Aba 2: Escolaridade -->
@@ -1032,9 +1129,15 @@ const initials = computed(() => {
                     </div>
 
                     <div class="grid gap-2 sm:col-span-4">
-                        <Label for="fun_cidade">Cidade</Label>
-                        <Input id="fun_cidade" v-model="form.fun_cidade" maxlength="100" />
-                        <InputError :message="form.errors.fun_cidade" />
+                        <Label for="fun_mun_id_resid">Cidade (município de residência)</Label>
+                        <MunicipioCombobox
+                            :model-value="form.fun_mun_id_resid"
+                            :initial="municipioResidenciaInitial"
+                            :invalid="!!form.errors.fun_mun_id_resid"
+                            placeholder="Buscar município..."
+                            @select="onSelecionarMunicipioResidencia"
+                        />
+                        <InputError :message="form.errors.fun_mun_id_resid || form.errors.fun_cidade" />
                     </div>
 
                     <div class="grid gap-2 sm:col-span-2">
@@ -1048,6 +1151,21 @@ const initials = computed(() => {
                             <option v-for="uf in UFS" :key="uf" :value="uf">{{ uf }}</option>
                         </select>
                         <InputError :message="form.errors.fun_uf" />
+                    </div>
+
+                    <div class="grid gap-2 sm:col-span-3">
+                        <Label for="fun_zona_residencia">Localização/Zona de residência <span class="text-destructive">*</span></Label>
+                        <select
+                            id="fun_zona_residencia"
+                            :value="form.fun_zona_residencia ?? ''"
+                            @change="(e) => { const v = (e.target as HTMLSelectElement).value; form.fun_zona_residencia = v === '' ? null : Number(v); }"
+                            class="h-10 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                        >
+                            <option value="">Selecione...</option>
+                            <option value="1">Urbana</option>
+                            <option value="2">Rural</option>
+                        </select>
+                        <InputError :message="form.errors.fun_zona_residencia" />
                     </div>
                 </div>
 

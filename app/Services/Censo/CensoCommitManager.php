@@ -61,6 +61,10 @@ class CensoCommitManager
             'escolas_criadas'      => 0,
             'escolas_ignoradas'    => 0,
             'escolas_erro'         => 0,
+            'caracterizacao_atualizada' => 0,
+            'caracterizacao_ignorada'   => 0,
+            'censo_criado'              => 0,
+            'censo_ignorado'            => 0,
             'turmas_criadas'       => 0,
             'turmas_ignoradas'     => 0,
             'turmas_bloqueadas'    => 0,
@@ -87,6 +91,7 @@ class CensoCommitManager
         ];
 
         $this->commitEscolas($lote, $resumo);
+        $this->commitCaracterizacao($lote, $resumo);
         $this->commitTurmas($lote, $resumo);
         $this->commitPessoas($lote, $resumo);
         $this->commitMatriculas($lote, $resumo);
@@ -204,7 +209,7 @@ class CensoCommitManager
                     'esc_email'                 => mb_substr($this->col($campos, 17), 0, 150),
                     'esc_dep_administrativa'    => (int) ($this->col($campos, 21) ?: 0),
                     'esc_situacao_func'         => $situacao,
-                    'esc_regulamentada_conselho' => $this->col($campos, 36) === '1',
+                    'esc_regulamentada_conselho' => (int) ($this->col($campos, 36) ?: 0),
                     'esc_fl_ativo'              => $situacao === 1,
                     'esc_created_at'            => $now,
                     'esc_updated_at'            => $now,
@@ -216,6 +221,146 @@ class CensoCommitManager
                 $resumo['escolas_erro']++;
             }
         }
+    }
+
+    // ---------- Caracterização/Infraestrutura (reg 10) ----------
+
+    /**
+     * Reg 10 — caracterização e infraestrutura. Popula:
+     *  1) o "local de funcionamento" (posições 3-8) em edu_escola.esc_fl_local_* (o reg 00
+     *     não tem esses campos);
+     *  2) o registro cfg_censo_escolar (tela "Censo" da escola) com o restante da infra.
+     * Casa por INEP. Insert-only: local de funcionamento só preenche quando ainda está
+     * vazio; cfg_censo_escolar só é criado quando ainda não existe (não sobrescreve).
+     */
+    private function commitCaracterizacao(CensoLote $lote, array &$resumo): void
+    {
+        $registros = CensoRegistro::query()
+            ->where('icr_icl_id', $lote->icl_id)
+            ->where('icr_tipo', '10')
+            ->get();
+
+        foreach ($registros as $reg) {
+            $campos = $reg->icr_campos;
+            $inep = $this->col($campos, 2);
+            if ($inep === '') {
+                continue;
+            }
+
+            $esc = DB::table('edu_escola')->where('esc_cd_inep', $inep)->first([
+                'esc_id',
+                'esc_fl_local_predio', 'esc_fl_local_outra_escola', 'esc_fl_local_galpao',
+                'esc_fl_local_socioeducativa', 'esc_fl_local_prisional', 'esc_fl_local_outros',
+            ]);
+            if (! $esc) {
+                continue; // escola não encontrada — nada a atualizar
+            }
+
+            // 1) Local de funcionamento (edu_escola.esc_fl_local_*)
+            $jaTemLocal = $esc->esc_fl_local_predio || $esc->esc_fl_local_outra_escola
+                || $esc->esc_fl_local_galpao || $esc->esc_fl_local_socioeducativa
+                || $esc->esc_fl_local_prisional || $esc->esc_fl_local_outros;
+            if ($jaTemLocal) {
+                $resumo['caracterizacao_ignorada']++;
+            } else {
+                DB::table('edu_escola')->where('esc_id', $esc->esc_id)->update([
+                    'esc_fl_local_predio'         => $this->bcol($campos, 3),
+                    'esc_fl_local_outra_escola'   => $this->bcol($campos, 4),
+                    'esc_fl_local_galpao'         => $this->bcol($campos, 5),
+                    'esc_fl_local_socioeducativa' => $this->bcol($campos, 6),
+                    'esc_fl_local_prisional'      => $this->bcol($campos, 7),
+                    'esc_fl_local_outros'         => $this->bcol($campos, 8),
+                    'esc_updated_at'              => now(),
+                ]);
+                $resumo['caracterizacao_atualizada']++;
+            }
+
+            // cfg_censo_escolar (tela "Censo") — insert-only por escola.
+            $temCenso = DB::table('cfg_censo_escolar')->where('cen_esc_id', $esc->esc_id)->exists();
+            if ($temCenso) {
+                $resumo['censo_ignorado']++;
+                continue;
+            }
+            DB::table('cfg_censo_escolar')->insert($this->montarCensoEscolar((int) $esc->esc_id, $campos, now()));
+            $resumo['censo_criado']++;
+        }
+    }
+
+    /**
+     * De-para reg 10 (posição no ARQUIVO .txt 2025 → coluna de cfg_censo_escolar).
+     *
+     * IMPORTANTE: usa as posições REAIS do arquivo (docs/regras/censo_layout_2025.md,
+     * validado contra o parser i-educar Version2025 e arquivo real), NÃO a numeração da
+     * planilha 2026/docs/censo/10.md — elas divergem (a planilha lista o "Banheiro"
+     * genérico na linha 44, deslocando +1 as posições seguintes).
+     *
+     * Só mapeia os blocos com posição 100% confirmada:
+     *  - água/energia/esgoto/lixo (17–40): idênticos ao 10.md (antes do deslocamento).
+     *  - nº de salas (90–94): confirmado contra arquivo real.
+     * Os blocos de checkbox (dependências, acessibilidade, equipamentos, internet,
+     * funcionários, materiais…) NÃO são mapeados aqui — o censo_layout_2025.md só traz
+     * as faixas por bloco, e o tamanho de vários blocos diverge das colunas (ex.: materiais
+     * 2025=17 vs 20 colunas), o que exige o campo-a-campo do Registro10 (i-educar Version2025)
+     * para não gravar valor trocado. Ficam no default até termos essa fonte.
+     *
+     * @return array<string,mixed>
+     */
+    private function montarCensoEscolar(int $escId, array $campos, $now): array
+    {
+        // posição (.txt 2025) => coluna booleana ('1' => true)
+        $bool = [
+            // Água (17-23)
+            17 => 'cen_fl_agua_potavel',
+            18 => 'cen_agu_rede_publica', 19 => 'cen_agu_poco_artesiano', 20 => 'cen_agu_cacimba',
+            21 => 'cen_agu_fonte_rio', 22 => 'cen_agu_carro_pipa', 23 => 'cen_agu_inexistente',
+            // Energia (24-27)
+            24 => 'cen_ene_rede_publica', 25 => 'cen_ene_gerador_fossil',
+            26 => 'cen_ene_renovavel', 27 => 'cen_ene_inexistente',
+            // Esgoto (28-31)
+            28 => 'cen_esg_rede_publica', 29 => 'cen_esg_fossa_septica',
+            30 => 'cen_esg_fossa_rudimentar', 31 => 'cen_esg_inexistente',
+            // Destinação do lixo (32-36)
+            32 => 'cen_lxd_coleta', 33 => 'cen_lxd_queima', 34 => 'cen_lxd_enterra',
+            35 => 'cen_lxd_destinacao_licenciada', 36 => 'cen_lxd_outra_area',
+            // Tratamento do lixo (37-40)
+            37 => 'cen_lxt_separacao', 38 => 'cen_lxt_reaproveitamento',
+            39 => 'cen_lxt_reciclagem', 40 => 'cen_lxt_nao_faz',
+        ];
+
+        // posição (.txt 2025) => coluna inteira (smallint); vazio => null
+        $int = [
+            // Nº de salas (90-94) — confirmado contra arquivo real
+            90 => 'cen_sal_dentro_predio', 91 => 'cen_sal_fora_predio', 92 => 'cen_sal_climatizadas',
+            93 => 'cen_sal_pcd', 94 => 'cen_sal_cantinho_leitura',
+        ];
+
+        $row = [
+            'cen_esc_id'     => $escId,
+            'cen_created_at' => $now,
+            'cen_updated_at' => $now,
+        ];
+        foreach ($bool as $pos => $col) {
+            $row[$col] = $this->bcol($campos, $pos);
+        }
+        foreach ($int as $pos => $col) {
+            $row[$col] = $this->icol($campos, $pos);
+        }
+
+        return $row;
+    }
+
+    /** Booleano de coluna do censo (posição 1-based): '1' => true, senão false. */
+    private function bcol(array $campos, int $pos): bool
+    {
+        return $this->col($campos, $pos) === '1';
+    }
+
+    /** Inteiro de coluna do censo (posição 1-based): dígitos => int, senão null. */
+    private function icol(array $campos, int $pos): ?int
+    {
+        $v = $this->col($campos, $pos);
+
+        return $v !== '' && ctype_digit($v) ? (int) $v : null;
     }
 
     // ---------- Turmas (reg 20) ----------
@@ -442,7 +587,9 @@ class CensoCommitManager
             'aln_filiacao_2_tipo' => $this->col($campos, 10) !== '' ? 'PAI' : null,
             'aln_cep'           => $this->cepOuNull($this->col($campos, 52)),
             'aln_cidade'        => $cidade,
+            'aln_mun_id_resid'  => $this->municipioCache[$this->col($campos, 53)] ?? null,
             'aln_uf'            => $uf,
+            'aln_zona_residencia' => $this->zonaResidencia($this->col($campos, 54)),
             'aln_email'         => mb_substr($this->col($campos, 108), 0, 150) ?: null,
             'aln_fl_ativo'      => true,
             'aln_created_at'    => $now,
@@ -518,6 +665,7 @@ class CensoCommitManager
             $cpf = null;
         }
         $escol = $this->col($campos, 56);
+        [$cidade, $uf] = $this->municipioNomeUf($this->col($campos, 53));
         $now = now();
 
         $funId = DB::table('edu_funcionario')->insertGetId([
@@ -530,7 +678,15 @@ class CensoCommitManager
             'fun_mun_id_nasc'   => $munId,
             'fun_cpf'           => $cpf,
             'fun_cd_censo'      => $inep,
+            'fun_filiacao_1'      => mb_substr($this->col($campos, 9), 0, 100) ?: null,
+            'fun_filiacao_1_tipo' => $this->col($campos, 9) !== '' ? 'MAE' : null,
+            'fun_filiacao_2'      => mb_substr($this->col($campos, 10), 0, 100) ?: null,
+            'fun_filiacao_2_tipo' => $this->col($campos, 10) !== '' ? 'PAI' : null,
             'fun_cep'           => $this->cepOuNull($this->col($campos, 52)),
+            'fun_cidade'        => $cidade,
+            'fun_mun_id_resid'  => $this->municipioCache[$this->col($campos, 53)] ?? null,
+            'fun_uf'            => $uf,
+            'fun_zona_residencia' => $this->zonaResidencia($this->col($campos, 54)),
             'fun_email'         => mb_substr($this->col($campos, 108), 0, 150) ?: null,
             'fun_fl_ativo'      => true,
             'fun_created_at'    => $now,
@@ -899,10 +1055,16 @@ class CensoCommitManager
         return str_pad(mb_substr($d, 0, 8), 8, '0', STR_PAD_LEFT);
     }
 
-    /** Censo zona: 1=Urbana, 2=Rural. */
+    /** Censo zona (escola): 1=Urbana, 2=Rural. */
     private function zona(string $raw): string
     {
         return $raw === '2' ? 'R' : 'U';
+    }
+
+    /** Censo zona de residência da pessoa (col 54): 1=Urbana, 2=Rural → smallint 1/2 ou null. */
+    private function zonaResidencia(string $raw): ?int
+    {
+        return in_array($raw, ['1', '2'], true) ? (int) $raw : null;
     }
 
     /** Censo mediação (col6): 1=Presencial, 2=Semipresencial, 3=EAD → valor de Turma::TIPOS_MEDIACAO. */

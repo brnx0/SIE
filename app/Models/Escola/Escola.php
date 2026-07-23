@@ -46,7 +46,7 @@ class Escola extends Model
         'esc_proprietario_imovel' => 'integer',
         'esc_forma_ocupacao' => 'integer',
         'esc_situacao_func' => 'integer',
-        'esc_regulamentada_conselho' => 'boolean',
+        'esc_regulamentada_conselho' => 'integer',
         'esc_fl_predio_compartilhado' => 'boolean',
         'esc_fl_sorteio_vagas' => 'boolean',
         'esc_fl_oferece_merenda' => 'boolean',

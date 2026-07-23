@@ -82,7 +82,7 @@ class AlunoController extends Controller
     {
         abort_unless(UserAccess::alunoVisivel(request()->user(), $aluno->aln_id), 404);
 
-        $aluno->load(['municipioNascimento:mun_id,mun_nome,mun_uf', 'povoIndigena:pin_id,pin_cd_censo,pin_nome', 'saude']);
+        $aluno->load(['municipioNascimento:mun_id,mun_nome,mun_uf', 'municipioResidencia:mun_id,mun_nome,mun_uf,mun_codigo_ibge', 'povoIndigena:pin_id,pin_cd_censo,pin_nome', 'saude']);
 
         $matriculas = $aluno->matriculas()
             ->with([

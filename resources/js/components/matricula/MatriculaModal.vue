@@ -16,6 +16,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/composables/useToast';
 import { useSeriesBySegmento, type SerieSegmentoItem } from '@/composables/useSeriesBySegmento';
 import { useViaCep } from '@/composables/useViaCep';
+import { useMunicipios } from '@/composables/useMunicipios';
 import { computed, nextTick, reactive, ref, watch } from 'vue';
 import { triggerSessionExpired } from '@/lib/session';
 import { usePage } from '@inertiajs/vue3';
@@ -95,6 +96,7 @@ const formAluno = reactive({
     aln_complemento:  '',
     aln_bairro:        '',
     aln_cidade:        '',
+    aln_mun_id_resid:  null as number | null,
     aln_uf:            '',
     aln_telefone:      '',
     aln_email:         '',
@@ -181,10 +183,24 @@ const onTelEmergInput = (e: Event) => onTelefoneInput(e, (v) => { formSaude.als_
 
 // CEP → endereço (ViaCEP). Campos preenchidos pelo CEP ficam travados p/ edição.
 const { loading: cepLoading, error: cepError, lookup: cepLookup } = useViaCep();
+const { byIbge: municipioByIbge } = useMunicipios();
 const cepLock = reactive({ logradouro: false, bairro: false, cidade: false, uf: false });
 const liberarEnderecoCep = () => {
     cepLock.logradouro = false; cepLock.bairro = false; cepLock.cidade = false; cepLock.uf = false;
 };
+
+const municipioResidenciaSelecionado = ref<Municipio | null>(null);
+
+// Seleção manual do município de residência: espelha cidade/UF nas colunas legadas.
+const onSelecionarMunicipioResidencia = (m: Municipio | null) => {
+    municipioResidenciaSelecionado.value = m;
+    formAluno.aln_mun_id_resid = m?.mun_id ?? null;
+    if (m) {
+        formAluno.aln_cidade = m.mun_nome;
+        formAluno.aln_uf = m.mun_uf;
+    }
+};
+
 watch(() => formAluno.aln_cep, async (v) => {
     const digits = (v ?? '').replace(/\D/g, '');
     liberarEnderecoCep(); // CEP mudou → reabre edição
@@ -193,8 +209,15 @@ watch(() => formAluno.aln_cep, async (v) => {
     if (!r) return;
     if (r.logradouro) { formAluno.aln_logradouro = r.logradouro; cepLock.logradouro = true; }
     if (r.bairro)     { formAluno.aln_bairro = r.bairro; cepLock.bairro = true; }
-    if (r.cidade)     { formAluno.aln_cidade = r.cidade; cepLock.cidade = true; }
     if (r.uf)         { formAluno.aln_uf = (r.uf || '').toUpperCase(); cepLock.uf = true; }
+    // Casa o município do CEP (código IBGE) com a base local; cai no texto se não achar.
+    const mun = r.ibge ? await municipioByIbge(r.ibge) : null;
+    if (mun) {
+        onSelecionarMunicipioResidencia(mun);
+        cepLock.cidade = true;
+    } else if (r.cidade) {
+        formAluno.aln_cidade = r.cidade; cepLock.cidade = true;
+    }
 });
 const municipioNascimentoSelecionado = ref<Municipio | null>(null);
 
@@ -223,6 +246,8 @@ const limparFormAluno = () => {
     formAluno.aln_complemento = '';
     formAluno.aln_bairro = '';
     formAluno.aln_cidade = '';
+    formAluno.aln_mun_id_resid = null;
+    municipioResidenciaSelecionado.value = null;
     formAluno.aln_uf = '';
     liberarEnderecoCep();
     formAluno.aln_telefone = '';
@@ -257,6 +282,8 @@ const preencherFormAluno = (aluno: AlunoResumo) => {
     formAluno.aln_complemento = aluno.aln_complemento ?? '';
     formAluno.aln_bairro = aluno.aln_bairro ?? '';
     formAluno.aln_cidade = aluno.aln_cidade ?? '';
+    formAluno.aln_mun_id_resid = aluno.aln_mun_id_resid ?? null;
+    municipioResidenciaSelecionado.value = aluno.municipio_residencia ?? null;
     formAluno.aln_uf = aluno.aln_uf ?? '';
     formAluno.aln_telefone = maskTelefone(aluno.aln_telefone ?? '');
     formAluno.aln_email = aluno.aln_email ?? '';
@@ -820,8 +847,15 @@ const selectClass = 'flex h-10 w-full rounded-md border border-input bg-backgrou
                                 <Input id="aln_uf" v-model="formAluno.aln_uf" maxlength="2" :readonly="cepLock.uf" :class="['uppercase', cepLock.uf ? 'bg-muted' : '']" />
                             </div>
                             <div class="grid gap-1.5 sm:col-span-3">
-                                <FormLabel for="aln_cidade">Cidade</FormLabel>
-                                <Input id="aln_cidade" v-model="formAluno.aln_cidade" maxlength="100" :readonly="cepLock.cidade" :class="cepLock.cidade ? 'bg-muted' : ''" />
+                                <FormLabel for="aln_mun_id_resid">Cidade (município de residência)</FormLabel>
+                                <MunicipioCombobox
+                                    :model-value="formAluno.aln_mun_id_resid"
+                                    :initial="municipioResidenciaSelecionado"
+                                    :invalid="!!err('aluno.aln_mun_id_resid')"
+                                    placeholder="Buscar município..."
+                                    @select="onSelecionarMunicipioResidencia"
+                                />
+                                <InputError :message="err('aluno.aln_mun_id_resid')" />
                             </div>
                             <div class="grid gap-1.5 sm:col-span-1">
                                 <FormLabel for="aln_complemento">Complemento</FormLabel>
