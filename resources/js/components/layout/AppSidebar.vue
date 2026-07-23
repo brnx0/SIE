@@ -94,7 +94,7 @@ const diarioMenu = [
             },
             { title: 'Planos de Aula', href: '/diario/planos' },
             { title: 'Planos de Aula AEE', href: '/diario/planos-aee' },
-            { title: 'Relatórios', href: '/relatorios-diario' },
+            { title: 'Relatórios', searchTitle: 'Relatórios do Diário', href: '/relatorios-diario' },
         ],
     },
 ];
@@ -115,7 +115,7 @@ const coordenadorMenu = [
         children: [
             { title: 'Validação de Planos', href: '/coordenador/planos' },
             { title: 'Validação de Planos AEE', href: '/coordenador-interno/planos-aee' },
-            { title: 'Relatórios', href: '/relatorios-pedagogico' },
+            { title: 'Relatórios', searchTitle: 'Relatórios Pedagógicos', href: '/relatorios-pedagogico' },
         ],
     },
 ];
@@ -135,7 +135,7 @@ const secretariaMenu = [
             },
             { title: 'Renovação de Matrícula', href: '/secretaria/renovacao-matricula' },
             { title: 'Motivo Baixa Frequência', href: '/secretaria/motivos-baixa-frequencia' },
-            { title: 'Relatórios', href: '/relatorios-secretaria' },
+            { title: 'Relatórios', searchTitle: 'Relatórios da Secretaria', href: '/relatorios-secretaria' },
         ],
     },
 ];
@@ -208,30 +208,34 @@ const footerNavItems = [
 // Busca no menu
 const search = ref('');
 
-// Flatten recursivo: extrai todos os leafs com seu path (breadcrumb de pais)
+// Flatten recursivo: extrai todos os leafs com seu path (breadcrumb de pais).
+// `searchTitle` (quando definido) é o nome real da tela — usado na busca no
+// lugar do título curto do menu (ex.: "Relatórios" → "Relatórios da Secretaria").
 const flattenItems = (items: any[], parents: string[] = []): FlatNavLeaf[] => {
     const out: FlatNavLeaf[] = [];
     for (const it of items ?? []) {
         if (it.children?.length) {
             out.push(...flattenItems(it.children, [...parents, it.title]));
         } else if (it.href) {
-            out.push({ title: it.title, href: it.href, path: parents });
+            out.push({ title: it.searchTitle ?? it.title, href: it.href, path: parents });
         }
     }
     return out;
 };
 
+// O rótulo da seção entra como 1º nível do path — o tooltip/caminho da busca
+// fica igual ao do menu (ex.: "Gestão › Cadastros › Rede de Ensino › Turmas").
 const flatLeaves = computed<FlatNavLeaf[]>(() => [
-    ...flattenItems(overviewF.value),
-    ...flattenItems(cadastrosF.value),
-    ...flattenItems(matriculasF.value),
-    ...flattenItems(diarioF.value),
-    ...flattenItems(coordenadorF.value),
-    ...flattenItems(secretariaF.value),
-    ...flattenItems(encerramentoF.value),
-    ...flattenItems(transporteF.value),
-    ...flattenItems(relatoriosF.value),
-    ...flattenItems(administracaoF.value),
+    ...flattenItems(overviewF.value, ['Visão geral']),
+    ...flattenItems(cadastrosF.value, ['Gestão']),
+    ...flattenItems(matriculasF.value, ['Matrículas']),
+    ...flattenItems(diarioF.value, ['Diário']),
+    ...flattenItems(coordenadorF.value, ['Pedagógico']),
+    ...flattenItems(secretariaF.value, ['Secretaria Escolar']),
+    ...flattenItems(encerramentoF.value, ['Encerramento']),
+    ...flattenItems(transporteF.value, ['Transporte']),
+    ...flattenItems(relatoriosF.value, ['Relatórios']),
+    ...flattenItems(administracaoF.value, ['Administração']),
 ]);
 
 const searching = computed(() => search.value.trim().length > 0);
