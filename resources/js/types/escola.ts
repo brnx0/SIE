@@ -54,7 +54,7 @@ export interface Escola {
     esc_proprietario_imovel: ProprietarioImovel | null;
     esc_forma_ocupacao: FormaOcupacao | null;
     esc_situacao_func: SituacaoFunc;
-    esc_regulamentada_conselho: boolean | null;
+    esc_regulamentada_conselho: number | null;
     esc_turno_escolar: string | null;
     esc_ger_id: number;
     esc_orgao_regional_ensino: string | null;
@@ -111,7 +111,7 @@ export interface EscolaFormData {
     esc_proprietario_imovel: ProprietarioImovel | '';
     esc_forma_ocupacao: FormaOcupacao | '';
     esc_situacao_func: SituacaoFunc | '';
-    esc_regulamentada_conselho: boolean | null;
+    esc_regulamentada_conselho: number | null;
     esc_turno_escolar: string;
     esc_ger_id: number | null;
     esc_orgao_regional_ensino: string;

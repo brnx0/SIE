@@ -49,7 +49,9 @@ class Aluno extends Model
         'aln_complemento',
         'aln_bairro',
         'aln_cidade',
+        'aln_mun_id_resid',
         'aln_uf',
+        'aln_zona_residencia',
         'aln_telefone',
         'aln_email',
         'aln_foto',
@@ -69,6 +71,7 @@ class Aluno extends Model
         'aln_dt_nascimento' => 'date',
         'aln_cor_raca' => 'integer',
         'aln_nr_matricula' => 'integer',
+        'aln_zona_residencia' => 'integer',
         'aln_fl_ativo' => 'boolean',
         'aln_fl_trouxe_transferencia' => 'boolean',
         'aln_fl_trouxe_rg' => 'boolean',
@@ -99,6 +102,11 @@ class Aluno extends Model
     public function municipioNascimento(): BelongsTo
     {
         return $this->belongsTo(Municipio::class, 'aln_mun_id_nasc', 'mun_id');
+    }
+
+    public function municipioResidencia(): BelongsTo
+    {
+        return $this->belongsTo(Municipio::class, 'aln_mun_id_resid', 'mun_id');
     }
 
     public function povoIndigena(): BelongsTo

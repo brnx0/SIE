@@ -35,12 +35,14 @@ export interface AlunoResumo {
     aln_complemento: string | null;
     aln_bairro: string | null;
     aln_cidade: string | null;
+    aln_mun_id_resid: number | null;
     aln_uf: string | null;
     aln_telefone: string | null;
     aln_email: string | null;
     aln_nr_matricula: number | null;
     aln_cpf: string | null;
     municipio_nascimento: Municipio | null;
+    municipio_residencia: Municipio | null;
     saude?: {
         als_tipo_sanguineo: string | null;
         als_ds_alergias: string | null;

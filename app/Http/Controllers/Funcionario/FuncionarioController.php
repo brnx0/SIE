@@ -93,6 +93,7 @@ class FuncionarioController extends Controller
 
         $funcionario->load([
             'municipioNascimento:mun_id,mun_nome,mun_uf',
+            'municipioResidencia:mun_id,mun_nome,mun_uf,mun_codigo_ibge',
             'municipioCertidao:mun_id,mun_nome,mun_uf',
             'povoIndigena:pin_id,pin_cd_censo,pin_nome',
             'admissoes.cargo:crg_id,crg_nome',
