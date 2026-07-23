@@ -7,6 +7,7 @@ use App\Models\Diario\AeeConteudo;
 use App\Models\Diario\AeeFrequencia;
 use App\Models\Diario\DiarioPlanoAee;
 use App\Models\Matricula\Matricula;
+use App\Models\Parametro\DiaNaoLetivo;
 use App\Support\Diario\DiarioAeeGuard as Guard;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -247,6 +248,19 @@ class AeeFrequenciaController extends Controller
             })
             ->values();
 
+        // Dia não letivo (feriado/recesso) não é dia de atendimento: as turmas
+        // cujo ano marca ESTA data como não letiva saem da agenda, sem pendência.
+        $anosNaoLetivo = DiaNaoLetivo::anosComDiaNaoLetivo(
+            $turmas->pluck('tur_anl_id')->map(fn ($v) => (int) $v)->unique()->all(),
+            $dt,
+        );
+        // Só "é dia não letivo" se havia atendimento e TODO ele caiu por isso.
+        $ehDiaNaoLetivo = $turmas->isNotEmpty()
+            && $turmas->every(fn ($t) => in_array((int) $t->tur_anl_id, $anosNaoLetivo, true));
+        $turmas = $turmas
+            ->reject(fn ($t) => in_array((int) $t->tur_anl_id, $anosNaoLetivo, true))
+            ->values();
+
         // Tudo o que o loop consultaria por linha, resolvido em lote (sem N+1).
         $turIds = $turmas->pluck('tur_id')->unique();
 
@@ -342,6 +356,7 @@ class AeeFrequenciaController extends Controller
         return response()->json([
             'dt'     => $dt,
             'dia'    => $dia,
+            'eh_dia_nao_letivo' => $ehDiaNaoLetivo,
             'turmas' => $itens,
             'resumo' => [
                 'total'       => $itens->count(),

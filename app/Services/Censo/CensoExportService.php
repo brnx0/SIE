@@ -257,11 +257,11 @@ class CensoExportService
         $c[14] = $this->tipoTurma($t->tur_modalidade);
         // 15-20 atividade complementar (só p/ tipo 4/9) → fora de escopo por ora.
         $c[21] = (string) ((int) ($t->tur_local_diferenciado ?? 0)); // 0/1/2/3
-        // 22 classe especial → sem coluna (em branco).
+        $c[22] = $t->tur_fl_classe_especial ? '1' : '0'; // Educação Especial (classe especial)
         // 23 etapa agregada → derivada/opcional (em branco).
         $c[24] = (string) ($this->etapaDaSerie((int) $t->tur_ser_id) ?? '');
         // 25-28 eixo/curso/CH/organização → fora de escopo (Ed. Profissional).
-        $c[29] = '0'; // Formação por Alternância — obrigatório; sem coluna → Não.
+        $c[29] = $t->tur_fl_alternancia ? '1' : '0'; // Formação por Alternância (obrigatório)
         // 30-66 Ensino Médio/Novo EM/áreas do conhecimento → fora de escopo.
 
         return $c;

@@ -315,8 +315,6 @@ class CensoCriticasService
     private function pendencias(): array
     {
         return [
-            'Reg 20 — Formação por Alternância (campo 29, obrigatório): sem coluna.',
-            'Reg 20 — Classe especial (campo 22): coluna removida.',
             'Reg 30 — Deficiência/TEA/Altas habilidades (campo 17, obrigatório) do funcionário: sem colunas.',
             'Reg 10 — Exame de seleção (164) e cotas (165-170): sem colunas.',
             'Reg 60 — Escolarização fora (21) e transporte por matrícula (23, 24-33): desacoplado.',
