@@ -48,6 +48,8 @@ class StoreTurmaRequest extends FormRequest
             'tur_hora_fim'         => ['nullable', 'date_format:H:i', 'after:tur_hora_inicio'],
             'tur_mediacao'         => ['nullable', Rule::in(Turma::TIPOS_MEDIACAO)],
             'tur_local_diferenciado' => ['nullable', Rule::in(Turma::LOCAIS_DIFERENCIADOS)],
+            'tur_fl_classe_especial' => ['boolean'],
+            'tur_fl_alternancia'   => ['boolean'],
             'tur_dias_funcionamento' => ['nullable', 'array'],
             'tur_dias_funcionamento.*' => ['string', Rule::in(Turma::DIAS_SEMANA)],
             'tur_obs'              => ['nullable', 'string', 'max:2000'],
@@ -107,6 +109,8 @@ class StoreTurmaRequest extends FormRequest
             'tur_hora_fim'           => 'hora fim',
             'tur_mediacao'           => 'tipo de mediação',
             'tur_local_diferenciado' => 'local de funcionamento',
+            'tur_fl_classe_especial' => 'turma de educação especial (classe especial)',
+            'tur_fl_alternancia'     => 'turma de formação por alternância',
             'tur_dias_funcionamento' => 'dias de funcionamento',
             'tur_obs'                => 'observação',
         ];
