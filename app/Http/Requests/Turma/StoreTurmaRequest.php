@@ -37,7 +37,9 @@ class StoreTurmaRequest extends FormRequest
             'tur_seg_id'           => ['required', 'integer', 'exists:edu_segmento,seg_id'],
             'tur_ser_id'           => ['required', 'integer', 'exists:edu_serie,ser_id'],
             'tur_cd_inep'          => ['nullable', 'string', 'max:20'],
-            'tur_nome'             => ['required', 'string', 'max:20'],
+            // Só letras sem acento, números, hífen e espaços (compatibilidade com
+            // relatórios, integração e exportação de arquivos).
+            'tur_nome'             => ['required', 'string', 'max:20', 'regex:/^[A-Za-z0-9\- ]+$/'],
             'tur_turno'            => ['required', Rule::in(Turma::TURNOS)],
             'tur_capacidade'       => ['required', 'integer', 'min:1', 'max:999'],
             'tur_semestre'         => ['required', 'integer', Rule::in(Turma::SEMESTRES)],
@@ -88,6 +90,13 @@ class StoreTurmaRequest extends FormRequest
                 }
             }
         });
+    }
+
+    public function messages(): array
+    {
+        return [
+            'tur_nome.regex' => 'Caracteres acentuados não são permitidos neste campo.',
+        ];
     }
 
     public function attributes(): array

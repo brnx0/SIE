@@ -36,7 +36,7 @@ import {
 } from '@/types/turma';
 import { Link, useForm } from '@inertiajs/vue3';
 import { ChevronLeft, Lock, LoaderCircle, Save } from 'lucide-vue-next';
-import { computed, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { usePermissao } from '@/composables/usePermissao';
 import { useErrorFocus } from '@/composables/useErrorFocus';
 
@@ -94,9 +94,21 @@ const form = useForm<TurmaFormData>({
     _method:                props.mode === 'edit' ? 'put' : undefined,
 });
 
-// Nome da turma sempre em maiúsculas
+// Nome da turma: maiúsculas + só letras sem acento, números, hífen e espaços.
+// Acentos/cedilha são removidos em tempo real; o alerta aparece quando algo
+// é descartado (evita problemas em relatórios, integração e exportação).
+const nomeTurmaAlerta = ref('');
 watch(() => form.tur_nome, (v) => {
-    if (typeof v === 'string' && v !== v.toUpperCase()) form.tur_nome = v.toUpperCase();
+    if (typeof v !== 'string') return;
+    const maiusculo = v.toUpperCase();
+    // NFD separa o acento da letra base; removemos as marcas e o que não for
+    // A-Z, 0-9, hífen ou espaço.
+    const limpo = maiusculo
+        .normalize('NFD')
+        .replace(/[̀-ͯ]/g, '')
+        .replace(/[^A-Z0-9\- ]/g, '');
+    nomeTurmaAlerta.value = limpo !== maiusculo ? 'Caracteres acentuados não são permitidos neste campo' : '';
+    if (limpo !== v) form.tur_nome = limpo;
 });
 
 // Bloqueio de campos estruturais quando turma ABERTA (apenas no edit)
@@ -338,7 +350,8 @@ const selectClass = (hasError: boolean) =>
                             <!-- Nome da Turma -->
                             <div class="grid gap-1.5 sm:col-span-2">
                                 <FormLabel :required="true">Nome da Turma</FormLabel>
-                                <Input v-model="form.tur_nome" maxlength="20" placeholder="A" class="uppercase" :class="{ 'border-red-500': form.errors.tur_nome }" />
+                                <Input v-model="form.tur_nome" maxlength="20" placeholder="A" class="uppercase" :class="{ 'border-red-500': form.errors.tur_nome || nomeTurmaAlerta }" />
+                                <p v-if="nomeTurmaAlerta" class="text-xs text-amber-600 dark:text-amber-400">{{ nomeTurmaAlerta }}</p>
                                 <InputError :message="form.errors.tur_nome" />
                             </div>
 
