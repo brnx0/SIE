@@ -202,13 +202,17 @@ class PlanoAulaController extends Controller
             'anoLetivo:anl_id,anl_ano',
             'indicadores',
             'validadoPor:id,name',
+            'funcionario:edu_funcionario.fun_id,edu_funcionario.fun_nome',
+            'usuario:id,name',
         ]);
 
         $funId = (int) $request->user()->fun_id;
 
         return Inertia::render('diario/planos/Form', [
             'plano'       => $plano,
-            'professor'   => $this->resumoProfessor($request->user()),
+            // Professor responsável = AUTOR do plano (dpa_user_id), não o usuário
+            // logado — senão um admin/coordenador vendo o plano apareceria no lugar.
+            'professor'   => $this->resumoProfessorDoPlano($plano),
             'anosLetivos' => $this->anosLetivosDoProfessor($funId),
             'indicadoresSelecionados' => $plano->indicadores->pluck('dpi_ind_id')->all(),
             'podeEditar'  => $request->user()->isAdmin()
@@ -487,6 +491,19 @@ class PlanoAulaController extends Controller
         return [
             'fun_id'   => $fun?->fun_id,
             'fun_nome' => $fun?->fun_nome ?? $user->name,
+        ];
+    }
+
+    /**
+     * Professor responsável pelo plano = seu AUTOR (dpa_user_id), derivado via
+     * users.fun_id. Cai no nome do usuário se ele não tiver funcionário vinculado.
+     * Requer o plano com 'funcionario' e 'usuario' carregados.
+     */
+    private function resumoProfessorDoPlano(DiarioPlanoAula $plano): array
+    {
+        return [
+            'fun_id'   => $plano->funcionario?->fun_id,
+            'fun_nome' => $plano->funcionario?->fun_nome ?? $plano->usuario?->name ?? '—',
         ];
     }
 
