@@ -37,6 +37,10 @@ import {
 import type { SharedData, SystemParams } from '@/types';
 import type { Municipio, PovoIndigena } from '@/types/aluno';
 import type { Funcionario, FuncionarioFormData } from '@/types/funcionario';
+import {
+    DEFICIENCIAS, TRANSTORNOS_GLOBAIS, TRANSTORNOS_GLOBAIS_OUTROS,
+    TRANSTORNOS_APRENDIZAGEM, TGD_OUTROS,
+} from '@/lib/alunoSaudeEnums';
 import { Link, useForm, usePage } from '@inertiajs/vue3';
 import { Camera, ChevronLeft, ChevronRight, Loader2, LoaderCircle, Save, Trash2, Upload } from 'lucide-vue-next';
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
@@ -80,7 +84,7 @@ const alertarAcentos = computed(() => params.value.alertar_acentos_nomes);
 
 const stripAccents = (str: string) => str.normalize('NFD').replace(/[̀-ͯ]/g, '');
 
-const TABS = ['dados-pessoais', 'escolaridade', 'documentacao', 'endereco-contato', 'admissao-lotacao', 'horario'] as const;
+const TABS = ['dados-pessoais', 'escolaridade', 'documentacao', 'endereco-contato', 'deficiencia', 'admissao-lotacao', 'horario'] as const;
 type TabId = (typeof TABS)[number];
 
 const TAB_FIELDS: Record<TabId, string[]> = {
@@ -107,6 +111,7 @@ const TAB_FIELDS: Record<TabId, string[]> = {
         'fun_bairro', 'fun_cidade', 'fun_mun_id_resid', 'fun_uf', 'fun_zona_residencia',
         'fun_telefone', 'fun_celular', 'fun_email',
     ],
+    deficiencia: [],
     'admissao-lotacao': [],
     horario: [],
 };
@@ -215,6 +220,16 @@ const form = useForm<FuncionarioFormData>({
     escolaridades: props.initial
         ? []
         : [{ fes_nivel: '', fes_ano_inicio: '', fes_ano_fim: '', fes_cfs_id: null, fes_ies_id: null, fes_pos_area: '', curso: null, instituicao: null }],
+    saude: {
+        fus_fl_pcd: props.initial?.saude?.fus_fl_pcd ?? false,
+        fus_deficiencias: props.initial?.saude?.fus_deficiencias ?? [],
+        fus_transtornos_globais: props.initial?.saude?.fus_transtornos_globais ?? [],
+        fus_transtornos_aprendizagem: props.initial?.saude?.fus_transtornos_aprendizagem ?? [],
+        fus_deficiencia_outro: props.initial?.saude?.fus_deficiencia_outro ?? '',
+        fus_fl_altas_habilidades: props.initial?.saude?.fus_fl_altas_habilidades ?? false,
+        fus_cid: props.initial?.saude?.fus_cid ?? '',
+        fus_observacao: props.initial?.saude?.fus_observacao ?? '',
+    },
     confirm_homonimo: false,
     _method: props.mode === 'edit' ? 'put' : 'post',
 });
@@ -290,6 +305,38 @@ FUNCIONARIO_FILIACAO_FIELDS.forEach((field) => {
 
 const activeTab = ref<TabId>('dados-pessoais');
 
+// ── Quadro de deficiências (espelha o do aluno) ────────────────────────────
+const toggleArrayItem = (arr: string[], item: string) => {
+    const idx = arr.indexOf(item);
+    if (idx >= 0) arr.splice(idx, 1);
+    else arr.push(item);
+};
+
+// "Outros" na coluna TGD revela as subopções e o campo de texto "Outro(a)".
+const tgdOutrosSelecionado = computed(() => form.saude.fus_transtornos_globais.includes(TGD_OUTROS));
+
+watch(tgdOutrosSelecionado, (v) => {
+    if (!v) {
+        form.saude.fus_deficiencia_outro = '';
+        form.saude.fus_transtornos_globais = form.saude.fus_transtornos_globais.filter(
+            (t) => !(TRANSTORNOS_GLOBAIS_OUTROS as readonly string[]).includes(t),
+        );
+    }
+});
+
+// Desligar o toggle limpa todo o quadro.
+watch(() => form.saude.fus_fl_pcd, (v) => {
+    if (!v) {
+        form.saude.fus_deficiencias = [];
+        form.saude.fus_transtornos_globais = [];
+        form.saude.fus_transtornos_aprendizagem = [];
+        form.saude.fus_deficiencia_outro = '';
+        form.saude.fus_fl_altas_habilidades = false;
+        form.saude.fus_cid = '';
+        form.saude.fus_observacao = '';
+    }
+});
+
 // CPF duplicado — dialog
 const CPF_DUP_PREFIX = 'CPF já cadastrado para: ';
 const cpfDuplicadoOpen = ref(false);
@@ -337,6 +384,9 @@ const cancelarHomonimo = () => {
 const tabHasError = (tab: TabId): boolean => {
     if (tab === 'escolaridade') {
         return Object.keys(form.errors).some((k) => k.startsWith('escolaridades'));
+    }
+    if (tab === 'deficiencia') {
+        return Object.keys(form.errors).some((k) => k.startsWith('saude.'));
     }
     const fields = TAB_FIELDS[tab];
     return fields.some((f) => Boolean((form.errors as Record<string, string>)[f]));
@@ -388,7 +438,9 @@ const goToFirstErrorTab = async () => {
         if (tabHasError(tab)) {
             activeTab.value = tab;
             // leva o usuário ao 1º campo inválido da aba
-            const keys = TAB_FIELDS[tab].filter((f) => (form.errors as Record<string, string>)[f]);
+            const keys = tab === 'deficiencia'
+                ? Object.keys(form.errors).filter((k) => k.startsWith('saude.'))
+                : TAB_FIELDS[tab].filter((f) => (form.errors as Record<string, string>)[f]);
             await focusFirstError(keys);
             return;
         }
@@ -536,11 +588,14 @@ const initials = computed(() => {
                 <TabsTrigger value="endereco-contato" :has-error="tabHasError('endereco-contato')">
                     4. Endereço e Contato
                 </TabsTrigger>
+                <TabsTrigger value="deficiencia" :has-error="tabHasError('deficiencia')">
+                    5. Deficiência
+                </TabsTrigger>
                 <TabsTrigger value="admissao-lotacao" :has-error="tabHasError('admissao-lotacao')">
-                    5. Admissão / Lotação
+                    6. Admissão / Lotação
                 </TabsTrigger>
                 <TabsTrigger v-if="mode === 'edit'" value="horario">
-                    6. Horário
+                    7. Horário
                 </TabsTrigger>
             </TabsList>
 
@@ -1236,7 +1291,125 @@ const initials = computed(() => {
 
             </TabsContent>
 
-            <!-- Aba 5: Admissão / Lotação -->
+            <!-- Aba 5: Deficiência / Transtornos / Altas Habilidades -->
+            <TabsContent value="deficiencia" class="grid gap-6">
+                <fieldset class="rounded-xl border bg-card p-6 shadow-sm">
+                    <legend class="px-2 text-sm font-semibold">Tipo de Deficiência, Transtorno Global do Desenvolvimento ou Altas Habilidades/Superdotação</legend>
+
+                    <!-- Toggle "Possui deficiências" — vem primeiro -->
+                    <div class="mb-5 flex items-center gap-3">
+                        <Switch id="fus_fl_pcd" v-model="form.saude.fus_fl_pcd" />
+                        <Label for="fus_fl_pcd" class="text-sm font-medium">
+                            Possui deficiências
+                        </Label>
+                    </div>
+
+                    <!-- Conteúdo desabilitado quando o toggle está inativo -->
+                    <div :class="{ 'pointer-events-none opacity-40': !form.saude.fus_fl_pcd }">
+                        <div class="grid gap-6 sm:grid-cols-3">
+                            <div id="fus_deficiencias" tabindex="-1" class="scroll-mt-24 outline-none">
+                                <h4 class="mb-2 text-xs font-semibold text-muted-foreground">
+                                    Deficiência <span v-if="form.saude.fus_fl_pcd" class="text-rose-500">*</span>
+                                </h4>
+                                <div class="space-y-2">
+                                    <label v-for="d in DEFICIENCIAS" :key="d" class="flex items-center gap-2 text-sm">
+                                        <input
+                                            type="checkbox"
+                                            :checked="form.saude.fus_deficiencias.includes(d)"
+                                            @change="toggleArrayItem(form.saude.fus_deficiencias, d)"
+                                            class="size-4 rounded border-gray-300 text-sky-600 focus:ring-sky-500"
+                                        />
+                                        {{ d }}
+                                    </label>
+                                </div>
+                                <InputError :message="(form.errors as Record<string, string>)['saude.fus_deficiencias']" />
+                            </div>
+
+                            <div>
+                                <h4 class="mb-2 text-xs font-semibold text-muted-foreground">Transtorno Global de Desenvolvimento</h4>
+                                <div class="space-y-2">
+                                    <label v-for="t in TRANSTORNOS_GLOBAIS" :key="t" class="flex items-center gap-2 text-sm">
+                                        <input
+                                            type="checkbox"
+                                            :checked="form.saude.fus_transtornos_globais.includes(t)"
+                                            @change="toggleArrayItem(form.saude.fus_transtornos_globais, t)"
+                                            class="size-4 rounded border-gray-300 text-sky-600 focus:ring-sky-500"
+                                        />
+                                        {{ t }}
+                                    </label>
+                                    <!-- Subopções reveladas ao marcar "Outros" -->
+                                    <div v-if="tgdOutrosSelecionado" class="ml-6 space-y-2 border-l pl-3">
+                                        <label v-for="t in TRANSTORNOS_GLOBAIS_OUTROS" :key="t" class="flex items-center gap-2 text-sm">
+                                            <input
+                                                type="checkbox"
+                                                :checked="form.saude.fus_transtornos_globais.includes(t)"
+                                                @change="toggleArrayItem(form.saude.fus_transtornos_globais, t)"
+                                                class="size-4 rounded border-gray-300 text-sky-600 focus:ring-sky-500"
+                                            />
+                                            {{ t }}
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h4 class="mb-2 text-xs font-semibold text-muted-foreground">Transtornos que Impactam a Aprendizagem</h4>
+                                <div class="space-y-2">
+                                    <label v-for="t in TRANSTORNOS_APRENDIZAGEM" :key="t" class="flex items-center gap-2 text-sm">
+                                        <input
+                                            type="checkbox"
+                                            :checked="form.saude.fus_transtornos_aprendizagem.includes(t)"
+                                            @change="toggleArrayItem(form.saude.fus_transtornos_aprendizagem, t)"
+                                            class="size-4 rounded border-gray-300 text-sky-600 focus:ring-sky-500"
+                                        />
+                                        {{ t }}
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Altas Habilidades como opção (checkbox) -->
+                        <div class="mt-4">
+                            <label class="flex items-center gap-2 text-sm">
+                                <input
+                                    type="checkbox"
+                                    v-model="form.saude.fus_fl_altas_habilidades"
+                                    class="size-4 rounded border-gray-300 text-sky-600 focus:ring-sky-500"
+                                />
+                                Altas Habilidades/Superdotação
+                            </label>
+                        </div>
+
+                        <!-- Outro(a) + CID -->
+                        <div class="mt-4 grid gap-4">
+                            <div v-if="tgdOutrosSelecionado" class="grid gap-2">
+                                <Label for="fus_deficiencia_outro">Outro(a)</Label>
+                                <Input id="fus_deficiencia_outro" v-model="form.saude.fus_deficiencia_outro" maxlength="500" class="w-full" />
+                                <InputError :message="(form.errors as Record<string, string>)['saude.fus_deficiencia_outro']" />
+                            </div>
+                            <div class="grid gap-2">
+                                <Label for="fus_cid">CID</Label>
+                                <Input id="fus_cid" v-model="form.saude.fus_cid" maxlength="20" class="w-full max-w-xs" />
+                                <InputError :message="(form.errors as Record<string, string>)['saude.fus_cid']" />
+                            </div>
+                        </div>
+
+                        <div class="mt-4 grid gap-2">
+                            <Label for="fus_observacao">Observação</Label>
+                            <textarea
+                                id="fus_observacao"
+                                v-model="form.saude.fus_observacao"
+                                rows="3"
+                                maxlength="2000"
+                                class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                            />
+                            <InputError :message="(form.errors as Record<string, string>)['saude.fus_observacao']" />
+                        </div>
+                    </div>
+                </fieldset>
+            </TabsContent>
+
+            <!-- Aba 6: Admissão / Lotação -->
             <TabsContent value="admissao-lotacao">
                 <div v-if="mode === 'create'" class="rounded-xl border-2 border-dashed bg-card py-12 text-center text-sm text-muted-foreground shadow-sm">
                     Salve o funcionário primeiro para gerenciar admissões e lotações.

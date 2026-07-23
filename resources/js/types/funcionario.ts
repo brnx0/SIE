@@ -97,6 +97,30 @@ export interface LotacaoFormData {
     lot_funcoes_sala_aula: string[];
 }
 
+export interface FuncionarioSaude {
+    fus_id: number;
+    fus_fun_id: number;
+    fus_fl_pcd: boolean;
+    fus_deficiencias: string[] | null;
+    fus_transtornos_globais: string[] | null;
+    fus_transtornos_aprendizagem: string[] | null;
+    fus_deficiencia_outro: string | null;
+    fus_fl_altas_habilidades: boolean;
+    fus_cid: string | null;
+    fus_observacao: string | null;
+}
+
+export interface FuncionarioSaudeFormData {
+    fus_fl_pcd: boolean;
+    fus_deficiencias: string[];
+    fus_transtornos_globais: string[];
+    fus_transtornos_aprendizagem: string[];
+    fus_deficiencia_outro: string;
+    fus_fl_altas_habilidades: boolean;
+    fus_cid: string;
+    fus_observacao: string;
+}
+
 export interface Funcionario {
     fun_id: number;
     fun_nome: string;
@@ -173,6 +197,7 @@ export interface Funcionario {
     povo_indigena?: PovoIndigena | null;
     admissoes?: FuncionarioAdmissao[];
     escolaridades?: FuncionarioEscolaridade[];
+    saude?: FuncionarioSaude | null;
 }
 
 export interface FuncionarioFormData {
@@ -243,6 +268,7 @@ export interface FuncionarioFormData {
     fun_foto: File | null;
     fun_fl_ativo: boolean;
     escolaridades: EscolaridadeFormData[];
+    saude: FuncionarioSaudeFormData;
     confirm_homonimo: boolean;
     _method?: 'put' | 'post';
     [key: string]: any;

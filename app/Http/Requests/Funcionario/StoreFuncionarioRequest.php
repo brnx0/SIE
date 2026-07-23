@@ -154,6 +154,34 @@ class StoreFuncionarioRequest extends FormRequest
             'escolaridades.*.fes_cfs_id' => ['nullable', 'integer', 'exists:edu_curso_formacao_superior,cfs_id'],
             'escolaridades.*.fes_pos_area' => ['nullable', 'integer', Rule::in([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 99])],
             'escolaridades.*.fes_ies_id' => ['nullable', 'integer', 'exists:edu_instituicao_ensino_superior,ies_id'],
+
+            // Quadro de deficiências (Censo reg 30, campo 17 e itens).
+            'saude'                 => ['nullable', 'array'],
+            'saude.fus_fl_pcd'      => ['boolean'],
+            'saude.fus_deficiencias' => ['nullable', 'array'],
+            'saude.fus_deficiencias.*' => ['string', Rule::in([
+                'Cegueira', 'Baixa Visão', 'Visão Monocular', 'Surdez',
+                'Deficiência Auditiva', 'Surdocegueira', 'Deficiência Física',
+                'Deficiência Intelectual', 'Deficiência Múltipla',
+            ])],
+            'saude.fus_transtornos_globais' => ['nullable', 'array'],
+            'saude.fus_transtornos_globais.*' => ['string', Rule::in([
+                'Autismo Infantil - TEA', 'Síndrome de Asperger', 'Síndrome de Rett',
+                'Transt. Des. da Infância', 'Síndrome de Down', 'Microcefalia', 'Outros',
+            ])],
+            'saude.fus_transtornos_aprendizagem' => ['nullable', 'array'],
+            'saude.fus_transtornos_aprendizagem.*' => ['string', Rule::in([
+                'Discalculia ou outro transtorno da matemática e raciocínio lógico',
+                'Disgrafia, Disortografia ou outro transtorno da escrita e ortografia',
+                'Dislalia ou outro transtorno da linguagem e comunicação',
+                'Dislexia',
+                'Transtorno do Processamento Auditivo Central (TPAC)',
+                'TDAH (Transtorno do Déficit de Atenção com Hiperatividade)',
+            ])],
+            'saude.fus_deficiencia_outro' => ['nullable', 'string', 'max:500'],
+            'saude.fus_fl_altas_habilidades' => ['boolean'],
+            'saude.fus_cid' => ['nullable', 'string', 'max:20'],
+            'saude.fus_observacao' => ['nullable', 'string', 'max:2000'],
         ];
     }
 
@@ -196,6 +224,21 @@ class StoreFuncionarioRequest extends FormRequest
                 if ($ini !== null && $ini !== '' && $fim !== null && $fim !== '' && (int) $fim < (int) $ini) {
                     $v->errors()->add("escolaridades.{$i}.fes_ano_fim", 'O ano final deve ser igual ou posterior ao ano inicial.');
                 }
+            }
+        });
+
+        // Funcionário PCD/TGD/AH → exige ao menos um item marcado em qualquer coluna.
+        $validator->after(function (Validator $v) {
+            if (! $this->boolean('saude.fus_fl_pcd')) return;
+
+            $temItem = ! empty($this->input('saude.fus_deficiencias'))
+                || ! empty($this->input('saude.fus_transtornos_globais'))
+                || ! empty($this->input('saude.fus_transtornos_aprendizagem'))
+                || $this->boolean('saude.fus_fl_altas_habilidades')
+                || filled($this->input('saude.fus_deficiencia_outro'));
+
+            if (! $temItem) {
+                $v->errors()->add('saude.fus_deficiencias', 'Marque ao menos um item (deficiência, transtorno global/de aprendizagem, altas habilidades ou outra) quando o funcionário possui deficiência.');
             }
         });
 
@@ -291,6 +334,14 @@ class StoreFuncionarioRequest extends FormRequest
             'fun_celular' => 'celular',
             'fun_email' => 'e-mail',
             'fun_foto' => 'foto',
+            'saude.fus_fl_pcd' => 'funcionário com deficiência',
+            'saude.fus_deficiencias' => 'deficiências',
+            'saude.fus_transtornos_globais' => 'transtornos globais',
+            'saude.fus_transtornos_aprendizagem' => 'transtornos de aprendizagem',
+            'saude.fus_deficiencia_outro' => 'outra deficiência',
+            'saude.fus_fl_altas_habilidades' => 'altas habilidades / superdotação',
+            'saude.fus_cid' => 'CID',
+            'saude.fus_observacao' => 'observação',
         ];
     }
 }

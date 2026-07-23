@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Storage;
 
@@ -146,5 +147,10 @@ class Funcionario extends Model
     public function escolaridades(): HasMany
     {
         return $this->hasMany(FuncionarioEscolaridade::class, 'fes_fun_id', 'fun_id');
+    }
+
+    public function saude(): HasOne
+    {
+        return $this->hasOne(FuncionarioSaude::class, 'fus_fun_id', 'fun_id');
     }
 }
