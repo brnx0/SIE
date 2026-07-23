@@ -28,9 +28,11 @@ class SerieIndicadorController extends Controller
     {
         $data = $request->validate([
             'ind_descricao' => ['required', 'string', 'max:1000'],
-            'ind_dis_id'    => ['nullable', 'integer', 'exists:edu_disciplina,dis_id'],
+            'ind_dis_id'    => ['required', 'integer', 'exists:edu_disciplina,dis_id'],
             'ind_anl_id'    => ['required', 'integer', 'exists:cfg_ano_letivo,anl_id'],
             'ind_fl_ativo'  => ['boolean'],
+        ], [
+            'ind_dis_id.required' => 'Selecione uma disciplina para vincular o indicador.',
         ]);
 
         $descricao = trim($data['ind_descricao']);

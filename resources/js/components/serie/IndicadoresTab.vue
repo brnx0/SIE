@@ -85,8 +85,15 @@ const cancelar = () => {
 };
 
 const salvar = () => {
-    processing.value = true;
     errors.value = {};
+
+    // Disciplina é obrigatória — bloqueia o envio já no cliente.
+    if (formData.ind_dis_id == null) {
+        errors.value = { ind_dis_id: 'Selecione uma disciplina para vincular o indicador.' };
+        return;
+    }
+
+    processing.value = true;
 
     const onOk = () => { showForm.value = false; editing.value = null; };
     const onErr = (errs: Record<string, string>) => { errors.value = errs; };
@@ -302,14 +309,14 @@ const semDisciplinasGrade = computed(() => (props.disciplinas ?? []).length === 
 
             <div class="grid gap-4">
                 <div class="grid gap-1.5">
-                    <FormLabel for="ind_dis_id">Disciplina (opcional)</FormLabel>
+                    <FormLabel for="ind_dis_id" :required="true">Disciplina</FormLabel>
                     <select
                         id="ind_dis_id"
                         v-model.number="formData.ind_dis_id"
                         class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
                         :class="{ 'border-red-500': errors.ind_dis_id }"
                     >
-                        <option :value="null">— Sem disciplina —</option>
+                        <option :value="null" disabled>Selecione...</option>
                         <option v-for="d in disciplinas" :key="d.dis_id" :value="d.dis_id">{{ d.dis_nome }}</option>
                     </select>
                     <InputError :message="errors.ind_dis_id" />
