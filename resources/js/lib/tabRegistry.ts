@@ -97,6 +97,8 @@ const PATH_LABELS: Record<string, string> = {
     '/relatorios/relacao-turmas-atividade': 'Relação de Turmas de Atividade',
     '/relatorios/ficha-matricula': 'Ficha de Matrícula',
     '/relatorios/sumario-matriculas': 'Sumário de Matrículas',
+    '/relatorios/censo-criticas': 'Críticas do Censo',
+    '/relatorios/censo-exportacao': 'Exportação do Censo',
     '/transporte/veiculos': 'Veículos',
     '/transporte/usuarios': 'Usuários do Transporte',
     '/transporte/rotas': 'Rotas',

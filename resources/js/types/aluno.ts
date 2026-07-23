@@ -75,13 +75,16 @@ export interface Aluno {
     aln_complemento: string | null;
     aln_bairro: string | null;
     aln_cidade: string | null;
+    aln_mun_id_resid: number | null;
     aln_uf: string | null;
+    aln_zona_residencia: number | null;
     aln_telefone: string | null;
     aln_email: string | null;
     aln_foto: string | null;
     aln_foto_url: string | null;
     aln_fl_ativo: boolean;
     municipio_nascimento?: Municipio | null;
+    municipio_residencia?: Municipio | null;
     povo_indigena?: PovoIndigena | null;
     saude?: AlunoSaude | null;
 }
@@ -115,7 +118,9 @@ export interface AlunoFormData {
     aln_complemento: string;
     aln_bairro: string;
     aln_cidade: string;
+    aln_mun_id_resid: number | null;
     aln_uf: string;
+    aln_zona_residencia: number | null;
     aln_telefone: string;
     aln_email: string;
     aln_foto: File | null;

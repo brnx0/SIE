@@ -540,13 +540,14 @@ const isLast = computed(() => activeTab.value === TABS.value[TABS.value.length -
                         <FormLabel for="esc_regulamentada_conselho" :required="true"> Regulamentada pelo Conselho</FormLabel>
                         <select
                             id="esc_regulamentada_conselho"
-                            :value="form.esc_regulamentada_conselho != null ? form.esc_regulamentada_conselho ? 1 : 0 : ''"
-                            @change="(e) => { const v = (e.target as HTMLSelectElement).value; form.esc_regulamentada_conselho = v === '' ? null : v === '1'; }"
+                            :value="form.esc_regulamentada_conselho != null ? form.esc_regulamentada_conselho : ''"
+                            @change="(e) => { const v = (e.target as HTMLSelectElement).value; form.esc_regulamentada_conselho = v === '' ? null : Number(v); }"
                             class="h-10 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
                         >
                             <option value="">Selecione...</option>
                             <option value="1">Sim</option>
                             <option value="0">Não</option>
+                            <option value="2">Em tramitação</option>
                         </select>
                         <InputError :message="form.errors.esc_regulamentada_conselho" />
                     </div>

@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useViaCep } from '@/composables/useViaCep';
+import { useMunicipios } from '@/composables/useMunicipios';
 import { usePermissao } from '@/composables/usePermissao';
 import { useErrorFocus } from '@/composables/useErrorFocus';
 import { useToast } from '@/composables/useToast';
@@ -125,7 +126,9 @@ const TAB_FIELDS: Record<TabId, string[]> = {
         'aln_complemento',
         'aln_bairro',
         'aln_cidade',
+        'aln_mun_id_resid',
         'aln_uf',
+        'aln_zona_residencia',
         'aln_telefone',
         'aln_email',
     ],
@@ -156,6 +159,11 @@ const parseDateBR = (br: string): string => {
 
 const initialMunicipio = computed<Municipio | null>(
     () => props.initial?.municipio_nascimento ?? null,
+);
+
+// Município de residência: ref mutável (CEP resolve e atualiza o display do combobox).
+const municipioResidenciaInitial = ref<Municipio | null>(
+    props.initial?.municipio_residencia ?? null,
 );
 
 const initialPovo = computed<PovoIndigena | null>(
@@ -197,7 +205,9 @@ const form = useForm<AlunoFormData>({
     aln_complemento: props.initial?.aln_complemento ?? '',
     aln_bairro: props.initial?.aln_bairro ?? '',
     aln_cidade: props.initial?.aln_cidade ?? '',
+    aln_mun_id_resid: props.initial?.aln_mun_id_resid ?? null,
     aln_uf: props.initial?.aln_uf ?? '',
+    aln_zona_residencia: props.initial?.aln_zona_residencia ?? null,
     aln_telefone: props.initial?.aln_telefone ?? '',
     aln_email: props.initial?.aln_email ?? '',
 
@@ -349,6 +359,17 @@ const tabHasError = (tab: TabId): boolean => {
 
 const numeroInput = ref<HTMLInputElement | null>(null);
 const { loading: cepLoading, error: cepError, lookup: cepLookup } = useViaCep();
+const { byIbge: municipioByIbge } = useMunicipios();
+
+// Seleção manual do município de residência: espelha cidade/UF nas colunas legadas.
+const onSelecionarMunicipioResidencia = (m: Municipio | null) => {
+    municipioResidenciaInitial.value = m;
+    form.aln_mun_id_resid = m?.mun_id ?? null;
+    if (m) {
+        form.aln_cidade = m.mun_nome;
+        form.aln_uf = m.mun_uf;
+    }
+};
 
 // Campos preenchidos pelo CEP ficam travados p/ edição (liberam ao trocar o CEP).
 const cepLock = reactive({ logradouro: false, bairro: false, cidade: false, uf: false });
@@ -365,8 +386,14 @@ watch(
         if (!result) return;
         if (result.logradouro) { form.aln_logradouro = result.logradouro; cepLock.logradouro = true; }
         if (result.bairro)     { form.aln_bairro = result.bairro; cepLock.bairro = true; }
-        if (result.cidade)     { form.aln_cidade = result.cidade; cepLock.cidade = true; }
         if (result.uf)         { form.aln_uf = (result.uf || '').toUpperCase(); cepLock.uf = true; }
+        // Casa o município do CEP (código IBGE) com a base local; cai no texto se não achar.
+        const mun = result.ibge ? await municipioByIbge(result.ibge) : null;
+        if (mun) {
+            onSelecionarMunicipioResidencia(mun);
+        } else if (result.cidade) {
+            form.aln_cidade = result.cidade;
+        }
         await nextTick();
         numeroInput.value?.focus();
     },
@@ -976,9 +1003,15 @@ const initials = computed(() => {
                         </div>
 
                         <div class="grid gap-2 sm:col-span-4">
-                            <Label for="aln_cidade">Cidade</Label>
-                            <Input id="aln_cidade" v-model="form.aln_cidade" maxlength="100" :readonly="cepLock.cidade" :class="cepLock.cidade ? 'bg-muted' : ''" />
-                            <InputError :message="form.errors.aln_cidade" />
+                            <Label for="aln_mun_id_resid">Cidade (município de residência)</Label>
+                            <MunicipioCombobox
+                                :model-value="form.aln_mun_id_resid"
+                                :initial="municipioResidenciaInitial"
+                                :invalid="!!form.errors.aln_mun_id_resid"
+                                placeholder="Buscar município..."
+                                @select="onSelecionarMunicipioResidencia"
+                            />
+                            <InputError :message="form.errors.aln_mun_id_resid || form.errors.aln_cidade" />
                         </div>
 
                         <div class="grid gap-2 sm:col-span-2">
@@ -993,6 +1026,21 @@ const initials = computed(() => {
                                 <option v-for="uf in UFS" :key="uf" :value="uf">{{ uf }}</option>
                             </select>
                             <InputError :message="form.errors.aln_uf" />
+                        </div>
+
+                        <div class="grid gap-2 sm:col-span-3">
+                            <Label for="aln_zona_residencia">Localização/Zona de residência <span class="text-destructive">*</span></Label>
+                            <select
+                                id="aln_zona_residencia"
+                                :value="form.aln_zona_residencia ?? ''"
+                                @change="(e) => { const v = (e.target as HTMLSelectElement).value; form.aln_zona_residencia = v === '' ? null : Number(v); }"
+                                class="h-10 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                            >
+                                <option value="">Selecione...</option>
+                                <option value="1">Urbana</option>
+                                <option value="2">Rural</option>
+                            </select>
+                            <InputError :message="form.errors.aln_zona_residencia" />
                         </div>
                     </div>
 

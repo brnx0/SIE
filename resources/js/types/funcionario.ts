@@ -101,6 +101,10 @@ export interface Funcionario {
     fun_id: number;
     fun_nome: string;
     fun_nome_social: string | null;
+    fun_filiacao_1: string | null;
+    fun_filiacao_1_tipo: string | null;
+    fun_filiacao_2: string | null;
+    fun_filiacao_2_tipo: string | null;
     fun_dt_nascimento: string;
     fun_sexo: Sexo;
     fun_cor_raca: CorRaca;
@@ -147,7 +151,9 @@ export interface Funcionario {
     fun_complemento: string | null;
     fun_bairro: string | null;
     fun_cidade: string | null;
+    fun_mun_id_resid: number | null;
     fun_uf: string | null;
+    fun_zona_residencia: number | null;
 
     // Contato
     fun_telefone: string | null;
@@ -162,6 +168,7 @@ export interface Funcionario {
     fun_fl_ativo: boolean;
 
     municipio_nascimento?: Municipio | null;
+    municipio_residencia?: Municipio | null;
     municipio_certidao?: Municipio | null;
     povo_indigena?: PovoIndigena | null;
     admissoes?: FuncionarioAdmissao[];
@@ -171,6 +178,10 @@ export interface Funcionario {
 export interface FuncionarioFormData {
     fun_nome: string;
     fun_nome_social: string;
+    fun_filiacao_1: string;
+    fun_filiacao_1_tipo: string;
+    fun_filiacao_2: string;
+    fun_filiacao_2_tipo: string;
     fun_dt_nascimento: string;
     fun_sexo: Sexo | '';
     fun_cor_raca: CorRaca | null;
@@ -217,7 +228,9 @@ export interface FuncionarioFormData {
     fun_complemento: string;
     fun_bairro: string;
     fun_cidade: string;
+    fun_mun_id_resid: number | null;
     fun_uf: string;
+    fun_zona_residencia: number | null;
 
     // Contato
     fun_telefone: string;
