@@ -6,6 +6,8 @@ use App\Http\Controllers\Relatorio\AlunosDeficienciaController;
 use App\Http\Controllers\Relatorio\AlunosTranstornoController;
 use App\Http\Controllers\Relatorio\AlunosPorTurmaRelatorioController;
 use App\Http\Controllers\Relatorio\AlunosPorEscolaController;
+use App\Http\Controllers\Relatorio\CensoCriticasController;
+use App\Http\Controllers\Censo\CensoExportController;
 use App\Http\Controllers\Relatorio\DadosAlunosTurmaController;
 use App\Http\Controllers\Relatorio\DesempenhoAeeController;
 use App\Http\Controllers\Relatorio\RelacaoTurmasAeeController;
@@ -309,6 +311,12 @@ Route::middleware(['auth', 'verified', 'tela'])->group(function () {
     Route::get('relatorios/alunos-por-escola', [AlunosPorEscolaController::class, 'form'])->name('relatorios.alunos-por-escola.form');
     Route::get('relatorios/alunos-por-escola/gerar', [AlunosPorEscolaController::class, 'gerar'])->name('relatorios.alunos-por-escola.gerar');
     Route::get('relatorios/alunos-por-escola/xlsx', [AlunosPorEscolaController::class, 'exportarXlsx'])->name('relatorios.alunos-por-escola.xlsx');
+
+    Route::get('relatorios/censo-criticas', [CensoCriticasController::class, 'form'])->name('relatorios.censo-criticas.form');
+    Route::get('relatorios/censo-criticas/gerar', [CensoCriticasController::class, 'gerar'])->name('relatorios.censo-criticas.gerar');
+
+    Route::get('relatorios/censo-exportacao', [CensoExportController::class, 'form'])->name('relatorios.censo-exportacao.form');
+    Route::get('relatorios/censo-exportacao/download', [CensoExportController::class, 'download'])->name('relatorios.censo-exportacao.download');
     Route::get('relatorios/dados-alunos-turma', [DadosAlunosTurmaController::class, 'form'])->name('relatorios.dados-alunos-turma.form');
     Route::get('relatorios/dados-alunos-turma/gerar', [DadosAlunosTurmaController::class, 'gerar'])->name('relatorios.dados-alunos-turma.gerar');
     Route::get('relatorios/relacao-turmas-aee', [RelacaoTurmasAeeController::class, 'form'])->name('relatorios.relacao-turmas-aee.form');
