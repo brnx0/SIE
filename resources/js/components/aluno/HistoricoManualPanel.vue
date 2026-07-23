@@ -17,8 +17,8 @@ interface AnoSistema {
 interface Segmento { seg_id: number; seg_nome_reduzido: string }
 interface Conceito { cnc_id: number; cnc_sigla: string; cnc_descricao: string }
 interface Situacao { tas_cod: number; tas_descricao: string }
-interface DiscLinha { hmd_dis_id: number | null; dis_nome?: string | null; tipo: 'num' | 'cnc'; hmd_mf: number | string | null; hmd_cnc_id: number | null }
-interface DiscSalva { hmd_dis_id: number; dis_nome: string | null; hmd_mf: number | string | null; hmd_cnc_id: number | null; cnc_sigla: string | null }
+interface DiscLinha { hmd_dis_id: number | null; dis_nome?: string | null; tipo: 'num' | 'cnc'; hmd_mf: number | string | null; hmd_cnc_id: number | null; hmd_conceito: string }
+interface DiscSalva { hmd_dis_id: number; dis_nome: string | null; hmd_mf: number | string | null; hmd_cnc_id: number | null; hmd_conceito: string | null; cnc_sigla: string | null }
 interface Lancamento {
     hmn_id: number;
     hmn_ano: number;
@@ -158,7 +158,7 @@ const resetForm = () => {
     form.hmn_id = null; form.hmn_ano = ''; form.seg_id = null; form.hmn_ser_id = null; form.serie_label = null;
     form.hmn_esc_id = null; form.escola_label = null; form.hmn_esc_nome = ''; form.hmn_mun_id = null; form.municipio_initial = null;
     form.hmn_carga_horaria = ''; form.hmn_dias_letivos = ''; form.hmn_frequencia = ''; form.hmn_tas_cod = null;
-    form.disciplinas = [{ hmd_dis_id: null, dis_nome: null, tipo: 'num', hmd_mf: '', hmd_cnc_id: null }];
+    form.disciplinas = [{ hmd_dis_id: null, dis_nome: null, tipo: 'num', hmd_mf: '', hmd_cnc_id: null, hmd_conceito: '' }];
     escolaMode.value = 'rede';
     errors.value = {};
 };
@@ -176,21 +176,39 @@ const editar = (l: Lancamento) => {
     form.hmn_frequencia = l.hmn_frequencia ?? ''; form.hmn_tas_cod = l.hmn_tas_cod;
     form.disciplinas = l.disciplinas.map((d) => ({
         hmd_dis_id: d.hmd_dis_id, dis_nome: d.dis_nome,
-        tipo: d.hmd_cnc_id ? 'cnc' : 'num',
+        // Conceitual = tem sigla digitada ou vinda do catálogo (lançamentos antigos).
+        tipo: (d.hmd_conceito || d.hmd_cnc_id) ? 'cnc' : 'num',
         hmd_mf: d.hmd_mf ?? '', hmd_cnc_id: d.hmd_cnc_id ?? null,
+        hmd_conceito: d.hmd_conceito ?? d.cnc_sigla ?? '',
     }));
     escolaMode.value = l.hmn_esc_id ? 'rede' : 'livre';
     errors.value = {};
     showForm.value = true;
 };
 
-const addDisc = () => form.disciplinas.push({ hmd_dis_id: null, dis_nome: null, tipo: 'num', hmd_mf: '', hmd_cnc_id: null });
+const addDisc = () => form.disciplinas.push({ hmd_dis_id: null, dis_nome: null, tipo: 'num', hmd_mf: '', hmd_cnc_id: null, hmd_conceito: '' });
+
+// Primeiro erro de conceito entre as linhas (mostrado uma vez sob a lista).
+const erroConceito = computed(() => {
+    const k = Object.keys(errors.value).find((key) => key.endsWith('.hmd_conceito'));
+    return k ? errors.value[k] : null;
+});
 const rmDisc = (i: number) => form.disciplinas.splice(i, 1);
 
 const salvar = () => {
     if (!props.aluno) return;
-    processing.value = true;
     errors.value = {};
+
+    // Conceito continua obrigatório nas linhas conceituais (agora é texto livre).
+    const semConceito = form.disciplinas.findIndex(
+        (d) => d.hmd_dis_id && d.tipo === 'cnc' && !String(d.hmd_conceito ?? '').trim(),
+    );
+    if (semConceito >= 0) {
+        errors.value = { [`disciplinas.${semConceito}.hmd_conceito`]: 'Informe o conceito.' };
+        return;
+    }
+
+    processing.value = true;
     const payload: Record<string, unknown> = {
         hmn_id: form.hmn_id,
         hmn_ano: form.hmn_ano === '' ? null : form.hmn_ano,
@@ -207,7 +225,8 @@ const salvar = () => {
             .map((d) => ({
                 hmd_dis_id: d.hmd_dis_id,
                 hmd_mf: d.tipo === 'cnc' ? null : (d.hmd_mf === '' ? null : d.hmd_mf),
-                hmd_cnc_id: d.tipo === 'cnc' ? d.hmd_cnc_id : null,
+                hmd_cnc_id: null,
+                hmd_conceito: d.tipo === 'cnc' ? String(d.hmd_conceito ?? '').trim() : null,
             })),
     };
     router.post(`/alunos/${props.aluno.aln_id}/historico-manual`, payload, {
@@ -397,13 +416,26 @@ const err = (k: string) => errors.value[k];
                             <option value="cnc">Conceito</option>
                         </select>
                         <Input v-if="d.tipo === 'num'" v-model="d.hmd_mf" type="number" min="0" max="10" step="0.1" placeholder="MF" class="w-24 shrink-0" />
-                        <select v-else v-model.number="d.hmd_cnc_id" class="h-9 w-28 shrink-0 rounded-md border border-input bg-background px-2 text-sm">
-                            <option :value="null">Conceito...</option>
-                            <option v-for="c in conceitos" :key="c.cnc_id" :value="c.cnc_id">{{ c.cnc_sigla }}</option>
-                        </select>
+                        <!-- Conceito digitável: aceita a sigla usada pelo município de
+                             origem (R, S, H...), sem limitar ao catálogo local. -->
+                        <Input
+                            v-else
+                            v-model="d.hmd_conceito"
+                            maxlength="10"
+                            placeholder="Conceito"
+                            :list="conceitos.length ? 'conceitos-sugestoes' : undefined"
+                            class="w-28 shrink-0"
+                            :class="{ 'border-red-500': errors[`disciplinas.${i}.hmd_conceito`] }"
+                            :title="errors[`disciplinas.${i}.hmd_conceito`] ?? ''"
+                        />
                         <Button variant="ghost" size="sm" class="text-rose-600" @click="rmDisc(i)"><X class="size-4" /></Button>
                     </div>
+                    <InputError :message="erroConceito" />
                 </div>
+                <!-- Sugestões do catálogo local; o campo continua aceitando qualquer valor. -->
+                <datalist v-if="conceitos.length" id="conceitos-sugestoes">
+                    <option v-for="c in conceitos" :key="c.cnc_id" :value="c.cnc_sigla">{{ c.cnc_descricao }}</option>
+                </datalist>
             </div>
 
             <div class="flex justify-end gap-2 border-t pt-3">

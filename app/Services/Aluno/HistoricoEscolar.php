@@ -134,10 +134,10 @@ class HistoricoEscolar
                     'dis_id' => (int) $d->hmd_dis_id,
                     'nome' => $d->disciplina?->dis_nome ?? '—',
                     'ordem' => (int) $d->hmd_ordem,
-                    'mf' => $d->hmd_cnc_id
-                        ? ($d->conceito?->cnc_sigla ?? '-')
-                        : ($d->hmd_mf !== null ? number_format((float) $d->hmd_mf, 1, ',', '') : '-'),
-                    'conceitual' => (bool) $d->hmd_cnc_id,
+                    // Conceito: texto livre digitado, com fallback no catálogo (antigos).
+                    'mf' => $d->siglaConceito()
+                        ?: ($d->hmd_mf !== null ? number_format((float) $d->hmd_mf, 1, ',', '') : '-'),
+                    'conceitual' => $d->siglaConceito() !== null,
                 ])->all(),
             ];
         }
