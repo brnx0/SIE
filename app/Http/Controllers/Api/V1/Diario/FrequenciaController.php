@@ -8,6 +8,7 @@ use App\Models\Diario\DiarioConteudo;
 use App\Models\Diario\DiarioFalta;
 use App\Models\Diario\DiarioPlanoAula;
 use App\Models\Matricula\Matricula;
+use App\Models\Parametro\DiaNaoLetivo;
 use App\Support\Diario\DiarioEscritaGuard as Guard;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -88,6 +89,18 @@ class FrequenciaController extends Controller
                 ])
                 ->filter(fn ($x) => $x['dia_ref'] !== null)
                 ->values();
+        }
+
+        // Dias não letivos (feriados/recessos) da janela: o app usa para NÃO
+        // listar esses dias como pendência na navegação da chamada. Espelha o
+        // tratamento dos sábados letivos — a regra do calendário mora no backend.
+        $diasNaoLetivos = [];
+        if ($periodo && $turmaInfo) {
+            $diasNaoLetivos = DiaNaoLetivo::datasNoPeriodo(
+                (int) $turmaInfo->tur_anl_id,
+                $periodo['dt_inicio'],
+                $periodo['dt_fim'],
+            );
         }
 
         // Ativos + quem saiu (para lançar o que é anterior à saída).
@@ -196,6 +209,7 @@ class FrequenciaController extends Controller
             'conteudos'            => $conteudos,
             'planos'               => $planos,
             'sabados_letivos'      => $sabadosLetivos,
+            'dias_nao_letivos'     => $diasNaoLetivos,
             'justificativas'       => $justificativas,
             'aulas_nao_executadas' => $aulasNaoExecutadas,
         ]);
@@ -257,6 +271,21 @@ class FrequenciaController extends Controller
                 ->reject(fn ($x) => in_array($escolaDaTurma[$x->tur_id] ?? null, $excecoes))
                 ->values();
         }
+
+        // Dia não letivo (feriado/recesso) não gera pendência: os tempos do
+        // professor cujo ano marca ESTA data como não letiva saem da agenda. O
+        // parâmetro é por ano letivo, então filtra pelo ano de cada turma.
+        $anosNaoLetivo = DiaNaoLetivo::anosComDiaNaoLetivo(
+            $tempos->pluck('tur_anl_id')->map(fn ($v) => (int) $v)->unique()->all(),
+            $dt,
+        );
+        // Só "é dia não letivo" se havia aula e TODA ela caiu por conta disso —
+        // aí o app troca a mensagem vazia genérica pela de feriado.
+        $ehDiaNaoLetivo = $tempos->isNotEmpty()
+            && $tempos->every(fn ($x) => in_array((int) $x->tur_anl_id, $anosNaoLetivo, true));
+        $tempos = $tempos
+            ->reject(fn ($x) => in_array((int) $x->tur_anl_id, $anosNaoLetivo, true))
+            ->values();
 
         // Tudo o que o loop precisaria consultar por linha, resolvido de uma vez.
         $turIds = $tempos->pluck('tur_id')->unique();
@@ -353,6 +382,7 @@ class FrequenciaController extends Controller
             'dt'               => $dt,
             'dia_ref'          => $diaRef,
             'eh_sabado_letivo' => (bool) $sabado,
+            'eh_dia_nao_letivo' => $ehDiaNaoLetivo,
             'tempos'           => $itens,
             'resumo'           => [
                 'total'       => $itens->count(),

@@ -2,6 +2,7 @@
 
 namespace App\Support\Diario;
 
+use App\Models\Parametro\DiaNaoLetivo;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -145,15 +146,23 @@ final class DiarioAeeGuard
             return [];
         }
 
+        // Feriados/recessos (cfg_dia_nao_letivo) do ano da turma não são dias de
+        // atendimento: saem da lista para não cobrar pendência do professor.
+        $anlId = (int) DB::table('edu_turma')->where('tur_id', $turId)->value('tur_anl_id');
+        $naoLetivos = $anlId
+            ? array_flip(DiaNaoLetivo::datasNoPeriodo($anlId, $janela['dt_inicio'], $janela['dt_fim']))
+            : [];
+
         $datas = [];
         $cursor = Carbon::parse($janela['dt_inicio']);
         $fim = Carbon::parse($janela['dt_fim']);
 
         while ($cursor->lte($fim)) {
             $code = self::DOW[(int) $cursor->dayOfWeek] ?? null;
+            $dt = $cursor->toDateString();
 
-            if ($code && in_array($code, $dias, true)) {
-                $datas[] = ['dt' => $cursor->toDateString(), 'dia' => $code];
+            if ($code && in_array($code, $dias, true) && ! isset($naoLetivos[$dt])) {
+                $datas[] = ['dt' => $dt, 'dia' => $code];
             }
 
             $cursor->addDay();
