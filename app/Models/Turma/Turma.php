@@ -89,6 +89,8 @@ class Turma extends Model
         'tur_hora_fim',
         'tur_mediacao',
         'tur_local_diferenciado',
+        'tur_fl_classe_especial',
+        'tur_fl_alternancia',
         'tur_aee_sala',
         'tur_dias_funcionamento',
         'tur_obs',
@@ -98,6 +100,8 @@ class Turma extends Model
         'tur_capacidade'         => 'integer',
         'tur_semestre'           => 'integer',
         'tur_qt_expansao'        => 'integer',
+        'tur_fl_classe_especial' => 'boolean',
+        'tur_fl_alternancia'     => 'boolean',
         'tur_dias_funcionamento' => 'array',
     ];
 

@@ -2,6 +2,7 @@
 import EscolaCombobox from '@/components/funcionario/EscolaCombobox.vue';
 import FormLabel from '@/components/common/FormLabel.vue';
 import InputError from '@/components/common/InputError.vue';
+import Switch from '@/components/common/Switch.vue';
 import Tabs from '@/components/common/Tabs.vue';
 import TabsContent from '@/components/common/TabsContent.vue';
 import TabsList from '@/components/common/TabsList.vue';
@@ -86,6 +87,8 @@ const form = useForm<TurmaFormData>({
     tur_hora_fim:           props.initial?.tur_hora_fim?.slice(0, 5) ?? '',
     tur_mediacao:           props.initial?.tur_mediacao ?? 'PRESENCIAL',
     tur_local_diferenciado: props.initial?.tur_local_diferenciado ?? 'NAO ESTA EM LOCAL DIFERENCIADO',
+    tur_fl_classe_especial: props.initial?.tur_fl_classe_especial ?? false,
+    tur_fl_alternancia:     props.initial?.tur_fl_alternancia ?? false,
     tur_dias_funcionamento: props.initial?.tur_dias_funcionamento ?? ['seg', 'ter', 'qua', 'qui', 'sex'],
     tur_obs:                props.initial?.tur_obs ?? '',
     _method:                props.mode === 'edit' ? 'put' : undefined,
@@ -131,6 +134,19 @@ const triggerSeries = () => {
 watch(() => form.tur_esc_id, triggerSegmentos);
 watch(() => form.tur_anl_id, triggerSegmentos);
 watch(() => form.tur_seg_id, triggerSeries);
+
+// Censo reg 20 campo 29: alternância não se aplica à Educação Infantil
+// (Creche/Pré-escola). Mesmo critério do FinalEducacaoInfantilController.
+const isEducacaoInfantil = computed(() => {
+    const seg = segmentos.value.find((s) => s.seg_id === form.tur_seg_id);
+    if (!seg) return false;
+    const n = seg.seg_nome.normalize('NFD').replace(/[̀-ͯ]/g, '').toUpperCase();
+    // PRE + ESCOL (e não só "PRE") evita falso-positivo tipo "PREPARATÓRIO".
+    return n.includes('CRECHE') || n.includes('INFANTIL') || (n.includes('PRE') && n.includes('ESCOL'));
+});
+watch(isEducacaoInfantil, (v) => {
+    if (v) form.tur_fl_alternancia = false;
+});
 
 // Se edit, pré-carrega segmentos e series
 if (props.mode === 'edit' && props.initial) {
@@ -402,6 +418,25 @@ const selectClass = (hasError: boolean) =>
                                     <option v-for="l in LOCAIS_DIFERENCIADOS" :key="l" :value="l">{{ l }}</option>
                                 </select>
                                 <InputError :message="form.errors.tur_local_diferenciado" />
+                            </div>
+
+                            <!-- Classe Especial (censo reg 20, campo 22) -->
+                            <div class="grid gap-1.5 sm:col-span-3">
+                                <FormLabel for="tur_fl_classe_especial">Turma de Educação Especial <span class="text-muted-foreground">(classe especial)</span></FormLabel>
+                                <div class="flex h-9 items-center">
+                                    <Switch id="tur_fl_classe_especial" v-model="form.tur_fl_classe_especial" />
+                                </div>
+                                <InputError :message="form.errors.tur_fl_classe_especial" />
+                            </div>
+
+                            <!-- Formação por Alternância (censo reg 20, campo 29) -->
+                            <div class="grid gap-1.5 sm:col-span-3">
+                                <FormLabel for="tur_fl_alternancia">Turma de Formação por Alternância</FormLabel>
+                                <div class="flex h-9 items-center">
+                                    <Switch id="tur_fl_alternancia" v-model="form.tur_fl_alternancia" :disabled="isEducacaoInfantil" />
+                                </div>
+                                <p v-if="isEducacaoInfantil" class="text-xs text-muted-foreground">Não se aplica à Educação Infantil / Pré-escola.</p>
+                                <InputError :message="form.errors.tur_fl_alternancia" />
                             </div>
 
                             <!-- Dias de Funcionamento -->
