@@ -5,6 +5,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Search, X } from 'lucide-vue-next';
 import { computed } from 'vue';
 import { useTabNav } from '@/composables/useTabNav';
@@ -79,17 +80,22 @@ const { open } = useTabNav();
                 Nenhuma tela encontrada.
             </li>
             <SidebarMenuItem v-for="r in results" :key="r.href">
-                <SidebarMenuButton as-child>
-                    <a :href="r.href" class="flex flex-col items-start gap-0.5 py-1.5" @click.prevent="open(r.href)">
-                        <span class="text-sm">{{ r.title }}</span>
-                        <span
-                            v-if="r.path.length"
-                            class="text-[10px] uppercase tracking-wide text-muted-foreground"
-                        >
-                            {{ r.path.join(' › ') }}
-                        </span>
-                    </a>
-                </SidebarMenuButton>
+                <Tooltip :delay-duration="500">
+                    <TooltipTrigger as-child>
+                        <SidebarMenuButton as-child>
+                            <a :href="r.href" class="flex h-auto flex-col items-start gap-0.5 py-1.5" @click.prevent="open(r.href)">
+                                <span class="text-sm">{{ r.title }}</span>
+                                <span
+                                    v-if="r.path.length"
+                                    class="text-[10px] uppercase tracking-wide text-muted-foreground"
+                                >
+                                    {{ r.path.join(' › ') }}
+                                </span>
+                            </a>
+                        </SidebarMenuButton>
+                    </TooltipTrigger>
+                    <TooltipContent side="right" :side-offset="8" class="text-xs">{{ [...r.path, r.title].join(' › ') }}</TooltipContent>
+                </Tooltip>
             </SidebarMenuItem>
         </SidebarMenu>
     </SidebarGroup>
