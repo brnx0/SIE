@@ -83,14 +83,8 @@ const { open } = useTabNav();
                 <Tooltip :delay-duration="500">
                     <TooltipTrigger as-child>
                         <SidebarMenuButton as-child>
-                            <a :href="r.href" class="flex h-auto flex-col items-start gap-0.5 py-1.5" @click.prevent="open(r.href)">
+                            <a :href="r.href" class="py-1.5" @click.prevent="open(r.href)">
                                 <span class="text-sm">{{ r.title }}</span>
-                                <span
-                                    v-if="r.path.length"
-                                    class="text-[10px] uppercase tracking-wide text-muted-foreground"
-                                >
-                                    {{ r.path.join(' › ') }}
-                                </span>
                             </a>
                         </SidebarMenuButton>
                     </TooltipTrigger>

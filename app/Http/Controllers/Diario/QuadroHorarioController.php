@@ -241,10 +241,17 @@ class QuadroHorarioController extends Controller
             ->where('trh_tempo', $data['trh_tempo'])
             ->where('trh_dia', $data['trh_dia'])
             ->where('trh_fun_id', $data['trh_fun_id'])
-            ->whereHas('turma', fn ($q) =>
+            ->whereHas('turma', function ($q) use ($turma) {
                 $q->where('tur_anl_id', $turma->tur_anl_id)
-                  ->where('tur_id', '!=', $turma->tur_id)
-            )
+                  ->where('tur_id', '!=', $turma->tur_id);
+
+                // Conflito depende do turno: INTEGRAL ocupa matutino, vespertino
+                // e noturno (conflita com qualquer turma); turno único só
+                // conflita com turma do mesmo turno ou INTEGRAL.
+                if ($turma->tur_turno !== 'INTEGRAL') {
+                    $q->whereIn('tur_turno', [$turma->tur_turno, 'INTEGRAL']);
+                }
+            })
             ->first();
 
         if ($conflito) {
