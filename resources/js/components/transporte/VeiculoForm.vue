@@ -129,7 +129,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar veículo' : 'Salvar alt
 
             <div class="grid gap-2">
                 <FormLabel for="vei_placa" :required="true">Placa</FormLabel>
-                <Input id="vei_placa" v-model="form.vei_placa" maxlength="8" autofocus class="uppercase" placeholder="AAA0A00" />
+                <Input id="vei_placa" v-model="form.vei_placa" maxlength="7" autofocus class="uppercase" placeholder="AAA0A00" />
                 <InputError :message="form.errors.vei_placa" />
             </div>
 
