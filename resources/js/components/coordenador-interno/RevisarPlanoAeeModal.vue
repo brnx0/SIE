@@ -53,7 +53,7 @@ const podeSalvar = computed(() => podeRevisar.value && statusMudou.value && !env
 const opcoesStatus: { value: PlanoStatus; label: string }[] = [
     { value: 'aprovado', label: 'Aprovar' },
     { value: 'correcao', label: 'Devolver para correção' },
-    { value: 'reprovado', label: 'Reprovar' },
+    { value: 'reprovado', label: 'Não Aprovar' },
 ];
 
 const statusBadge = (s: PlanoStatus) => ({
