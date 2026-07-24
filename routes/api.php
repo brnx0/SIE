@@ -65,6 +65,7 @@ Route::prefix('v1')->group(function () {
             Route::prefix('diario/relatorios')->group(function () {
                 Route::get('notas-por-unidade', [RelatoriosController::class, 'notasPorUnidade']);
                 Route::get('boletim-avaliativo', [RelatoriosController::class, 'boletimAvaliativo']);
+                Route::get('conteudo-ministrado', [RelatoriosController::class, 'conteudoMinistrado']);
             });
 
             // Parecer descritivo — a granularidade (por aluno / por disciplina)
