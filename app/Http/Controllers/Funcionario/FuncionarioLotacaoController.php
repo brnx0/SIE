@@ -13,6 +13,7 @@ use App\Models\Turma\TurmaProfessorApoio;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class FuncionarioLotacaoController extends Controller
 {
@@ -121,6 +122,24 @@ class FuncionarioLotacaoController extends Controller
         return in_array($cargo->crg_nome, $exatos, true);
     }
 
+    /**
+     * Lotação exige ao menos uma escolaridade cadastrada — sem ela não há como
+     * comprovar habilitação para o cargo. Vale na inclusão e na edição.
+     * A escolaridade é gerida na aba própria do funcionário.
+     */
+    protected function assertTemEscolaridade(Funcionario $funcionario, Request $request): void
+    {
+        if ($funcionario->escolaridades()->exists()) {
+            return;
+        }
+
+        throw ValidationException::withMessages([
+            'lot_crg_id' => $this->isCargoDocente($request->input('lot_crg_id'))
+                ? 'Não é possível lotar o funcionário como professor. É necessário informar a escolaridade.'
+                : 'Não é possível lotar o funcionário. É necessário informar a escolaridade.',
+        ]);
+    }
+
     protected function attributes(): array
     {
         return [
@@ -142,6 +161,8 @@ class FuncionarioLotacaoController extends Controller
             'lot_dt_inicio.after_or_equal' => 'A data inicial do vínculo não pode ser anterior à data de admissão (' . $admissao->adm_dt_admissao->format('d/m/Y') . ').',
         ], $this->attributes());
 
+        $this->assertTemEscolaridade($funcionario, $request);
+
         $admissao->lotacoes()->create($data);
 
         return back()->with('success', 'Lotação cadastrada com sucesso.');
@@ -152,6 +173,8 @@ class FuncionarioLotacaoController extends Controller
         $data = $request->validate($this->rules($request, $admissao), [
             'lot_dt_inicio.after_or_equal' => 'A data inicial do vínculo não pode ser anterior à data de admissão (' . $admissao->adm_dt_admissao->format('d/m/Y') . ').',
         ], $this->attributes());
+
+        $this->assertTemEscolaridade($funcionario, $request);
 
         $lotacao->update($data);
 

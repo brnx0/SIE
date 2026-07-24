@@ -11,8 +11,9 @@ import type { EscolaResumo, Turma } from '@/types/turma';
 import { TURNOS } from '@/types/turma';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { BookOpen, Pencil, Plus, Trash2 } from 'lucide-vue-next';
-import { computed, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { usePermissao } from '@/composables/usePermissao';
+import { useFiltrosListagem } from '@/composables/useFiltrosListagem';
 
 const { isReadOnly } = usePermissao();
 
@@ -63,6 +64,32 @@ const apply = (resetPage = false) => {
 
 watch([fEscId, fAnlId, fTurno, fSituacao, fSearch], () => apply(true));
 watch(perPage, () => apply(true));
+
+// ── Filtros mantidos ao abrir um registro e voltar ─────────────────────────
+// Listagem e formulário dividem a mesma aba, então a listagem remonta sem
+// query ao voltar. Guardamos a query aplicada e a reaplicamos na volta.
+const { salvar: salvarFiltros, restaurar: restaurarFiltros } = useFiltrosListagem('turmas');
+
+onMounted(() => {
+    // URL com query = intenção explícita (link, refresh, paginação): ela manda.
+    if (window.location.search.length > 1) {
+        salvarFiltros(window.location.search);
+        return;
+    }
+    const salvo = restaurarFiltros();
+    if (salvo.length > 1) {
+        router.get(`/turmas${salvo}`, {}, { replace: true });
+    }
+});
+
+// Mantém o snapshot em dia a cada filtro aplicado ou troca de página.
+watch(
+    () => [props.filters, props.turmas.current_page],
+    () => {
+        if (window.location.search.length > 1) salvarFiltros(window.location.search);
+    },
+    { deep: true },
+);
 
 const remove = (t: Turma) => {
     if (!confirm(`Remover turma "${t.tur_nome}" (${t.serie?.ser_nome ?? ''} — ${t.turno_label ?? t.tur_turno})?`)) return;
