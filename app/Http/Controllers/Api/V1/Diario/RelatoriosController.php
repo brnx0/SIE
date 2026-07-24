@@ -328,6 +328,154 @@ class RelatoriosController extends Controller
         ]);
     }
 
+    /**
+     * Conteúdo ministrado: por disciplina da grade, os dias com aula registrada,
+     * com o conteúdo/metodologia do dia e se o planejamento foi executado.
+     * Sem `uni_id`, lista o ano inteiro — e aí a linha carrega o período.
+     *
+     * Espelha `Relatorio\ConteudoMinistradoController` (web), com as diferenças
+     * de sempre nesta API: sem `esc_id` (a escola vem da turma), autorização só
+     * por REGÊNCIA e JSON sem papel timbrado. Uma diferença a mais, deliberada:
+     * a grade é filtrada por ANO LETIVO (`grd_anl_id`), como nos outros dois
+     * relatórios daqui — o web omite esse filtro e mistura grades de anos
+     * diferentes quando a série teve a grade trocada.
+     */
+    public function conteudoMinistrado(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'anl_id' => ['required', 'integer', 'exists:cfg_ano_letivo,anl_id'],
+            'tur_id' => ['required', 'integer', 'exists:edu_turma,tur_id'],
+            // Como no notasPorUnidade: a ausência é o que pede o ano inteiro.
+            'uni_id' => ['nullable', 'integer', 'exists:cfg_unidade,uni_id'],
+        ]);
+
+        $anlId = (int) $data['anl_id'];
+        $turId = (int) $data['tur_id'];
+
+        Guard::assertRegenciaTurma((int) $request->user()->fun_id, $turId);
+
+        $ano   = AnoLetivo::findOrFail($anlId);
+        $turma = Turma::with(['serie:ser_id,ser_nome', 'escola:esc_id,esc_nome'])->findOrFail($turId);
+
+        $uniIdFiltro = ! empty($data['uni_id']) ? (int) $data['uni_id'] : null;
+        $consolidado = $uniIdFiltro === null;
+
+        $unidades = DB::table('cfg_unidade')
+            ->where('uni_anl_id', $anlId)
+            ->orderBy('uni_numero')
+            ->get(['uni_id', 'uni_numero', 'uni_tipo']);
+
+        $labelUni = [];
+        foreach ($unidades as $u) {
+            $labelUni[(int) $u->uni_id] = $u->uni_numero . 'º ' . ucfirst((string) $u->uni_tipo);
+        }
+
+        // Dias com aula lançada na frequência — por (disciplina + data).
+        $dias = DB::table('edu_diario_aula as a')
+            ->where('a.aul_tur_id', $turId)
+            ->whereNull('a.aul_deleted_at')
+            ->whereNotNull('a.aul_dis_id')
+            ->when($uniIdFiltro, fn ($q) => $q->where('a.aul_uni_id', $uniIdFiltro))
+            ->distinct()
+            ->get(['a.aul_dis_id as dis_id', 'a.aul_dt as dt', 'a.aul_uni_id as uni_id']);
+
+        // Registros do dia (conteúdo / metodologia / planejamento executado).
+        $conteudos = DB::table('edu_diario_conteudo as c')
+            ->where('c.dco_tur_id', $turId)
+            ->whereNull('c.dco_deleted_at')
+            ->whereNotNull('c.dco_dis_id')
+            ->when($uniIdFiltro, fn ($q) => $q->where('c.dco_uni_id', $uniIdFiltro))
+            ->get(['c.dco_dis_id as dis_id', 'c.dco_dt as dt', 'c.dco_uni_id as uni_id', 'c.dco_conteudo', 'c.dco_metodologia', 'c.dco_fl_plano_executado']);
+
+        // União por (disciplina + data): o dia entra se tem frequência lançada OU
+        // registro do dia. Os dois lados importam — conteúdo salvo sem chamada não
+        // pode sumir do relatório, e aula sem conteúdo precisa aparecer (é
+        // justamente a pendência que o coordenador procura).
+        $linhasMap = [];
+        $chave = fn (int $dis, string $dt) => $dis . '|' . $dt;
+        foreach ($dias as $a) {
+            $dt = Carbon::parse($a->dt)->toDateString();
+            $linhasMap[$chave((int) $a->dis_id, $dt)] = [
+                'dis_id' => (int) $a->dis_id, 'dt' => $dt, 'uni_id' => (int) $a->uni_id,
+                'conteudo' => null, 'metodologia' => null, 'plano' => false,
+            ];
+        }
+        foreach ($conteudos as $c) {
+            $dt = Carbon::parse($c->dt)->toDateString();
+            $k  = $chave((int) $c->dis_id, $dt);
+            $linhasMap[$k] ??= ['dis_id' => (int) $c->dis_id, 'dt' => $dt, 'uni_id' => (int) $c->uni_id, 'conteudo' => null, 'metodologia' => null, 'plano' => false];
+            $linhasMap[$k]['conteudo']    = $c->dco_conteudo;
+            $linhasMap[$k]['metodologia'] = $c->dco_metodologia;
+            $linhasMap[$k]['plano']       = (bool) $c->dco_fl_plano_executado;
+        }
+        $diasPorDisc = collect($linhasMap)->groupBy('dis_id');
+
+        // Todas as disciplinas da grade aparecem, mesmo sem nenhum registro.
+        $nomes = DB::table('edu_grade_disciplinar as gd')
+            ->join('edu_disciplina as d', 'd.dis_id', '=', 'gd.grd_dis_id')
+            ->where('gd.grd_ser_id', $turma->tur_ser_id)
+            ->where('gd.grd_anl_id', $anlId)
+            ->where('gd.grd_fl_ativo', true)
+            ->distinct()
+            ->pluck('d.dis_nome', 'd.dis_id');
+
+        $gradeVazia = $nomes->isEmpty();
+
+        // ...e também as que têm registro mas saíram da grade (grade trocada no
+        // meio do ano) — senão o dia já lançado sumiria do relatório.
+        foreach ($diasPorDisc as $disId => $rows) {
+            if (! $nomes->has((int) $disId)) {
+                $nomes->put((int) $disId, DB::table('edu_disciplina')->where('dis_id', $disId)->value('dis_nome') ?? ('Disciplina ' . $disId));
+            }
+        }
+
+        $disciplinas = $nomes
+            ->map(fn ($nome, $disId) => (object) ['id' => (int) $disId, 'nome' => $nome])
+            ->sortBy('nome', SORT_FLAG_CASE | SORT_NATURAL)
+            ->values()
+            ->map(function ($d) use ($diasPorDisc, $labelUni) {
+                $rows = collect($diasPorDisc->get($d->id, []))->sortBy('dt')->values();
+
+                return [
+                    'dis_id'   => $d->id,
+                    'dis_nome' => $d->nome,
+                    'total'    => $rows->count(),
+                    'dias'     => $rows->map(fn ($r) => [
+                        // ISO (YYYY-MM-DD), não d/m/Y como no web: o app formata e
+                        // compara datas nesse formato (ver src/utils/date.ts).
+                        'dt'              => $r['dt'],
+                        'periodo'         => $labelUni[(int) $r['uni_id']] ?? '—',
+                        'plano_executado' => (bool) $r['plano'],
+                        'conteudo'        => $r['conteudo'],
+                        'metodologia'     => $r['metodologia'],
+                    ])->values(),
+                ];
+            });
+
+        $uniSel = $uniIdFiltro ? $unidades->firstWhere('uni_id', $uniIdFiltro) : null;
+
+        return response()->json([
+            'contexto' => [
+                'tur_nome'      => $turma->tur_nome,
+                'ser_nome'      => $turma->serie?->ser_nome,
+                'esc_nome'      => $turma->escola?->esc_nome,
+                'anl_ano'       => $ano->anl_ano,
+                'periodo_label' => $uniSel ? ($labelUni[(int) $uniSel->uni_id] ?? '—') : 'Todos os períodos',
+                'consolidado'   => $consolidado,
+            ],
+            'disciplinas' => $disciplinas->values(),
+            // Explica um relatório vazio em vez de sair em branco silencioso.
+            'avisos' => array_values(array_filter([
+                $unidades->isEmpty()
+                    ? 'Nenhuma unidade/período avaliativo cadastrado para o ano letivo.'
+                    : null,
+                $gradeVazia
+                    ? 'Grade disciplinar não cadastrada para esta série neste ano letivo.'
+                    : null,
+            ])),
+        ]);
+    }
+
     // ============ Helpers ============
 
     /**

@@ -89,7 +89,7 @@ class HistoricoManualController extends Controller
         $lancamentos = HistoricoManual::query()
             ->where('hmn_aln_id', $aluno->aln_id)
             ->with([
-                'disciplinas:hmd_id,hmd_hmn_id,hmd_dis_id,hmd_mf,hmd_cnc_id,hmd_ordem',
+                'disciplinas:hmd_id,hmd_hmn_id,hmd_dis_id,hmd_mf,hmd_cnc_id,hmd_conceito,hmd_ordem',
                 'disciplinas.disciplina:dis_id,dis_nome',
                 'disciplinas.conceito:cnc_id,cnc_sigla',
                 'serie:ser_id,ser_nome',
@@ -122,6 +122,8 @@ class HistoricoManualController extends Controller
                     'dis_nome' => $d->disciplina?->dis_nome,
                     'hmd_mf' => $d->hmd_mf,
                     'hmd_cnc_id' => $d->hmd_cnc_id,
+                    // Texto livre com fallback no catálogo (lançamentos antigos).
+                    'hmd_conceito' => $d->siglaConceito(),
                     'cnc_sigla' => $d->conceito?->cnc_sigla,
                     'hmd_ordem' => $d->hmd_ordem,
                 ])->values(),
@@ -186,6 +188,9 @@ class HistoricoManualController extends Controller
             'disciplinas.*.hmd_dis_id' => ['required', 'integer', 'exists:edu_disciplina,dis_id'],
             'disciplinas.*.hmd_mf' => ['nullable', 'numeric', 'min:0', 'max:10'],
             'disciplinas.*.hmd_cnc_id' => ['nullable', 'integer', 'exists:cfg_conceito,cnc_id'],
+            // Conceito é texto livre: o município de origem pode usar siglas fora
+            // do catálogo local (R, S, H...). Sem Rule::in de propósito.
+            'disciplinas.*.hmd_conceito' => ['nullable', 'string', 'max:10'],
         ], [
             'hmn_ano.max' => 'O ano letivo não pode ser posterior ao ano atual.',
             'hmn_tas_cod.not_in' => 'Situação final inválida para lançamento manual.',
@@ -254,12 +259,19 @@ class HistoricoManualController extends Controller
             // Sincroniza disciplinas: hard replace (tabela filha simples).
             $registro->disciplinas()->forceDelete();
             foreach (array_values($data['disciplinas']) as $i => $d) {
+                // Conceito digitado (texto livre) tem precedência sobre o catálogo.
+                $conceito = trim((string) ($d['hmd_conceito'] ?? ''));
+                $conceito = $conceito !== '' ? $conceito : null;
+                $cnc = $conceito !== null ? null : ($d['hmd_cnc_id'] ?? null);
+
                 // Conceitual tem precedência; se houver conceito, zera a MF numérica.
-                $cnc = $d['hmd_cnc_id'] ?? null;
+                $conceitual = $conceito !== null || $cnc !== null;
+
                 $registro->disciplinas()->create([
                     'hmd_dis_id' => (int) $d['hmd_dis_id'],
-                    'hmd_mf' => $cnc ? null : ($d['hmd_mf'] ?? null),
+                    'hmd_mf' => $conceitual ? null : ($d['hmd_mf'] ?? null),
                     'hmd_cnc_id' => $cnc,
+                    'hmd_conceito' => $conceito,
                     'hmd_ordem' => $i,
                 ]);
             }

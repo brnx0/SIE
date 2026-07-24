@@ -54,6 +54,37 @@ const listaFiltrada = computed<SerieIndicador[]>(() => {
     return list.value.filter(i => i.ind_dis_id === filtroDisId.value);
 });
 
+interface GrupoIndicadores { key: string; dis_nome: string; itens: SerieIndicador[] }
+
+// Apresentação agrupada por disciplina: cada indicador cai sob o cabeçalho da
+// sua disciplina. Como deriva de `listaFiltrada`, um indicador recém-cadastrado
+// já entra no grupo certo assim que a lista recarrega.
+const grupos = computed<GrupoIndicadores[]>(() => {
+    const nomePorId = new Map(props.disciplinas.map(d => [d.dis_id, d.dis_nome]));
+    const mapa = new Map<string, GrupoIndicadores>();
+
+    for (const ind of listaFiltrada.value) {
+        const key = ind.ind_dis_id == null ? 'sem' : String(ind.ind_dis_id);
+        if (!mapa.has(key)) {
+            mapa.set(key, {
+                key,
+                dis_nome: ind.disciplina?.dis_nome
+                    ?? (ind.ind_dis_id != null ? nomePorId.get(ind.ind_dis_id) : undefined)
+                    ?? 'Sem disciplina',
+                itens: [],
+            });
+        }
+        mapa.get(key)!.itens.push(ind);
+    }
+
+    // Alfabética por disciplina; "Sem disciplina" (legados) sempre por último.
+    return [...mapa.values()].sort((a, b) => {
+        if (a.key === 'sem') return 1;
+        if (b.key === 'sem') return -1;
+        return a.dis_nome.localeCompare(b.dis_nome, 'pt-BR');
+    });
+});
+
 const showForm = ref(false);
 const editing = ref<SerieIndicador | null>(null);
 const formData = reactive({ ind_descricao: '', ind_dis_id: null as number | null, ind_fl_ativo: true });
@@ -364,7 +395,6 @@ const semDisciplinasGrade = computed(() => (props.disciplinas ?? []).length === 
             <table class="w-full text-left text-sm">
                 <thead class="bg-indigo-600 text-white">
                     <tr>
-                        <th class="w-48 px-3 py-2 font-semibold">Disciplina</th>
                         <th class="px-3 py-2 font-semibold">Descrição</th>
                         <th class="w-24 px-3 py-2 text-center font-semibold">Ativo</th>
                         <th class="w-28 px-3 py-2 text-right font-semibold">Ações</th>
@@ -372,50 +402,60 @@ const semDisciplinasGrade = computed(() => (props.disciplinas ?? []).length === 
                 </thead>
                 <tbody>
                     <tr v-if="listaFiltrada.length === 0">
-                        <td colspan="4" class="px-3 py-6 text-center text-muted-foreground">
+                        <td colspan="3" class="px-3 py-6 text-center text-muted-foreground">
                             {{ list.length === 0 ? 'Nenhum indicador cadastrado.' : 'Nenhum indicador para esta disciplina.' }}
                         </td>
                     </tr>
-                    <tr
-                        v-for="(ind, idx) in listaFiltrada"
-                        :key="ind.ind_id"
-                        :class="idx % 2 === 0 ? 'bg-white dark:bg-transparent' : 'bg-slate-50 dark:bg-slate-900/40'"
-                    >
-                        <td class="px-3 py-2 text-xs" :class="{ 'text-muted-foreground': !ind.ind_fl_ativo }">
-                            {{ ind.disciplina?.dis_nome ?? '—' }}
-                        </td>
-                        <td class="whitespace-pre-wrap px-3 py-2" :class="{ 'text-muted-foreground line-through': !ind.ind_fl_ativo }">
-                            {{ ind.ind_descricao }}
-                        </td>
-                        <td class="px-3 py-2 text-center">
-                            <button
-                                type="button"
-                                class="rounded p-1 hover:bg-muted"
-                                :title="ind.ind_fl_ativo ? 'Clique p/ inativar' : 'Clique p/ ativar'"
-                                @click="toggleAtivo(ind)"
-                            >
-                                <CheckCircle2 v-if="ind.ind_fl_ativo" class="mx-auto size-4 text-emerald-600" />
-                                <XCircle v-else class="mx-auto size-4 text-rose-400" />
-                            </button>
-                        </td>
-                        <td class="px-3 py-2 text-right">
-                            <div class="flex justify-end gap-1">
-                                <Button type="button" variant="ghost" size="sm" @click="abrirEditar(ind)" aria-label="Editar">
-                                    <Pencil class="size-4" />
-                                </Button>
-                                <Button
+                    <template v-for="g in grupos" :key="g.key">
+                        <!-- Cabeçalho do grupo: a disciplina deixa de ser coluna e vira agrupador. -->
+                        <tr class="border-y bg-slate-100 dark:bg-slate-800">
+                            <td colspan="3" class="px-3 py-1.5">
+                                <span class="text-xs font-semibold uppercase tracking-wide text-slate-700 dark:text-slate-200">
+                                    {{ g.dis_nome }}
+                                </span>
+                                <span class="ml-2 rounded-full bg-indigo-100 px-2 py-0.5 text-[10px] font-semibold text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300">
+                                    {{ g.itens.length }}
+                                </span>
+                            </td>
+                        </tr>
+                        <tr
+                            v-for="(ind, idx) in g.itens"
+                            :key="ind.ind_id"
+                            :class="idx % 2 === 0 ? 'bg-white dark:bg-transparent' : 'bg-slate-50 dark:bg-slate-900/40'"
+                        >
+                            <td class="whitespace-pre-wrap px-3 py-2 pl-6" :class="{ 'text-muted-foreground line-through': !ind.ind_fl_ativo }">
+                                {{ ind.ind_descricao }}
+                            </td>
+                            <td class="px-3 py-2 text-center">
+                                <button
                                     type="button"
-                                    variant="ghost"
-                                    size="sm"
-                                    class="text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:hover:bg-rose-900/30"
-                                    @click="remover(ind)"
-                                    aria-label="Remover"
+                                    class="rounded p-1 hover:bg-muted"
+                                    :title="ind.ind_fl_ativo ? 'Clique p/ inativar' : 'Clique p/ ativar'"
+                                    @click="toggleAtivo(ind)"
                                 >
-                                    <Trash2 class="size-4" />
-                                </Button>
-                            </div>
-                        </td>
-                    </tr>
+                                    <CheckCircle2 v-if="ind.ind_fl_ativo" class="mx-auto size-4 text-emerald-600" />
+                                    <XCircle v-else class="mx-auto size-4 text-rose-400" />
+                                </button>
+                            </td>
+                            <td class="px-3 py-2 text-right">
+                                <div class="flex justify-end gap-1">
+                                    <Button type="button" variant="ghost" size="sm" @click="abrirEditar(ind)" aria-label="Editar">
+                                        <Pencil class="size-4" />
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        class="text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:hover:bg-rose-900/30"
+                                        @click="remover(ind)"
+                                        aria-label="Remover"
+                                    >
+                                        <Trash2 class="size-4" />
+                                    </Button>
+                                </div>
+                            </td>
+                        </tr>
+                    </template>
                 </tbody>
             </table>
         </div>

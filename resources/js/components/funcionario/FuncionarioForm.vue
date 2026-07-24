@@ -853,7 +853,7 @@ const initials = computed(() => {
                     </div>
                     <div class="grid gap-2">
                         <div class="flex items-center justify-between gap-4">
-                            <Label for="fun_filiacao_1">Filiação 1</Label>
+                            <FormLabel for="fun_filiacao_1" :required="true">Filiação 1</FormLabel>
                             <div class="flex items-center gap-4 text-sm">
                                 <label class="flex cursor-pointer items-center gap-1.5">
                                     <input type="radio" v-model="form.fun_filiacao_1_tipo" value="MAE" class="accent-sky-600" />

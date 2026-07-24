@@ -25,7 +25,7 @@ import type {
     Escola,
 } from '@/types/funcionario';
 import { router } from '@inertiajs/vue3';
-import { Briefcase, Edit3, Loader2, MapPin, Plus, Trash2, X } from 'lucide-vue-next';
+import { AlertTriangle, Briefcase, Edit3, Loader2, MapPin, Plus, Trash2, X } from 'lucide-vue-next';
 import { computed, reactive, ref, watch } from 'vue';
 
 const props = defineProps<{
@@ -37,6 +37,10 @@ const emit = defineEmits<{
 }>();
 
 const admissoes = computed<FuncionarioAdmissao[]>(() => props.funcionario.admissoes ?? []);
+
+// Pré-requisito de lotação: sem escolaridade não há como comprovar habilitação
+// para o cargo. O backend bloqueia; aqui avisamos antes de preencher o form.
+const semEscolaridade = computed(() => (props.funcionario.escolaridades ?? []).length === 0);
 
 // Lotações achatadas (todas as admissões), com referência à admissão
 const lotacoesFlat = computed(() =>
@@ -477,7 +481,8 @@ const toggleFuncaoSala = (funcao: string) => {
                     type="button"
                     size="sm"
                     class="bg-indigo-600 text-white hover:bg-indigo-700"
-                    :disabled="!admissoes.length"
+                    :disabled="!admissoes.length || semEscolaridade"
+                    :title="semEscolaridade ? 'Informe a escolaridade do funcionário antes de lotá-lo.' : ''"
                     @click="openNewLot"
                 >
                     <Plus class="mr-1 size-4" /> Nova Lotação
@@ -485,6 +490,18 @@ const toggleFuncaoSala = (funcao: string) => {
             </div>
 
             <div class="grid gap-4 p-5">
+                <!-- Pré-requisito: sem escolaridade não há como comprovar habilitação. -->
+                <p
+                    v-if="semEscolaridade"
+                    class="flex items-start gap-2 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-200"
+                >
+                    <AlertTriangle class="mt-0.5 size-4 shrink-0" />
+                    <span>
+                        Não é possível lotar o funcionário como professor. É necessário informar a escolaridade.
+                        <span class="block text-xs">Cadastre ao menos uma escolaridade na aba <strong>2. Escolaridade</strong>.</span>
+                    </span>
+                </p>
+
                 <p v-if="!admissoes.length" class="rounded-xl border-2 border-dashed py-10 text-center text-sm text-muted-foreground">
                     Cadastre uma admissão antes de criar lotações.
                 </p>

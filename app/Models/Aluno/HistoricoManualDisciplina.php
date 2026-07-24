@@ -26,6 +26,7 @@ class HistoricoManualDisciplina extends Model
         'hmd_dis_id',
         'hmd_mf',
         'hmd_cnc_id',
+        'hmd_conceito',
         'hmd_ordem',
     ];
 
@@ -43,5 +44,14 @@ class HistoricoManualDisciplina extends Model
     public function conceito(): BelongsTo
     {
         return $this->belongsTo(\App\Models\Parametro\Conceito::class, 'hmd_cnc_id', 'cnc_id');
+    }
+
+    /**
+     * Sigla do conceito a exibir: o texto livre digitado tem precedência sobre
+     * o catálogo (cfg_conceito), usado só pelos lançamentos antigos.
+     */
+    public function siglaConceito(): ?string
+    {
+        return $this->hmd_conceito ?: $this->conceito?->cnc_sigla;
     }
 }

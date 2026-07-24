@@ -80,8 +80,9 @@ class StoreFuncionarioRequest extends FormRequest
             // Dados pessoais
             'fun_nome'        => ['required', 'string', 'max:100'],
             'fun_nome_social' => ['nullable', 'string', 'max:100'],
-            'fun_filiacao_1'      => ['nullable', 'string', 'max:100'],
-            'fun_filiacao_1_tipo' => ['nullable', Rule::in(['PAI', 'MAE'])],
+            // Ao menos uma filiação é obrigatória — mesmo padrão do cadastro de aluno.
+            'fun_filiacao_1'      => ['required', 'string', 'max:100'],
+            'fun_filiacao_1_tipo' => ['required', Rule::in(['PAI', 'MAE'])],
             'fun_filiacao_2'      => ['nullable', 'string', 'max:100'],
             'fun_filiacao_2_tipo' => ['nullable', Rule::in(['PAI', 'MAE'])],
             'fun_dt_nascimento' => ['required', 'date', 'before:today'],
