@@ -14,6 +14,7 @@ use App\Http\Controllers\Relatorio\AlunosAptosEjaController;
 use App\Http\Controllers\Relatorio\LevantamentoMunicipioController;
 use App\Http\Controllers\Relatorio\PendenciaEncerramentoController;
 use App\Http\Controllers\Relatorio\RelacaoEscolasController;
+use App\Http\Controllers\Relatorio\RelacaoFuncionariosController;
 use App\Http\Controllers\Relatorio\DesempenhoAeeController;
 use App\Http\Controllers\Relatorio\RelacaoTurmasAeeController;
 use App\Http\Controllers\Relatorio\RelacaoTurmasAtividadeController;
@@ -359,6 +360,9 @@ Route::middleware(['auth', 'verified', 'tela'])->group(function () {
     Route::get('relatorios/relacao-escolas', [RelacaoEscolasController::class, 'form'])->name('relatorios.relacao-escolas.form');
     Route::get('relatorios/relacao-escolas/gerar', [RelacaoEscolasController::class, 'gerar'])->name('relatorios.relacao-escolas.gerar');
     Route::get('relatorios/relacao-escolas/xlsx', [RelacaoEscolasController::class, 'exportarXlsx'])->name('relatorios.relacao-escolas.xlsx');
+    Route::get('relatorios/relacao-funcionarios', [RelacaoFuncionariosController::class, 'form'])->name('relatorios.relacao-funcionarios.form');
+    Route::get('relatorios/relacao-funcionarios/gerar', [RelacaoFuncionariosController::class, 'gerar'])->name('relatorios.relacao-funcionarios.gerar');
+    Route::get('relatorios/relacao-funcionarios/xlsx', [RelacaoFuncionariosController::class, 'exportarXlsx'])->name('relatorios.relacao-funcionarios.xlsx');
     Route::get('relatorios/alunos-aptos-eja', [AlunosAptosEjaController::class, 'form'])->name('relatorios.alunos-aptos-eja.form');
     Route::get('relatorios/alunos-aptos-eja/gerar', [AlunosAptosEjaController::class, 'gerar'])->name('relatorios.alunos-aptos-eja.gerar');
     Route::get('relatorios/alunos-aptos-eja/xlsx', [AlunosAptosEjaController::class, 'exportarXlsx'])->name('relatorios.alunos-aptos-eja.xlsx');

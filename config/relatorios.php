@@ -216,9 +216,9 @@ return [
     [
         'slug' => 'equipe-gestora',
         'titulo' => 'Equipe Gestora das Escolas',
-        'descricao' => 'Consolida as escolas da rede com diretor(a), vice-diretor(a), coordenação pedagógica/administrativa e secretaria, com contato. Filtra por escola e por tipo de gestor.',
+        'descricao' => 'Consolida as escolas da rede com diretor(a), vice-diretor(a), coordenação pedagógica e secretaria, com contato. Filtra por escola e por tipo de gestor.',
         'categoria' => 'Escola',
-        'grupo' => 'central',
+        'grupo' => 'escola',
         'icone' => 'UsersRound',
     ],
     [
@@ -228,6 +228,14 @@ return [
         'categoria' => 'Aluno',
         'grupo' => 'escola',
         'icone' => 'UserCheck',
+    ],
+    [
+        'slug' => 'relacao-funcionarios',
+        'titulo' => 'Relação de Funcionários',
+        'descricao' => 'Relação nominal dos funcionários da rede em ordem alfabética: matrícula, cargo/função, escolaridade, unidade de lotação e situação (ativo/inativo). Filtra por unidade escolar, situação e cargo. Exporta Excel e PDF.',
+        'categoria' => 'Escola',
+        'grupo' => 'escola',
+        'icone' => 'Contact',
     ],
     [
         'slug' => 'relacao-escolas',
