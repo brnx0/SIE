@@ -38,16 +38,13 @@ const gerar = () => {
             </p>
 
             <div class="grid gap-4 rounded-xl border bg-card p-6 shadow-sm">
-                <div>
                     <FormLabel :required="true">Aluno</FormLabel>
-                    <RemoteCombobox
-                        v-model="alnId"
-                        fetch-url="/api/alunos/search"
-                        id-key="aln_id" label-key="aln_nome"
-                        :min-chars="2"
-                        placeholder="Digite o nome, matrícula ou CPF..."
-                    />
-                </div>
+                <RemoteCombobox
+                    v-model="alnId"
+                    fetch-url="/api/alunos/search"
+                    id-key="aln_id" label-key="aln_nome"
+                    :min-chars="2"
+                    placeholder="Digite o nome, matrícula ou CPF..." />
                 <div class="flex items-end justify-end">
                     <Button :disabled="!alnId" class="bg-indigo-600 text-white hover:bg-indigo-700" @click="gerar">
                         <ScrollText class="mr-1 size-4" /> Gerar PDF

@@ -5,7 +5,7 @@ import NavSearch, { type FlatNavLeaf } from '@/components/layout/NavSearch.vue';
 import NavUser from '@/components/layout/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { Link } from '@inertiajs/vue3';
-import { LayoutDashboard, LifeBuoy, UserPlus, Cog, ClipboardList, FileBarChart, BookOpen, ClipboardCheck, KeyRound, Archive, ArrowRightLeft, Bus } from 'lucide-vue-next';
+import { LayoutDashboard, LifeBuoy, UserPlus, Cog, ClipboardList, FileBarChart, BookOpen, ClipboardCheck, KeyRound, Archive, ArrowRightLeft, UtensilsCrossed ,Bus} from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import { usePermissao } from '@/composables/usePermissao';
 import AppLogo from './AppLogo.vue';
@@ -150,6 +150,67 @@ const encerramentoMenu = [
         ],
     },
 ];
+const alimentacaoMenu = [
+      {
+        title: 'Contratos',
+        icon: Archive,
+        children: [
+            { title: 'Contratos', href: '/alimentacao/contratos' },
+            { title: 'Empenhos', href: '/alimentacao/empenhos' },
+            { title: 'Ordens de Fornecimento', href: '/alimentacao/ordens-fornecimento' },
+            { title: 'Fornecedores', href: '/alimentacao/fornecedores' },
+        ],
+    },
+    {
+        title: 'Alimentação Escolar',
+        icon:UtensilsCrossed,
+        children: [
+            { title: 'Controle Diário da Preparação', href: '/alimentacao/preparacoes' },
+            { title: 'Demanda de Merenda', href: '/alimentacao/demandas' },
+            { title: 'Consulta de Estoque', href: '/alimentacao/estoque' },
+            { title: 'Cardápio Semanal', href: '/alimentacao/cardapios' },
+            { title: 'Pratos', href: '/alimentacao/pratos' },
+            { title: 'Itens', href: '/alimentacao/itens' },
+  
+ 
+        ],
+    },
+     {
+        title: 'Movimentações',
+        icon:ArrowRightLeft,
+        children: [
+            { title: 'Recebimento de Itens', href: '/alimentacao/recebimentos' },
+            { title: 'Transferência para Escolas', href: '/alimentacao/transferencias' },
+            { title: 'Retirada de Itens', href: '/alimentacao/retiradas' },
+        ],
+    },
+    {
+        title: 'Visitas Técnicas',
+        icon: ClipboardCheck,
+        children: [
+            { title: 'Visitas Técnicas', href: '/alimentacao/visitas' },
+            { title: 'Perguntas do Questionário', href: '/alimentacao/perguntas' },
+            { title: 'Tipos de Visita Técnica', href: '/alimentacao/tipos-visita' },
+            { title: 'Tipos de Questionário', href: '/alimentacao/tipos-questionario' },
+        ],
+    },
+    {
+        title: 'Cadastros Complementares',
+        icon:Cog,
+        children: [
+            { title: 'Unidades de Medida', href: '/alimentacao/unidades-medida' },
+            { title: 'Categorias de Alimento', href: '/alimentacao/categorias-alimento' },
+            { title: 'Tipos de Item', href: '/alimentacao/tipos-item' },
+            { title: 'Tipos de Retirada', href: '/alimentacao/tipos-retirada' },
+            { title: 'Marcas', href: '/alimentacao/marcas' },
+
+        ],
+    },
+    {
+        title: 'Relatórios',
+        icon: FileBarChart,
+        children: [
+            { title: 'Relatórios da Alimentação', href: '/relatorios-alimentacao' },
 const transporteMenu = [
     {
         title: 'Transporte Escolar',
@@ -199,6 +260,7 @@ const secretariaF = computed(() => filtrarMenu(secretariaMenu));
 const encerramentoF = computed(() => filtrarMenu(encerramentoMenu));
 const transporteF = computed(() => filtrarMenu(transporteMenu));
 const relatoriosF = computed(() => filtrarMenu(relatoriosMenu));
+const alimentacaoF = computed(() => filtrarMenu(alimentacaoMenu));
 const administracaoF = computed(() => filtrarMenu(administracao));
 
 const footerNavItems = [
@@ -226,6 +288,16 @@ const flattenItems = (items: any[], parents: string[] = []): FlatNavLeaf[] => {
 // O rótulo da seção entra como 1º nível do path — o tooltip/caminho da busca
 // fica igual ao do menu (ex.: "Gestão › Cadastros › Rede de Ensino › Turmas").
 const flatLeaves = computed<FlatNavLeaf[]>(() => [
+    ...flattenItems(overviewF.value),
+    ...flattenItems(cadastrosF.value),
+    ...flattenItems(matriculasF.value),
+    ...flattenItems(diarioF.value),
+    ...flattenItems(coordenadorF.value),
+    ...flattenItems(secretariaF.value),
+    ...flattenItems(encerramentoF.value),
+    ...flattenItems(relatoriosF.value),
+    ...flattenItems(alimentacaoF.value),
+    ...flattenItems(administracaoF.value),
     ...flattenItems(overviewF.value, ['Visão geral']),
     ...flattenItems(cadastrosF.value, ['Gestão']),
     ...flattenItems(matriculasF.value, ['Matrículas']),
@@ -268,6 +340,7 @@ const searching = computed(() => search.value.trim().length > 0);
                 <NavMain v-if="encerramentoF.length" label="Encerramento" :items="encerramentoF" />
                 <NavMain v-if="transporteF.length" label="Transporte" :items="transporteF" />
                 <NavMain v-if="relatoriosF.length" label="Relatórios" :items="relatoriosF" />
+                <NavMain v-if="alimentacaoF.length" label="Alimentação" :items="alimentacaoF" />
                 <NavMain v-if="administracaoF.length" label="Administração" :items="administracaoF" />
             </template>
         </SidebarContent>

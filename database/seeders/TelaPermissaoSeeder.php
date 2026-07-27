@@ -24,12 +24,18 @@ class TelaPermissaoSeeder extends Seeder
         'pedagogico',
         'monitor',
         'matricula_censo',
+        'nutricionista',
+        'almoxarife',
     ];
 
     /**
      * Matriz de permissões por tela.
      * [rota, nome, grupo, ordem, [níveis na ordem de self::ROLES]]
      * Nível: 0 = sem acesso, 1 = ver+editar, 2 = só visualizar.
+     *
+     * Linha mais curta que self::ROLES = as roles do fim ficam sem acesso (0).
+     * É o que mantém as telas acadêmicas fechadas para nutricionista/almoxarife
+     * sem precisar repetir dois zeros em cada uma das dezenas de linhas.
      */
     private const MATRIZ = [
         ['/dashboard', 'Painel', 'Visão geral', 1, [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]],
@@ -100,6 +106,63 @@ class TelaPermissaoSeeder extends Seeder
         ['/relatorios', 'Central de Relatórios', 'Relatórios', 39, [1, 1, 0, 0, 0, 2, 2, 2, 2, 0, 2]],
         ['/relatorios-escola', 'Relatórios Gerais', 'Relatórios', 40, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 2]],
 
+        // Alimentação Escolar — ordem das roles:
+        // admin, gestor_secretaria, professor, professor_aee, coordenador, coordenador_interno,
+        // diretor, secretaria_escola, pedagogico, monitor, matricula_censo, nutricionista, almoxarife
+        // Estoque. A escola opera o próprio estoque (retirada, consulta) — o
+        // filtro de qual estoque ela enxerga é do controller, via lotação.
+        // Ordem das roles: admin, gestor_secretaria, professor, professor_aee,
+        // coordenador, coordenador_interno, diretor, secretaria_escola,
+        // pedagogico, monitor, matricula_censo, nutricionista, almoxarife
+        // Visitas técnicas: a nutrição programa, realiza e atesta. A escola só
+        // consulta as visitas que recebeu.
+        // Ordem das roles: admin, gestor_secretaria, professor, professor_aee,
+        // coordenador, coordenador_interno, diretor, secretaria_escola,
+        // pedagogico, monitor, matricula_censo, nutricionista, almoxarife
+        ['/alimentacao/visitas', 'Visitas Técnicas', 'Alimentação Escolar', 34, [1, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 1, 0]],
+        ['/alimentacao/perguntas', 'Perguntas do Questionário', 'Alimentação Escolar', 35, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0]],
+        ['/alimentacao/tipos-visita', 'Tipos de Visita Técnica', 'Alimentação Escolar', 36, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0]],
+        ['/alimentacao/tipos-questionario', 'Tipos de Questionário', 'Alimentação Escolar', 37, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0]],
+
+        // A escola registra a própria preparação; a nutrição acompanha e edita.
+        // A demanda é planejamento: nutricionista monta, escola consulta.
+        ['/alimentacao/preparacoes', 'Controle Diário da Preparação', 'Alimentação Escolar', 38, [1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 2]],
+        ['/alimentacao/demandas', 'Demanda de Merenda', 'Alimentação Escolar', 39, [1, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 1, 2]],
+
+        ['/alimentacao/estoque', 'Consulta de Estoque', 'Alimentação Escolar', 40, [1, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 2, 1]],
+        ['/alimentacao/recebimentos', 'Recebimento de Itens', 'Alimentação Escolar', 41, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 1]],
+        ['/alimentacao/transferencias', 'Saída para Escolas', 'Alimentação Escolar', 42, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]],
+        ['/alimentacao/retiradas', 'Retirada de Itens', 'Alimentação Escolar', 43, [1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1]],
+
+        // Contratos: o almoxarife opera; o nutricionista consulta (precisa saber o
+        // que está contratado para planejar cardápio), mas não edita.
+        ['/alimentacao/contratos', 'Contratos', 'Alimentação Escolar', 47, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 1]],
+        ['/alimentacao/empenhos', 'Empenhos', 'Alimentação Escolar', 48, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]],
+        ['/alimentacao/ordens-fornecimento', 'Ordens de Fornecimento', 'Alimentação Escolar', 49, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 1]],
+
+        ['/alimentacao/itens', 'Itens', 'Alimentação Escolar', 50, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1]],
+        ['/alimentacao/fornecedores', 'Fornecedores', 'Alimentação Escolar', 51, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 1]],
+        ['/alimentacao/pratos', 'Pratos', 'Alimentação Escolar', 52, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2]],
+        ['/alimentacao/cardapios', 'Cardápio Semanal', 'Alimentação Escolar', 53, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2]],
+        ['/alimentacao/unidades-medida', 'Unidades de Medida', 'Alimentação Escolar', 54, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1]],
+        ['/alimentacao/categorias-alimento', 'Categorias de Alimento', 'Alimentação Escolar', 55, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2]],
+        ['/alimentacao/tipos-item', 'Tipos de Item', 'Alimentação Escolar', 56, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1]],
+        ['/alimentacao/marcas', 'Marcas', 'Alimentação Escolar', 57, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 1]],
+        ['/alimentacao/tipos-retirada', 'Tipos de Retirada', 'Alimentação Escolar', 58, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1]],
+
+        // Relatórios da alimentação. Uma tela por relatório, pelo mesmo motivo dos
+        // relatórios do Diário: todos moram sob /relatorios/*, então sem estas
+        // linhas eles resolveriam (por prefixo mais longo) para a tela /relatorios,
+        // onde nutricionista e almoxarife são nível 0 — justamente os perfis que
+        // vivem destes relatórios. Diretor e secretaria entram como visualização:
+        // o controller já prende cada um ao estoque da própria escola, via lotação.
+        // Ordem das roles: admin, gestor_secretaria, professor, professor_aee,
+        // coordenador, coordenador_interno, diretor, secretaria_escola,
+        // pedagogico, monitor, matricula_censo, nutricionista, almoxarife
+        ['/relatorios-alimentacao', 'Relatórios da Alimentação', 'Alimentação Escolar', 59, [1, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 2, 2]],
+        ['/relatorios/protocolo-distribuicao', 'Protocolo da Central de Distribuição', 'Alimentação Escolar', 60, [1, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 2, 2]],
+        ['/relatorios/itens-vencimento', 'Itens Próximos do Vencimento', 'Alimentação Escolar', 61, [1, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 2, 2]],
+        ['/relatorios/retirada-alimentos', 'Retirada de Alimentos', 'Alimentação Escolar', 62, [1, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 2, 2]],
         // Transporte Escolar — Fase 1 (cadastros). Edição: admin e gestor_secretaria.
         ['/transporte/veiculos', 'Veículos (Transporte)', 'Transporte', 60, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
         ['/transporte/usuarios', 'Usuários do Transporte', 'Transporte', 64, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
@@ -146,7 +209,7 @@ class TelaPermissaoSeeder extends Seeder
             foreach (self::ROLES as $i => $role) {
                 TelaPermissao::updateOrCreate(
                     ['tlp_tla_id' => $tela->tla_id, 'tlp_role' => $role],
-                    ['tlp_nivel' => $niveis[$i]],
+                    ['tlp_nivel' => $niveis[$i] ?? 0],
                 );
             }
         }

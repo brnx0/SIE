@@ -42,7 +42,8 @@
     </thead>
     <tbody>
         @forelse($escolas as $e)
-        @php $cnpj = $e->esc_cnpj ? preg_replace('/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/', '$1.$2.$3/$4-$5', $e->esc_cnpj) : '—'; @endphp
+        {{-- CNPJ alfanumérico (jul/2026): 12 posições [0-9A-Z] + DV numérico. --}}
+        @php $cnpj = $e->esc_cnpj ? preg_replace('/^([0-9A-Z]{2})([0-9A-Z]{3})([0-9A-Z]{3})([0-9A-Z]{4})(\d{2})$/', '$1.$2.$3/$4-$5', $e->esc_cnpj) : '—'; @endphp
         <tr>
             <td><strong>{{ $e->esc_apelido ?? $e->esc_nome }}</strong></td>
             <td>{{ $e->esc_nome }}</td>

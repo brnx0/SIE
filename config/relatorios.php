@@ -253,4 +253,32 @@ return [
         'grupo' => 'escola',
         'icone' => 'Activity',
     ],
+
+    // Alimentação Escolar. Os relatórios de saldo e de movimentação não têm card
+    // aqui: saem pelo ExportMenu da Consulta de Estoque, no contexto do filtro
+    // que o usuário já montou. As rotas seguem em routes/alimentacao.php.
+    [
+        'slug' => 'protocolo-distribuicao',
+        'titulo' => 'Protocolo da Central de Distribuição',
+        'descricao' => 'Itens distribuídos pela central para cada unidade escolar no período, com campo de assinatura para o recebimento.',
+        'categoria' => 'Alimentação Escolar',
+        'grupo' => 'alimentacao',
+        'icone' => 'Truck',
+    ],
+    [
+        'slug' => 'itens-vencimento',
+        'titulo' => 'Itens Próximos do Vencimento',
+        'descricao' => 'Itens em estoque cujo lote vence dentro do prazo informado, por unidade escolar ou no estoque central. Opcionalmente inclui os já vencidos.',
+        'categoria' => 'Alimentação Escolar',
+        'grupo' => 'alimentacao',
+        'icone' => 'CalendarClock',
+    ],
+    [
+        'slug' => 'retirada-alimentos',
+        'titulo' => 'Retirada de Alimentos',
+        'descricao' => 'Retiradas do estoque escolar no período, por unidade e por motivo, com gráfico comparativo entre as unidades.',
+        'categoria' => 'Alimentação Escolar',
+        'grupo' => 'alimentacao',
+        'icone' => 'PackageMinus',
+    ],
 ];

@@ -38,9 +38,11 @@ const remove = (escola: Escola) => {
     router.delete(`/escolas/${escola.esc_id}`, { preserveScroll: true });
 };
 
+// O CNPJ alfanumérico (jul/2026) tem [0-9A-Z] nas 12 primeiras posições e só o
+// DV numérico — casar com \d deixaria esses CNPJs sem formatação nenhuma.
 const formatCnpj = (cnpj: string | null) => {
     if (!cnpj) return '—';
-    return cnpj.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+    return cnpj.replace(/^([0-9A-Z]{2})([0-9A-Z]{3})([0-9A-Z]{3})([0-9A-Z]{4})(\d{2})$/, '$1.$2.$3/$4-$5');
 };
 
 const situacaoLabel = (s: number) => ({ 1: 'Em atividade', 2: 'Paralisada', 3: 'Extinta' }[s] ?? '—');
