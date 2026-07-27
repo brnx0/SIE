@@ -8,6 +8,7 @@ import { Head, router } from '@inertiajs/vue3';
 import { LayoutGrid, Loader2 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import { useFiltrosRelatorio } from '@/composables/useFiltrosRelatorio';
+import { CAMPO } from '@/lib/formCampo';
 
 interface AnoLetivo { anl_id: number; anl_ano: number; anl_fl_em_exercicio: boolean }
 interface Escola { esc_id: number; esc_nome: string }
@@ -17,6 +18,7 @@ const props = defineProps<{
     escolas: Escola[];
     userEscola: Escola | null;
     isAdmin: boolean;
+    situacoes: string[];
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -29,21 +31,28 @@ const anoDefault = props.anosLetivos.find(a => a.anl_fl_em_exercicio) ?? props.a
 const { restaurar, salvar } = useFiltrosRelatorio('formacao-classes', {
     anl_id: null as number | '' | null,
     esc_id: null as number | null,
+    situacao: 'todas' as string,
 });
 const salvos = restaurar();
 
 const anlId = ref<number | ''>(salvos.anl_id ?? anoDefault?.anl_id ?? '');
-const escId = ref<number | null>(salvos.esc_id ?? props.userEscola?.esc_id ?? null);
+// Escola vazia = rede inteira. Quem não é admin segue preso à própria escola.
+const escId = ref<number | null>(
+    props.isAdmin ? (salvos.esc_id ?? null) : (props.userEscola?.esc_id ?? null),
+);
+const situacao = ref<string>(salvos.situacao ?? 'todas');
 const itemsEscola = computed(() => props.escolas.map((e) => ({ id: e.esc_id, label: e.esc_nome })));
+const escolaTravada = computed(() => !props.isAdmin && !!props.userEscola);
 const gerando = ref(false);
 
 function gerar() {
-    if (!escId.value || !anlId.value) return;
-    salvar({ anl_id: anlId.value, esc_id: escId.value });
+    if (!anlId.value) return;
+    salvar({ anl_id: anlId.value, esc_id: escId.value, situacao: situacao.value });
     gerando.value = true;
     router.get('/relatorios/formacao-classes/gerar', {
         anl_id: Number(anlId.value),
-        esc_id: Number(escId.value),
+        ...(escId.value ? { esc_id: Number(escId.value) } : {}),
+        situacao: situacao.value,
     }, {
         preserveScroll: true,
         onFinish: () => { gerando.value = false; },
@@ -59,13 +68,14 @@ function gerar() {
                 <LayoutGrid class="size-5 text-indigo-600" /> Formação de Classes
             </h1>
             <p class="text-sm text-muted-foreground mb-6">
-                Quadro de turmas regulares com capacidade, alunos da rede, novos e vagas.
+                Quadro de turmas regulares com capacidade, expansão, alunos da rede, novos, vagas, PCD,
+                faixa etária e professores alocados. Deixe a escola em branco para varrer a rede inteira.
             </p>
 
-            <div class="rounded-xl border bg-card p-6 shadow-sm grid gap-4 sm:grid-cols-2">
+            <div class="rounded-xl border bg-card p-6 shadow-sm grid gap-4 sm:grid-cols-3">
                 <div class="grid gap-1.5">
                     <FormLabel :required="true">Ano Letivo</FormLabel>
-                    <select v-model="anlId" class="rounded-md border bg-background px-3 py-2 text-sm">
+                    <select v-model="anlId" :class="CAMPO">
                         <option value="">—</option>
                         <option v-for="a in anosLetivos" :key="a.anl_id" :value="a.anl_id">
                             {{ a.anl_ano }} <span v-if="a.anl_fl_em_exercicio">(em exercício)</span>
@@ -74,12 +84,23 @@ function gerar() {
                 </div>
 
                 <div class="grid gap-1.5">
-                    <FormLabel :required="true">Escola</FormLabel>
-                    <LocalCombobox v-model="escId" :items="itemsEscola" :disabled="!isAdmin && !!userEscola" placeholder="Selecione a escola..." />
+                    <FormLabel>Escola</FormLabel>
+                    <LocalCombobox v-model="escId" :items="itemsEscola" :disabled="escolaTravada" placeholder="Todas as escolas da rede" />
+                    <p class="text-xs text-muted-foreground">
+                        {{ escolaTravada ? 'Você visualiza apenas a sua escola de lotação.' : 'Em branco = rede inteira.' }}
+                    </p>
                 </div>
 
-                <div class="sm:col-span-2 flex justify-end">
-                    <Button :disabled="!escId || !anlId || gerando" class="bg-indigo-600 text-white hover:bg-indigo-700" @click="gerar">
+                <div class="grid gap-1.5">
+                    <FormLabel>Status da Turma</FormLabel>
+                    <select v-model="situacao" :class="CAMPO">
+                        <option value="todas">Todas</option>
+                        <option v-for="s in situacoes" :key="s" :value="s">{{ s }}</option>
+                    </select>
+                </div>
+
+                <div class="sm:col-span-3 flex justify-end">
+                    <Button :disabled="!anlId || gerando" class="bg-indigo-600 text-white hover:bg-indigo-700" @click="gerar">
                         <Loader2 v-if="gerando" class="mr-1 size-4 animate-spin" />
                         Gerar Relatório
                     </Button>

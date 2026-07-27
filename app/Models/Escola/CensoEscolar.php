@@ -2,10 +2,8 @@
 
 namespace App\Models\Escola;
 
-use App\Models\Parametro\AnoLetivo;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Carbon;
 
 class CensoEscolar extends Model
 {
@@ -17,7 +15,7 @@ class CensoEscolar extends Model
     const UPDATED_AT = 'cen_updated_at';
 
     protected $fillable = [
-        'cen_esc_id', 'cen_anl_id',
+        'cen_esc_id',
         // Seção 1
         'cen_dep_almoxarifado', 'cen_dep_vegetacao', 'cen_dep_auditorio',
         'cen_dep_ban_pcd', 'cen_dep_ban_infantil', 'cen_dep_ban_funcionarios',
@@ -83,6 +81,13 @@ class CensoEscolar extends Model
         'cen_fl_educ_ambiental', 'cen_amb_conteudo_curriculo', 'cen_amb_comp_curricular',
         'cen_amb_eixo_estruturante', 'cen_amb_eventos', 'cen_amb_projetos_transversais',
         'cen_amb_nenhuma',
+        // Seção 30 — Água potável
+        'cen_fl_agua_potavel',
+        // Seção 31 — Abastecimento de água
+        'cen_agu_rede_publica', 'cen_agu_poco_artesiano', 'cen_agu_cacimba',
+        'cen_agu_fonte_rio', 'cen_agu_carro_pipa', 'cen_agu_inexistente',
+        // Seção 32 — Fonte de energia elétrica
+        'cen_ene_rede_publica', 'cen_ene_gerador_fossil', 'cen_ene_renovavel', 'cen_ene_inexistente',
         // Seção 33 — Esgotamento sanitário
         'cen_esg_rede_publica', 'cen_esg_fossa_septica', 'cen_esg_fossa_rudimentar', 'cen_esg_inexistente',
         // Seção 34 — Destinação do lixo
@@ -93,6 +98,7 @@ class CensoEscolar extends Model
     ];
 
     protected $casts = [
+        'cen_esc_id'                 => 'integer',
         // booleans seção 1
         'cen_dep_almoxarifado'       => 'boolean', 'cen_dep_vegetacao'          => 'boolean',
         'cen_dep_auditorio'          => 'boolean', 'cen_dep_ban_pcd'            => 'boolean',
@@ -175,6 +181,13 @@ class CensoEscolar extends Model
         'cen_amb_comp_curricular'    => 'boolean', 'cen_amb_eixo_estruturante'  => 'boolean',
         'cen_amb_eventos'            => 'boolean', 'cen_amb_projetos_transversais'=>'boolean',
         'cen_amb_nenhuma'            => 'boolean',
+        // seções 30-32 — água e energia
+        'cen_fl_agua_potavel'        => 'boolean',
+        'cen_agu_rede_publica'       => 'boolean', 'cen_agu_poco_artesiano'     => 'boolean',
+        'cen_agu_cacimba'            => 'boolean', 'cen_agu_fonte_rio'          => 'boolean',
+        'cen_agu_carro_pipa'         => 'boolean', 'cen_agu_inexistente'        => 'boolean',
+        'cen_ene_rede_publica'       => 'boolean', 'cen_ene_gerador_fossil'     => 'boolean',
+        'cen_ene_renovavel'          => 'boolean', 'cen_ene_inexistente'        => 'boolean',
         // seção 33
         'cen_esg_rede_publica'       => 'boolean', 'cen_esg_fossa_septica'      => 'boolean',
         'cen_esg_fossa_rudimentar'   => 'boolean', 'cen_esg_inexistente'        => 'boolean',
@@ -190,20 +203,5 @@ class CensoEscolar extends Model
     public function escola(): BelongsTo
     {
         return $this->belongsTo(Escola::class, 'cen_esc_id', 'esc_id');
-    }
-
-    public function anoLetivo(): BelongsTo
-    {
-        return $this->belongsTo(AnoLetivo::class, 'cen_anl_id', 'anl_id');
-    }
-
-    /** Retorna 'em_preenchimento' | 'finalizado' conforme prazo do ano letivo. */
-    public function getStatusAttribute(): string
-    {
-        $prazo = $this->anoLetivo?->anl_dt_censo;
-        if ($prazo && Carbon::today()->isAfter($prazo)) {
-            return 'finalizado';
-        }
-        return 'em_preenchimento';
     }
 }

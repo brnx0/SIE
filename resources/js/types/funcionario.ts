@@ -97,10 +97,38 @@ export interface LotacaoFormData {
     lot_funcoes_sala_aula: string[];
 }
 
+export interface FuncionarioSaude {
+    fus_id: number;
+    fus_fun_id: number;
+    fus_fl_pcd: boolean;
+    fus_deficiencias: string[] | null;
+    fus_transtornos_globais: string[] | null;
+    fus_transtornos_aprendizagem: string[] | null;
+    fus_deficiencia_outro: string | null;
+    fus_fl_altas_habilidades: boolean;
+    fus_cid: string | null;
+    fus_observacao: string | null;
+}
+
+export interface FuncionarioSaudeFormData {
+    fus_fl_pcd: boolean;
+    fus_deficiencias: string[];
+    fus_transtornos_globais: string[];
+    fus_transtornos_aprendizagem: string[];
+    fus_deficiencia_outro: string;
+    fus_fl_altas_habilidades: boolean;
+    fus_cid: string;
+    fus_observacao: string;
+}
+
 export interface Funcionario {
     fun_id: number;
     fun_nome: string;
     fun_nome_social: string | null;
+    fun_filiacao_1: string | null;
+    fun_filiacao_1_tipo: string | null;
+    fun_filiacao_2: string | null;
+    fun_filiacao_2_tipo: string | null;
     fun_dt_nascimento: string;
     fun_sexo: Sexo;
     fun_cor_raca: CorRaca;
@@ -135,6 +163,11 @@ export interface Funcionario {
     fun_titulo_secao: string | null;
     fun_certificado_reservista: string | null;
 
+    // CNH
+    fun_cnh_numero: string | null;
+    fun_cnh_categoria: string | null;
+    fun_cnh_dt_validade: string | null;
+
     // Endereço
     fun_cep: string | null;
     fun_logradouro: string | null;
@@ -142,7 +175,9 @@ export interface Funcionario {
     fun_complemento: string | null;
     fun_bairro: string | null;
     fun_cidade: string | null;
+    fun_mun_id_resid: number | null;
     fun_uf: string | null;
+    fun_zona_residencia: number | null;
 
     // Contato
     fun_telefone: string | null;
@@ -157,15 +192,21 @@ export interface Funcionario {
     fun_fl_ativo: boolean;
 
     municipio_nascimento?: Municipio | null;
+    municipio_residencia?: Municipio | null;
     municipio_certidao?: Municipio | null;
     povo_indigena?: PovoIndigena | null;
     admissoes?: FuncionarioAdmissao[];
     escolaridades?: FuncionarioEscolaridade[];
+    saude?: FuncionarioSaude | null;
 }
 
 export interface FuncionarioFormData {
     fun_nome: string;
     fun_nome_social: string;
+    fun_filiacao_1: string;
+    fun_filiacao_1_tipo: string;
+    fun_filiacao_2: string;
+    fun_filiacao_2_tipo: string;
     fun_dt_nascimento: string;
     fun_sexo: Sexo | '';
     fun_cor_raca: CorRaca | null;
@@ -200,6 +241,11 @@ export interface FuncionarioFormData {
     fun_titulo_secao: string;
     fun_certificado_reservista: string;
 
+    // CNH
+    fun_cnh_numero: string;
+    fun_cnh_categoria: string;
+    fun_cnh_dt_validade: string;
+
     // Endereço
     fun_cep: string;
     fun_logradouro: string;
@@ -207,7 +253,9 @@ export interface FuncionarioFormData {
     fun_complemento: string;
     fun_bairro: string;
     fun_cidade: string;
+    fun_mun_id_resid: number | null;
     fun_uf: string;
+    fun_zona_residencia: number | null;
 
     // Contato
     fun_telefone: string;
@@ -220,6 +268,7 @@ export interface FuncionarioFormData {
     fun_foto: File | null;
     fun_fl_ativo: boolean;
     escolaridades: EscolaridadeFormData[];
+    saude: FuncionarioSaudeFormData;
     confirm_homonimo: boolean;
     _method?: 'put' | 'post';
     [key: string]: any;

@@ -13,6 +13,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
     (e: 'update:modelValue', value: number | null): void;
+    (e: 'select', value: Municipio | null): void;
 }>();
 
 const { loading, items, search } = useMunicipios();
@@ -48,6 +49,7 @@ watch(
 const choose = (m: Municipio) => {
     selected.value = m;
     emit('update:modelValue', m.mun_id);
+    emit('select', m);
     open.value = false;
     query.value = '';
     items.value = [];
@@ -56,6 +58,7 @@ const choose = (m: Municipio) => {
 const clear = () => {
     selected.value = null;
     emit('update:modelValue', null);
+    emit('select', null);
     query.value = '';
     items.value = [];
 };

@@ -6,7 +6,14 @@ use App\Http\Controllers\Relatorio\AlunosDeficienciaController;
 use App\Http\Controllers\Relatorio\AlunosTranstornoController;
 use App\Http\Controllers\Relatorio\AlunosPorTurmaRelatorioController;
 use App\Http\Controllers\Relatorio\AlunosPorEscolaController;
+use App\Http\Controllers\Relatorio\CensoCriticasController;
+use App\Http\Controllers\Censo\CensoExportController;
 use App\Http\Controllers\Relatorio\DadosAlunosTurmaController;
+use App\Http\Controllers\Relatorio\EquipeGestoraController;
+use App\Http\Controllers\Relatorio\AlunosAptosEjaController;
+use App\Http\Controllers\Relatorio\LevantamentoMunicipioController;
+use App\Http\Controllers\Relatorio\PendenciaEncerramentoController;
+use App\Http\Controllers\Relatorio\RelacaoEscolasController;
 use App\Http\Controllers\Relatorio\DesempenhoAeeController;
 use App\Http\Controllers\Relatorio\RelacaoTurmasAeeController;
 use App\Http\Controllers\Relatorio\RelacaoTurmasAtividadeController;
@@ -151,7 +158,6 @@ Route::middleware(['auth', 'verified', 'tela'])->group(function () {
     Route::prefix('escolas/{escola}/censo')->name('escolas.censo.')->group(function () {
         Route::post('/', [EscolaCensoController::class, 'store'])->name('store');
         Route::get('/{censoEscolar}/edit', [EscolaCensoController::class, 'edit'])->name('edit');
-        Route::get('/{censoEscolar}', [EscolaCensoController::class, 'show'])->name('show');
         Route::put('/{censoEscolar}', [EscolaCensoController::class, 'update'])->name('update');
     });
     Route::prefix('escolas/{escola}/segmentos')->name('escolas.segmentos.')->group(function () {
@@ -211,6 +217,9 @@ Route::middleware(['auth', 'verified', 'tela'])->group(function () {
     });
     Route::get('disciplinas/export', [DisciplinaController::class, 'export'])->name('disciplinas.export');
     Route::resource('disciplinas', DisciplinaController::class)->except(['show']);
+
+    // Transporte Escolar — rotas em arquivo próprio (governadas pela matriz cfg_tela: /transporte/*)
+    require __DIR__.'/transporte.php';
 
     Route::prefix('series/{serie}/indicadores')->name('series.indicadores.')->group(function () {
         Route::post('replicar', [SerieIndicadorController::class, 'replicar'])->name('replicar');
@@ -310,6 +319,12 @@ Route::middleware(['auth', 'verified', 'tela'])->group(function () {
     Route::get('relatorios/alunos-por-escola', [AlunosPorEscolaController::class, 'form'])->name('relatorios.alunos-por-escola.form');
     Route::get('relatorios/alunos-por-escola/gerar', [AlunosPorEscolaController::class, 'gerar'])->name('relatorios.alunos-por-escola.gerar');
     Route::get('relatorios/alunos-por-escola/xlsx', [AlunosPorEscolaController::class, 'exportarXlsx'])->name('relatorios.alunos-por-escola.xlsx');
+
+    Route::get('relatorios/censo-criticas', [CensoCriticasController::class, 'form'])->name('relatorios.censo-criticas.form');
+    Route::get('relatorios/censo-criticas/gerar', [CensoCriticasController::class, 'gerar'])->name('relatorios.censo-criticas.gerar');
+
+    Route::get('relatorios/censo-exportacao', [CensoExportController::class, 'form'])->name('relatorios.censo-exportacao.form');
+    Route::get('relatorios/censo-exportacao/download', [CensoExportController::class, 'download'])->name('relatorios.censo-exportacao.download');
     Route::get('relatorios/dados-alunos-turma', [DadosAlunosTurmaController::class, 'form'])->name('relatorios.dados-alunos-turma.form');
     Route::get('relatorios/dados-alunos-turma/gerar', [DadosAlunosTurmaController::class, 'gerar'])->name('relatorios.dados-alunos-turma.gerar');
     Route::get('relatorios/relacao-turmas-aee', [RelacaoTurmasAeeController::class, 'form'])->name('relatorios.relacao-turmas-aee.form');
@@ -324,6 +339,7 @@ Route::middleware(['auth', 'verified', 'tela'])->group(function () {
     Route::get('relatorios/declaracao-matricula/gerar', [DeclaracaoMatriculaController::class, 'gerar'])->name('relatorios.declaracao-matricula.gerar');
     Route::get('relatorios/formacao-classes', [FormacaoClassesController::class, 'form'])->name('relatorios.formacao-classes.form');
     Route::get('relatorios/formacao-classes/gerar', [FormacaoClassesController::class, 'gerar'])->name('relatorios.formacao-classes.gerar');
+    Route::get('relatorios/formacao-classes/xlsx', [FormacaoClassesController::class, 'exportarXlsx'])->name('relatorios.formacao-classes.xlsx');
     Route::get('relatorios/formacao-classes-aee', [FormacaoClassesAeeController::class, 'form'])->name('relatorios.formacao-classes-aee.form');
     Route::get('relatorios/formacao-classes-aee/gerar', [FormacaoClassesAeeController::class, 'gerar'])->name('relatorios.formacao-classes-aee.gerar');
     Route::get('relatorios/alunos-deficiencia', [AlunosDeficienciaController::class, 'form'])->name('relatorios.alunos-deficiencia.form');
@@ -334,6 +350,21 @@ Route::middleware(['auth', 'verified', 'tela'])->group(function () {
     Route::get('relatorios/ficha-matricula/gerar', [FichaMatriculaController::class, 'gerar'])->name('relatorios.ficha-matricula.gerar');
     Route::get('relatorios/sumario-matriculas', [SumarioMatriculasController::class, 'form'])->name('relatorios.sumario-matriculas.form');
     Route::get('relatorios/sumario-matriculas/gerar', [SumarioMatriculasController::class, 'gerar'])->name('relatorios.sumario-matriculas.gerar');
+    Route::get('relatorios/equipe-gestora', [EquipeGestoraController::class, 'form'])->name('relatorios.equipe-gestora.form');
+    Route::get('relatorios/equipe-gestora/gerar', [EquipeGestoraController::class, 'gerar'])->name('relatorios.equipe-gestora.gerar');
+    Route::get('relatorios/equipe-gestora/xlsx', [EquipeGestoraController::class, 'exportarXlsx'])->name('relatorios.equipe-gestora.xlsx');
+    Route::get('relatorios/pendencias-encerramento', [PendenciaEncerramentoController::class, 'form'])->name('relatorios.pendencias-encerramento.form');
+    Route::get('relatorios/pendencias-encerramento/gerar', [PendenciaEncerramentoController::class, 'gerar'])->name('relatorios.pendencias-encerramento.gerar');
+    Route::get('relatorios/pendencias-encerramento/xlsx', [PendenciaEncerramentoController::class, 'exportarXlsx'])->name('relatorios.pendencias-encerramento.xlsx');
+    Route::get('relatorios/levantamento-municipio', [LevantamentoMunicipioController::class, 'form'])->name('relatorios.levantamento-municipio.form');
+    Route::get('relatorios/levantamento-municipio/gerar', [LevantamentoMunicipioController::class, 'gerar'])->name('relatorios.levantamento-municipio.gerar');
+    Route::get('relatorios/levantamento-municipio/xlsx', [LevantamentoMunicipioController::class, 'exportarXlsx'])->name('relatorios.levantamento-municipio.xlsx');
+    Route::get('relatorios/relacao-escolas', [RelacaoEscolasController::class, 'form'])->name('relatorios.relacao-escolas.form');
+    Route::get('relatorios/relacao-escolas/gerar', [RelacaoEscolasController::class, 'gerar'])->name('relatorios.relacao-escolas.gerar');
+    Route::get('relatorios/relacao-escolas/xlsx', [RelacaoEscolasController::class, 'exportarXlsx'])->name('relatorios.relacao-escolas.xlsx');
+    Route::get('relatorios/alunos-aptos-eja', [AlunosAptosEjaController::class, 'form'])->name('relatorios.alunos-aptos-eja.form');
+    Route::get('relatorios/alunos-aptos-eja/gerar', [AlunosAptosEjaController::class, 'gerar'])->name('relatorios.alunos-aptos-eja.gerar');
+    Route::get('relatorios/alunos-aptos-eja/xlsx', [AlunosAptosEjaController::class, 'exportarXlsx'])->name('relatorios.alunos-aptos-eja.xlsx');
 
     Route::get('movimentacoes', [MovimentacaoController::class, 'index'])->name('movimentacoes.index');
     Route::get('movimentacoes/create', [MovimentacaoController::class, 'create'])->name('movimentacoes.create');

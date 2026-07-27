@@ -125,6 +125,8 @@ export interface Turma {
     tur_hora_fim: string | null;
     tur_mediacao: string | null;
     tur_local_diferenciado: string | null;
+    tur_fl_classe_especial: boolean;
+    tur_fl_alternancia: boolean;
     tur_dias_funcionamento: DiaSemana[] | null;
     tur_obs: string | null;
     tur_created_at: string | null;
@@ -155,6 +157,8 @@ export interface TurmaFormData {
     tur_hora_fim: string;
     tur_mediacao: string;
     tur_local_diferenciado: string;
+    tur_fl_classe_especial: boolean;
+    tur_fl_alternancia: boolean;
     tur_dias_funcionamento: DiaSemana[];
     tur_obs: string;
     _method?: 'put';

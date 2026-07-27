@@ -5,7 +5,7 @@ import NavSearch, { type FlatNavLeaf } from '@/components/layout/NavSearch.vue';
 import NavUser from '@/components/layout/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { Link } from '@inertiajs/vue3';
-import { LayoutDashboard, LifeBuoy, UserPlus, Cog, ClipboardList, FileBarChart, BookOpen, ClipboardCheck, KeyRound, Archive, ArrowRightLeft, UtensilsCrossed } from 'lucide-vue-next';
+import { LayoutDashboard, LifeBuoy, UserPlus, Cog, ClipboardList, FileBarChart, BookOpen, ClipboardCheck, KeyRound, Archive, ArrowRightLeft, UtensilsCrossed ,Bus} from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import { usePermissao } from '@/composables/usePermissao';
 import AppLogo from './AppLogo.vue';
@@ -94,7 +94,7 @@ const diarioMenu = [
             },
             { title: 'Planos de Aula', href: '/diario/planos' },
             { title: 'Planos de Aula AEE', href: '/diario/planos-aee' },
-            { title: 'Relatórios', href: '/relatorios-diario' },
+            { title: 'Relatórios', searchTitle: 'Relatórios do Diário', href: '/relatorios-diario' },
         ],
     },
 ];
@@ -115,7 +115,7 @@ const coordenadorMenu = [
         children: [
             { title: 'Validação de Planos', href: '/coordenador/planos' },
             { title: 'Validação de Planos AEE', href: '/coordenador-interno/planos-aee' },
-            { title: 'Relatórios', href: '/relatorios-pedagogico' },
+            { title: 'Relatórios', searchTitle: 'Relatórios Pedagógicos', href: '/relatorios-pedagogico' },
         ],
     },
 ];
@@ -135,7 +135,7 @@ const secretariaMenu = [
             },
             { title: 'Renovação de Matrícula', href: '/secretaria/renovacao-matricula' },
             { title: 'Motivo Baixa Frequência', href: '/secretaria/motivos-baixa-frequencia' },
-            { title: 'Relatórios', href: '/relatorios-secretaria' },
+            { title: 'Relatórios', searchTitle: 'Relatórios da Secretaria', href: '/relatorios-secretaria' },
         ],
     },
 ];
@@ -211,6 +211,28 @@ const alimentacaoMenu = [
         icon: FileBarChart,
         children: [
             { title: 'Relatórios da Alimentação', href: '/relatorios-alimentacao' },
+const transporteMenu = [
+    {
+        title: 'Transporte Escolar',
+        icon: Bus,
+        children: [
+            {
+                title: 'Cadastros',
+                children: [
+                    { title: 'Veículos', href: '/transporte/veiculos' },
+                    { title: 'Usuários Externos', href: '/transporte/usuarios' },
+                ],
+            },
+            { title: 'Rotas', href: '/transporte/rotas' },
+            { title: 'Diário de Bordo', href: '/transporte/diario-bordo' },
+            { title: 'Simulador de Rotas', href: '/transporte/simulador' },
+            {
+                title: 'Relatórios',
+                children: [
+                    { title: 'Situação da Frota', href: '/transporte/relatorios/frota' },
+                    { title: 'Ocorrências', href: '/transporte/relatorios/ocorrencias' },
+                ],
+            },
         ],
     },
 ];
@@ -236,6 +258,7 @@ const diarioF = computed(() => filtrarMenu(diarioMenu));
 const coordenadorF = computed(() => filtrarMenu(coordenadorMenu));
 const secretariaF = computed(() => filtrarMenu(secretariaMenu));
 const encerramentoF = computed(() => filtrarMenu(encerramentoMenu));
+const transporteF = computed(() => filtrarMenu(transporteMenu));
 const relatoriosF = computed(() => filtrarMenu(relatoriosMenu));
 const alimentacaoF = computed(() => filtrarMenu(alimentacaoMenu));
 const administracaoF = computed(() => filtrarMenu(administracao));
@@ -247,19 +270,23 @@ const footerNavItems = [
 // Busca no menu
 const search = ref('');
 
-// Flatten recursivo: extrai todos os leafs com seu path (breadcrumb de pais)
+// Flatten recursivo: extrai todos os leafs com seu path (breadcrumb de pais).
+// `searchTitle` (quando definido) é o nome real da tela — usado na busca no
+// lugar do título curto do menu (ex.: "Relatórios" → "Relatórios da Secretaria").
 const flattenItems = (items: any[], parents: string[] = []): FlatNavLeaf[] => {
     const out: FlatNavLeaf[] = [];
     for (const it of items ?? []) {
         if (it.children?.length) {
             out.push(...flattenItems(it.children, [...parents, it.title]));
         } else if (it.href) {
-            out.push({ title: it.title, href: it.href, path: parents });
+            out.push({ title: it.searchTitle ?? it.title, href: it.href, path: parents });
         }
     }
     return out;
 };
 
+// O rótulo da seção entra como 1º nível do path — o tooltip/caminho da busca
+// fica igual ao do menu (ex.: "Gestão › Cadastros › Rede de Ensino › Turmas").
 const flatLeaves = computed<FlatNavLeaf[]>(() => [
     ...flattenItems(overviewF.value),
     ...flattenItems(cadastrosF.value),
@@ -271,6 +298,16 @@ const flatLeaves = computed<FlatNavLeaf[]>(() => [
     ...flattenItems(relatoriosF.value),
     ...flattenItems(alimentacaoF.value),
     ...flattenItems(administracaoF.value),
+    ...flattenItems(overviewF.value, ['Visão geral']),
+    ...flattenItems(cadastrosF.value, ['Gestão']),
+    ...flattenItems(matriculasF.value, ['Matrículas']),
+    ...flattenItems(diarioF.value, ['Diário']),
+    ...flattenItems(coordenadorF.value, ['Pedagógico']),
+    ...flattenItems(secretariaF.value, ['Secretaria Escolar']),
+    ...flattenItems(encerramentoF.value, ['Encerramento']),
+    ...flattenItems(transporteF.value, ['Transporte']),
+    ...flattenItems(relatoriosF.value, ['Relatórios']),
+    ...flattenItems(administracaoF.value, ['Administração']),
 ]);
 
 const searching = computed(() => search.value.trim().length > 0);
@@ -301,6 +338,7 @@ const searching = computed(() => search.value.trim().length > 0);
                 <NavMain v-if="coordenadorF.length" label="Pedagógico" :items="coordenadorF" />
                 <NavMain v-if="secretariaF.length" label="Secretaria Escolar" :items="secretariaF" />
                 <NavMain v-if="encerramentoF.length" label="Encerramento" :items="encerramentoF" />
+                <NavMain v-if="transporteF.length" label="Transporte" :items="transporteF" />
                 <NavMain v-if="relatoriosF.length" label="Relatórios" :items="relatoriosF" />
                 <NavMain v-if="alimentacaoF.length" label="Alimentação" :items="alimentacaoF" />
                 <NavMain v-if="administracaoF.length" label="Administração" :items="administracaoF" />

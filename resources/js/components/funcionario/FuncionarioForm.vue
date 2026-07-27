@@ -21,6 +21,7 @@ import { usePermissao } from '@/composables/usePermissao';
 import { useErrorFocus } from '@/composables/useErrorFocus';
 import { useToast } from '@/composables/useToast';
 import { useViaCep } from '@/composables/useViaCep';
+import { useMunicipios } from '@/composables/useMunicipios';
 import { validarImagem } from '@/lib/validaArquivo';
 import { COR_RACA } from '@/lib/corRaca';
 import { PAISES } from '@/lib/paises';
@@ -36,6 +37,10 @@ import {
 import type { SharedData, SystemParams } from '@/types';
 import type { Municipio, PovoIndigena } from '@/types/aluno';
 import type { Funcionario, FuncionarioFormData } from '@/types/funcionario';
+import {
+    DEFICIENCIAS, TRANSTORNOS_GLOBAIS, TRANSTORNOS_GLOBAIS_OUTROS,
+    TRANSTORNOS_APRENDIZAGEM, TGD_OUTROS,
+} from '@/lib/alunoSaudeEnums';
 import { Link, useForm, usePage } from '@inertiajs/vue3';
 import { Camera, ChevronLeft, ChevronRight, Loader2, LoaderCircle, Save, Trash2, Upload } from 'lucide-vue-next';
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
@@ -79,7 +84,7 @@ const alertarAcentos = computed(() => params.value.alertar_acentos_nomes);
 
 const stripAccents = (str: string) => str.normalize('NFD').replace(/[̀-ͯ]/g, '');
 
-const TABS = ['dados-pessoais', 'escolaridade', 'documentacao', 'endereco-contato', 'admissao-lotacao', 'horario'] as const;
+const TABS = ['dados-pessoais', 'escolaridade', 'documentacao', 'endereco-contato', 'deficiencia', 'admissao-lotacao', 'horario'] as const;
 type TabId = (typeof TABS)[number];
 
 const TAB_FIELDS: Record<TabId, string[]> = {
@@ -88,6 +93,7 @@ const TAB_FIELDS: Record<TabId, string[]> = {
         'fun_nacionalidade', 'fun_pais_origem', 'fun_mun_id_nasc',
         'fun_cpf', 'fun_religiao', 'fun_estado_civil',
         'fun_pin_id', 'fun_cd_censo',
+        'fun_filiacao_1', 'fun_filiacao_1_tipo', 'fun_filiacao_2', 'fun_filiacao_2_tipo',
     ],
     escolaridade: [],
     documentacao: [
@@ -98,12 +104,14 @@ const TAB_FIELDS: Record<TabId, string[]> = {
         'fun_ctps_numero', 'fun_ctps_serie', 'fun_pis_pasep',
         'fun_titulo_eleitor', 'fun_titulo_zona', 'fun_titulo_secao',
         'fun_certificado_reservista',
+        'fun_cnh_numero', 'fun_cnh_categoria', 'fun_cnh_dt_validade',
     ],
     'endereco-contato': [
         'fun_cep', 'fun_logradouro', 'fun_numero', 'fun_complemento',
-        'fun_bairro', 'fun_cidade', 'fun_uf',
+        'fun_bairro', 'fun_cidade', 'fun_mun_id_resid', 'fun_uf', 'fun_zona_residencia',
         'fun_telefone', 'fun_celular', 'fun_email',
     ],
+    deficiencia: [],
     'admissao-lotacao': [],
     horario: [],
 };
@@ -126,6 +134,10 @@ const initialMunicipio = computed<Municipio | null>(
 const initialMunicipioCertidao = computed<Municipio | null>(
     () => props.initial?.municipio_certidao ?? null,
 );
+// Município de residência: ref mutável (CEP resolve e atualiza o display do combobox).
+const municipioResidenciaInitial = ref<Municipio | null>(
+    props.initial?.municipio_residencia ?? null,
+);
 const initialPovo = computed<PovoIndigena | null>(
     () => props.initial?.povo_indigena ?? null,
 );
@@ -133,11 +145,19 @@ const initialPovo = computed<PovoIndigena | null>(
 const dataNascBR = ref(formatDateBR(props.initial?.fun_dt_nascimento));
 const dataRgBR = ref(formatDateBR(props.initial?.fun_rg_dt_emissao));
 const dataCertidaoBR = ref(formatDateBR(props.initial?.fun_certidao_dt_emissao));
+const dataCnhBR = ref(formatDateBR(props.initial?.fun_cnh_dt_validade));
+
+// Categorias aceitas pelo backend (Funcionario::CNH_CATEGORIAS).
+const CNH_CATEGORIAS = ['A', 'B', 'C', 'D', 'E', 'AB', 'AC', 'AD', 'AE'];
 
 const form = useForm<FuncionarioFormData>({
     // Dados pessoais
     fun_nome: props.initial?.fun_nome ?? '',
     fun_nome_social: props.initial?.fun_nome_social ?? '',
+    fun_filiacao_1: props.initial?.fun_filiacao_1 ?? '',
+    fun_filiacao_1_tipo: props.initial?.fun_filiacao_1_tipo ?? '',
+    fun_filiacao_2: props.initial?.fun_filiacao_2 ?? '',
+    fun_filiacao_2_tipo: props.initial?.fun_filiacao_2_tipo ?? '',
     fun_dt_nascimento: props.initial?.fun_dt_nascimento ?? '',
     fun_sexo: props.initial?.fun_sexo ?? '',
     fun_cor_raca: props.initial?.fun_cor_raca ?? null,
@@ -171,6 +191,9 @@ const form = useForm<FuncionarioFormData>({
     fun_titulo_zona: props.initial?.fun_titulo_zona ?? '',
     fun_titulo_secao: props.initial?.fun_titulo_secao ?? '',
     fun_certificado_reservista: props.initial?.fun_certificado_reservista ?? '',
+    fun_cnh_numero: props.initial?.fun_cnh_numero ?? '',
+    fun_cnh_categoria: props.initial?.fun_cnh_categoria ?? '',
+    fun_cnh_dt_validade: props.initial?.fun_cnh_dt_validade ?? '',
 
     // Endereço
     fun_cep: props.initial?.fun_cep ?? '',
@@ -179,7 +202,9 @@ const form = useForm<FuncionarioFormData>({
     fun_complemento: props.initial?.fun_complemento ?? '',
     fun_bairro: props.initial?.fun_bairro ?? '',
     fun_cidade: props.initial?.fun_cidade ?? '',
+    fun_mun_id_resid: props.initial?.fun_mun_id_resid ?? null,
     fun_uf: props.initial?.fun_uf ?? '',
+    fun_zona_residencia: props.initial?.fun_zona_residencia ?? null,
 
     // Contato
     fun_telefone: props.initial?.fun_telefone ?? '',
@@ -195,6 +220,16 @@ const form = useForm<FuncionarioFormData>({
     escolaridades: props.initial
         ? []
         : [{ fes_nivel: '', fes_ano_inicio: '', fes_ano_fim: '', fes_cfs_id: null, fes_ies_id: null, fes_pos_area: '', curso: null, instituicao: null }],
+    saude: {
+        fus_fl_pcd: props.initial?.saude?.fus_fl_pcd ?? false,
+        fus_deficiencias: props.initial?.saude?.fus_deficiencias ?? [],
+        fus_transtornos_globais: props.initial?.saude?.fus_transtornos_globais ?? [],
+        fus_transtornos_aprendizagem: props.initial?.saude?.fus_transtornos_aprendizagem ?? [],
+        fus_deficiencia_outro: props.initial?.saude?.fus_deficiencia_outro ?? '',
+        fus_fl_altas_habilidades: props.initial?.saude?.fus_fl_altas_habilidades ?? false,
+        fus_cid: props.initial?.saude?.fus_cid ?? '',
+        fus_observacao: props.initial?.saude?.fus_observacao ?? '',
+    },
     confirm_homonimo: false,
     _method: props.mode === 'edit' ? 'put' : 'post',
 });
@@ -215,6 +250,15 @@ watch(dataRgBR, (v) => {
 });
 watch(dataCertidaoBR, (v) => {
     form.fun_certidao_dt_emissao = v && v.length === 10 ? parseDateBR(v) : '';
+});
+watch(dataCnhBR, (v) => {
+    form.fun_cnh_dt_validade = v && v.length === 10 ? parseDateBR(v) : '';
+});
+
+// Aviso (não bloqueia): CNH vencida impede o funcionário de conduzir rota.
+const cnhVencida = computed(() => {
+    if (!form.fun_cnh_dt_validade) return false;
+    return form.fun_cnh_dt_validade < new Date().toISOString().slice(0, 10);
 });
 
 // Uppercase / strip de acentos conforme parâmetros
@@ -244,7 +288,54 @@ FUNCIONARIO_TEXT_FIELDS_ACCENT.forEach((field) => {
     );
 });
 
+// Filiação segue o parâmetro de caixa alta do nome: marcado → MAIÚSCULO, senão → minúsculo.
+const FUNCIONARIO_FILIACAO_FIELDS = ['fun_filiacao_1', 'fun_filiacao_2'] as const;
+FUNCIONARIO_FILIACAO_FIELDS.forEach((field) => {
+    watch(
+        () => form[field] as string,
+        (v) => {
+            if (typeof v !== 'string') return;
+            let next = v;
+            if (alertarAcentos.value) next = stripAccents(next);
+            next = nomeUppercase.value ? next.toLocaleUpperCase('pt-BR') : next.toLocaleLowerCase('pt-BR');
+            if (next !== v) (form as any)[field] = next;
+        },
+    );
+});
+
 const activeTab = ref<TabId>('dados-pessoais');
+
+// ── Quadro de deficiências (espelha o do aluno) ────────────────────────────
+const toggleArrayItem = (arr: string[], item: string) => {
+    const idx = arr.indexOf(item);
+    if (idx >= 0) arr.splice(idx, 1);
+    else arr.push(item);
+};
+
+// "Outros" na coluna TGD revela as subopções e o campo de texto "Outro(a)".
+const tgdOutrosSelecionado = computed(() => form.saude.fus_transtornos_globais.includes(TGD_OUTROS));
+
+watch(tgdOutrosSelecionado, (v) => {
+    if (!v) {
+        form.saude.fus_deficiencia_outro = '';
+        form.saude.fus_transtornos_globais = form.saude.fus_transtornos_globais.filter(
+            (t) => !(TRANSTORNOS_GLOBAIS_OUTROS as readonly string[]).includes(t),
+        );
+    }
+});
+
+// Desligar o toggle limpa todo o quadro.
+watch(() => form.saude.fus_fl_pcd, (v) => {
+    if (!v) {
+        form.saude.fus_deficiencias = [];
+        form.saude.fus_transtornos_globais = [];
+        form.saude.fus_transtornos_aprendizagem = [];
+        form.saude.fus_deficiencia_outro = '';
+        form.saude.fus_fl_altas_habilidades = false;
+        form.saude.fus_cid = '';
+        form.saude.fus_observacao = '';
+    }
+});
 
 // CPF duplicado — dialog
 const CPF_DUP_PREFIX = 'CPF já cadastrado para: ';
@@ -294,6 +385,9 @@ const tabHasError = (tab: TabId): boolean => {
     if (tab === 'escolaridade') {
         return Object.keys(form.errors).some((k) => k.startsWith('escolaridades'));
     }
+    if (tab === 'deficiencia') {
+        return Object.keys(form.errors).some((k) => k.startsWith('saude.'));
+    }
     const fields = TAB_FIELDS[tab];
     return fields.some((f) => Boolean((form.errors as Record<string, string>)[f]));
 };
@@ -301,6 +395,17 @@ const tabHasError = (tab: TabId): boolean => {
 // CEP autopreencher
 const numeroInput = ref<HTMLInputElement | null>(null);
 const { loading: cepLoading, error: cepError, lookup: cepLookup } = useViaCep();
+const { byIbge: municipioByIbge } = useMunicipios();
+
+// Seleção manual do município de residência: espelha cidade/UF nas colunas legadas.
+const onSelecionarMunicipioResidencia = (m: Municipio | null) => {
+    municipioResidenciaInitial.value = m;
+    form.fun_mun_id_resid = m?.mun_id ?? null;
+    if (m) {
+        form.fun_cidade = m.mun_nome;
+        form.fun_uf = m.mun_uf;
+    }
+};
 
 watch(
     () => form.fun_cep,
@@ -311,8 +416,14 @@ watch(
             if (result) {
                 form.fun_logradouro = result.logradouro || form.fun_logradouro;
                 form.fun_bairro = result.bairro || form.fun_bairro;
-                form.fun_cidade = result.cidade || form.fun_cidade;
                 form.fun_uf = result.uf || form.fun_uf;
+                // Casa o município do CEP (código IBGE) com a base local; cai no texto se não achar.
+                const mun = result.ibge ? await municipioByIbge(result.ibge) : null;
+                if (mun) {
+                    onSelecionarMunicipioResidencia(mun);
+                } else if (result.cidade) {
+                    form.fun_cidade = result.cidade;
+                }
                 await nextTick();
                 numeroInput.value?.focus();
             }
@@ -327,7 +438,9 @@ const goToFirstErrorTab = async () => {
         if (tabHasError(tab)) {
             activeTab.value = tab;
             // leva o usuário ao 1º campo inválido da aba
-            const keys = TAB_FIELDS[tab].filter((f) => (form.errors as Record<string, string>)[f]);
+            const keys = tab === 'deficiencia'
+                ? Object.keys(form.errors).filter((k) => k.startsWith('saude.'))
+                : TAB_FIELDS[tab].filter((f) => (form.errors as Record<string, string>)[f]);
             await focusFirstError(keys);
             return;
         }
@@ -475,11 +588,14 @@ const initials = computed(() => {
                 <TabsTrigger value="endereco-contato" :has-error="tabHasError('endereco-contato')">
                     4. Endereço e Contato
                 </TabsTrigger>
+                <TabsTrigger value="deficiencia" :has-error="tabHasError('deficiencia')">
+                    5. Deficiência
+                </TabsTrigger>
                 <TabsTrigger value="admissao-lotacao" :has-error="tabHasError('admissao-lotacao')">
-                    5. Admissão / Lotação
+                    6. Admissão / Lotação
                 </TabsTrigger>
                 <TabsTrigger v-if="mode === 'edit'" value="horario">
-                    6. Horário
+                    7. Horário
                 </TabsTrigger>
             </TabsList>
 
@@ -729,6 +845,59 @@ const initials = computed(() => {
                         <InputError :message="form.errors.fun_cd_censo" />
                     </div>
                 </div>
+
+                <!-- Filiação -->
+                <div class="grid gap-4 rounded-xl border bg-card p-6 shadow-sm sm:grid-cols-2">
+                    <div class="sm:col-span-2">
+                        <h3 class="text-sm font-semibold">Filiação</h3>
+                    </div>
+                    <div class="grid gap-2">
+                        <div class="flex items-center justify-between gap-4">
+                            <FormLabel for="fun_filiacao_1" :required="true">Filiação 1</FormLabel>
+                            <div class="flex items-center gap-4 text-sm">
+                                <label class="flex cursor-pointer items-center gap-1.5">
+                                    <input type="radio" v-model="form.fun_filiacao_1_tipo" value="MAE" class="accent-sky-600" />
+                                    Mãe
+                                </label>
+                                <label class="flex cursor-pointer items-center gap-1.5">
+                                    <input type="radio" v-model="form.fun_filiacao_1_tipo" value="PAI" class="accent-sky-600" />
+                                    Pai
+                                </label>
+                            </div>
+                        </div>
+                        <Input id="fun_filiacao_1" v-model="form.fun_filiacao_1" maxlength="100" />
+                        <div class="flex justify-between gap-2">
+                            <div>
+                                <InputError :message="form.errors.fun_filiacao_1" />
+                                <InputError :message="(form.errors as any).fun_filiacao_1_tipo" />
+                            </div>
+                            <CharCounter :value="form.fun_filiacao_1" :max="100" />
+                        </div>
+                    </div>
+                    <div class="grid gap-2">
+                        <div class="flex items-center justify-between gap-4">
+                            <Label for="fun_filiacao_2">Filiação 2</Label>
+                            <div class="flex items-center gap-4 text-sm">
+                                <label class="flex cursor-pointer items-center gap-1.5">
+                                    <input type="radio" v-model="form.fun_filiacao_2_tipo" value="MAE" class="accent-sky-600" />
+                                    Mãe
+                                </label>
+                                <label class="flex cursor-pointer items-center gap-1.5">
+                                    <input type="radio" v-model="form.fun_filiacao_2_tipo" value="PAI" class="accent-sky-600" />
+                                    Pai
+                                </label>
+                            </div>
+                        </div>
+                        <Input id="fun_filiacao_2" v-model="form.fun_filiacao_2" maxlength="100" />
+                        <div class="flex justify-between gap-2">
+                            <div>
+                                <InputError :message="form.errors.fun_filiacao_2" />
+                                <InputError :message="(form.errors as any).fun_filiacao_2_tipo" />
+                            </div>
+                            <CharCounter :value="form.fun_filiacao_2" :max="100" />
+                        </div>
+                    </div>
+                </div>
             </TabsContent>
 
             <!-- Aba 2: Escolaridade -->
@@ -918,6 +1087,50 @@ const initials = computed(() => {
                         <InputError :message="form.errors.fun_certificado_reservista" />
                     </div>
                 </div>
+
+                <!-- CNH — habilita o funcionário a ser motorista de rota do transporte escolar -->
+                <div class="grid gap-4 rounded-xl border bg-card p-6 shadow-sm sm:grid-cols-4">
+                    <h3 class="text-sm font-semibold sm:col-span-4">Carteira Nacional de Habilitação (CNH)</h3>
+
+                    <p
+                        v-if="cnhVencida"
+                        class="rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-700 sm:col-span-4 dark:bg-amber-950/40 dark:text-amber-400"
+                    >
+                        CNH vencida — este funcionário não deve ser escalado como motorista de rota.
+                    </p>
+
+                    <div class="grid gap-2">
+                        <Label for="fun_cnh_numero">Número da CNH</Label>
+                        <Input id="fun_cnh_numero" v-model="form.fun_cnh_numero" inputmode="numeric" maxlength="11" />
+                        <InputError :message="form.errors.fun_cnh_numero" />
+                    </div>
+
+                    <div class="grid gap-2">
+                        <Label for="fun_cnh_categoria">Categoria</Label>
+                        <select
+                            id="fun_cnh_categoria"
+                            v-model="form.fun_cnh_categoria"
+                            class="h-10 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                        >
+                            <option value="">—</option>
+                            <option v-for="c in CNH_CATEGORIAS" :key="c" :value="c">{{ c }}</option>
+                        </select>
+                        <InputError :message="form.errors.fun_cnh_categoria" />
+                    </div>
+
+                    <div class="grid gap-2">
+                        <Label for="fun_cnh_dt_validade">Validade</Label>
+                        <Input
+                            id="fun_cnh_dt_validade"
+                            v-model="dataCnhBR"
+                            v-maska="'##/##/####'"
+                            inputmode="numeric"
+                            placeholder="DD/MM/AAAA"
+                            maxlength="10"
+                        />
+                        <InputError :message="form.errors.fun_cnh_dt_validade" />
+                    </div>
+                </div>
             </TabsContent>
 
             <!-- Aba 4: Endereço e Contato -->
@@ -971,9 +1184,15 @@ const initials = computed(() => {
                     </div>
 
                     <div class="grid gap-2 sm:col-span-4">
-                        <Label for="fun_cidade">Cidade</Label>
-                        <Input id="fun_cidade" v-model="form.fun_cidade" maxlength="100" />
-                        <InputError :message="form.errors.fun_cidade" />
+                        <Label for="fun_mun_id_resid">Cidade (município de residência)</Label>
+                        <MunicipioCombobox
+                            :model-value="form.fun_mun_id_resid"
+                            :initial="municipioResidenciaInitial"
+                            :invalid="!!form.errors.fun_mun_id_resid"
+                            placeholder="Buscar município..."
+                            @select="onSelecionarMunicipioResidencia"
+                        />
+                        <InputError :message="form.errors.fun_mun_id_resid || form.errors.fun_cidade" />
                     </div>
 
                     <div class="grid gap-2 sm:col-span-2">
@@ -987,6 +1206,21 @@ const initials = computed(() => {
                             <option v-for="uf in UFS" :key="uf" :value="uf">{{ uf }}</option>
                         </select>
                         <InputError :message="form.errors.fun_uf" />
+                    </div>
+
+                    <div class="grid gap-2 sm:col-span-3">
+                        <Label for="fun_zona_residencia">Localização/Zona de residência <span class="text-destructive">*</span></Label>
+                        <select
+                            id="fun_zona_residencia"
+                            :value="form.fun_zona_residencia ?? ''"
+                            @change="(e) => { const v = (e.target as HTMLSelectElement).value; form.fun_zona_residencia = v === '' ? null : Number(v); }"
+                            class="h-10 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                        >
+                            <option value="">Selecione...</option>
+                            <option value="1">Urbana</option>
+                            <option value="2">Rural</option>
+                        </select>
+                        <InputError :message="form.errors.fun_zona_residencia" />
                     </div>
                 </div>
 
@@ -1057,7 +1291,125 @@ const initials = computed(() => {
 
             </TabsContent>
 
-            <!-- Aba 5: Admissão / Lotação -->
+            <!-- Aba 5: Deficiência / Transtornos / Altas Habilidades -->
+            <TabsContent value="deficiencia" class="grid gap-6">
+                <fieldset class="rounded-xl border bg-card p-6 shadow-sm">
+                    <legend class="px-2 text-sm font-semibold">Tipo de Deficiência, Transtorno Global do Desenvolvimento ou Altas Habilidades/Superdotação</legend>
+
+                    <!-- Toggle "Possui deficiências" — vem primeiro -->
+                    <div class="mb-5 flex items-center gap-3">
+                        <Switch id="fus_fl_pcd" v-model="form.saude.fus_fl_pcd" />
+                        <Label for="fus_fl_pcd" class="text-sm font-medium">
+                            Possui deficiências
+                        </Label>
+                    </div>
+
+                    <!-- Conteúdo desabilitado quando o toggle está inativo -->
+                    <div :class="{ 'pointer-events-none opacity-40': !form.saude.fus_fl_pcd }">
+                        <div class="grid gap-6 sm:grid-cols-3">
+                            <div id="fus_deficiencias" tabindex="-1" class="scroll-mt-24 outline-none">
+                                <h4 class="mb-2 text-xs font-semibold text-muted-foreground">
+                                    Deficiência <span v-if="form.saude.fus_fl_pcd" class="text-rose-500">*</span>
+                                </h4>
+                                <div class="space-y-2">
+                                    <label v-for="d in DEFICIENCIAS" :key="d" class="flex items-center gap-2 text-sm">
+                                        <input
+                                            type="checkbox"
+                                            :checked="form.saude.fus_deficiencias.includes(d)"
+                                            @change="toggleArrayItem(form.saude.fus_deficiencias, d)"
+                                            class="size-4 rounded border-gray-300 text-sky-600 focus:ring-sky-500"
+                                        />
+                                        {{ d }}
+                                    </label>
+                                </div>
+                                <InputError :message="(form.errors as Record<string, string>)['saude.fus_deficiencias']" />
+                            </div>
+
+                            <div>
+                                <h4 class="mb-2 text-xs font-semibold text-muted-foreground">Transtorno Global de Desenvolvimento</h4>
+                                <div class="space-y-2">
+                                    <label v-for="t in TRANSTORNOS_GLOBAIS" :key="t" class="flex items-center gap-2 text-sm">
+                                        <input
+                                            type="checkbox"
+                                            :checked="form.saude.fus_transtornos_globais.includes(t)"
+                                            @change="toggleArrayItem(form.saude.fus_transtornos_globais, t)"
+                                            class="size-4 rounded border-gray-300 text-sky-600 focus:ring-sky-500"
+                                        />
+                                        {{ t }}
+                                    </label>
+                                    <!-- Subopções reveladas ao marcar "Outros" -->
+                                    <div v-if="tgdOutrosSelecionado" class="ml-6 space-y-2 border-l pl-3">
+                                        <label v-for="t in TRANSTORNOS_GLOBAIS_OUTROS" :key="t" class="flex items-center gap-2 text-sm">
+                                            <input
+                                                type="checkbox"
+                                                :checked="form.saude.fus_transtornos_globais.includes(t)"
+                                                @change="toggleArrayItem(form.saude.fus_transtornos_globais, t)"
+                                                class="size-4 rounded border-gray-300 text-sky-600 focus:ring-sky-500"
+                                            />
+                                            {{ t }}
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h4 class="mb-2 text-xs font-semibold text-muted-foreground">Transtornos que Impactam a Aprendizagem</h4>
+                                <div class="space-y-2">
+                                    <label v-for="t in TRANSTORNOS_APRENDIZAGEM" :key="t" class="flex items-center gap-2 text-sm">
+                                        <input
+                                            type="checkbox"
+                                            :checked="form.saude.fus_transtornos_aprendizagem.includes(t)"
+                                            @change="toggleArrayItem(form.saude.fus_transtornos_aprendizagem, t)"
+                                            class="size-4 rounded border-gray-300 text-sky-600 focus:ring-sky-500"
+                                        />
+                                        {{ t }}
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Altas Habilidades como opção (checkbox) -->
+                        <div class="mt-4">
+                            <label class="flex items-center gap-2 text-sm">
+                                <input
+                                    type="checkbox"
+                                    v-model="form.saude.fus_fl_altas_habilidades"
+                                    class="size-4 rounded border-gray-300 text-sky-600 focus:ring-sky-500"
+                                />
+                                Altas Habilidades/Superdotação
+                            </label>
+                        </div>
+
+                        <!-- Outro(a) + CID -->
+                        <div class="mt-4 grid gap-4">
+                            <div v-if="tgdOutrosSelecionado" class="grid gap-2">
+                                <Label for="fus_deficiencia_outro">Outro(a)</Label>
+                                <Input id="fus_deficiencia_outro" v-model="form.saude.fus_deficiencia_outro" maxlength="500" class="w-full" />
+                                <InputError :message="(form.errors as Record<string, string>)['saude.fus_deficiencia_outro']" />
+                            </div>
+                            <div class="grid gap-2">
+                                <Label for="fus_cid">CID</Label>
+                                <Input id="fus_cid" v-model="form.saude.fus_cid" maxlength="20" class="w-full max-w-xs" />
+                                <InputError :message="(form.errors as Record<string, string>)['saude.fus_cid']" />
+                            </div>
+                        </div>
+
+                        <div class="mt-4 grid gap-2">
+                            <Label for="fus_observacao">Observação</Label>
+                            <textarea
+                                id="fus_observacao"
+                                v-model="form.saude.fus_observacao"
+                                rows="3"
+                                maxlength="2000"
+                                class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                            />
+                            <InputError :message="(form.errors as Record<string, string>)['saude.fus_observacao']" />
+                        </div>
+                    </div>
+                </fieldset>
+            </TabsContent>
+
+            <!-- Aba 6: Admissão / Lotação -->
             <TabsContent value="admissao-lotacao">
                 <div v-if="mode === 'create'" class="rounded-xl border-2 border-dashed bg-card py-12 text-center text-sm text-muted-foreground shadow-sm">
                     Salve o funcionário primeiro para gerenciar admissões e lotações.

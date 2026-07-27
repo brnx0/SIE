@@ -39,6 +39,11 @@ class StoreFuncionarioRequest extends FormRequest
             $nomeSocial = mb_strtoupper($nomeSocial, 'UTF-8');
         }
 
+        // Filiação segue o parâmetro de caixa alta: marcado → MAIÚSCULO, senão → minúsculo.
+        $caixaAlta = fn ($v) => is_string($v) && $v !== ''
+            ? ($params->par_fl_nome_pessoa_caixa_alta ? mb_strtoupper($v, 'UTF-8') : mb_strtolower($v, 'UTF-8'))
+            : $v;
+
         // Povo indígena só se aplica quando etnia/cor/raça = Indígena (5).
         // Mantém a string legada fun_povo_indigena (censo/relatórios) sincronizada com o povo escolhido.
         $indigena = (int) $this->input('fun_cor_raca') === 5;
@@ -50,11 +55,16 @@ class StoreFuncionarioRequest extends FormRequest
             'fun_povo_indigena' => $povoNome,
             'fun_nome'        => $nome,
             'fun_nome_social' => $this->filled('fun_nome_social') ? $nomeSocial : null,
+            'fun_filiacao_1'  => $this->filled('fun_filiacao_1') ? $caixaAlta($this->input('fun_filiacao_1')) : null,
+            'fun_filiacao_2'  => $this->filled('fun_filiacao_2') ? $caixaAlta($this->input('fun_filiacao_2')) : null,
             'fun_cpf' => $this->filled('fun_cpf') ? $strip($this->input('fun_cpf')) : null,
             'fun_cep' => $this->filled('fun_cep') ? $strip($this->input('fun_cep')) : null,
             'fun_telefone' => $this->filled('fun_telefone') ? $strip($this->input('fun_telefone')) : null,
             'fun_celular' => $this->filled('fun_celular') ? $strip($this->input('fun_celular')) : null,
             'fun_cd_censo' => $this->filled('fun_cd_censo') ? $strip($this->input('fun_cd_censo')) : null,
+            'fun_cnh_numero' => $this->filled('fun_cnh_numero') ? $strip($this->input('fun_cnh_numero')) : null,
+            'fun_cnh_categoria' => $this->filled('fun_cnh_categoria') ? strtoupper($this->input('fun_cnh_categoria')) : null,
+            'fun_cnh_dt_validade' => $this->input('fun_cnh_dt_validade') ?: null,
             'fun_uf' => $this->filled('fun_uf') ? strtoupper($this->input('fun_uf')) : null,
             'fun_rg_uf' => $this->filled('fun_rg_uf') ? strtoupper($this->input('fun_rg_uf')) : null,
         ]);
@@ -70,6 +80,11 @@ class StoreFuncionarioRequest extends FormRequest
             // Dados pessoais
             'fun_nome'        => ['required', 'string', 'max:100'],
             'fun_nome_social' => ['nullable', 'string', 'max:100'],
+            // Ao menos uma filiação é obrigatória — mesmo padrão do cadastro de aluno.
+            'fun_filiacao_1'      => ['required', 'string', 'max:100'],
+            'fun_filiacao_1_tipo' => ['required', Rule::in(['PAI', 'MAE'])],
+            'fun_filiacao_2'      => ['nullable', 'string', 'max:100'],
+            'fun_filiacao_2_tipo' => ['nullable', Rule::in(['PAI', 'MAE'])],
             'fun_dt_nascimento' => ['required', 'date', 'before:today'],
             'fun_sexo' => ['required', Rule::in(['M', 'F'])],
             'fun_cor_raca' => ['required', 'integer', Rule::in([0, 1, 2, 3, 4, 5])],
@@ -104,6 +119,11 @@ class StoreFuncionarioRequest extends FormRequest
             'fun_titulo_secao' => ['nullable', 'string', 'max:5'],
             'fun_certificado_reservista' => ['nullable', 'string', 'max:20'],
 
+            // CNH — obrigatória para quem for vinculado como motorista de rota
+            'fun_cnh_numero' => ['nullable', 'digits_between:9,11'],
+            'fun_cnh_categoria' => ['nullable', Rule::in(Funcionario::CNH_CATEGORIAS)],
+            'fun_cnh_dt_validade' => ['nullable', 'date'],
+
             // Endereço
             'fun_cep' => ['nullable', 'digits:8'],
             'fun_logradouro' => ['nullable', 'string', 'max:150'],
@@ -111,7 +131,9 @@ class StoreFuncionarioRequest extends FormRequest
             'fun_complemento' => ['nullable', 'string', 'max:100'],
             'fun_bairro' => ['nullable', 'string', 'max:100'],
             'fun_cidade' => ['nullable', 'string', 'max:100'],
+            'fun_mun_id_resid' => ['nullable', 'integer', 'exists:edu_municipio,mun_id'],
             'fun_uf' => ['nullable', 'string', 'size:2'],
+            'fun_zona_residencia' => ['required', 'integer', 'in:1,2'],
 
             // Contato
             'fun_telefone' => ['nullable', 'digits_between:10,11'],
@@ -133,6 +155,34 @@ class StoreFuncionarioRequest extends FormRequest
             'escolaridades.*.fes_cfs_id' => ['nullable', 'integer', 'exists:edu_curso_formacao_superior,cfs_id'],
             'escolaridades.*.fes_pos_area' => ['nullable', 'integer', Rule::in([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 99])],
             'escolaridades.*.fes_ies_id' => ['nullable', 'integer', 'exists:edu_instituicao_ensino_superior,ies_id'],
+
+            // Quadro de deficiências (Censo reg 30, campo 17 e itens).
+            'saude'                 => ['nullable', 'array'],
+            'saude.fus_fl_pcd'      => ['boolean'],
+            'saude.fus_deficiencias' => ['nullable', 'array'],
+            'saude.fus_deficiencias.*' => ['string', Rule::in([
+                'Cegueira', 'Baixa Visão', 'Visão Monocular', 'Surdez',
+                'Deficiência Auditiva', 'Surdocegueira', 'Deficiência Física',
+                'Deficiência Intelectual', 'Deficiência Múltipla',
+            ])],
+            'saude.fus_transtornos_globais' => ['nullable', 'array'],
+            'saude.fus_transtornos_globais.*' => ['string', Rule::in([
+                'Autismo Infantil - TEA', 'Síndrome de Asperger', 'Síndrome de Rett',
+                'Transt. Des. da Infância', 'Síndrome de Down', 'Microcefalia', 'Outros',
+            ])],
+            'saude.fus_transtornos_aprendizagem' => ['nullable', 'array'],
+            'saude.fus_transtornos_aprendizagem.*' => ['string', Rule::in([
+                'Discalculia ou outro transtorno da matemática e raciocínio lógico',
+                'Disgrafia, Disortografia ou outro transtorno da escrita e ortografia',
+                'Dislalia ou outro transtorno da linguagem e comunicação',
+                'Dislexia',
+                'Transtorno do Processamento Auditivo Central (TPAC)',
+                'TDAH (Transtorno do Déficit de Atenção com Hiperatividade)',
+            ])],
+            'saude.fus_deficiencia_outro' => ['nullable', 'string', 'max:500'],
+            'saude.fus_fl_altas_habilidades' => ['boolean'],
+            'saude.fus_cid' => ['nullable', 'string', 'max:20'],
+            'saude.fus_observacao' => ['nullable', 'string', 'max:2000'],
         ];
     }
 
@@ -175,6 +225,21 @@ class StoreFuncionarioRequest extends FormRequest
                 if ($ini !== null && $ini !== '' && $fim !== null && $fim !== '' && (int) $fim < (int) $ini) {
                     $v->errors()->add("escolaridades.{$i}.fes_ano_fim", 'O ano final deve ser igual ou posterior ao ano inicial.');
                 }
+            }
+        });
+
+        // Funcionário PCD/TGD/AH → exige ao menos um item marcado em qualquer coluna.
+        $validator->after(function (Validator $v) {
+            if (! $this->boolean('saude.fus_fl_pcd')) return;
+
+            $temItem = ! empty($this->input('saude.fus_deficiencias'))
+                || ! empty($this->input('saude.fus_transtornos_globais'))
+                || ! empty($this->input('saude.fus_transtornos_aprendizagem'))
+                || $this->boolean('saude.fus_fl_altas_habilidades')
+                || filled($this->input('saude.fus_deficiencia_outro'));
+
+            if (! $temItem) {
+                $v->errors()->add('saude.fus_deficiencias', 'Marque ao menos um item (deficiência, transtorno global/de aprendizagem, altas habilidades ou outra) quando o funcionário possui deficiência.');
             }
         });
 
@@ -234,6 +299,10 @@ class StoreFuncionarioRequest extends FormRequest
         return [
             'fun_nome'        => 'nome completo',
             'fun_nome_social' => 'nome social',
+            'fun_filiacao_1'      => 'filiação 1',
+            'fun_filiacao_1_tipo' => 'tipo da filiação 1',
+            'fun_filiacao_2'      => 'filiação 2',
+            'fun_filiacao_2_tipo' => 'tipo da filiação 2',
             'fun_dt_nascimento' => 'data de nascimento',
             'fun_sexo' => 'sexo',
             'fun_cor_raca' => 'etnia / cor / raça',
@@ -250,17 +319,30 @@ class StoreFuncionarioRequest extends FormRequest
             'fun_rg_dt_emissao' => 'data de emissão do RG',
             'fun_rg_uf' => 'UF do RG',
             'fun_rg_orgao_emissor' => 'órgão emissor do RG',
+            'fun_cnh_numero' => 'número da CNH',
+            'fun_cnh_categoria' => 'categoria da CNH',
+            'fun_cnh_dt_validade' => 'validade da CNH',
             'fun_cep' => 'CEP',
             'fun_logradouro' => 'logradouro',
             'fun_numero' => 'número',
             'fun_complemento' => 'complemento',
             'fun_bairro' => 'bairro',
             'fun_cidade' => 'cidade',
+            'fun_mun_id_resid' => 'município de residência',
             'fun_uf' => 'UF',
+            'fun_zona_residencia' => 'localização/zona de residência',
             'fun_telefone' => 'telefone',
             'fun_celular' => 'celular',
             'fun_email' => 'e-mail',
             'fun_foto' => 'foto',
+            'saude.fus_fl_pcd' => 'funcionário com deficiência',
+            'saude.fus_deficiencias' => 'deficiências',
+            'saude.fus_transtornos_globais' => 'transtornos globais',
+            'saude.fus_transtornos_aprendizagem' => 'transtornos de aprendizagem',
+            'saude.fus_deficiencia_outro' => 'outra deficiência',
+            'saude.fus_fl_altas_habilidades' => 'altas habilidades / superdotação',
+            'saude.fus_cid' => 'CID',
+            'saude.fus_observacao' => 'observação',
         ];
     }
 }

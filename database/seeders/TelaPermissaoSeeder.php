@@ -64,7 +64,7 @@ class TelaPermissaoSeeder extends Seeder
         ['/diario-atividade', 'Diário Atividade', 'Diário', 21, [1, 1, 0, 0, 0, 0, 0, 2, 0, 1, 0]],
         ['/diario/instrumentos-avaliativos', 'Instrumentos Avaliativos', 'Diário', 22, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
         ['/sabados-letivos', 'Sábados Letivos', 'Diário', 23, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
-        ['/diario/planos', 'Planos de Aula', 'Diário', 24, [1, 2, 1, 0, 2, 2, 0, 0, 2, 0, 0]],
+        ['/diario/planos', 'Planos de Aula', 'Diário', 24, [1, 1, 1, 0, 2, 2, 0, 0, 2, 0, 0]],
         ['/diario/planos-aee', 'Planos de Aula AEE', 'Diário', 25, [1, 2, 0, 1, 0, 2, 0, 0, 2, 0, 0]],
         ['/relatorios-diario', 'Relatórios Diário', 'Diário', 26, [1, 1, 2, 2, 2, 2, 0, 2, 2, 0, 0]],
 
@@ -163,6 +163,18 @@ class TelaPermissaoSeeder extends Seeder
         ['/relatorios/protocolo-distribuicao', 'Protocolo da Central de Distribuição', 'Alimentação Escolar', 60, [1, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 2, 2]],
         ['/relatorios/itens-vencimento', 'Itens Próximos do Vencimento', 'Alimentação Escolar', 61, [1, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 2, 2]],
         ['/relatorios/retirada-alimentos', 'Retirada de Alimentos', 'Alimentação Escolar', 62, [1, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 2, 2]],
+        // Transporte Escolar — Fase 1 (cadastros). Edição: admin e gestor_secretaria.
+        ['/transporte/veiculos', 'Veículos (Transporte)', 'Transporte', 60, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
+        ['/transporte/usuarios', 'Usuários do Transporte', 'Transporte', 64, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
+        // Fase 2 (rotas).
+        ['/transporte/rotas', 'Rotas (Transporte)', 'Transporte', 65, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
+        // Fase 3 (diário de bordo).
+        ['/transporte/diario-bordo', 'Diário de Bordo (Transporte)', 'Transporte', 66, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
+        // Fase 5 (simulador de rotas).
+        ['/transporte/simulador', 'Simulador de Rotas (Transporte)', 'Transporte', 67, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
+        // Relatórios do transporte.
+        ['/transporte/relatorios/frota', 'Situação da Frota (Transporte)', 'Transporte', 68, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
+        ['/transporte/relatorios/ocorrencias', 'Ocorrências (Transporte)', 'Transporte', 69, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
 
         ['/users', 'Usuários', 'Sistema', 41, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
         ['/parametros', 'Parâmetros', 'Sistema', 42, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
@@ -179,11 +191,12 @@ class TelaPermissaoSeeder extends Seeder
      */
     private const ROTAS_REMOVIDAS = [
         '/relatorios-encerramento',
+        '/transporte/instituicoes', // instituições de ensino passaram a usar edu_escola
     ];
 
     public function run(): void
     {
-        Tela::whereIn('tla_rota', self::ROTAS_REMOVIDAS)->delete();
+        Tela::query()->whereIn('tla_rota', self::ROTAS_REMOVIDAS)->delete();
 
         foreach (self::MATRIZ as [$rota, $nome, $grupo, $ordem, $niveis]) {
             // Metadados da tela são sempre atualizados (nome/grupo/ordem).

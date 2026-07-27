@@ -6,12 +6,20 @@ import { Head, Link } from '@inertiajs/vue3';
 import { ArrowLeft, Printer } from 'lucide-vue-next';
 import { computed } from 'vue';
 
+interface Professor { nome: string; disciplina: string | null }
+
 interface Linha {
     num: number;
+    grupo: string;
+    esc_id: number;
+    esc_nome: string;
+    tur_id: number;
+    tur_codigo: string | null;
     segmento: string | null;
     turno: string | null;
     serie: string | null;
     turma: string | null;
+    situacao: string | null;
     fluxo: string;
     pcd: number;
     idade: string;
@@ -20,7 +28,11 @@ interface Linha {
     expansao: number;
     rede: number;
     novos: number;
+    matriculados: number;
     vagas: number;
+    professores: Professor[];
+    professores_texto: string;
+    apoio_texto: string;
 }
 
 interface Parametros {
@@ -34,15 +46,25 @@ interface Parametros {
 
 const props = defineProps<{
     parametros: Parametros | null;
-    filtros: { anl_ano: number; esc_nome: string };
+    filtros: {
+        anl_id: number;
+        anl_ano: number;
+        esc_id: number | null;
+        esc_nome: string;
+        situacao: string;
+        rede: boolean;
+        escolas: number;
+    };
     linhas: Linha[];
     total: number;
 }>();
 
+// A chave de agrupamento vem pronta do backend: "Escola — Segmento" em modo
+// rede, só o segmento quando há escola fixa.
 const grupos = computed(() => {
     const map = new Map<string, Linha[]>();
     for (const l of props.linhas) {
-        const k = l.segmento ?? '—';
+        const k = l.grupo ?? '—';
         if (!map.has(k)) map.set(k, []);
         map.get(k)!.push(l);
     }
@@ -83,6 +105,48 @@ const dataEmissao = computed(() => {
     const d = new Date();
     return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 });
+
+const situacaoLabel = computed(() =>
+    props.filtros.situacao === 'todas' ? 'Todos os status' : props.filtros.situacao,
+);
+
+const queryFiltros = () => {
+    const p = new URLSearchParams();
+    p.set('anl_id', String(props.filtros.anl_id));
+    if (props.filtros.esc_id) p.set('esc_id', String(props.filtros.esc_id));
+    p.set('situacao', props.filtros.situacao);
+    return p;
+};
+
+const COLUNAS = [
+    'Escola', 'Código da Turma', 'Nome da Turma', 'Segmento', 'Série / Ano Escolar', 'Turno',
+    'Status da Turma', 'Capacidade', 'Expansão', 'Matriculados',
+    'Alunos da Rede', 'Alunos Novos', 'Vagas', 'PCD', 'Faixa Etária',
+    'Professor(es) Alocado(s)', 'Professor(es) de Apoio',
+];
+
+const exportarCsv = () => {
+    const sep = ';';
+    const aspas = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+
+    const corpo = props.linhas.map((l) => [
+        l.esc_nome, l.tur_codigo ?? '', l.turma ?? '', l.segmento ?? '', l.serie ?? '', l.turno ?? '',
+        l.situacao ?? '', l.capacidade, l.expansao, l.matriculados,
+        l.rede, l.novos, l.vagas, l.pcd, l.idade,
+        l.professores_texto, l.apoio_texto,
+    ]);
+
+    const csv = '﻿' + [COLUNAS.join(sep), ...corpo.map((r) => r.map(aspas).join(sep))].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `formacao-classes-${props.filtros.anl_ano}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+};
+
+const exportarExcel = () => window.open(`/relatorios/formacao-classes/xlsx?${queryFiltros().toString()}`, '_blank');
 </script>
 
 <template>
@@ -113,53 +177,58 @@ const dataEmissao = computed(() => {
         <div class="resumo-filtros">
             <div><b>Ano:</b> {{ filtros.anl_ano }}</div>
             <div><b>Escola:</b> {{ filtros.esc_nome }}</div>
+            <div><b>Status:</b> {{ situacaoLabel }}</div>
+            <div><b>Turmas:</b> {{ total }}</div>
         </div>
 
-        <div v-for="[seg, lista] in grupos" :key="`p-${seg}`" class="grupo-segmento">
-            <div class="grupo-titulo">Segmento: {{ seg }}</div>
+        <div v-for="[grupo, lista] in grupos" :key="`p-${grupo}`" class="grupo-segmento">
+            <div class="grupo-titulo">{{ filtros.rede ? grupo : `Segmento: ${grupo}` }}</div>
             <table class="tabela-impressao">
                 <thead>
                     <tr>
                         <th>Nº</th>
+                        <th>Cód.</th>
                         <th>Turno</th>
                         <th>Ano/Série</th>
                         <th>Turma</th>
-                        <th>Fluxo</th>
+                        <th>Status</th>
                         <th>PCD</th>
                         <th>Idade</th>
-                        <th>Sala</th>
-                        <th>Capacidade</th>
-                        <th>Expansão</th>
-                        <th>Alunos da Rede</th>
-                        <th>Alunos novos</th>
+                        <th>Cap.</th>
+                        <th>Exp.</th>
+                        <th>Rede</th>
+                        <th>Novos</th>
                         <th>Vagas</th>
+                        <th>Professor(es)</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="(l, i) in lista" :key="`p-${seg}-${l.num}`">
+                    <tr v-for="(l, i) in lista" :key="`p-${grupo}-${l.num}`">
                         <td class="centro">{{ i + 1 }}</td>
+                        <td>{{ l.tur_codigo ?? '—' }}</td>
                         <td>{{ l.turno }}</td>
                         <td>{{ l.serie }}</td>
                         <td>{{ l.turma }}</td>
-                        <td class="centro">{{ l.fluxo }}</td>
+                        <td class="centro">{{ l.situacao }}</td>
                         <td class="centro">{{ l.pcd }}</td>
                         <td class="centro">{{ l.idade }}</td>
-                        <td class="centro">{{ l.sala }}</td>
                         <td class="centro">{{ l.capacidade }}</td>
                         <td class="centro">{{ l.expansao }}</td>
                         <td class="centro">{{ l.rede }}</td>
                         <td class="centro">{{ l.novos }}</td>
                         <td class="centro"><b>{{ l.vagas }}</b></td>
+                        <td class="celula-prof">{{ l.professores_texto || '—' }}</td>
                     </tr>
                     <tr class="linha-total">
-                        <td colspan="5"><b>SUBTOTAL</b></td>
+                        <td colspan="6"><b>SUBTOTAL</b></td>
                         <td class="centro"><b>{{ totaisGrupo(lista).pcd }}</b></td>
-                        <td colspan="2"></td>
+                        <td></td>
                         <td class="centro"><b>{{ totaisGrupo(lista).capacidade }}</b></td>
                         <td class="centro"><b>{{ totaisGrupo(lista).expansao }}</b></td>
                         <td class="centro"><b>{{ totaisGrupo(lista).rede }}</b></td>
                         <td class="centro"><b>{{ totaisGrupo(lista).novos }}</b></td>
                         <td class="centro"><b>{{ totaisGrupo(lista).vagas }}</b></td>
+                        <td></td>
                     </tr>
                 </tbody>
             </table>
@@ -168,14 +237,15 @@ const dataEmissao = computed(() => {
         <table v-if="linhas.length" class="tabela-impressao total-geral-tabela">
             <tbody>
                 <tr class="linha-total-geral">
-                    <td colspan="5"><b>TOTAL GERAL</b></td>
+                    <td colspan="6"><b>TOTAL GERAL</b></td>
                     <td class="centro"><b>{{ totais.pcd }}</b></td>
-                    <td colspan="2"></td>
+                    <td></td>
                     <td class="centro"><b>{{ totais.capacidade }}</b></td>
                     <td class="centro"><b>{{ totais.expansao }}</b></td>
                     <td class="centro"><b>{{ totais.rede }}</b></td>
                     <td class="centro"><b>{{ totais.novos }}</b></td>
                     <td class="centro"><b>{{ totais.vagas }}</b></td>
+                    <td></td>
                 </tr>
             </tbody>
         </table>
@@ -195,69 +265,94 @@ const dataEmissao = computed(() => {
                     <Link href="/relatorios/formacao-classes">
                         <Button variant="outline"><ArrowLeft class="mr-1 size-4" /> Voltar</Button>
                     </Link>
+                    <Button variant="outline" :disabled="!total" @click="exportarCsv">CSV</Button>
+                    <Button variant="outline" :disabled="!total" @click="exportarExcel">Excel</Button>
                     <Button :disabled="!total" class="bg-indigo-600 text-white hover:bg-indigo-700" @click="imprimir">
                         <Printer class="mr-1 size-4" /> Imprimir / PDF
                     </Button>
                 </div>
             </div>
 
-            <div class="rounded-xl border bg-card p-4 shadow-sm mb-4 text-sm grid gap-1 sm:grid-cols-3">
+            <div class="rounded-xl border bg-card p-4 shadow-sm mb-4 text-sm grid gap-1 sm:grid-cols-4">
                 <div><strong>Ano:</strong> {{ filtros.anl_ano }}</div>
                 <div><strong>Escola:</strong> {{ filtros.esc_nome }}</div>
-                <div><strong>Total turmas:</strong> {{ total }}</div>
+                <div><strong>Status:</strong> {{ situacaoLabel }}</div>
+                <div>
+                    <strong>Total turmas:</strong> {{ total }}
+                    <span v-if="filtros.rede" class="text-muted-foreground">em {{ filtros.escolas }} escola(s)</span>
+                </div>
             </div>
 
             <div v-if="!total" class="rounded-xl border bg-card py-12 text-center text-muted-foreground">
                 Nenhuma turma encontrada.
             </div>
-            <div v-for="[seg, lista] in grupos" :key="seg" class="mb-6 rounded-xl border bg-card shadow-sm overflow-hidden">
+            <div v-for="[grupo, lista] in grupos" :key="grupo" class="mb-6 rounded-xl border bg-card shadow-sm overflow-hidden">
                 <div class="border-b bg-indigo-50 px-4 py-2 font-semibold text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-200">
-                    Segmento: {{ seg }} <span class="text-xs font-normal text-muted-foreground">({{ lista.length }} turma{{ lista.length !== 1 ? 's' : '' }})</span>
+                    {{ filtros.rede ? grupo : `Segmento: ${grupo}` }}
+                    <span class="text-xs font-normal text-muted-foreground">({{ lista.length }} turma{{ lista.length !== 1 ? 's' : '' }})</span>
                 </div>
                 <div class="overflow-x-auto">
-                    <table class="w-full text-xs">
+                    <table class="w-full text-xs" style="min-width: 1300px">
                         <thead class="bg-muted/40">
                             <tr>
                                 <th class="px-2 py-2 text-center">Nº</th>
+                                <th class="px-2 py-2 text-left">Cód. Turma</th>
                                 <th class="px-2 py-2 text-left">Turno</th>
                                 <th class="px-2 py-2 text-left">Ano/Série</th>
                                 <th class="px-2 py-2 text-left">Turma</th>
-                                <th class="px-2 py-2 text-center">Fluxo</th>
+                                <th class="px-2 py-2 text-center">Status</th>
                                 <th class="px-2 py-2 text-center">PCD</th>
                                 <th class="px-2 py-2 text-center">Idade</th>
-                                <th class="px-2 py-2 text-center">Sala</th>
                                 <th class="px-2 py-2 text-center">Capacidade</th>
                                 <th class="px-2 py-2 text-center">Expansão</th>
                                 <th class="px-2 py-2 text-center">Rede</th>
                                 <th class="px-2 py-2 text-center">Novos</th>
                                 <th class="px-2 py-2 text-center">Vagas</th>
+                                <th class="px-2 py-2 text-left">Professor(es) Alocado(s)</th>
+                                <th class="px-2 py-2 text-left">Apoio</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y">
-                            <tr v-for="(l, i) in lista" :key="`s-${seg}-${l.num}`">
-                                <td class="px-2 py-1.5 text-center">{{ i + 1 }}</td>
-                                <td class="px-2 py-1.5">{{ l.turno }}</td>
-                                <td class="px-2 py-1.5">{{ l.serie }}</td>
-                                <td class="px-2 py-1.5 font-medium">{{ l.turma }}</td>
-                                <td class="px-2 py-1.5 text-center">{{ l.fluxo }}</td>
-                                <td class="px-2 py-1.5 text-center">{{ l.pcd }}</td>
-                                <td class="px-2 py-1.5 text-center">{{ l.idade }}</td>
-                                <td class="px-2 py-1.5 text-center">{{ l.sala }}</td>
-                                <td class="px-2 py-1.5 text-center">{{ l.capacidade }}</td>
-                                <td class="px-2 py-1.5 text-center">{{ l.expansao }}</td>
-                                <td class="px-2 py-1.5 text-center">{{ l.rede }}</td>
-                                <td class="px-2 py-1.5 text-center">{{ l.novos }}</td>
-                                <td class="px-2 py-1.5 text-center font-semibold text-indigo-700">{{ l.vagas }}</td>
+                            <tr v-for="(l, i) in lista" :key="`s-${grupo}-${l.num}`">
+                                <td class="px-2 py-1.5 text-center align-top">{{ i + 1 }}</td>
+                                <td class="px-2 py-1.5 align-top tabular-nums">{{ l.tur_codigo ?? '—' }}</td>
+                                <td class="px-2 py-1.5 align-top">{{ l.turno }}</td>
+                                <td class="px-2 py-1.5 align-top">{{ l.serie }}</td>
+                                <td class="px-2 py-1.5 align-top font-medium">{{ l.turma }}</td>
+                                <td class="px-2 py-1.5 align-top text-center">
+                                    <span
+                                        class="rounded-full px-2 py-0.5 text-[10px] font-medium"
+                                        :class="l.situacao === 'ABERTA'
+                                            ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200'
+                                            : 'bg-muted text-muted-foreground'"
+                                    >{{ l.situacao }}</span>
+                                </td>
+                                <td class="px-2 py-1.5 align-top text-center">{{ l.pcd }}</td>
+                                <td class="px-2 py-1.5 align-top text-center">{{ l.idade }}</td>
+                                <td class="px-2 py-1.5 align-top text-center">{{ l.capacidade }}</td>
+                                <td class="px-2 py-1.5 align-top text-center">{{ l.expansao }}</td>
+                                <td class="px-2 py-1.5 align-top text-center">{{ l.rede }}</td>
+                                <td class="px-2 py-1.5 align-top text-center">{{ l.novos }}</td>
+                                <td class="px-2 py-1.5 align-top text-center font-semibold text-indigo-700">{{ l.vagas }}</td>
+                                <td class="px-2 py-1.5 align-top break-words">
+                                    <span v-if="!l.professores.length" class="text-amber-600">Sem professor</span>
+                                    <div v-for="(p, k) in l.professores" :key="`${l.tur_id}-p-${k}`">
+                                        {{ p.nome }}
+                                        <span v-if="p.disciplina" class="text-muted-foreground">({{ p.disciplina }})</span>
+                                    </div>
+                                </td>
+                                <td class="px-2 py-1.5 align-top break-words text-muted-foreground">{{ l.apoio_texto || '—' }}</td>
                             </tr>
                             <tr class="bg-muted/30 font-semibold">
-                                <td colspan="5" class="px-2 py-1.5">SUBTOTAL</td>
+                                <td colspan="6" class="px-2 py-1.5">SUBTOTAL</td>
                                 <td class="px-2 py-1.5 text-center">{{ totaisGrupo(lista).pcd }}</td>
-                                <td colspan="2"></td>
+                                <td></td>
                                 <td class="px-2 py-1.5 text-center">{{ totaisGrupo(lista).capacidade }}</td>
                                 <td class="px-2 py-1.5 text-center">{{ totaisGrupo(lista).expansao }}</td>
                                 <td class="px-2 py-1.5 text-center">{{ totaisGrupo(lista).rede }}</td>
                                 <td class="px-2 py-1.5 text-center">{{ totaisGrupo(lista).novos }}</td>
                                 <td class="px-2 py-1.5 text-center">{{ totaisGrupo(lista).vagas }}</td>
+                                <td colspan="2"></td>
                             </tr>
                         </tbody>
                     </table>
@@ -329,8 +424,15 @@ const dataEmissao = computed(() => {
     .tabela-impressao {
         width: 100%;
         border-collapse: collapse;
-        font-size: 9pt;
+        /* 8pt: as colunas de status e professores foram somadas ao quadro. */
+        font-size: 8pt;
         border: 1px solid #000;
+        table-layout: fixed;
+    }
+    .tabela-impressao .celula-prof {
+        font-size: 7pt;
+        overflow-wrap: break-word;
+        word-break: break-word;
     }
     .tabela-impressao th {
         padding: 4px 5px;

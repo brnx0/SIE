@@ -172,13 +172,17 @@ class PlanoAeeController extends Controller
             'escola:esc_id,esc_nome',
             'anoLetivo:anl_id,anl_ano',
             'validadoPor:id,name',
+            'funcionario:edu_funcionario.fun_id,edu_funcionario.fun_nome',
+            'usuario:id,name',
         ]);
 
         $funId = (int) $request->user()->fun_id;
 
         return Inertia::render('diario/planos-aee/Form', [
             'plano'       => $plano,
-            'professor'   => $this->resumoProfessor($request->user()),
+            // Professor responsável = AUTOR do plano (dae_user_id), não o usuário
+            // logado — senão um admin/coordenador vendo o plano apareceria no lugar.
+            'professor'   => $this->resumoProfessorDoPlano($plano),
             'anosLetivos' => $this->anosLetivosDoProfessor($funId),
             'podeEditar'  => $request->user()->isAdmin()
                 || (int) $plano->dae_user_id === (int) $request->user()->id,
@@ -362,6 +366,19 @@ class PlanoAeeController extends Controller
         return [
             'fun_id'   => $fun?->fun_id,
             'fun_nome' => $fun?->fun_nome ?? $user->name,
+        ];
+    }
+
+    /**
+     * Professor responsável pelo plano = seu AUTOR (dae_user_id), derivado via
+     * users.fun_id. Cai no nome do usuário se ele não tiver funcionário vinculado.
+     * Requer o plano com 'funcionario' e 'usuario' carregados.
+     */
+    private function resumoProfessorDoPlano(DiarioPlanoAee $plano): array
+    {
+        return [
+            'fun_id'   => $plano->funcionario?->fun_id,
+            'fun_nome' => $plano->funcionario?->fun_nome ?? $plano->usuario?->name ?? '—',
         ];
     }
 

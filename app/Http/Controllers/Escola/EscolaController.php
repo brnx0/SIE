@@ -88,34 +88,16 @@ class EscolaController extends Controller
             ->orderBy('anl_id_inicio', 'desc')
             ->get();
 
-        $anoLetivoAtual = AnoLetivo::where('anl_fl_em_exercicio', true)
-            ->first(['anl_id', 'anl_ano', 'anl_dt_censo', 'anl_fl_em_exercicio']);
-
-        $censoHistorico = CensoEscolar::where('cen_esc_id', $escola->esc_id)
-            ->with('anoLetivo:anl_id,anl_ano,anl_dt_censo')
-            ->orderBy('cen_anl_id', 'desc')
-            ->get(['cen_id', 'cen_anl_id', 'cen_created_at', 'cen_updated_at']);
-
-        $censoAtual = $anoLetivoAtual
-            ? CensoEscolar::where('cen_esc_id', $escola->esc_id)
-                ->where('cen_anl_id', $anoLetivoAtual->anl_id)
-                ->first(['cen_id', 'cen_anl_id'])
-            : null;
-
-        $censoPrevious = CensoEscolar::where('cen_esc_id', $escola->esc_id)
-            ->when($anoLetivoAtual, fn ($q) => $q->where('cen_anl_id', '!=', $anoLetivoAtual->anl_id))
-            ->orderBy('cen_anl_id', 'desc')
-            ->exists();
+        // Censo é um único registro por escola (persistente, sem dimensão de ano).
+        $censo = CensoEscolar::where('cen_esc_id', $escola->esc_id)
+            ->first(['cen_id', 'cen_esc_id', 'cen_updated_at']);
 
         return Inertia::render('escolas/Edit', [
             'escola'           => $escola,
             'escolaSegmentos'  => $escolaSegmentos,
             'segmentos'        => Segmento::where('seg_fl_ativo', true)->orderBy('seg_ordem')->get(['seg_id', 'seg_nome_reduzido']),
             'anosLetivos'      => AnoLetivo::orderBy('anl_ano', 'desc')->get(['anl_id', 'anl_ano', 'anl_fl_em_exercicio']),
-            'anoLetivoAtual'   => $anoLetivoAtual,
-            'censoHistorico'   => $censoHistorico,
-            'censoAtual'       => $censoAtual,
-            'censoPreviousExists' => $censoPrevious,
+            'censo'            => $censo,
         ]);
     }
 

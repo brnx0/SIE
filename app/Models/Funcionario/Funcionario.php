@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Storage;
 
@@ -23,10 +24,17 @@ class Funcionario extends Model
     const UPDATED_AT = 'fun_updated_at';
     const DELETED_AT = 'fun_deleted_at';
 
+    /** Categorias válidas de CNH. */
+    public const CNH_CATEGORIAS = ['A', 'B', 'C', 'D', 'E', 'AB', 'AC', 'AD', 'AE'];
+
     protected $fillable = [
         // Dados pessoais
         'fun_nome',
         'fun_nome_social',
+        'fun_filiacao_1',
+        'fun_filiacao_1_tipo',
+        'fun_filiacao_2',
+        'fun_filiacao_2_tipo',
         'fun_dt_nascimento',
         'fun_sexo',
         'fun_cor_raca',
@@ -61,6 +69,11 @@ class Funcionario extends Model
         'fun_titulo_secao',
         'fun_certificado_reservista',
 
+        // CNH — habilita o funcionário a conduzir veículo do transporte escolar
+        'fun_cnh_numero',
+        'fun_cnh_categoria',
+        'fun_cnh_dt_validade',
+
         // Endereço
         'fun_cep',
         'fun_logradouro',
@@ -68,7 +81,9 @@ class Funcionario extends Model
         'fun_complemento',
         'fun_bairro',
         'fun_cidade',
+        'fun_mun_id_resid',
         'fun_uf',
+        'fun_zona_residencia',
 
         // Contato
         'fun_telefone',
@@ -86,8 +101,10 @@ class Funcionario extends Model
         'fun_dt_nascimento' => 'date',
         'fun_rg_dt_emissao' => 'date',
         'fun_certidao_dt_emissao' => 'date',
+        'fun_cnh_dt_validade' => 'date',
         'fun_cor_raca' => 'integer',
         'fun_estado_civil' => 'integer',
+        'fun_zona_residencia' => 'integer',
         'fun_fl_usa_transporte' => 'boolean',
         'fun_fl_ativo' => 'boolean',
     ];
@@ -105,6 +122,11 @@ class Funcionario extends Model
     public function municipioNascimento(): BelongsTo
     {
         return $this->belongsTo(Municipio::class, 'fun_mun_id_nasc', 'mun_id');
+    }
+
+    public function municipioResidencia(): BelongsTo
+    {
+        return $this->belongsTo(Municipio::class, 'fun_mun_id_resid', 'mun_id');
     }
 
     public function povoIndigena(): BelongsTo
@@ -125,5 +147,10 @@ class Funcionario extends Model
     public function escolaridades(): HasMany
     {
         return $this->hasMany(FuncionarioEscolaridade::class, 'fes_fun_id', 'fun_id');
+    }
+
+    public function saude(): HasOne
+    {
+        return $this->hasOne(FuncionarioSaude::class, 'fus_fun_id', 'fun_id');
     }
 }

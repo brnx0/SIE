@@ -9,6 +9,7 @@ use App\Models\Diario\DiarioPlanoIndicador;
 use App\Models\Parametro\AnoLetivo;
 use App\Models\Parametro\Unidade;
 use App\Models\Serie\SerieIndicador;
+use App\Support\UserAccess;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -201,13 +202,17 @@ class PlanoAulaController extends Controller
             'anoLetivo:anl_id,anl_ano',
             'indicadores',
             'validadoPor:id,name',
+            'funcionario:edu_funcionario.fun_id,edu_funcionario.fun_nome',
+            'usuario:id,name',
         ]);
 
         $funId = (int) $request->user()->fun_id;
 
         return Inertia::render('diario/planos/Form', [
             'plano'       => $plano,
-            'professor'   => $this->resumoProfessor($request->user()),
+            // Professor responsável = AUTOR do plano (dpa_user_id), não o usuário
+            // logado — senão um admin/coordenador vendo o plano apareceria no lugar.
+            'professor'   => $this->resumoProfessorDoPlano($plano),
             'anosLetivos' => $this->anosLetivosDoProfessor($funId),
             'indicadoresSelecionados' => $plano->indicadores->pluck('dpi_ind_id')->all(),
             'podeEditar'  => $request->user()->isAdmin()
@@ -311,18 +316,10 @@ class PlanoAulaController extends Controller
         $funId = (int) $user->fun_id;
         $anlId = (int) $request->input('anl_id');
 
-        if ($user->isAdmin() || ! $funId) {
-            $escolas = DB::table('edu_turma as t')
-                ->join('edu_escola as e', 'e.esc_id', '=', 't.tur_esc_id')
-                ->whereNull('t.tur_deleted_at')
-                ->where('t.tur_modalidade', 'REGULAR')
-                ->when($anlId, fn ($q) => $q->where('t.tur_anl_id', $anlId))
-                ->select('e.esc_id', 'e.esc_nome')
-                ->distinct()
-                ->orderBy('e.esc_nome')
-                ->get();
-
-            return response()->json($escolas);
+        // Gestor global (admin/gestor_secretaria) supervisiona toda a rede: lista
+        // TODAS as escolas ativas, e não apenas as que já têm turma no ano.
+        if ($user->isGestorGlobal() || ! $funId) {
+            return response()->json(UserAccess::escolasVisiveis($user));
         }
 
         $escolas = DB::table('edu_turma_professor as tp')
@@ -351,7 +348,7 @@ class PlanoAulaController extends Controller
         $anlId = (int) $request->input('anl_id');
         $escId = (int) $request->input('esc_id');
 
-        $base = ($funId && ! $user->isAdmin())
+        $base = ($funId && ! $user->isGestorGlobal())
             ? DB::table('edu_turma_professor as tp')
                 ->join('edu_turma as t', 't.tur_id', '=', 'tp.tup_tur_id')
                 ->where('tp.tup_fun_id', $funId)
@@ -387,7 +384,7 @@ class PlanoAulaController extends Controller
             return response()->json([]);
         }
 
-        if (! $funId || $user->isAdmin()) {
+        if (! $funId || $user->isGestorGlobal()) {
             $disciplinas = DB::table('edu_grade_disciplinar as gd')
                 ->join('edu_disciplina as d', 'd.dis_id', '=', 'gd.grd_dis_id')
                 ->where('gd.grd_ser_id', $serId)
@@ -497,9 +494,22 @@ class PlanoAulaController extends Controller
         ];
     }
 
+    /**
+     * Professor responsável pelo plano = seu AUTOR (dpa_user_id), derivado via
+     * users.fun_id. Cai no nome do usuário se ele não tiver funcionário vinculado.
+     * Requer o plano com 'funcionario' e 'usuario' carregados.
+     */
+    private function resumoProfessorDoPlano(DiarioPlanoAula $plano): array
+    {
+        return [
+            'fun_id'   => $plano->funcionario?->fun_id,
+            'fun_nome' => $plano->funcionario?->fun_nome ?? $plano->usuario?->name ?? '—',
+        ];
+    }
+
     private function anosLetivosDoProfessor(int $funId): array
     {
-        if (! $funId || request()->user()->isAdmin()) {
+        if (! $funId || request()->user()->isGestorGlobal()) {
             return AnoLetivo::query()
                 ->whereNull('anl_deleted_at')
                 ->orderByDesc('anl_ano')

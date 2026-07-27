@@ -10,6 +10,7 @@ import {
     SidebarMenuSubButton,
     SidebarMenuSubItem,
 } from '@/components/ui/sidebar';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { ChevronRight } from 'lucide-vue-next';
 import { computed, nextTick, reactive, type Component } from 'vue';
 import { useTabStore } from '@/stores/tabs';
@@ -38,10 +39,15 @@ interface NavItem {
 
 const isGroup = (child: NavChild): child is NavGroup => 'children' in child;
 
-defineProps<{
+const props = defineProps<{
     items: NavItem[];
     label?: string;
 }>();
+
+// Caminho completo do item no menu (seção › grupo › subgrupo › item),
+// mostrado em tooltip para o usuário aprender onde a tela mora.
+const caminho = (...partes: (string | undefined)[]) =>
+    [props.label, ...partes].filter(Boolean).join(' › ');
 
 const store = useTabStore();
 
@@ -110,12 +116,17 @@ const scrollExpandToView = (e: MouseEvent) => {
             <template v-for="item in items" :key="item.title">
                 <!-- Item simples -->
                 <SidebarMenuItem v-if="!item.children">
-                    <SidebarMenuButton as-child :is-active="isActive(item.href)" class="group-data-[collapsible=icon]:justify-center">
-                        <a :href="item.href!" @click.prevent="open(item.href)">
-                            <component :is="item.icon" />
-                            <span>{{ item.title }}</span>
-                        </a>
-                    </SidebarMenuButton>
+                    <Tooltip :delay-duration="500">
+                        <TooltipTrigger as-child>
+                            <SidebarMenuButton as-child :is-active="isActive(item.href)" class="group-data-[collapsible=icon]:justify-center">
+                                <a :href="item.href!" @click.prevent="open(item.href)">
+                                    <component :is="item.icon" />
+                                    <span>{{ item.title }}</span>
+                                </a>
+                            </SidebarMenuButton>
+                        </TooltipTrigger>
+                        <TooltipContent side="right" :side-offset="8" class="text-xs">{{ caminho(item.title) }}</TooltipContent>
+                    </Tooltip>
                 </SidebarMenuItem>
 
                 <!-- Item com submenu -->
@@ -139,11 +150,16 @@ const scrollExpandToView = (e: MouseEvent) => {
                                 <template v-for="child in item.children" :key="child.title">
                                     <!-- Leaf -->
                                     <SidebarMenuSubItem v-if="!isGroup(child)">
-                                        <SidebarMenuSubButton as-child :is-active="isActive(child.href)" class="h-auto min-h-7 [&>span:last-child]:!overflow-visible [&>span:last-child]:!whitespace-normal">
-                                            <a :href="child.href" @click.prevent="open(child.href)">
-                                                <span>{{ child.title }}</span>
-                                            </a>
-                                        </SidebarMenuSubButton>
+                                        <Tooltip :delay-duration="500">
+                                            <TooltipTrigger as-child>
+                                                <SidebarMenuSubButton as-child :is-active="isActive(child.href)" class="h-auto min-h-7 [&>span:last-child]:!overflow-visible [&>span:last-child]:!whitespace-normal">
+                                                    <a :href="child.href" @click.prevent="open(child.href)">
+                                                        <span>{{ child.title }}</span>
+                                                    </a>
+                                                </SidebarMenuSubButton>
+                                            </TooltipTrigger>
+                                            <TooltipContent side="right" :side-offset="8" class="text-xs">{{ caminho(item.title, child.title) }}</TooltipContent>
+                                        </Tooltip>
                                     </SidebarMenuSubItem>
 
                                     <!-- Group (2nd level) -->
@@ -163,11 +179,16 @@ const scrollExpandToView = (e: MouseEvent) => {
                                             <CollapsibleContent>
                                                 <SidebarMenuSub class="ml-2 border-l pl-2">
                                                     <SidebarMenuSubItem v-for="leaf in child.children" :key="leaf.title">
-                                                        <SidebarMenuSubButton as-child :is-active="isActive(leaf.href)" class="h-auto min-h-7 [&>span:last-child]:!overflow-visible [&>span:last-child]:!whitespace-normal">
-                                                            <a :href="leaf.href" @click.prevent="open(leaf.href)">
-                                                                <span>{{ leaf.title }}</span>
-                                                            </a>
-                                                        </SidebarMenuSubButton>
+                                                        <Tooltip :delay-duration="500">
+                                                            <TooltipTrigger as-child>
+                                                                <SidebarMenuSubButton as-child :is-active="isActive(leaf.href)" class="h-auto min-h-7 [&>span:last-child]:!overflow-visible [&>span:last-child]:!whitespace-normal">
+                                                                    <a :href="leaf.href" @click.prevent="open(leaf.href)">
+                                                                        <span>{{ leaf.title }}</span>
+                                                                    </a>
+                                                                </SidebarMenuSubButton>
+                                                            </TooltipTrigger>
+                                                            <TooltipContent side="right" :side-offset="8" class="text-xs">{{ caminho(item.title, child.title, leaf.title) }}</TooltipContent>
+                                                        </Tooltip>
                                                     </SidebarMenuSubItem>
                                                 </SidebarMenuSub>
                                             </CollapsibleContent>

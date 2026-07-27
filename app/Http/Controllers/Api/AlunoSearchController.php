@@ -23,6 +23,7 @@ class AlunoSearchController extends Controller
         $alunos = Aluno::query()
             ->with([
                 'municipioNascimento:mun_id,mun_nome,mun_uf,mun_codigo_ibge',
+                'municipioResidencia:mun_id,mun_nome,mun_uf,mun_codigo_ibge',
                 'saude',
             ])
             ->where('aln_fl_ativo', true)
@@ -59,6 +60,7 @@ class AlunoSearchController extends Controller
                 'aln_complemento',
                 'aln_bairro',
                 'aln_cidade',
+                'aln_mun_id_resid',
                 'aln_uf',
                 'aln_telefone',
                 'aln_email',
@@ -95,6 +97,7 @@ class AlunoSearchController extends Controller
             'aln_complemento' => $a->aln_complemento,
             'aln_bairro'      => $a->aln_bairro,
             'aln_cidade'      => $a->aln_cidade,
+            'aln_mun_id_resid' => $a->aln_mun_id_resid,
             'aln_uf'          => $a->aln_uf,
             'aln_telefone'    => $a->aln_telefone,
             'aln_email'       => $a->aln_email,
@@ -110,6 +113,7 @@ class AlunoSearchController extends Controller
             'aln_fl_indigena'              => $a->aln_fl_indigena,
             'aln_fl_creche'                => $a->aln_fl_creche,
             'municipio_nascimento' => $a->municipioNascimento,
+            'municipio_residencia' => $a->municipioResidencia,
             'saude'                => $a->saude,
         ]));
     }

@@ -57,13 +57,14 @@ class FuncionarioController extends Controller
         $this->checkHomonimo($request);
 
         $funcionario = DB::transaction(function () use ($request) {
-            $data = $request->safe()->except(['fun_foto', 'escolaridades']);
+            $data = $request->safe()->except(['fun_foto', 'escolaridades', 'saude']);
 
             if ($request->hasFile('fun_foto')) {
                 $data['fun_foto'] = $request->file('fun_foto')->store('funcionarios', 'public');
             }
 
             $funcionario = Funcionario::create($data);
+            $funcionario->saude()->create($this->saudeData($request));
 
             $intOuNull = fn ($v) => ($v === null || $v === '') ? null : (int) $v;
             $niveisCurso = [5, 6, 10];
@@ -93,6 +94,7 @@ class FuncionarioController extends Controller
 
         $funcionario->load([
             'municipioNascimento:mun_id,mun_nome,mun_uf',
+            'municipioResidencia:mun_id,mun_nome,mun_uf,mun_codigo_ibge',
             'municipioCertidao:mun_id,mun_nome,mun_uf',
             'povoIndigena:pin_id,pin_cd_censo,pin_nome',
             'admissoes.cargo:crg_id,crg_nome',
@@ -101,6 +103,7 @@ class FuncionarioController extends Controller
             'escolaridades' => fn ($q) => $q->orderByDesc('fes_nivel')->orderByDesc('fes_ano_fim'),
             'escolaridades.curso:cfs_id,cfs_codigo,cfs_nome,cfs_grau',
             'escolaridades.instituicao:ies_id,ies_codigo,ies_nome',
+            'saude',
         ]);
 
         $diasMap = [
@@ -157,7 +160,7 @@ class FuncionarioController extends Controller
 
         DB::transaction(function () use ($request, $funcionario) {
             // escolaridades são geridas por rotas próprias na edição (não vêm no update do funcionário).
-            $data = $request->safe()->except(['fun_foto', 'escolaridades']);
+            $data = $request->safe()->except(['fun_foto', 'escolaridades', 'saude']);
 
             if ($request->hasFile('fun_foto')) {
                 if ($funcionario->fun_foto) {
@@ -167,9 +170,50 @@ class FuncionarioController extends Controller
             }
 
             $funcionario->update($data);
+
+            $saudeData = $this->saudeData($request);
+            if ($funcionario->saude) {
+                $funcionario->saude->update($saudeData);
+            } else {
+                $funcionario->saude()->create($saudeData);
+            }
         });
 
         return to_route('funcionarios.edit', $funcionario)->with('success', 'Funcionário atualizado com sucesso.');
+    }
+
+    /** Campos array do quadro de deficiências (checkboxes multi-seleção). */
+    private const SAUDE_ARRAY_FIELDS = [
+        'fus_deficiencias', 'fus_transtornos_globais', 'fus_transtornos_aprendizagem',
+    ];
+
+    /**
+     * Normaliza o payload de saúde: grupos de checkbox ausentes viram [] (ao
+     * desmarcar o último item a chave some do payload e o update não limparia
+     * a coluna). Se o funcionário não é PCD, zera todo o quadro.
+     */
+    private function saudeData(Request $request): array
+    {
+        $saude = (array) $request->input('saude', []);
+
+        if (! $request->boolean('saude.fus_fl_pcd')) {
+            return [
+                'fus_fl_pcd' => false,
+                'fus_deficiencias' => [],
+                'fus_transtornos_globais' => [],
+                'fus_transtornos_aprendizagem' => [],
+                'fus_deficiencia_outro' => null,
+                'fus_fl_altas_habilidades' => false,
+                'fus_cid' => null,
+                'fus_observacao' => null,
+            ];
+        }
+
+        foreach (self::SAUDE_ARRAY_FIELDS as $f) {
+            $saude[$f] = $saude[$f] ?? [];
+        }
+
+        return $saude;
     }
 
     protected function checkHomonimo(Request $request, ?int $excludeId = null): void

@@ -37,7 +37,9 @@ class StoreTurmaRequest extends FormRequest
             'tur_seg_id'           => ['required', 'integer', 'exists:edu_segmento,seg_id'],
             'tur_ser_id'           => ['required', 'integer', 'exists:edu_serie,ser_id'],
             'tur_cd_inep'          => ['nullable', 'string', 'max:20'],
-            'tur_nome'             => ['required', 'string', 'max:20'],
+            // Só letras sem acento, números, hífen e espaços (compatibilidade com
+            // relatórios, integração e exportação de arquivos).
+            'tur_nome'             => ['required', 'string', 'max:20', 'regex:/^[A-Za-z0-9\- ]+$/'],
             'tur_turno'            => ['required', Rule::in(Turma::TURNOS)],
             'tur_capacidade'       => ['required', 'integer', 'min:1', 'max:999'],
             'tur_semestre'         => ['required', 'integer', Rule::in(Turma::SEMESTRES)],
@@ -48,6 +50,8 @@ class StoreTurmaRequest extends FormRequest
             'tur_hora_fim'         => ['nullable', 'date_format:H:i', 'after:tur_hora_inicio'],
             'tur_mediacao'         => ['nullable', Rule::in(Turma::TIPOS_MEDIACAO)],
             'tur_local_diferenciado' => ['nullable', Rule::in(Turma::LOCAIS_DIFERENCIADOS)],
+            'tur_fl_classe_especial' => ['boolean'],
+            'tur_fl_alternancia'   => ['boolean'],
             'tur_dias_funcionamento' => ['nullable', 'array'],
             'tur_dias_funcionamento.*' => ['string', Rule::in(Turma::DIAS_SEMANA)],
             'tur_obs'              => ['nullable', 'string', 'max:2000'],
@@ -88,6 +92,13 @@ class StoreTurmaRequest extends FormRequest
         });
     }
 
+    public function messages(): array
+    {
+        return [
+            'tur_nome.regex' => 'Caracteres acentuados não são permitidos neste campo.',
+        ];
+    }
+
     public function attributes(): array
     {
         return [
@@ -107,6 +118,8 @@ class StoreTurmaRequest extends FormRequest
             'tur_hora_fim'           => 'hora fim',
             'tur_mediacao'           => 'tipo de mediação',
             'tur_local_diferenciado' => 'local de funcionamento',
+            'tur_fl_classe_especial' => 'turma de educação especial (classe especial)',
+            'tur_fl_alternancia'     => 'turma de formação por alternância',
             'tur_dias_funcionamento' => 'dias de funcionamento',
             'tur_obs'                => 'observação',
         ];
