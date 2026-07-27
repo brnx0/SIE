@@ -211,6 +211,9 @@ const alimentacaoMenu = [
         icon: FileBarChart,
         children: [
             { title: 'Relatórios da Alimentação', href: '/relatorios-alimentacao' },
+        ],
+    },
+];
 const transporteMenu = [
     {
         title: 'Transporte Escolar',
