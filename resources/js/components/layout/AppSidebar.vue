@@ -290,28 +290,24 @@ const flattenItems = (items: any[], parents: string[] = []): FlatNavLeaf[] => {
 
 // O rótulo da seção entra como 1º nível do path — o tooltip/caminho da busca
 // fica igual ao do menu (ex.: "Gestão › Cadastros › Rede de Ensino › Turmas").
-const flatLeaves = computed<FlatNavLeaf[]>(() => [
-    ...flattenItems(overviewF.value),
-    ...flattenItems(cadastrosF.value),
-    ...flattenItems(matriculasF.value),
-    ...flattenItems(diarioF.value),
-    ...flattenItems(coordenadorF.value),
-    ...flattenItems(secretariaF.value),
-    ...flattenItems(encerramentoF.value),
-    ...flattenItems(relatoriosF.value),
-    ...flattenItems(alimentacaoF.value),
-    ...flattenItems(administracaoF.value),
-    ...flattenItems(overviewF.value, ['Visão geral']),
-    ...flattenItems(cadastrosF.value, ['Gestão']),
-    ...flattenItems(matriculasF.value, ['Matrículas']),
-    ...flattenItems(diarioF.value, ['Diário']),
-    ...flattenItems(coordenadorF.value, ['Pedagógico']),
-    ...flattenItems(secretariaF.value, ['Secretaria Escolar']),
-    ...flattenItems(encerramentoF.value, ['Encerramento']),
-    ...flattenItems(transporteF.value, ['Transporte']),
-    ...flattenItems(relatoriosF.value, ['Relatórios']),
-    ...flattenItems(administracaoF.value, ['Administração']),
-]);
+// Um item por href: dedup evita repetição caso apareça em mais de um grupo.
+const flatLeaves = computed<FlatNavLeaf[]>(() => {
+    const todos = [
+        ...flattenItems(overviewF.value, ['Visão geral']),
+        ...flattenItems(cadastrosF.value, ['Gestão']),
+        ...flattenItems(matriculasF.value, ['Matrículas']),
+        ...flattenItems(diarioF.value, ['Diário']),
+        ...flattenItems(coordenadorF.value, ['Pedagógico']),
+        ...flattenItems(secretariaF.value, ['Secretaria Escolar']),
+        ...flattenItems(encerramentoF.value, ['Encerramento']),
+        ...flattenItems(transporteF.value, ['Transporte']),
+        ...flattenItems(relatoriosF.value, ['Relatórios']),
+        ...flattenItems(alimentacaoF.value, ['Alimentação']),
+        ...flattenItems(administracaoF.value, ['Administração']),
+    ];
+    const vistos = new Set<string>();
+    return todos.filter((it) => (vistos.has(it.href) ? false : vistos.add(it.href)));
+});
 
 const searching = computed(() => search.value.trim().length > 0);
 </script>
