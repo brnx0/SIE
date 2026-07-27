@@ -2,7 +2,7 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/vue3';
-import { Users, UsersRound, AlarmClock, School, UserCheck, FileBarChart, FileText, FileDown, LayoutGrid, Accessibility, Activity, ClipboardList, ClipboardCheck, Table, NotebookPen, GraduationCap, BookOpenText, CalendarCheck, ScrollText, Baby, Brain, Stethoscope, ListChecks, Truck, CalendarClock, PackageMinus } from 'lucide-vue-next';
+import { Users, UsersRound, AlarmClock, School, UserCheck, FileBarChart, FileText, FileDown, LayoutGrid, Accessibility, Activity, ClipboardList, ClipboardCheck, Table, NotebookPen, GraduationCap, BookOpenText, CalendarCheck, ScrollText, Baby, Brain, Stethoscope, ListChecks, Truck, CalendarClock, PackageMinus, FileCheck2 } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 interface Relatorio {
@@ -42,7 +42,7 @@ const grupos = computed(() => {
     return Object.entries(map);
 });
 
-  const iconMap: Record<string, any> = { Users, UsersRound, AlarmClock, School, UserCheck, FileBarChart, FileText, FileDown, LayoutGrid, Accessibility, Activity, ClipboardList, ClipboardCheck, Table, NotebookPen, GraduationCap, BookOpenText, CalendarCheck, ScrollText, Baby, Brain, Stethoscope, ListChecks, Truck, CalendarClock, PackageMinus };
+  const iconMap: Record<string, any> = { Users, UsersRound, AlarmClock, School, UserCheck, FileBarChart, FileText, FileDown, LayoutGrid, Accessibility, Activity, ClipboardList, ClipboardCheck, Table, NotebookPen, GraduationCap, BookOpenText, CalendarCheck, ScrollText, Baby, Brain, Stethoscope, ListChecks, Truck, CalendarClock, PackageMinus, FileCheck2 };
 </script>
 
 <template>

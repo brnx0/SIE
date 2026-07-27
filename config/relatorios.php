@@ -9,6 +9,14 @@ return [
         'grupo' => 'secretaria',
         'icone' => 'ScrollText',
     ],
+    [
+        'slug' => 'termo-renovacao',
+        'titulo' => 'Termo de Renovação de Matrícula',
+        'descricao' => 'Emite o Termo de Renovação de Matrícula (documento oficial da secretaria) por aluno, turma ou em lote, para alunos com interesse de renovação registrado. Filtra por ano letivo, escola, turma e aluno. Impressão/PDF.',
+        'categoria' => 'Secretaria Acadêmica',
+        'grupo' => 'secretaria',
+        'icone' => 'FileCheck2',
+    ],
     // A Ata Final NÃO tem card aqui: sai pelo botão da tela de Encerramento de
     // Turmas, no contexto da turma encerrada. A rota /relatorios/ata-final segue
     // registrada e é o que aquele botão chama.
@@ -134,6 +142,14 @@ return [
         'icone' => 'FileText',
     ],
     [
+        'slug' => 'declaracao-conclusao',
+        'titulo' => 'Declaração de Conclusão',
+        'descricao' => 'Emite declaração de conclusão por aluno ou em lote por turma, para alunos com situação final registrada. Traz matrícula, série concluída, data de conclusão e situação final. Impressão/PDF formal.',
+        'categoria' => 'Aluno',
+        'grupo' => 'central',
+        'icone' => 'GraduationCap',
+    ],
+    [
         'slug' => 'formacao-classes',
         'titulo' => 'Formação de Classes',
         'descricao' => 'Quadro de turmas com capacidade, expansão, alunos da rede, novos, vagas, PCD, faixa etária e professores alocados. Escola em branco varre a rede inteira; exporta Excel.',
@@ -218,7 +234,7 @@ return [
         'titulo' => 'Equipe Gestora das Escolas',
         'descricao' => 'Consolida as escolas da rede com diretor(a), vice-diretor(a), coordenação pedagógica e secretaria, com contato. Filtra por escola e por tipo de gestor.',
         'categoria' => 'Escola',
-        'grupo' => 'central',
+        'grupo' => 'escola',
         'icone' => 'UsersRound',
     ],
     [
