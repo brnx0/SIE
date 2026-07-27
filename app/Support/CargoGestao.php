@@ -21,8 +21,6 @@ final class CargoGestao
 
     public const COORD_PEDAGOGICO = 'coord_pedagogico';
 
-    public const COORD_ADMINISTRATIVO = 'coord_administrativo';
-
     public const SECRETARIO = 'secretario';
 
     /** Rótulos exibidos ao usuário, na ordem hierárquica do relatório. */
@@ -30,7 +28,6 @@ final class CargoGestao
         self::DIRETOR             => 'Diretor(a)',
         self::VICE_DIRETOR        => 'Vice-Diretor(a)',
         self::COORD_PEDAGOGICO    => 'Coordenador(a) Pedagógico(a)',
-        self::COORD_ADMINISTRATIVO => 'Coordenador(a) Administrativo(a)',
         self::SECRETARIO          => 'Secretário(a) Escolar',
     ];
 
@@ -79,13 +76,10 @@ final class CargoGestao
             || str_contains($n, 'orientador')
             || str_contains($n, 'especialista de educacao');
 
+        // Sem a distinção administrativa, toda coordenação de gestão cai no
+        // único bucket de coordenação restante (Pedagógico).
         if ($ehCoordenacao) {
-            $ehPedagogico = str_contains($n, 'pedagog')
-                || str_contains($n, 'ensino')
-                || str_contains($n, 'educacional')
-                || str_contains($n, 'especialista de educacao');
-
-            return $ehPedagogico ? self::COORD_PEDAGOGICO : self::COORD_ADMINISTRATIVO;
+            return self::COORD_PEDAGOGICO;
         }
 
         return null;

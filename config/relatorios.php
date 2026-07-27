@@ -216,7 +216,7 @@ return [
     [
         'slug' => 'equipe-gestora',
         'titulo' => 'Equipe Gestora das Escolas',
-        'descricao' => 'Consolida as escolas da rede com diretor(a), vice-diretor(a), coordenação pedagógica/administrativa e secretaria, com contato. Filtra por escola e por tipo de gestor.',
+        'descricao' => 'Consolida as escolas da rede com diretor(a), vice-diretor(a), coordenação pedagógica e secretaria, com contato. Filtra por escola e por tipo de gestor.',
         'categoria' => 'Escola',
         'grupo' => 'central',
         'icone' => 'UsersRound',
