@@ -11,7 +11,7 @@ import type { EscolaResumo, Turma } from '@/types/turma';
 import { TURNOS } from '@/types/turma';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { BookOpen, Pencil, Plus, Trash2 } from 'lucide-vue-next';
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { usePermissao } from '@/composables/usePermissao';
 import { useFiltrosListagem } from '@/composables/useFiltrosListagem';
 
@@ -36,20 +36,36 @@ const props = defineProps<{
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Turmas', href: '/turmas' }];
 
-const fEscId    = ref<number | ''>(props.filters.esc_id ?? '');
+// ── Filtros mantidos ao abrir um registro e voltar ─────────────────────────
+// A listagem remonta sem query ao voltar do formulário (mesma aba no shell).
+// Inicializa os refs do que foi salvo (senão, das props do servidor) e reaplica
+// no onMounted quando chegou sem query — controles E dados restauram juntos.
+type FiltrosTurmas = {
+    esc_id: number | ''; anl_id: number | ''; turno: string;
+    situacao: string; search: string; per_page: number; page: number;
+};
+const { salvar: salvarFiltros, restaurar: restaurarFiltros } = useFiltrosListagem<FiltrosTurmas>('turmas');
+const salvos = restaurarFiltros();
+
 // Backend devolve 'all' quando o usuário escolheu "Todos os anos" → mapeia p/ '' no select.
-const fAnlId    = ref<number | ''>(
-    (props.filters.anl_id as unknown) === 'all' ? '' : (props.filters.anl_id ?? ''),
-);
-const fTurno    = ref(props.filters.turno ?? '');
-const fSituacao = ref(props.filters.situacao ?? '');
-const fSearch   = ref(props.filters.search ?? '');
-const perPage   = ref(props.filters.per_page ?? 10);
+const anlDasProps = (props.filters.anl_id as unknown) === 'all' ? '' : (props.filters.anl_id ?? '');
+
+const fEscId    = ref<number | ''>(salvos?.esc_id ?? props.filters.esc_id ?? '');
+const fAnlId    = ref<number | ''>(salvos?.anl_id ?? anlDasProps);
+const fTurno    = ref(salvos?.turno ?? props.filters.turno ?? '');
+const fSituacao = ref(salvos?.situacao ?? props.filters.situacao ?? '');
+const fSearch   = ref(salvos?.search ?? props.filters.search ?? '');
+const perPage   = ref(salvos?.per_page ?? props.filters.per_page ?? 10);
+
+// Guarda que silencia os watches de filtro enquanto restauramos os refs, para
+// não disparar um apply extra (que zeraria a página) durante o restore.
+let restaurando = false;
 
 let timer: ReturnType<typeof setTimeout> | null = null;
-const apply = (resetPage = false) => {
+const apply = (opts: { resetPage?: boolean; page?: number } = {}) => {
     if (timer) clearTimeout(timer);
     timer = setTimeout(() => {
+        const pagina = opts.page ?? (opts.resetPage ? 1 : props.turmas.current_page);
         const params: Record<string, string | number> = { per_page: perPage.value };
         if (fEscId.value)    params.esc_id   = fEscId.value;
         // Sempre envia anl_id: 'all' = "Todos os anos" (senão backend força o ano mais recente).
@@ -57,42 +73,67 @@ const apply = (resetPage = false) => {
         if (fTurno.value)    params.turno    = fTurno.value;
         if (fSituacao.value) params.situacao = fSituacao.value;
         if (fSearch.value.trim()) params.search = fSearch.value.trim();
-        if (!resetPage)      params.page     = props.turmas.current_page;
+        if (pagina && pagina > 1) params.page = pagina;
+
+        // Snapshot para restaurar ao voltar de um registro.
+        salvarFiltros({
+            esc_id: fEscId.value, anl_id: fAnlId.value, turno: fTurno.value,
+            situacao: fSituacao.value, search: fSearch.value, per_page: perPage.value, page: pagina,
+        });
+
         router.get('/turmas', params, { preserveState: true, replace: true });
     }, 100);
 };
 
-watch([fEscId, fAnlId, fTurno, fSituacao, fSearch], () => apply(true));
-watch(perPage, () => apply(true));
+watch([fEscId, fAnlId, fTurno, fSituacao, fSearch], () => { if (!restaurando) apply({ resetPage: true }); });
+watch(perPage, () => { if (!restaurando) apply({ resetPage: true }); });
 
-// ── Filtros mantidos ao abrir um registro e voltar ─────────────────────────
-// Listagem e formulário dividem a mesma aba, então a listagem remonta sem
-// query ao voltar. Guardamos a query aplicada e a reaplicamos na volta.
-const { salvar: salvarFiltros, restaurar: restaurarFiltros } = useFiltrosListagem('turmas');
+// Filtro que o SERVIDOR renderizou (normalizado igual ao snapshot).
+const propEsc = () => (props.filters.esc_id as number | '' | null | undefined) ?? '';
+const propAnl = () => ((props.filters.anl_id as unknown) === 'all' ? '' : ((props.filters.anl_id as number | null | undefined) ?? ''));
 
-onMounted(() => {
-    // URL com query = intenção explícita (link, refresh, paginação): ela manda.
-    if (window.location.search.length > 1) {
-        salvarFiltros(window.location.search);
+/** O filtro salvo é o mesmo que o servidor está exibindo? */
+const mesmoFiltro = (s: FiltrosTurmas): boolean =>
+    (s.esc_id ?? '') === propEsc()
+    && (s.anl_id ?? '') === propAnl()
+    && (s.turno ?? '') === (props.filters.turno ?? '')
+    && (s.situacao ?? '') === (props.filters.situacao ?? '')
+    && (s.search ?? '') === (props.filters.search ?? '')
+    && (s.per_page ?? 10) === (props.filters.per_page ?? 10);
+
+// Sincroniza a listagem com o filtro salvo. Não olha a URL (o shell de abas
+// restaura a URL da aba, então ela mente sobre o estado); compara os filtros
+// que o servidor renderizou com o snapshot salvo. Se divergem (voltou do
+// formulário / entrou pelo menu → servidor veio padrão), restaura.
+const sincronizar = () => {
+    const s = restaurarFiltros();
+    if (!s) return;
+
+    if (mesmoFiltro(s)) {
+        // Servidor já reflete o filtro salvo: mantém só a página em dia (paginação).
+        const pg = props.turmas.current_page ?? 1;
+        if (pg !== s.page) salvarFiltros({ ...s, page: pg });
         return;
     }
-    const salvo = restaurarFiltros();
-    if (salvo.length > 1) {
-        router.get(`/turmas${salvo}`, {}, { replace: true });
-    }
-});
 
-// Mantém o snapshot em dia a cada filtro aplicado ou troca de página.
-watch(
-    () => [props.filters, props.turmas.current_page],
-    () => {
-        if (window.location.search.length > 1) salvarFiltros(window.location.search);
-    },
-    { deep: true },
-);
+    restaurando = true;
+    fEscId.value = s.esc_id ?? '';
+    fAnlId.value = s.anl_id ?? '';
+    fTurno.value = s.turno ?? '';
+    fSituacao.value = s.situacao ?? '';
+    fSearch.value = s.search ?? '';
+    perPage.value = s.per_page ?? 10;
+    apply({ page: s.page });
+    // Libera os watches só depois do flush, senão a mudança dos refs dispara apply.
+    nextTick(() => { restaurando = false; });
+};
+
+onMounted(sincronizar);
+// Cobre remontagem E reuso da instância pelo shell: em ambos as props mudam.
+watch(() => [props.filters, props.turmas.current_page], sincronizar, { deep: true });
 
 const remove = (t: Turma) => {
-    if (!confirm(`Remover turma "${t.tur_nome}" (${t.serie?.ser_nome ?? ''} — ${t.turno_label ?? t.tur_turno})?`)) return;
+    if (!confirm(`Remover turma "${t.tur_nome}" (${t.serie?.ser_nome ?? ''} — ${turnoLabel(t.tur_turno)})?`)) return;
     router.delete(`/turmas/${t.tur_id}`, { preserveScroll: true });
 };
 
@@ -199,7 +240,7 @@ const exportFilters = () => ({
                                     <span class="font-semibold">{{ t.tur_nome }}</span>
                                 </div>
                             </td>
-                            <td class="max-w-[220px] truncate px-4 py-3 text-muted-foreground">{{ t.escola?.esc_nome ?? '—' }}</td>
+                            <td class="break-words px-4 py-3 text-muted-foreground">{{ t.escola?.esc_nome ?? '—' }}</td>
                             <td class="px-4 py-3 tabular-nums">{{ t.anoLetivo?.anl_ano ?? '—' }}</td>
                             <td class="px-4 py-3 text-center tabular-nums">{{ t.tur_semestre ?? '—' }}º</td>
                             <td class="px-4 py-3 text-muted-foreground">{{ t.segmento?.seg_nome_reduzido ?? '—' }}</td>

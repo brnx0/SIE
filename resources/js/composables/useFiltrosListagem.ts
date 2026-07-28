@@ -1,43 +1,44 @@
 /**
- * Mantém os filtros e a página de uma listagem ao sair e voltar.
+ * Mantém os filtros (e a página) de uma listagem ao sair e voltar.
  *
  * Problema: os filtros da listagem vivem na query string. Ao abrir um registro
  * (`/turmas/123/edit`) e voltar pelo "Voltar à lista" — que aponta para a rota
- * nua — a listagem remonta sem query e o usuário perde filtro e paginação.
- * Como listagem e formulário dividem a MESMA aba (ver `pathOf` em
- * lib/tabRegistry), o painel é recriado e não há estado a preservar.
+ * nua — a listagem remonta sem query, o servidor devolve o padrão e o usuário
+ * perde o filtro e a paginação. (Listagem e formulário dividem a MESMA aba no
+ * shell de abas: ao voltar, o painel da listagem é recriado do zero.)
  *
- * Solução: guarda a query aplicada em `sessionStorage` por listagem (chave =
- * slug). Some ao fechar o navegador, então não polui sessões futuras.
+ * Solução: guarda os valores dos filtros num objeto em `sessionStorage` por
+ * listagem (chave = slug). A página inicializa os refs a partir do que foi salvo
+ * (caindo no default quando não há nada), e reaplica no `onMounted` quando
+ * chegou sem query — restaurando controles E dados juntos. Some ao fechar o
+ * navegador, então não polui sessões futuras.
  *
- * Guardamos a query crua (e não campo a campo) de propósito: serve a qualquer
- * listagem sem enumerar filtros, e a paginação vem junto de graça.
+ * Genérico: guardamos apenas ESCALARES (ids/strings/booleans), nunca objetos
+ * ou listas. Reutilizável em qualquer listagem (ver pages/turmas/Index.vue).
  *
- * Uso (ver pages/turmas/Index.vue):
- *   const { salvar, restaurar } = useFiltrosListagem('turmas');
- *
- *   onMounted(() => {
- *       // URL com query = intenção explícita do usuário; ela manda.
- *       if (window.location.search.length > 1) { salvar(window.location.search); return; }
- *       const salvo = restaurar();
- *       if (salvo) router.get(`/turmas${salvo}`, {}, { replace: true });
- *   });
+ * Uso:
+ *   const { restaurar, salvar } = useFiltrosListagem<Filtros>('turmas');
+ *   const salvos = restaurar();
+ *   const fEscId = ref(salvos?.esc_id ?? props.filters.esc_id ?? '');
+ *   // ...em apply(): salvar({ esc_id: fEscId.value, ... });
+ *   onMounted(() => { if (salvos && window.location.search.length <= 1) apply(); });
  */
-export function useFiltrosListagem(chave: string) {
+export function useFiltrosListagem<T extends Record<string, unknown>>(chave: string) {
     const storageKey = `listagem:filtros:${chave}`;
 
-    /** Query salva, incluindo o "?" (ex.: "?anl_id=3&turno=MATUTINO"). '' se não houver. */
-    const restaurar = (): string => {
+    /** Objeto de filtros salvo, ou null se não houver. */
+    const restaurar = (): T | null => {
         try {
-            return sessionStorage.getItem(storageKey) ?? '';
+            const raw = sessionStorage.getItem(storageKey);
+            return raw ? (JSON.parse(raw) as T) : null;
         } catch {
-            return '';
+            return null;
         }
     };
 
-    const salvar = (query: string): void => {
+    const salvar = (valores: T): void => {
         try {
-            sessionStorage.setItem(storageKey, query);
+            sessionStorage.setItem(storageKey, JSON.stringify(valores));
         } catch {
             /* storage cheio/indisponível → ignora, filtro só não persiste */
         }
