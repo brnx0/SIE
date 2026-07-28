@@ -1445,7 +1445,7 @@ const initials = computed(() => {
                                         <td class="px-3 py-2.5 tabular-nums text-muted-foreground">
                                             {{ m.tma_dt_matricula ? new Date(m.tma_dt_matricula + 'T00:00:00').toLocaleDateString('pt-BR') : '—' }}
                                         </td>
-                                        <td class="px-3 py-2.5 max-w-[200px] truncate">{{ m.esc_nome ?? '—' }}</td>
+                                        <td class="px-3 py-2.5 break-words">{{ m.esc_nome ?? '—' }}</td>
                                         <td class="px-3 py-2.5">{{ m.ser_nome ?? '—' }}</td>
                                         <td class="px-3 py-2.5 text-center font-semibold">{{ m.tur_nome ?? '—' }}</td>
                                         <td class="px-3 py-2.5 capitalize text-muted-foreground">{{ m.tur_turno?.toLowerCase() ?? '—' }}</td>
@@ -1514,7 +1514,7 @@ const initials = computed(() => {
                                         <td class="px-3 py-2.5 tabular-nums text-muted-foreground">
                                             {{ m.tma_dt_matricula ? new Date(m.tma_dt_matricula + 'T00:00:00').toLocaleDateString('pt-BR') : '—' }}
                                         </td>
-                                        <td class="px-3 py-2.5 max-w-[200px] truncate">{{ m.esc_nome ?? '—' }}</td>
+                                        <td class="px-3 py-2.5 break-words">{{ m.esc_nome ?? '—' }}</td>
                                         <td class="px-3 py-2.5 text-center font-semibold">{{ m.tur_nome ?? '—' }}</td>
                                         <td class="px-3 py-2.5 capitalize text-muted-foreground">{{ m.tur_turno?.toLowerCase() ?? '—' }}</td>
                                         <td class="px-3 py-2.5 text-center">
@@ -1581,7 +1581,7 @@ const initials = computed(() => {
                                         <td class="px-3 py-2.5 tabular-nums text-muted-foreground">
                                             {{ m.tma_dt_matricula ? new Date(m.tma_dt_matricula + 'T00:00:00').toLocaleDateString('pt-BR') : '—' }}
                                         </td>
-                                        <td class="px-3 py-2.5 max-w-[200px] truncate">{{ m.esc_nome ?? '—' }}</td>
+                                        <td class="px-3 py-2.5 break-words">{{ m.esc_nome ?? '—' }}</td>
                                         <td class="px-3 py-2.5 text-center font-semibold">{{ m.tur_nome ?? '—' }}</td>
                                         <td class="px-3 py-2.5 capitalize text-muted-foreground">{{ m.tur_turno?.toLowerCase() ?? '—' }}</td>
                                         <td class="px-3 py-2.5 text-center">
