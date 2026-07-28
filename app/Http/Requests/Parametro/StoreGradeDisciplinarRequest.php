@@ -21,7 +21,16 @@ class StoreGradeDisciplinarRequest extends FormRequest
             'grd_ser_id'           => ['required', 'integer', 'exists:edu_serie,ser_id'],
             'grd_dis_id'           => ['required', 'integer', 'exists:edu_disciplina,dis_id'],
             'grd_nome_alternativo' => ['nullable', 'string', 'max:100'],
+            // Carga horária: opcional, mas se informada deve ser positiva.
+            'grd_ch'               => ['nullable', 'integer', 'min:1', 'max:9999'],
             'grd_fl_ativo'         => ['boolean'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'grd_ch.min' => 'A carga horária (CH) deve ser maior que zero.',
         ];
     }
 
@@ -59,6 +68,7 @@ class StoreGradeDisciplinarRequest extends FormRequest
             'grd_ser_id'           => 'série',
             'grd_dis_id'           => 'disciplina',
             'grd_nome_alternativo' => 'nome alternativo',
+            'grd_ch'               => 'carga horária',
             'grd_fl_ativo'         => 'ativo',
         ];
     }

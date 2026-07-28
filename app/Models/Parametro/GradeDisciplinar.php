@@ -24,6 +24,7 @@ class GradeDisciplinar extends Model
         'grd_dis_id',
         'grd_ordem',
         'grd_nome_alternativo',
+        'grd_ch',
         'grd_fl_ativo',
     ];
 
@@ -33,6 +34,7 @@ class GradeDisciplinar extends Model
         'grd_ser_id'   => 'integer',
         'grd_dis_id'   => 'integer',
         'grd_ordem'    => 'integer',
+        'grd_ch'       => 'integer',
         'grd_fl_ativo' => 'boolean',
     ];
 

@@ -110,6 +110,7 @@ const editing  = ref<GradeDisciplinar | null>(null);
 const formData = reactive({
     grd_dis_id:           null as number | null,
     grd_nome_alternativo: '',
+    grd_ch:               '' as number | '',
     grd_fl_ativo:         true,
 });
 const errors     = ref<Record<string, string>>({});
@@ -119,6 +120,7 @@ const abrirCriar = () => {
     editing.value = null;
     formData.grd_dis_id = null;
     formData.grd_nome_alternativo = '';
+    formData.grd_ch = '';
     formData.grd_fl_ativo = true;
     errors.value = {};
     if (disciplinas.value.length === 0) buscarDisciplinas();
@@ -129,6 +131,7 @@ const abrirEditar = (g: GradeDisciplinar) => {
     editing.value = g;
     formData.grd_dis_id = g.grd_dis_id;
     formData.grd_nome_alternativo = g.grd_nome_alternativo ?? '';
+    formData.grd_ch = g.grd_ch ?? '';
     formData.grd_fl_ativo = g.grd_fl_ativo;
     errors.value = {};
     // Garante que a disciplina atual aparece na lista (caso fora do filtro de segmento)
@@ -156,6 +159,7 @@ const salvar = () => {
         grd_ser_id:           fSerId.value,
         grd_dis_id:           formData.grd_dis_id,
         grd_nome_alternativo: formData.grd_nome_alternativo || null,
+        grd_ch:               formData.grd_ch === '' ? null : Number(formData.grd_ch),
         grd_fl_ativo:         formData.grd_fl_ativo,
     };
 
@@ -314,7 +318,7 @@ const selectClass = (hasError: boolean) =>
                     <InputError :message="errors.grd_dis_id" />
                 </div>
 
-                <div class="grid gap-1.5 sm:col-span-5">
+                <div class="grid gap-1.5 sm:col-span-4">
                     <FormLabel>Nome alternativo <span class="text-muted-foreground">(opcional)</span></FormLabel>
                     <Input
                         v-model="formData.grd_nome_alternativo"
@@ -324,7 +328,20 @@ const selectClass = (hasError: boolean) =>
                     <InputError :message="errors.grd_nome_alternativo" />
                 </div>
 
-                <div class="flex items-end gap-2 sm:col-span-2">
+                <div class="grid gap-1.5 sm:col-span-2">
+                    <FormLabel>CH <span class="text-muted-foreground">(opcional)</span></FormLabel>
+                    <Input
+                        v-model.number="formData.grd_ch"
+                        type="number"
+                        min="1"
+                        max="9999"
+                        placeholder="Ex.: 80"
+                        :class="{ 'border-red-500': errors.grd_ch }"
+                    />
+                    <InputError :message="errors.grd_ch" />
+                </div>
+
+                <div class="flex items-end gap-2 sm:col-span-1">
                     <Switch id="grd_fl_ativo" v-model="formData.grd_fl_ativo" />
                     <label for="grd_fl_ativo" class="text-sm">Ativa</label>
                 </div>
@@ -356,21 +373,22 @@ const selectClass = (hasError: boolean) =>
                         <th class="px-3 py-2 text-center font-semibold w-20">Ordem</th>
                         <th class="px-3 py-2 font-semibold">Disciplina</th>
                         <th class="px-3 py-2 font-semibold">Nome alternativo</th>
+                        <th class="px-3 py-2 text-center font-semibold w-20">CH</th>
                         <th class="px-3 py-2 text-center font-semibold w-24">Ativa</th>
                         <th class="px-3 py-2 text-right font-semibold w-44">Ações</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-if="!fAnlId || !fSegId || !fSerId">
-                        <td colspan="5" class="px-3 py-6 text-center text-muted-foreground">
+                        <td colspan="6" class="px-3 py-6 text-center text-muted-foreground">
                             Selecione ano letivo, segmento e série para visualizar a grade.
                         </td>
                     </tr>
                     <tr v-else-if="loadingGrade">
-                        <td colspan="5" class="px-3 py-6 text-center text-muted-foreground">Carregando...</td>
+                        <td colspan="6" class="px-3 py-6 text-center text-muted-foreground">Carregando...</td>
                     </tr>
                     <tr v-else-if="grade.length === 0">
-                        <td colspan="5" class="px-3 py-6 text-center text-muted-foreground">
+                        <td colspan="6" class="px-3 py-6 text-center text-muted-foreground">
                             Nenhuma disciplina cadastrada para esta combinação.
                         </td>
                     </tr>
@@ -385,6 +403,7 @@ const selectClass = (hasError: boolean) =>
                             <span v-if="g.disciplina?.dis_sigla" class="text-xs text-muted-foreground">({{ g.disciplina.dis_sigla }})</span>
                         </td>
                         <td class="px-3 py-2 text-muted-foreground">{{ g.grd_nome_alternativo ?? '—' }}</td>
+                        <td class="px-3 py-2 text-center tabular-nums">{{ g.grd_ch ?? '—' }}</td>
                         <td class="px-3 py-2 text-center">
                             <CheckCircle2 v-if="g.grd_fl_ativo" class="mx-auto size-4 text-emerald-600" />
                             <XCircle v-else class="mx-auto size-4 text-rose-400" />

@@ -173,6 +173,7 @@ class GradeDisciplinarController extends Controller
                     'grd_dis_id'           => $linha->grd_dis_id,
                     'grd_ordem'            => $linha->grd_ordem,
                     'grd_nome_alternativo' => $linha->grd_nome_alternativo,
+                    'grd_ch'               => $linha->grd_ch,
                     'grd_fl_ativo'         => $linha->grd_fl_ativo,
                 ]);
                 $n++;

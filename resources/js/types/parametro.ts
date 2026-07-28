@@ -224,6 +224,7 @@ export interface GradeDisciplinar {
     grd_dis_id: number;
     grd_ordem: number;
     grd_nome_alternativo: string | null;
+    grd_ch: number | null;
     grd_fl_ativo: boolean;
     disciplina?: DisciplinaResumo | null;
 }
