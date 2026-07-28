@@ -106,6 +106,10 @@ class TelaPermissaoSeeder extends Seeder
         ['/relatorios', 'Central de Relatórios', 'Relatórios', 39, [1, 1, 0, 0, 0, 2, 2, 2, 2, 0, 2]],
         ['/relatorios-escola', 'Relatórios Gerais', 'Relatórios', 40, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 2]],
 
+        // Censo — menu próprio (crescerá com mais funcionalidades do Educacenso).
+        // matricula_censo (índice 10) é o perfil que opera o censo.
+        ['/relatorios-censo', 'Relatórios do Censo', 'Censo', 63, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 2]],
+
         // Alimentação Escolar — ordem das roles:
         // admin, gestor_secretaria, professor, professor_aee, coordenador, coordenador_interno,
         // diretor, secretaria_escola, pedagogico, monitor, matricula_censo, nutricionista, almoxarife

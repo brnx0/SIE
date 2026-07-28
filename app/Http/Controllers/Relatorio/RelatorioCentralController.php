@@ -68,6 +68,16 @@ class RelatorioCentralController extends Controller
         ]);
     }
 
+    public function censo(): Response
+    {
+        return Inertia::render('relatorios/Index', [
+            'relatorios' => $this->filtrar('censo'),
+            'titulo' => 'Relatórios do Censo',
+            'subtitulo' => 'Críticas e exportação do Educacenso.',
+            'grupo' => 'censo',
+        ]);
+    }
+
     private function filtrar(string $grupo): array
     {
         return array_values(array_filter(

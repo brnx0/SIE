@@ -114,7 +114,7 @@ return [
         'titulo' => 'Críticas do Censo',
         'descricao' => 'Valida os dados da escola contra os campos obrigatórios do Educacenso (Matrícula Inicial) e aponta o que impediria o envio, por registro. Selecione a escola.',
         'categoria' => 'Censo Escolar',
-        'grupo' => 'central',
+        'grupo' => 'censo',
         'icone' => 'ClipboardCheck',
     ],
     [
@@ -122,7 +122,7 @@ return [
         'titulo' => 'Exportação do Censo',
         'descricao' => 'Gera o arquivo de Matrícula Inicial (Educacenso 2026) da escola no formato oficial (registros separados por “|”, ISO-8859-1). Selecione a escola.',
         'categoria' => 'Censo Escolar',
-        'grupo' => 'central',
+        'grupo' => 'censo',
         'icone' => 'FileDown',
     ],
     [
@@ -154,7 +154,7 @@ return [
         'titulo' => 'Formação de Classes',
         'descricao' => 'Quadro de turmas com capacidade, expansão, alunos da rede, novos, vagas, PCD, faixa etária e professores alocados. Escola em branco varre a rede inteira; exporta Excel.',
         'categoria' => 'Turma',
-        'grupo' => 'central',
+        'grupo' => 'escola',
         'icone' => 'LayoutGrid',
     ],
     [

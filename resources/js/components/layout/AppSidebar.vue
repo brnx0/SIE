@@ -5,7 +5,7 @@ import NavSearch, { type FlatNavLeaf } from '@/components/layout/NavSearch.vue';
 import NavUser from '@/components/layout/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { Link } from '@inertiajs/vue3';
-import { LayoutDashboard, LifeBuoy, UserPlus, Cog, ClipboardList, FileBarChart, BookOpen, ClipboardCheck, KeyRound, Archive, ArrowRightLeft, UtensilsCrossed ,Bus} from 'lucide-vue-next';
+import { LayoutDashboard, LifeBuoy, UserPlus, Cog, ClipboardList, FileBarChart, BookOpen, ClipboardCheck, KeyRound, Archive, ArrowRightLeft, UtensilsCrossed ,Bus, FileSpreadsheet} from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import { usePermissao } from '@/composables/usePermissao';
 import AppLogo from './AppLogo.vue';
@@ -105,6 +105,15 @@ const relatoriosMenu = [
         children: [
             { title: 'Central de Relatórios', href: '/relatorios' },
             { title: 'Relatórios Gerais', href: '/relatorios-escola' },
+        ],
+    },
+];
+const censoMenu = [
+    {
+        title: 'Censo',
+        icon: FileSpreadsheet,
+        children: [
+            { title: 'Relatórios do Censo', href: '/relatorios-censo' },
         ],
     },
 ];
@@ -263,6 +272,7 @@ const secretariaF = computed(() => filtrarMenu(secretariaMenu));
 const encerramentoF = computed(() => filtrarMenu(encerramentoMenu));
 const transporteF = computed(() => filtrarMenu(transporteMenu));
 const relatoriosF = computed(() => filtrarMenu(relatoriosMenu));
+const censoF = computed(() => filtrarMenu(censoMenu));
 const alimentacaoF = computed(() => filtrarMenu(alimentacaoMenu));
 const administracaoF = computed(() => filtrarMenu(administracao));
 
@@ -302,6 +312,7 @@ const flatLeaves = computed<FlatNavLeaf[]>(() => {
         ...flattenItems(encerramentoF.value, ['Encerramento']),
         ...flattenItems(transporteF.value, ['Transporte']),
         ...flattenItems(relatoriosF.value, ['Relatórios']),
+        ...flattenItems(censoF.value, ['Censo']),
         ...flattenItems(alimentacaoF.value, ['Alimentação']),
         ...flattenItems(administracaoF.value, ['Administração']),
     ];
@@ -339,6 +350,7 @@ const searching = computed(() => search.value.trim().length > 0);
                 <NavMain v-if="encerramentoF.length" label="Encerramento" :items="encerramentoF" />
                 <NavMain v-if="transporteF.length" label="Transporte" :items="transporteF" />
                 <NavMain v-if="relatoriosF.length" label="Relatórios" :items="relatoriosF" />
+                <NavMain v-if="censoF.length" label="Censo" :items="censoF" />
                 <NavMain v-if="alimentacaoF.length" label="Alimentação" :items="alimentacaoF" />
                 <NavMain v-if="administracaoF.length" label="Administração" :items="administracaoF" />
             </template>
