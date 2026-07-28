@@ -246,6 +246,22 @@ return [
         'icone' => 'UserCheck',
     ],
     [
+        'slug' => 'turmas-multisseriadas',
+        'titulo' => 'Alunos em Turmas Multisseriadas',
+        'descricao' => 'Alunos matriculados em turmas multisseriadas (série marcada como multi): nome, matrícula, nascimento, idade, escola, código/nome da turma, série, turno e status do aluno. Filtra por escola, série, turno e situação. Ordenado por escola e turma. Exporta Excel e PDF.',
+        'categoria' => 'Turma',
+        'grupo' => 'escola',
+        'icone' => 'LayoutGrid',
+    ],
+    [
+        'slug' => 'distorcao-idade',
+        'titulo' => 'Distorção Idade-Série',
+        'descricao' => 'Alunos com idade acima da recomendada para a série/ano em que estão matriculados: nome, matrícula, escola, turma/série, nascimento, idade atual, idade esperada e distorção. Filtra por escola, turma e série. Ordenado por escola e turma. Exporta Excel e PDF.',
+        'categoria' => 'Aluno',
+        'grupo' => 'escola',
+        'icone' => 'CalendarClock',
+    ],
+    [
         'slug' => 'relacao-escolas',
         'titulo' => 'Relação de Escolas',
         'descricao' => 'Cadastro institucional da rede em ordem alfabética: nome, códigos, endereço, contato e tipos de ensino ofertados. Filtra por tipo de ensino, bairro e status (ativa/inativa) — inclui escolas inativas.',

@@ -11,6 +11,8 @@ use App\Http\Controllers\Censo\CensoExportController;
 use App\Http\Controllers\Relatorio\DadosAlunosTurmaController;
 use App\Http\Controllers\Relatorio\EquipeGestoraController;
 use App\Http\Controllers\Relatorio\AlunosAptosEjaController;
+use App\Http\Controllers\Relatorio\DistorcaoIdadeController;
+use App\Http\Controllers\Relatorio\TurmasMultisseriadasController;
 use App\Http\Controllers\Relatorio\LevantamentoMunicipioController;
 use App\Http\Controllers\Relatorio\PendenciaEncerramentoController;
 use App\Http\Controllers\Relatorio\RelacaoEscolasController;
@@ -371,6 +373,12 @@ Route::middleware(['auth', 'verified', 'tela'])->group(function () {
     Route::get('relatorios/alunos-aptos-eja', [AlunosAptosEjaController::class, 'form'])->name('relatorios.alunos-aptos-eja.form');
     Route::get('relatorios/alunos-aptos-eja/gerar', [AlunosAptosEjaController::class, 'gerar'])->name('relatorios.alunos-aptos-eja.gerar');
     Route::get('relatorios/alunos-aptos-eja/xlsx', [AlunosAptosEjaController::class, 'exportarXlsx'])->name('relatorios.alunos-aptos-eja.xlsx');
+    Route::get('relatorios/distorcao-idade', [DistorcaoIdadeController::class, 'form'])->name('relatorios.distorcao-idade.form');
+    Route::get('relatorios/distorcao-idade/gerar', [DistorcaoIdadeController::class, 'gerar'])->name('relatorios.distorcao-idade.gerar');
+    Route::get('relatorios/distorcao-idade/xlsx', [DistorcaoIdadeController::class, 'exportarXlsx'])->name('relatorios.distorcao-idade.xlsx');
+    Route::get('relatorios/turmas-multisseriadas', [TurmasMultisseriadasController::class, 'form'])->name('relatorios.turmas-multisseriadas.form');
+    Route::get('relatorios/turmas-multisseriadas/gerar', [TurmasMultisseriadasController::class, 'gerar'])->name('relatorios.turmas-multisseriadas.gerar');
+    Route::get('relatorios/turmas-multisseriadas/xlsx', [TurmasMultisseriadasController::class, 'exportarXlsx'])->name('relatorios.turmas-multisseriadas.xlsx');
 
     Route::get('movimentacoes', [MovimentacaoController::class, 'index'])->name('movimentacoes.index');
     Route::get('movimentacoes/create', [MovimentacaoController::class, 'create'])->name('movimentacoes.create');

@@ -99,6 +99,8 @@ const PATH_LABELS: Record<string, string> = {
     '/relatorios/relacao-turmas-atividade': 'Relação de Turmas de Atividade',
     '/relatorios/ficha-matricula': 'Ficha de Matrícula',
     '/relatorios/sumario-matriculas': 'Sumário de Matrículas',
+    '/relatorios/distorcao-idade': 'Distorção Idade-Série',
+    '/relatorios/turmas-multisseriadas': 'Turmas Multisseriadas',
     '/alimentacao/visitas': 'Visitas Técnicas',
     '/alimentacao/perguntas': 'Perguntas do Questionário',
     '/alimentacao/tipos-visita': 'Tipos de Visita Técnica',
