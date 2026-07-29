@@ -177,17 +177,19 @@ const segmentoDestNome = computed(() => segmentosD.value.find(s => s.seg_id === 
 const serieDestNome    = computed(() => seriesD.value.find(s => s.ser_id === Number(dSer.value))?.ser_nome ?? '');
 const turmaDestNome    = computed(() => turmasD.value.find(t => t.tur_id === form.tur_id_destino)?.tur_nome ?? '');
 
-// Remanejamento: pré-preenche segmento/série destino com origem (editável).
-// Roda após segmentosD/seriesD carregarem para garantir option existir no select.
+// Remanejamento: segmento/série destino TRAVADOS na origem — só a turma pode
+// mudar. Força o valor (sem guard de "vazio") p/ re-sincronizar mesmo ao trocar
+// de Reclassificação p/ Remanejamento. Roda após segmentosD/seriesD carregarem
+// para garantir que a option exista na lista.
 watch([isRemanejamento, exigeDestino, segmentosD, oSeg], ([rem, exige, segs, seg]) => {
     if (!rem || !exige) return;
-    if (seg && !dSeg.value && (segs as any[]).some(s => s.seg_id === Number(seg))) {
+    if (seg && (segs as any[]).some(s => s.seg_id === Number(seg))) {
         dSeg.value = seg as any;
     }
 });
 watch([isRemanejamento, seriesD, oSer], ([rem, sers, ser]) => {
     if (!rem) return;
-    if (ser && !dSer.value && (sers as any[]).some(s => s.ser_id === Number(ser))) {
+    if (ser && (sers as any[]).some(s => s.ser_id === Number(ser))) {
         dSer.value = ser as any;
     }
 });
@@ -198,6 +200,15 @@ const seriesDestinoFiltradas = computed(() =>
         ? seriesD.value.filter(s => s.ser_id !== Number(oSer.value))
         : seriesD.value,
 );
+
+// Itens p/ os comboboxes filtráveis (LocalCombobox usa {id,label}).
+const segmentoItems  = computed(() => segmentos.value.map(s => ({ id: s.seg_id, label: s.seg_nome })));
+const serieItems     = computed(() => series.value.map(s => ({ id: s.ser_id, label: s.ser_nome })));
+const turmaItems     = computed(() => turmas.value.map(t => ({ id: t.tur_id, label: t.tur_nome })));
+const alunoItems     = computed(() => alunos.value.map(a => ({ id: a.tma_id, label: a.aln_nome })));
+const segmentoDItems = computed(() => segmentosD.value.map(s => ({ id: s.seg_id, label: s.seg_nome })));
+const serieDItems    = computed(() => seriesDestinoFiltradas.value.map(s => ({ id: s.ser_id, label: s.ser_nome })));
+const turmaDItems    = computed(() => turmasD.value.map(t => ({ id: t.tur_id, label: t.tur_nome })));
 
 const destinoLabel = computed(() => {
     if (isRemanejamento.value) return 'Destino — mesma série, outra turma';
@@ -289,7 +300,7 @@ function submit() {
                 <!-- Origem -->
                 <div class="grid gap-3 rounded-lg border border-indigo-200 bg-indigo-50/40 p-4">
                     <h3 class="text-sm font-semibold text-indigo-800">Origem</h3>
-                    <div class="grid gap-4 sm:grid-cols-3">
+                    <div class="grid items-start gap-4 sm:grid-cols-3">
                         <div class="grid gap-1.5">
                             <FormLabel :required="true">Ano Letivo</FormLabel>
                             <select v-model="oAnl" class="rounded-md border bg-background px-3 py-2 text-sm">
@@ -308,31 +319,44 @@ function submit() {
                         </div>
                         <div class="grid gap-1.5">
                             <FormLabel :required="true">Segmento</FormLabel>
-                            <select v-model="oSeg" class="rounded-md border bg-background px-3 py-2 text-sm" :disabled="!segmentos.length">
-                                <option value="">—</option>
-                                <option v-for="s in segmentos" :key="s.seg_id" :value="s.seg_id">{{ s.seg_nome }}</option>
-                            </select>
+                            <LocalCombobox
+                                :model-value="oSeg === '' ? null : oSeg"
+                                :items="segmentoItems"
+                                placeholder="Selecione..."
+                                :disabled="!segmentos.length"
+                                @update:model-value="(v) => (oSeg = v ?? '')"
+                            />
                         </div>
                         <div class="grid gap-1.5">
                             <FormLabel :required="true">Série</FormLabel>
-                            <select v-model="oSer" class="rounded-md border bg-background px-3 py-2 text-sm" :disabled="!series.length">
-                                <option value="">—</option>
-                                <option v-for="s in series" :key="s.ser_id" :value="s.ser_id">{{ s.ser_nome }}</option>
-                            </select>
+                            <LocalCombobox
+                                :model-value="oSer === '' ? null : oSer"
+                                :items="serieItems"
+                                placeholder="Selecione..."
+                                :disabled="!series.length"
+                                @update:model-value="(v) => (oSer = v ?? '')"
+                            />
                         </div>
                         <div class="grid gap-1.5">
                             <FormLabel :required="true">Turma</FormLabel>
-                            <select v-model="oTur" class="rounded-md border bg-background px-3 py-2 text-sm" :disabled="!turmas.length">
-                                <option value="">—</option>
-                                <option v-for="t in turmas" :key="t.tur_id" :value="t.tur_id">{{ t.tur_nome }}</option>
-                            </select>
+                            <LocalCombobox
+                                :model-value="oTur === '' ? null : oTur"
+                                :items="turmaItems"
+                                placeholder="Selecione..."
+                                :disabled="!turmas.length"
+                                @update:model-value="(v) => (oTur = v ?? '')"
+                            />
                         </div>
                         <div class="grid gap-1.5">
                             <FormLabel :required="true">Aluno</FormLabel>
-                            <select v-model="form.tma_id_origem" class="rounded-md border bg-background px-3 py-2 text-sm" :disabled="!alunos.length">
-                                <option :value="null">—</option>
-                                <option v-for="a in alunos" :key="a.tma_id" :value="a.tma_id">{{ a.aln_nome }}</option>
-                            </select>
+                            <LocalCombobox
+                                :model-value="form.tma_id_origem"
+                                :items="alunoItems"
+                                placeholder="Selecione..."
+                                :disabled="!alunos.length"
+                                :invalid="!!form.errors.tma_id_origem"
+                                @update:model-value="(v) => (form.tma_id_origem = v)"
+                            />
                             <InputError :message="form.errors.tma_id_origem" />
                         </div>
                     </div>
@@ -348,35 +372,38 @@ function submit() {
                 <!-- Destino -->
                 <div v-if="exigeDestino" class="grid gap-3 rounded-lg border border-fuchsia-200 bg-fuchsia-50/40 p-4">
                     <h3 class="text-sm font-semibold text-fuchsia-800">{{ destinoLabel }}</h3>
-                    <div class="grid gap-4 sm:grid-cols-3">
+                    <div class="grid items-start gap-4 sm:grid-cols-3">
                         <div class="grid gap-1.5">
                             <FormLabel :required="true">Segmento</FormLabel>
-                            <select
-                                v-model="dSeg"
-                                class="rounded-md border bg-background px-3 py-2 text-sm"
-                                :disabled="!segmentosD.length"
-                            >
-                                <option value="">—</option>
-                                <option v-for="s in segmentosD" :key="s.seg_id" :value="s.seg_id">{{ s.seg_nome }}</option>
-                            </select>
+                            <LocalCombobox
+                                :model-value="dSeg === '' ? null : dSeg"
+                                :items="segmentoDItems"
+                                placeholder="Selecione..."
+                                :disabled="isRemanejamento || !segmentosD.length"
+                                @update:model-value="(v) => (dSeg = v ?? '')"
+                            />
+                            <p v-if="isRemanejamento" class="text-xs text-muted-foreground">Travado na origem — no remanejamento só a turma muda.</p>
                         </div>
                         <div class="grid gap-1.5">
                             <FormLabel :required="true">Série</FormLabel>
-                            <select
-                                v-model="dSer"
-                                class="rounded-md border bg-background px-3 py-2 text-sm"
-                                :disabled="!seriesDestinoFiltradas.length"
-                            >
-                                <option value="">—</option>
-                                <option v-for="s in seriesDestinoFiltradas" :key="s.ser_id" :value="s.ser_id">{{ s.ser_nome }}</option>
-                            </select>
+                            <LocalCombobox
+                                :model-value="dSer === '' ? null : dSer"
+                                :items="serieDItems"
+                                placeholder="Selecione..."
+                                :disabled="isRemanejamento || !seriesDestinoFiltradas.length"
+                                @update:model-value="(v) => (dSer = v ?? '')"
+                            />
                         </div>
                         <div class="grid gap-1.5">
                             <FormLabel :required="true">Turma</FormLabel>
-                            <select v-model="form.tur_id_destino" class="rounded-md border bg-background px-3 py-2 text-sm" :disabled="!turmasD.length">
-                                <option :value="null">—</option>
-                                <option v-for="t in turmasD" :key="t.tur_id" :value="t.tur_id">{{ t.tur_nome }}</option>
-                            </select>
+                            <LocalCombobox
+                                :model-value="form.tur_id_destino"
+                                :items="turmaDItems"
+                                placeholder="Selecione..."
+                                :disabled="!turmasD.length"
+                                :invalid="!!form.errors.tur_id_destino"
+                                @update:model-value="(v) => (form.tur_id_destino = v)"
+                            />
                             <InputError :message="form.errors.tur_id_destino" />
                         </div>
                     </div>

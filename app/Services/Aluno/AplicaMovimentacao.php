@@ -292,6 +292,14 @@ class AplicaMovimentacao
             }
         }
 
+        // Remanejamento comum (mesmo segmento): a série TEM que ser a mesma — só a
+        // turma muda. A exceção Fundamental 2 → EJA acima já troca de segmento/série.
+        if ($segOrigem === $segDestino && $destino->tur_ser_id !== $origem->turma->tur_ser_id) {
+            throw ValidationException::withMessages([
+                'tur_id_destino' => 'Remanejamento exige a mesma série da turma de origem — apenas a turma pode mudar.',
+            ]);
+        }
+
         $this->validarVagaEDuplicidade($origem, $destino);
     }
 
