@@ -7,8 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AuthBase from '@/layouts/AuthLayout.vue';
 import { Head, useForm, usePage } from '@inertiajs/vue3';
-import { LoaderCircle, ShieldAlert } from 'lucide-vue-next';
-import { computed, watch } from 'vue';
+import { Eye, EyeOff, LoaderCircle, ShieldAlert } from 'lucide-vue-next';
+import { computed, ref, watch } from 'vue';
 
 defineProps<{
     status?: string;
@@ -24,6 +24,8 @@ const form = useForm({
     password: '',
     remember: false,
 });
+
+const showPassword = ref(false);
 
 // Login em minúsculas — casa com o cadastro (normalizado no backend também).
 watch(() => form.login, (v) => {
@@ -74,15 +76,29 @@ const submit = () => {
                         Esqueci minha senha
                     </TextLink>
                 </div>
-                <Input
-                    id="password"
-                    type="password"
-                    required
-                    tabindex="2"
-                    autocomplete="current-password"
-                    v-model="form.password"
-                    placeholder="••••••••"
-                />
+                <div class="relative">
+                    <Input
+                        id="password"
+                        :type="showPassword ? 'text' : 'password'"
+                        required
+                        tabindex="2"
+                        autocomplete="current-password"
+                        v-model="form.password"
+                        placeholder="••••••••"
+                        class="pr-10"
+                    />
+                    <button
+                        type="button"
+                        tabindex="-1"
+                        :aria-label="showPassword ? 'Ocultar senha' : 'Mostrar senha'"
+                        :aria-pressed="showPassword"
+                        class="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground focus:outline-none"
+                        @click="showPassword = !showPassword"
+                    >
+                        <EyeOff v-if="showPassword" class="size-4" />
+                        <Eye v-else class="size-4" />
+                    </button>
+                </div>
                 <InputError :message="form.errors.password" />
             </div>
 
