@@ -3,8 +3,8 @@
 # dona e o banco isolado. Idempotente — rodar de novo nao altera nada existente
 # (exceto que re-sincroniza a senha da role e as permissoes de isolamento).
 #
-# USO:  ./docker/postgres/provision-municipio.sh <db_name> <db_user> <db_password>
-# Ex.:  ./docker/postgres/provision-municipio.sh sie_coruripe sie_coruripe 'S3nh4F0rte'
+# USO:  bash ./docker/postgres/provision-municipio.sh <db_name> <db_user> <db_password>
+# Ex.:  bash ./docker/postgres/provision-municipio.sh sie_coruripe sie_coruripe 'S3nh4F0rte'
 #
 # Le o superusuario do .env do diretorio da instancia:
 #   PG_SUPERUSER (default postgres), PG_SUPERUSER_PASSWORD (obrigatorio)
