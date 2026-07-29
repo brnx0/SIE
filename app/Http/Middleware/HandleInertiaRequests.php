@@ -83,10 +83,7 @@ class HandleInertiaRequests extends Middleware
             'alertar_acentos_nomes' => (bool) ($p->par_fl_alertar_acentos_nomes ?? false),
             'validar_idade_serie' => (bool) ($p->par_fl_validar_idade_serie ?? false),
             'gerar_matricula_auto' => (bool) ($p->par_fl_gerar_matricula_auto ?? true),
-            'validar_carga_prof' => (bool) ($p->par_fl_validar_carga_prof ?? false),
             'cpf_obrigatorio' => (bool) ($p->par_fl_cpf_obrigatorio ?? false),
-            'fardamento_obrigatorio' => (bool) ($p->par_fl_fardamento_obrigatorio ?? false),
-            'tipo_validacao_carga' => $p->par_tipo_validacao_carga ?? 'avisar',
         ];
     }
 }

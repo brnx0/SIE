@@ -28,10 +28,7 @@ class UpdateParametroEntidadeRequest extends FormRequest
             'par_fl_alertar_acentos_nomes' => ['boolean'],
             'par_fl_validar_idade_serie' => ['boolean'],
             'par_fl_gerar_matricula_auto' => ['boolean'],
-            'par_fl_validar_carga_prof' => ['boolean'],
             'par_fl_cpf_obrigatorio' => ['boolean'],
-            'par_fl_fardamento_obrigatorio' => ['boolean'],
-            'par_tipo_validacao_carga' => ['nullable', \Illuminate\Validation\Rule::in(['bloquear', 'avisar'])],
         ];
     }
 

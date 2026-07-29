@@ -23,10 +23,7 @@ export interface SystemParams {
     alertar_acentos_nomes: boolean;
     validar_idade_serie: boolean;
     gerar_matricula_auto: boolean;
-    validar_carga_prof: boolean;
     cpf_obrigatorio: boolean;
-    fardamento_obrigatorio: boolean;
-    tipo_validacao_carga: 'bloquear' | 'avisar';
 }
 
 export interface SharedData {

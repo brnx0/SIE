@@ -63,10 +63,7 @@ const DEFAULT_PARAMS: SystemParams = {
     alertar_acentos_nomes: false,
     validar_idade_serie: false,
     gerar_matricula_auto: true,
-    validar_carga_prof: false,
     cpf_obrigatorio: false,
-    fardamento_obrigatorio: false,
-    tipo_validacao_carga: 'avisar',
 };
 const params = computed<SystemParams>(() => page.props.params ?? DEFAULT_PARAMS);
 const cpfRequired = computed(() => params.value.cpf_obrigatorio);

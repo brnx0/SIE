@@ -15,11 +15,7 @@ return new class extends Migration
             $t->boolean('par_fl_alertar_acentos_nomes')->default(false);
             $t->boolean('par_fl_validar_idade_serie')->default(false);
             $t->boolean('par_fl_gerar_matricula_auto')->default(true);
-            $t->boolean('par_fl_validar_carga_prof')->default(false);
             $t->boolean('par_fl_cpf_obrigatorio')->default(false);
-            $t->boolean('par_fl_fardamento_obrigatorio')->default(false);
-            // 'bloquear' | 'avisar'
-            $t->string('par_tipo_validacao_carga', 10)->default('avisar');
         });
     }
 
@@ -33,10 +29,7 @@ return new class extends Migration
                 'par_fl_alertar_acentos_nomes',
                 'par_fl_validar_idade_serie',
                 'par_fl_gerar_matricula_auto',
-                'par_fl_validar_carga_prof',
                 'par_fl_cpf_obrigatorio',
-                'par_fl_fardamento_obrigatorio',
-                'par_tipo_validacao_carga',
             ]);
         });
     }

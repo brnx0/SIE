@@ -475,7 +475,6 @@ class DashboardController extends Controller
                 ['title' => 'Validar idade × série', 'meta' => $flag((bool) $p->par_fl_validar_idade_serie)],
                 ['title' => 'Gerar matrícula automática', 'meta' => $flag((bool) $p->par_fl_gerar_matricula_auto)],
                 ['title' => 'Alertar homônimos', 'meta' => $flag((bool) $p->par_fl_alertar_homonimos)],
-                ['title' => 'Validação de carga do professor', 'meta' => $p->par_tipo_validacao_carga ?: '—'],
             ];
         });
 

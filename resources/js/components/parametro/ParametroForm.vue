@@ -58,8 +58,7 @@ const TAB_FIELDS: Record<TabId, string[]> = {
         'par_fl_nome_pessoa_caixa_alta', 'par_fl_nome_escola_caixa_alta',
         'par_fl_alertar_homonimos', 'par_fl_alertar_acentos_nomes',
         'par_fl_validar_idade_serie', 'par_fl_gerar_matricula_auto',
-        'par_fl_validar_carga_prof', 'par_fl_cpf_obrigatorio',
-        'par_fl_fardamento_obrigatorio', 'par_tipo_validacao_carga',
+        'par_fl_cpf_obrigatorio',
     ],
     grade: [],
 };
@@ -80,10 +79,7 @@ const form = useForm<ParametroEntidadeFormData>({
     par_fl_alertar_acentos_nomes: props.initial.par_fl_alertar_acentos_nomes ?? false,
     par_fl_validar_idade_serie: props.initial.par_fl_validar_idade_serie ?? false,
     par_fl_gerar_matricula_auto: props.initial.par_fl_gerar_matricula_auto ?? true,
-    par_fl_validar_carga_prof: props.initial.par_fl_validar_carga_prof ?? false,
     par_fl_cpf_obrigatorio: props.initial.par_fl_cpf_obrigatorio ?? false,
-    par_fl_fardamento_obrigatorio: props.initial.par_fl_fardamento_obrigatorio ?? false,
-    par_tipo_validacao_carga: props.initial.par_tipo_validacao_carga ?? 'avisar',
     _method: 'put',
 });
 
@@ -442,29 +438,6 @@ const fmtDateTime = (s?: string | null) => {
                                 <Switch id="par_fl_validar_idade_serie" v-model="form.par_fl_validar_idade_serie" />
                                 <Label for="par_fl_validar_idade_serie" class="text-sm font-normal">Validar a Idade / Série do aluno</Label>
                             </div>
-                            <div class="flex items-center gap-3">
-                                <Switch id="par_fl_validar_carga_prof" v-model="form.par_fl_validar_carga_prof" />
-                                <Label for="par_fl_validar_carga_prof" class="text-sm font-normal">Validar a carga horária do professor</Label>
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <Switch id="par_fl_fardamento_obrigatorio" v-model="form.par_fl_fardamento_obrigatorio" />
-                                <Label for="par_fl_fardamento_obrigatorio" class="text-sm font-normal">Tornar fardamento do aluno obrigatório</Label>
-                            </div>
-
-                            <fieldset class="rounded-lg border bg-background p-4">
-                                <legend class="px-2 text-xs font-semibold text-muted-foreground">Tipo de Validação</legend>
-                                <div class="flex flex-col gap-2">
-                                    <label class="flex items-center gap-2 text-sm">
-                                        <input type="radio" value="bloquear" v-model="form.par_tipo_validacao_carga" class="size-4 accent-indigo-600" />
-                                        Bloquear carga horária excedente
-                                    </label>
-                                    <label class="flex items-center gap-2 text-sm">
-                                        <input type="radio" value="avisar" v-model="form.par_tipo_validacao_carga" class="size-4 accent-indigo-600" />
-                                        Avisar somente
-                                    </label>
-                                </div>
-                                <InputError :message="form.errors.par_tipo_validacao_carga" />
-                            </fieldset>
                         </div>
 
                         <!-- Coluna direita -->
