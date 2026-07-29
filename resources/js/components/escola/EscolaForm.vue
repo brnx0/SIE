@@ -61,10 +61,7 @@ const DEFAULT_PARAMS: SystemParams = {
     alertar_acentos_nomes: false,
     validar_idade_serie: false,
     gerar_matricula_auto: true,
-    validar_carga_prof: false,
     cpf_obrigatorio: false,
-    fardamento_obrigatorio: false,
-    tipo_validacao_carga: 'avisar',
     
 };
 const params = computed<SystemParams>(() => page.props.params ?? DEFAULT_PARAMS);
@@ -560,7 +557,7 @@ const isLast = computed(() => activeTab.value === TABS.value[TABS.value.length -
                             class="h-10 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
                         >
                             <option value="">Não informado</option>
-                            <option v-for="t in TURNOS_ESCOLARES" :key="t" :value="t">{{ t }}</option>
+                            <option v-for="t in TURNOS_ESCOLARES" :key="t.value" :value="t.value">{{ t.label }}</option>
                         </select>
                         <InputError :message="form.errors.esc_turno_escolar" />
                     </div>

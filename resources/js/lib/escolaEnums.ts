@@ -49,9 +49,8 @@ export const SITUACAO_FUNC: { value: SituacaoFunc; label: string }[] = [
     { value: 3, label: 'Extinta' },
 ];
 
-export const TURNOS_ESCOLARES: string[] = [
-    'Matutino',
-    'Vespertino',
-    'Noturno',
-    'Integral',
+export const TURNOS_ESCOLARES: { value: string; label: string }[] = [
+    { value: 'Parcial',  label: 'Parcial — apenas turmas parciais (matutino, vespertino…)' },
+    { value: 'Integral', label: 'Integral — apenas turmas integrais' },
+    { value: 'Mista',    label: 'Mista — turmas integrais e parciais' },
 ];
