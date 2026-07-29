@@ -31,9 +31,14 @@ return [
     'disks' => [
 
         'local' => [
+            // serve=false: com true, o Laravel 11 registra a rota nativa
+            // storage/{path} (storage.local -> storage/app/private) que SOMBREAVA
+            // a rota storage.public do PublicStorageController, fazendo os uploads
+            // do disco public (storage/app/public) darem 404 no deploy (nginx no
+            // host + storage/app em volume). Nada no app usa a rota nativa do local.
             'driver' => 'local',
             'root' => storage_path('app/private'),
-            'serve' => true,
+            'serve' => false,
             'throw' => false,
             'report' => false,
         ],
