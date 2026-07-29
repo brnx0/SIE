@@ -65,6 +65,16 @@ class AlunosPorTurmaRelatorioController extends Controller
         return XlsxExport::download('alunos_por_turma_' . now()->format('Ymd_His') . '.xlsx', $headers, $rows);
     }
 
+    /** Rótulo da turma p/ agrupamento/ordenação: "Série - Turma" (ou só a turma). */
+    private function rotuloTurma(?Turma $turma): string
+    {
+        if (! $turma) {
+            return '';
+        }
+
+        return trim(($turma->serie?->ser_nome ? $turma->serie->ser_nome . ' - ' : '') . ($turma->tur_nome ?? ''));
+    }
+
     /**
      * Executa a query e monta linhas/filtros/parametros (compartilhado entre tela e export).
      *
@@ -103,7 +113,11 @@ class AlunosPorTurmaRelatorioController extends Controller
             ->when(! $incluirSaidas, fn ($q) => $q->where('tma_situacao', Matricula::SITUACAO_ATIVA))
             ->get()
             ->sort(function ($a, $b) {
-                $c = strcmp($a->turma?->tur_nome ?? '', $b->turma?->tur_nome ?? '');
+                // Ordena primeiro pela turma (série + turma, mesma chave da exibição)
+                // e depois pelo nome do aluno.
+                $ta = $this->rotuloTurma($a->turma);
+                $tb = $this->rotuloTurma($b->turma);
+                $c  = strcmp($ta, $tb);
                 return $c !== 0 ? $c : strcmp($a->aluno?->aln_nome ?? '', $b->aluno?->aln_nome ?? '');
             })
             ->values();
@@ -137,7 +151,7 @@ class AlunosPorTurmaRelatorioController extends Controller
                 : ($m->situacaoSaida?->tas_descricao_enturmacao ?? $m->tma_situacao);
 
             return [
-                'turma'              => trim(($m->turma?->serie?->ser_nome ? $m->turma->serie->ser_nome . ' - ' : '') . ($m->turma?->tur_nome ?? '')) ?: null,
+                'turma'              => $this->rotuloTurma($m->turma) ?: null,
                 'tur_id'             => $m->turma?->tur_id,
                 'aln_id'             => $aln?->aln_id,
                 'nome'               => $aln?->aln_nome,
@@ -154,17 +168,10 @@ class AlunosPorTurmaRelatorioController extends Controller
             ];
         });
 
-        $parametros = ParametroEntidade::first();
+        $parametros = ParametroEntidade::with('municipio:mun_id,mun_nome,mun_uf')->first();
 
         return [
-            'parametros' => $parametros ? [
-                'nome_entidade'      => $parametros->par_nome_entidade,
-                'msg_cab_secretaria' => $parametros->par_msg_cab_secretaria,
-                'msg_cab_estado'     => $parametros->par_msg_cab_estado,
-                'endereco'           => $parametros->par_endereco,
-                'logomarca_url'      => $parametros->par_logomarca_url,
-                'brasao_url'         => $parametros->par_brasao_url,
-            ] : null,
+            'parametros' => $parametros?->cabecalhoRelatorio(),
             'filtros' => [
                 'anl_id'         => $anoLetivo->anl_id,
                 'anl_ano'        => $anoLetivo->anl_ano,

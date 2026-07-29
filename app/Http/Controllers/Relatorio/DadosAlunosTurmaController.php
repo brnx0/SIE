@@ -117,6 +117,7 @@ class DadosAlunosTurmaController extends Controller
                 'nome_entidade'      => $parametros->par_nome_entidade,
                 'msg_cab_secretaria' => $parametros->par_msg_cab_secretaria,
                 'msg_cab_estado'     => $parametros->par_msg_cab_estado,
+                'municipio'          => $parametros->municipio_label,
                 'logomarca_url'      => $parametros->par_logomarca_url,
                 'brasao_url'         => $parametros->par_brasao_url,
             ] : null,

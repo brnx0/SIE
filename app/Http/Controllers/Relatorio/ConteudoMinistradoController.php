@@ -138,6 +138,7 @@ class ConteudoMinistradoController extends Controller
         return Inertia::render('relatorios/ConteudoMinistrado/Resultado', [
             'parametros'  => $p ? [
                 'nome_entidade' => $p->par_nome_entidade,
+                'municipio'     => $p->municipio_label,
                 'logomarca_url' => $p->par_logomarca_url,
                 'brasao_url'    => $p->par_brasao_url,
             ] : null,

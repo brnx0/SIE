@@ -32,10 +32,7 @@ class ParametroEntidade extends Model
         'par_fl_alertar_acentos_nomes',
         'par_fl_validar_idade_serie',
         'par_fl_gerar_matricula_auto',
-        'par_fl_validar_carga_prof',
         'par_fl_cpf_obrigatorio',
-        'par_fl_fardamento_obrigatorio',
-        'par_tipo_validacao_carga',
     ];
 
     protected $casts = [
@@ -45,9 +42,7 @@ class ParametroEntidade extends Model
         'par_fl_alertar_acentos_nomes' => 'boolean',
         'par_fl_validar_idade_serie' => 'boolean',
         'par_fl_gerar_matricula_auto' => 'boolean',
-        'par_fl_validar_carga_prof' => 'boolean',
         'par_fl_cpf_obrigatorio' => 'boolean',
-        'par_fl_fardamento_obrigatorio' => 'boolean',
     ];
 
     protected $appends = ['par_logomarca_url', 'par_brasao_url'];
@@ -60,6 +55,33 @@ class ParametroEntidade extends Model
     protected function parBrasaoUrl(): Attribute
     {
         return Attribute::get(fn () => $this->par_brasao ? Storage::disk('public')->url($this->par_brasao) : null);
+    }
+
+    /** Rótulo do município p/ cabeçalho de relatórios: "Cidade / UF" (ou null). */
+    protected function municipioLabel(): Attribute
+    {
+        return Attribute::get(fn () => $this->municipio
+            ? $this->municipio->mun_nome . ' / ' . $this->municipio->mun_uf
+            : null);
+    }
+
+    /**
+     * Payload padrão do cabeçalho institucional dos relatórios.
+     * Fonte única para todos os controllers de Relatório (inclui município).
+     *
+     * @return array<string,mixed>
+     */
+    public function cabecalhoRelatorio(): array
+    {
+        return [
+            'nome_entidade'      => $this->par_nome_entidade,
+            'msg_cab_secretaria' => $this->par_msg_cab_secretaria,
+            'msg_cab_estado'     => $this->par_msg_cab_estado,
+            'endereco'           => $this->par_endereco,
+            'municipio'          => $this->municipio_label,
+            'logomarca_url'      => $this->par_logomarca_url,
+            'brasao_url'         => $this->par_brasao_url,
+        ];
     }
 
     public function municipio(): BelongsTo

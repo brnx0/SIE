@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
+import RelatorioCabecalho from '@/components/relatorios/RelatorioCabecalho.vue';
 import { Button } from '@/components/ui/button';
 import type { BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/vue3';
@@ -18,6 +19,7 @@ interface Parametros {
     msg_cab_secretaria: string | null;
     msg_cab_estado: string | null;
     endereco: string | null;
+    municipio: string | null;
     logomarca_url: string | null;
     brasao_url: string | null;
 }
@@ -52,20 +54,7 @@ const dataEmissao = computed(() => {
     <!-- Bloco impressão -->
     <Teleport to="body" :disabled="!isActiveTab">
     <div id="print-area">
-        <header class="cabecalho-impressao">
-            <div class="logomarca">
-                <img v-if="parametros?.logomarca_url" :src="parametros.logomarca_url" alt="Logomarca" />
-            </div>
-            <div class="cab-textos">
-                <div v-if="parametros?.msg_cab_estado" class="cab-linha">{{ parametros.msg_cab_estado }}</div>
-                <div v-if="parametros?.msg_cab_secretaria" class="cab-linha">{{ parametros.msg_cab_secretaria }}</div>
-                <div class="cab-entidade">{{ parametros?.nome_entidade ?? '—' }}</div>
-                <div v-if="parametros?.endereco" class="cab-end">{{ parametros.endereco }}</div>
-            </div>
-            <div class="brasao">
-                <img v-if="parametros?.brasao_url" :src="parametros.brasao_url" alt="Brasão" />
-            </div>
-        </header>
+        <RelatorioCabecalho :parametros="parametros" />
 
         <div class="titulo-impressao">
             <h1>Sumário de Matrículas</h1>
@@ -131,7 +120,7 @@ const dataEmissao = computed(() => {
                 <table class="w-full text-xs">
                     <thead class="bg-indigo-50 dark:bg-indigo-900/30">
                         <tr>
-                            <th class="px-2 py-2 text-left sticky left-0 bg-indigo-50 dark:bg-indigo-900/30 z-10">ESCOLA</th>
+                            <th class="px-2 py-2 text-left sticky left-0 bg-indigo-50 dark:bg-indigo-900/30 z-10 min-w-[240px] whitespace-nowrap">ESCOLA</th>
                             <th v-for="s in series" :key="s.ser_id" class="px-2 py-2 text-center font-semibold" :title="s.seg_nome ?? ''">
                                 {{ s.ser_nome }}
                             </th>
@@ -140,7 +129,7 @@ const dataEmissao = computed(() => {
                     </thead>
                     <tbody class="divide-y">
                         <tr v-for="l in linhas" :key="l.esc_id" class="hover:bg-muted/20">
-                            <td class="px-2 py-1.5 sticky left-0 bg-card z-10 font-medium">{{ l.esc_nome }}</td>
+                            <td class="px-2 py-1.5 sticky left-0 bg-card z-10 font-medium min-w-[240px] whitespace-nowrap">{{ l.esc_nome }}</td>
                             <td v-for="(v, i) in l.valores" :key="`s-${l.esc_id}-${i}`" class="px-2 py-1.5 text-center tabular-nums">
                                 <span :class="v === 0 ? 'text-muted-foreground' : ''">{{ v }}</span>
                             </td>
@@ -230,16 +219,21 @@ const dataEmissao = computed(() => {
         vertical-align: middle;
     }
     .tabela-impressao .centro { text-align: center; }
+    /* Escola SEM largura fixa: absorve o espaço restante e mostra o nome completo.
+       (As numéricas é que são fixas/estreitas — antes era o contrário e o nome
+       ficava espremido em 180px, empilhando verticalmente.) */
     .tabela-impressao .col-escola {
-        width: 180px;
+        width: auto;
         text-align: left;
         font-weight: 600;
+        white-space: normal;
+        overflow-wrap: anywhere;
     }
     .tabela-impressao .col-total {
-        width: 40px;
+        width: 14mm;
         font-weight: 700;
     }
-    .tabela-impressao .col-num { width: auto; }
+    .tabela-impressao .col-num { width: 12mm; }
     .tabela-impressao .linha-total td {
         border-top: 2px solid #000;
         font-weight: 700;

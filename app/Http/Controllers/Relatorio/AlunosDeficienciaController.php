@@ -76,14 +76,7 @@ class AlunosDeficienciaController extends Controller
             });
 
         return Inertia::render('relatorios/AlunosDeficiencia/Resultado', [
-            'parametros' => $parametros ? [
-                'nome_entidade'      => $parametros->par_nome_entidade,
-                'msg_cab_secretaria' => $parametros->par_msg_cab_secretaria,
-                'msg_cab_estado'     => $parametros->par_msg_cab_estado,
-                'endereco'           => $parametros->par_endereco,
-                'logomarca_url'      => $parametros->par_logomarca_url,
-                'brasao_url'         => $parametros->par_brasao_url,
-            ] : null,
+            'parametros' => $parametros ? $parametros->cabecalhoRelatorio() : null,
             'filtros' => [
                 'anl_ano'  => $anoLetivo->anl_ano,
                 'esc_nome' => $escolaFiltro?->esc_nome ?? 'Todas as escolas',

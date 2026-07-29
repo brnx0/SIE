@@ -108,6 +108,7 @@ class DeclaracaoConclusaoController extends Controller
                 'msg_cab_secretaria' => $parametros->par_msg_cab_secretaria,
                 'msg_cab_estado'     => $parametros->par_msg_cab_estado,
                 'endereco'           => $parametros->par_endereco,
+                'municipio'          => $parametros->municipio_label,
                 'logomarca_url'      => $parametros->par_logomarca_url,
                 'brasao_url'         => $parametros->par_brasao_url,
                 'municipio_nome'     => $parametros->municipio?->mun_nome,

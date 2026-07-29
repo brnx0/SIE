@@ -74,7 +74,7 @@ class FrequenciaMensalController extends Controller
         $p = ParametroEntidade::first();
 
         return Inertia::render('relatorios/FrequenciaMensal/Resultado', [
-            'parametros' => $p ? ['nome_entidade' => $p->par_nome_entidade, 'logomarca_url' => $p->par_logomarca_url, 'brasao_url' => $p->par_brasao_url] : null,
+            'parametros' => $p ? ['nome_entidade' => $p->par_nome_entidade, 'municipio' => $p->municipio_label, 'logomarca_url' => $p->par_logomarca_url, 'brasao_url' => $p->par_brasao_url] : null,
             'filtros'    => [
                 'anl_ano'   => $ano->anl_ano,
                 'esc_nome'  => $escola->esc_nome,

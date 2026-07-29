@@ -45,10 +45,11 @@ class AlunosPorEscolaController extends Controller
     {
         ['linhas' => $linhas] = $this->montar($request);
 
-        $headers = ['Nome', 'Turma', 'CPF', 'Sexo', 'Endereço', 'Deficiência', 'Data de Nascimento', 'Nome da Mãe'];
+        $headers = ['Nome', 'Série', 'Turma', 'CPF', 'Sexo', 'Endereço', 'Deficiência', 'Data de Nascimento', 'Nome da Mãe'];
 
         $rows = $linhas->map(fn ($l) => [
             $l['nome'],
+            $l['serie'],
             $l['turma'],
             $l['cpf'],
             $l['sexo'],
@@ -84,7 +85,8 @@ class AlunosPorEscolaController extends Controller
                     . 'aln_logradouro,aln_numero,aln_complemento,aln_bairro,aln_cidade,aln_uf,'
                     . 'aln_filiacao_1,aln_filiacao_1_tipo,aln_filiacao_2,aln_filiacao_2_tipo',
                 'aluno.saude:als_id,als_aln_id,als_fl_pcd',
-                'turma:tur_id,tur_nome',
+                'turma:tur_id,tur_nome,tur_ser_id',
+                'turma.serie:ser_id,ser_nome',
             ])
             ->where('tma_situacao', Matricula::SITUACAO_ATIVA)
             ->whereHas('turma', fn ($q) => $q
@@ -99,6 +101,7 @@ class AlunosPorEscolaController extends Controller
             ->map(fn (Matricula $m) => [
                 'aln_id'         => $m->aluno->aln_id,
                 'nome'           => $m->aluno->aln_nome,
+                'serie'          => $m->turma?->serie?->ser_nome,
                 'turma'          => $m->turma?->tur_nome,
                 'cpf'            => $m->aluno->aln_cpf,
                 'sexo'           => $m->aluno->aln_sexo,
@@ -113,14 +116,7 @@ class AlunosPorEscolaController extends Controller
         $parametros = ParametroEntidade::first();
 
         return [
-            'parametros' => $parametros ? [
-                'nome_entidade'      => $parametros->par_nome_entidade,
-                'msg_cab_secretaria' => $parametros->par_msg_cab_secretaria,
-                'msg_cab_estado'     => $parametros->par_msg_cab_estado,
-                'endereco'           => $parametros->par_endereco,
-                'logomarca_url'      => $parametros->par_logomarca_url,
-                'brasao_url'         => $parametros->par_brasao_url,
-            ] : null,
+            'parametros' => $parametros ? $parametros->cabecalhoRelatorio() : null,
             'filtros' => [
                 'anl_id'   => $anoLetivo->anl_id,
                 'anl_ano'  => $anoLetivo->anl_ano,

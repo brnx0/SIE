@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
+import RelatorioCabecalho from '@/components/relatorios/RelatorioCabecalho.vue';
 import { Button } from '@/components/ui/button';
 import type { BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/vue3';
@@ -28,6 +29,7 @@ interface Parametros {
     msg_cab_secretaria: string | null;
     msg_cab_estado: string | null;
     endereco: string | null;
+    municipio: string | null;
     logomarca_url: string | null;
     brasao_url: string | null;
 }
@@ -121,20 +123,7 @@ const exportarExcel = () => {
     <!-- Bloco exclusivo p/ impressão -->
     <Teleport to="body" :disabled="!isActiveTab">
     <div id="print-area">
-        <header class="cabecalho-impressao">
-            <div class="logomarca">
-                <img v-if="parametros?.logomarca_url" :src="parametros.logomarca_url" alt="Logomarca do Município" />
-            </div>
-            <div class="cab-textos">
-                <div v-if="parametros?.msg_cab_estado" class="cab-linha">{{ parametros.msg_cab_estado }}</div>
-                <div v-if="parametros?.msg_cab_secretaria" class="cab-linha">{{ parametros.msg_cab_secretaria }}</div>
-                <div class="cab-entidade">{{ parametros?.nome_entidade ?? '—' }}</div>
-                <div v-if="parametros?.endereco" class="cab-end">{{ parametros.endereco }}</div>
-            </div>
-            <div class="brasao">
-                <img v-if="parametros?.brasao_url" :src="parametros.brasao_url" alt="Brasão" />
-            </div>
-        </header>
+        <RelatorioCabecalho :parametros="parametros" />
 
         <div class="titulo-impressao">
             <h1>Relatório de Alunos por Turma</h1>
@@ -338,11 +327,15 @@ const exportarExcel = () => {
     }
     .subtitulo-impressao .aviso { font-style: italic; }
 
-    /* Bloco de turma */
+    /* Bloco de turma — NÃO usa page-break-inside: avoid: uma turma grande não
+       cabe sob o cabeçalho e o "avoid" empurrava o bloco inteiro p/ a 2ª página,
+       deixando a 1ª só com o cabeçalho. Deixamos a tabela fluir (thead se repete
+       e as linhas não quebram no meio), então os dados começam na 1ª página. */
     .grupo-impressao {
         margin: 10px 0 6px;
-        page-break-inside: avoid;
     }
+    /* Mantém o título "Turma X" junto de pelo menos as primeiras linhas. */
+    .grupo-impressao-header { page-break-after: avoid; }
     .grupo-impressao-header {
         background: transparent;
         color: #000;

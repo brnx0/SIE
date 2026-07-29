@@ -105,14 +105,7 @@ class ProtocoloDistribuicaoController extends Controller
             ->values();
 
         return Inertia::render('relatorios/AlimentacaoProtocolo/Resultado', [
-            'parametros' => $parametros ? [
-                'nome_entidade'      => $parametros->par_nome_entidade,
-                'msg_cab_secretaria' => $parametros->par_msg_cab_secretaria,
-                'msg_cab_estado'     => $parametros->par_msg_cab_estado,
-                'endereco'           => $parametros->par_endereco,
-                'logomarca_url'      => $parametros->par_logomarca_url,
-                'brasao_url'         => $parametros->par_brasao_url,
-            ] : null,
+            'parametros' => $parametros ? $parametros->cabecalhoRelatorio() : null,
             'filtros' => [
                 'esc_nome' => ! empty($data['esc_id'])
                     ? (Escola::find($data['esc_id'])?->esc_nome ?? '—')

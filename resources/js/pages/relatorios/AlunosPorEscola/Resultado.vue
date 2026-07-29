@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
+import RelatorioCabecalho from '@/components/relatorios/RelatorioCabecalho.vue';
 import { Button } from '@/components/ui/button';
 import type { BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/vue3';
@@ -10,6 +11,7 @@ import { useIsActiveTab } from '@/composables/useIsActiveTab';
 interface Linha {
     aln_id: number | null;
     nome: string | null;
+    serie: string | null;
     turma: string | null;
     cpf: string | null;
     sexo: string | null;
@@ -24,6 +26,7 @@ interface Parametros {
     msg_cab_secretaria: string | null;
     msg_cab_estado: string | null;
     endereco: string | null;
+    municipio: string | null;
     logomarca_url: string | null;
     brasao_url: string | null;
 }
@@ -54,10 +57,10 @@ const isActiveTab = useIsActiveTab();
 const imprimir = () => window.print();
 
 const exportarCsv = () => {
-    const headers = ['Nome', 'Turma', 'CPF', 'Sexo', 'Endereço', 'Deficiência', 'Data de Nascimento', 'Nome da Mãe'];
+    const headers = ['Nome', 'Série', 'Turma', 'CPF', 'Sexo', 'Endereço', 'Deficiência', 'Data de Nascimento', 'Nome da Mãe'];
     const sep = ';';
     const linhas = props.linhas.map(l => [
-        l.nome ?? '', l.turma ?? '', formatCpf(l.cpf), l.sexo ?? '',
+        l.nome ?? '', l.serie ?? '', l.turma ?? '', formatCpf(l.cpf), l.sexo ?? '',
         l.endereco ?? '', l.deficiencia ?? '', l.dt_nascimento ?? '', l.mae ?? '',
     ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(sep));
     const csv = '﻿' + [headers.join(sep), ...linhas].join('\n');
@@ -83,20 +86,7 @@ const exportarExcel = () => {
     <!-- Bloco exclusivo p/ impressão -->
     <Teleport to="body" :disabled="!isActiveTab">
     <div id="print-area">
-        <header class="cabecalho-impressao">
-            <div class="logomarca">
-                <img v-if="parametros?.logomarca_url" :src="parametros.logomarca_url" alt="Logomarca do Município" />
-            </div>
-            <div class="cab-textos">
-                <div v-if="parametros?.msg_cab_estado" class="cab-linha">{{ parametros.msg_cab_estado }}</div>
-                <div v-if="parametros?.msg_cab_secretaria" class="cab-linha">{{ parametros.msg_cab_secretaria }}</div>
-                <div class="cab-entidade">{{ parametros?.nome_entidade ?? '—' }}</div>
-                <div v-if="parametros?.endereco" class="cab-end">{{ parametros.endereco }}</div>
-            </div>
-            <div class="brasao">
-                <img v-if="parametros?.brasao_url" :src="parametros.brasao_url" alt="Brasão" />
-            </div>
-        </header>
+        <RelatorioCabecalho :parametros="parametros" />
 
         <div class="titulo-impressao">
             <h1>Relatório de Alunos por Escola</h1>
@@ -111,6 +101,7 @@ const exportarExcel = () => {
             <colgroup>
                 <col class="w-num" />
                 <col class="w-nome" />
+                <col class="w-serie" />
                 <col class="w-turma" />
                 <col class="w-cpf" />
                 <col class="w-sexo" />
@@ -123,6 +114,7 @@ const exportarExcel = () => {
                 <tr>
                     <th class="col-num">#</th>
                     <th>Nome</th>
+                    <th>Série</th>
                     <th>Turma</th>
                     <th>CPF</th>
                     <th class="centro">Sexo</th>
@@ -136,6 +128,7 @@ const exportarExcel = () => {
                 <tr v-for="(a, i) in linhas" :key="`p-${a.aln_id ?? i}`">
                     <td class="col-num">{{ i + 1 }}</td>
                     <td class="celula-nome">{{ a.nome ?? '—' }}</td>
+                    <td>{{ a.serie ?? '—' }}</td>
                     <td>{{ a.turma ?? '—' }}</td>
                     <td>{{ formatCpf(a.cpf) }}</td>
                     <td class="centro">{{ a.sexo ?? '—' }}</td>
@@ -183,10 +176,11 @@ const exportarExcel = () => {
 
             <div v-else class="rounded-xl border bg-card shadow-sm overflow-hidden">
                 <div class="overflow-x-auto">
-                    <table class="w-full table-fixed text-sm" style="min-width: 1180px">
+                    <table class="w-full table-fixed text-sm" style="min-width: 1280px">
                         <colgroup>
                             <col style="width: 48px" />
                             <col style="width: 260px" />
+                            <col style="width: 100px" />
                             <col style="width: 90px" />
                             <col style="width: 130px" />
                             <col style="width: 60px" />
@@ -199,6 +193,7 @@ const exportarExcel = () => {
                             <tr>
                                 <th class="px-3 py-2 text-left">#</th>
                                 <th class="px-3 py-2 text-left">Nome</th>
+                                <th class="px-3 py-2 text-left">Série</th>
                                 <th class="px-3 py-2 text-left">Turma</th>
                                 <th class="px-3 py-2 text-left">CPF</th>
                                 <th class="px-3 py-2 text-center">Sexo</th>
@@ -212,6 +207,7 @@ const exportarExcel = () => {
                             <tr v-for="(a, i) in linhas" :key="a.aln_id ?? i">
                                 <td class="px-3 py-1.5 text-muted-foreground tabular-nums">{{ i + 1 }}</td>
                                 <td class="px-3 py-1.5 font-medium break-words">{{ a.nome ?? '—' }}</td>
+                                <td class="px-3 py-1.5 break-words">{{ a.serie ?? '—' }}</td>
                                 <td class="px-3 py-1.5 break-words">{{ a.turma ?? '—' }}</td>
                                 <td class="px-3 py-1.5 tabular-nums">{{ formatCpf(a.cpf) }}</td>
                                 <td class="px-3 py-1.5 text-center">{{ a.sexo ?? '—' }}</td>
@@ -292,13 +288,14 @@ const exportarExcel = () => {
         margin-top: 8px;
     }
 
-    /* Larguras fixas — soma ≈ 265mm (A4 paisagem útil ≈ 281mm). */
+    /* Larguras fixas — soma ≈ 281mm (A4 paisagem útil ≈ 281mm). */
     .tabela-impressao .w-num      { width: 8mm; }
-    .tabela-impressao .w-nome     { width: 52mm; }
-    .tabela-impressao .w-turma    { width: 18mm; }
+    .tabela-impressao .w-nome     { width: 48mm; }
+    .tabela-impressao .w-serie    { width: 22mm; }
+    .tabela-impressao .w-turma    { width: 16mm; }
     .tabela-impressao .w-cpf      { width: 26mm; }
     .tabela-impressao .w-sexo     { width: 12mm; }
-    .tabela-impressao .w-endereco { width: 61mm; }
+    .tabela-impressao .w-endereco { width: 56mm; }
     .tabela-impressao .w-defic    { width: 14mm; }
     .tabela-impressao .w-nasc     { width: 25mm; }
     .tabela-impressao .w-mae      { width: 52mm; }

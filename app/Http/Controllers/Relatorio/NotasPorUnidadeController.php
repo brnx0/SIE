@@ -138,6 +138,7 @@ class NotasPorUnidadeController extends Controller
                 'nome_entidade'      => $p->par_nome_entidade,
                 'msg_cab_secretaria' => $p->par_msg_cab_secretaria,
                 'msg_cab_estado'     => $p->par_msg_cab_estado,
+                'municipio'          => $p->municipio_label,
                 'logomarca_url'      => $p->par_logomarca_url,
                 'brasao_url'         => $p->par_brasao_url,
             ] : null,
