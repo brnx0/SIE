@@ -63,7 +63,7 @@ const formatCpf = (cpf: string | null) => {
             <div class="flex flex-wrap items-center gap-3">
                 <div class="relative flex-1">
                     <Search class="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input v-model="search" placeholder="Buscar por nome ou CPF..." class="pl-9" />
+                    <Input v-model="search" placeholder="Buscar por nome, CPF ou matrícula..." class="pl-9" />
                 </div>
                 <div class="ml-auto flex items-center gap-3">
                     <RefreshButton />

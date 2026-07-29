@@ -271,7 +271,10 @@ class FuncionarioController extends Controller
             ->when($search, function ($q) use ($search) {
                 $q->where(function ($q) use ($search) {
                     $q->where('fun_nome', 'ilike', "%{$search}%")
-                        ->orWhere('fun_cpf', 'like', "%{$search}%");
+                        ->orWhere('fun_cpf', 'like', "%{$search}%")
+                        // Matrícula vive na admissão (adm_matricula); soft-deletadas
+                        // já saem pela global scope do relacionamento.
+                        ->orWhereHas('admissoes', fn ($a) => $a->where('adm_matricula', 'ilike', "%{$search}%"));
                 });
             })
             ->orderBy('fun_nome');
