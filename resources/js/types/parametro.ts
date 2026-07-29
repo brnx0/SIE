@@ -195,7 +195,7 @@ export interface Atividade {
 export interface GradeHorario {
     grh_id: number;
     grh_seg_id: number;
-    grh_turno: 'm' | 't' | 'n';
+    grh_turno: 'm' | 't' | 'n' | 'i';
     grh_hora: string;
     grh_ordem: number;
     segmento?: { seg_id: number; seg_nome_reduzido: string } | null;

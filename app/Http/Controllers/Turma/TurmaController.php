@@ -34,6 +34,7 @@ class TurmaController extends Controller
         'MATUTINO'   => 'm',
         'VESPERTINO' => 't',
         'NOTURNO'    => 'n',
+        'INTEGRAL'   => 'i',
     ];
 
     public function index(Request $request): Response
@@ -151,7 +152,7 @@ class TurmaController extends Controller
                   ->whereHas('cargo', fn ($c) => $c->where('crg_nome', 'ilike', 'Professor%'))
             )->orderBy('fun_nome')->get(['fun_id', 'fun_nome']),
             'gradeHorarios'          => GradeHorario::where('grh_seg_id', $turma->tur_seg_id)
-                ->when($turma->tur_turno !== 'INTEGRAL', fn ($q) => $q->where('grh_turno', self::TURNO_MAP[$turma->tur_turno] ?? $turma->tur_turno))
+                ->where('grh_turno', self::TURNO_MAP[$turma->tur_turno] ?? $turma->tur_turno)
                 ->orderBy('grh_ordem')
                 ->get(['grh_id', 'grh_turno', 'grh_hora', 'grh_ordem']),
         ]);

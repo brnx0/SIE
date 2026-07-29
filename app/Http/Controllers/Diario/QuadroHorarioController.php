@@ -24,6 +24,7 @@ class QuadroHorarioController extends Controller
         'MATUTINO'   => 'm',
         'VESPERTINO' => 't',
         'NOTURNO'    => 'n',
+        'INTEGRAL'   => 'i',
     ];
 
     public function index(Request $request): Response
@@ -61,7 +62,7 @@ class QuadroHorarioController extends Controller
                 $horarios      = $t->horarios;
                 $professores   = $t->professores;
                 $gradeHorarios = GradeHorario::where('grh_seg_id', $t->tur_seg_id)
-                    ->when($t->tur_turno !== 'INTEGRAL', fn ($q) => $q->where('grh_turno', self::TURNO_MAP[$t->tur_turno] ?? $t->tur_turno))
+                    ->where('grh_turno', self::TURNO_MAP[$t->tur_turno] ?? $t->tur_turno)
                     ->orderBy('grh_ordem')
                     ->get(['grh_id', 'grh_turno', 'grh_hora', 'grh_ordem']);
                 $disciplinas   = Disciplina::whereIn('dis_id',
@@ -117,7 +118,7 @@ class QuadroHorarioController extends Controller
         $this->assertTurmaDoProfessor($t, $funId, $request);
 
         $gradeHorarios = GradeHorario::where('grh_seg_id', $t->tur_seg_id)
-            ->when($t->tur_turno !== 'INTEGRAL', fn ($q) => $q->where('grh_turno', self::TURNO_MAP[$t->tur_turno] ?? $t->tur_turno))
+            ->where('grh_turno', self::TURNO_MAP[$t->tur_turno] ?? $t->tur_turno)
             ->orderBy('grh_ordem')
             ->get(['grh_id', 'grh_turno', 'grh_hora', 'grh_ordem']);
 

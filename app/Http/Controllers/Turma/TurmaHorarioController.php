@@ -35,10 +35,10 @@ class TurmaHorarioController extends Controller
             'horarios.disciplina:dis_id,dis_nome',
         ]);
 
-        $turnoMap = ['MATUTINO' => 'm', 'VESPERTINO' => 't', 'NOTURNO' => 'n'];
+        $turnoMap = ['MATUTINO' => 'm', 'VESPERTINO' => 't', 'NOTURNO' => 'n', 'INTEGRAL' => 'i'];
 
         $grade = GradeHorario::where('grh_seg_id', $turma->tur_seg_id)
-            ->when($turma->tur_turno !== 'INTEGRAL', fn ($q) => $q->where('grh_turno', $turnoMap[$turma->tur_turno] ?? $turma->tur_turno))
+            ->where('grh_turno', $turnoMap[$turma->tur_turno] ?? $turma->tur_turno)
             ->orderBy('grh_ordem')
             ->get(['grh_id', 'grh_turno', 'grh_hora', 'grh_ordem']);
 

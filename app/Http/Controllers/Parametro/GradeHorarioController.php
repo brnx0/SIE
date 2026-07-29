@@ -4,17 +4,32 @@ namespace App\Http\Controllers\Parametro;
 
 use App\Http\Controllers\Controller;
 use App\Models\Parametro\GradeHorario;
+use App\Models\Segmento\Segmento;
 use App\Models\Turma\TurmaHorario;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class GradeHorarioController extends Controller
 {
+    /** Noturno não é permitido em Creche e Fundamental (regular; EJA é exceção). */
+    private function noturnoBloqueado(int $segId): bool
+    {
+        $seg = Segmento::find($segId);
+        if (! $seg) {
+            return false;
+        }
+
+        $n = mb_strtoupper(Str::ascii($seg->seg_nome_completo . ' ' . $seg->seg_nome_reduzido), 'UTF-8');
+
+        return (str_contains($n, 'CRECHE') || str_contains($n, 'FUNDAMENTAL')) && ! str_contains($n, 'EJA');
+    }
+
     public function store(Request $request): RedirectResponse
     {
         $data = $request->validate([
             'grh_seg_id' => ['required', 'integer', 'exists:edu_segmento,seg_id'],
-            'grh_turno'  => ['required', 'string', 'in:m,t,n'],
+            'grh_turno'  => ['required', 'string', 'in:m,t,n,i'],
             'grh_hora'   => ['required', 'date_format:H:i'],
             'grh_ordem'  => ['required', 'integer', 'min:1', 'max:99'],
         ], [], [
@@ -23,6 +38,10 @@ class GradeHorarioController extends Controller
             'grh_hora'   => 'horário',
             'grh_ordem'  => 'ordem',
         ]);
+
+        if ($data['grh_turno'] === 'n' && $this->noturnoBloqueado((int) $data['grh_seg_id'])) {
+            return back()->withErrors(['grh_turno' => 'Turno noturno não é permitido para Creche e Fundamental.']);
+        }
 
         $exists = GradeHorario::where('grh_seg_id', $data['grh_seg_id'])
             ->where('grh_turno', $data['grh_turno'])
@@ -41,7 +60,7 @@ class GradeHorarioController extends Controller
     public function update(Request $request, GradeHorario $gradeHorario): RedirectResponse
     {
         $data = $request->validate([
-            'grh_turno' => ['required', 'string', 'in:m,t,n'],
+            'grh_turno' => ['required', 'string', 'in:m,t,n,i'],
             'grh_hora'  => ['required', 'date_format:H:i'],
             'grh_ordem' => ['required', 'integer', 'min:1', 'max:99'],
         ], [], [
@@ -49,6 +68,10 @@ class GradeHorarioController extends Controller
             'grh_hora'  => 'horário',
             'grh_ordem' => 'ordem',
         ]);
+
+        if ($data['grh_turno'] === 'n' && $this->noturnoBloqueado((int) $gradeHorario->grh_seg_id)) {
+            return back()->withErrors(['grh_turno' => 'Turno noturno não é permitido para Creche e Fundamental.']);
+        }
 
         $exists = GradeHorario::where('grh_seg_id', $gradeHorario->grh_seg_id)
             ->where('grh_turno', $data['grh_turno'])
