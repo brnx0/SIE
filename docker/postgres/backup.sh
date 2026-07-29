@@ -19,7 +19,9 @@ if [ -f .env ]; then
 fi
 
 MUNICIPIO="${MUNICIPIO:-homolog}"
-CONTAINER="sie_pg_${MUNICIPIO}"
+# Instancia UNICA compartilhada. Rodado no dir de cada municipio, faz backup do
+# banco daquele municipio (DB_DATABASE do .env local).
+CONTAINER="sie_pg"
 DB="${DB_DATABASE:-sie_auth}"
 DB_USER="${DB_USERNAME:-sie_homolog}"
 KEEP_DAYS="${BACKUP_KEEP_DAYS:-7}"

@@ -19,7 +19,7 @@ if [ -f .env ]; then
 fi
 
 MUNICIPIO="${MUNICIPIO:-homolog}"
-CONTAINER="sie_pg_${MUNICIPIO}"
+CONTAINER="sie_pg"
 DB="${DB_DATABASE:-sie_auth}"
 DB_USER="${DB_USERNAME:-sie_homolog}"
 

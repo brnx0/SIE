@@ -1,32 +1,43 @@
-# Postgres por MUNICIPIO - ciclo de vida proprio (sobe 1x, fica rodando).
-# Parametrizado por ${MUNICIPIO} (default: homolog). Define no .env: MUNICIPIO=coruripe
+# Postgres UNICO e COMPARTILHADO por todos os municipios (1 instancia, N bancos).
+# Ciclo de vida proprio (sobe 1x, fica rodando). NAO e parametrizado por municipio.
 #
-# Subir:   docker compose -f docker-compose.db.yml up -d
-# Backup:  docker exec sie_pg_${MUNICIPIO} pg_dump -U "$POSTGRES_USER" "$POSTGRES_DB" > backup.sql
-# Parar:   docker compose -f docker-compose.db.yml down        (volume PERSISTE)
-# NUNCA:   down -v   (apaga o banco!)
+# Vive num diretorio dedicado (ex.: /opt/sie_pg) com um .env proprio contendo:
+#   PG_SUPERUSER=postgres
+#   PG_SUPERUSER_PASSWORD=<senha forte>   (obrigatorio)
 #
-# Cria a rede sie_net_${MUNICIPIO} que o app (docker-compose.app.yml) usa como external.
+# Subir:      docker compose -f docker-compose.db.yml up -d
+# Provisionar municipio (idempotente):
+#   ./docker/postgres/provision-municipio.sh sie_coruripe sie_coruripe <senha_do_app>
+# Backup 1 banco:  docker exec sie_pg pg_dump -U <user> -d <db> > backup.sql
+# Parar:      docker compose -f docker-compose.db.yml down        (volume PERSISTE)
+# NUNCA:      down -v   (apaga TODOS os bancos!)
+#
+# Cria a rede sie_net (compartilhada) que cada app (docker-compose.app.yml) usa como external.
 
 services:
   db:
     image: postgres:16.4
-    container_name: sie_pg_${MUNICIPIO:-homolog}
+    container_name: sie_pg
     restart: unless-stopped
 
     environment:
-      POSTGRES_DB: ${DB_DATABASE:-sie_auth}
-      POSTGRES_USER: ${DB_USERNAME:-sie_homolog}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:?defina DB_PASSWORD no .env}
-      # Imagem oficial NAO tem pt_BR.UTF-8 -> ICU p/ collation pt-BR + libc C.UTF-8
+      # Superusuario apenas para administracao/provisionamento. Os apps NAO usam
+      # este usuario: cada municipio tem role propria (ver provision-municipio.sh).
+      POSTGRES_USER: ${PG_SUPERUSER:-postgres}
+      POSTGRES_PASSWORD: ${PG_SUPERUSER_PASSWORD:?defina PG_SUPERUSER_PASSWORD no .env}
+      # Banco administrativo padrao. Os bancos dos municipios sao criados depois,
+      # via provision-municipio.sh (o POSTGRES_DB cria so um, e so no volume vazio).
+      POSTGRES_DB: postgres
+      # Imagem oficial NAO tem pt_BR.UTF-8 -> ICU p/ collation pt-BR + libc C.UTF-8.
+      # Define o template da instancia; bancos novos herdam esta collation.
       POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C.UTF-8 --locale-provider=icu --icu-locale=pt-BR"
       TZ: America/Sao_Paulo
       PGTZ: America/Sao_Paulo
 
-    # Porta publicada SO em 127.0.0.1 do servidor: app conecta pela rede docker
+    # Porta publicada SO em 127.0.0.1 do servidor: apps conectam pela rede docker
     # (db:5432) e o acesso externo (DBeaver) e feito por SSH tunnel -> localhost:5432.
     # NAO trocar por "5432:5432" (0.0.0.0) num servidor publico: exporia o banco.
-    # Acesso p/ debug via:  docker compose -f docker-compose.db.yml exec db psql -U <user> -d <db>
+    # Acesso p/ debug:  docker compose -f docker-compose.db.yml exec db psql -U postgres
     ports:
       - "127.0.0.1:5432:5432"
     volumes:
@@ -46,11 +57,11 @@ services:
     deploy:
       resources:
         limits:
-          # ajuste conforme o host (servidor tem 1 CPU). Max = nº de CPUs.
-          cpus: "1.0"
-          memory: 1g
+          # 1 instancia serve varios municipios: dimensione conforme o host.
+          cpus: "2.0"
+          memory: 2g
         reservations:
-          memory: 256m
+          memory: 512m
 
     logging:
       driver: json-file
@@ -58,8 +69,8 @@ services:
 
 networks:
   sie_net:
-    name: sie_net_${MUNICIPIO:-homolog}
+    name: sie_net
 
 volumes:
   pg_data:
-    name: sie_pg_${MUNICIPIO:-homolog}_data
+    name: sie_pg_data

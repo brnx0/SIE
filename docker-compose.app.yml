@@ -1,7 +1,13 @@
-# App (php-fpm) por MUNICIPIO. DB vive em docker-compose.db.yml (ciclo separado).
+# App (php-fpm) por MUNICIPIO. DB vive em docker-compose.db.yml — instancia UNICA
+# compartilhada por todos os municipios (1 Postgres, N bancos).
 # Parametrizado por ${MUNICIPIO} (default: homolog). Define no .env: MUNICIPIO=coruripe
 #
-# Pre-req: subir o DB antes ->  docker compose -f docker-compose.db.yml up -d
+# Cada municipio conecta no SEU banco: DB_DATABASE/DB_USERNAME/DB_PASSWORD vem do
+# .env deste municipio (o banco/role e criado por docker/postgres/provision-municipio.sh).
+#
+# Pre-req: subir o DB unico e provisionar este municipio antes ->
+#   docker compose -f docker-compose.db.yml up -d
+#   ./docker/postgres/provision-municipio.sh $DB_DATABASE $DB_USERNAME '<senha>'
 #
 # Build+subir:  docker compose -f docker-compose.app.yml up -d --build
 # Logs:         docker compose -f docker-compose.app.yml logs -f app
@@ -66,8 +72,8 @@ services:
 
 networks:
   sie_net:
-    name: sie_net_${MUNICIPIO:-homolog}
-    external: true        # rede criada pelo docker-compose.db.yml
+    name: sie_net
+    external: true        # rede compartilhada, criada pelo docker-compose.db.yml
 
 volumes:
   app_storage:
