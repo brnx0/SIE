@@ -27,6 +27,7 @@ interface Parametros {
     nome_entidade: string;
     msg_cab_secretaria: string | null;
     msg_cab_estado: string | null;
+    municipio: string | null;
     logomarca_url: string | null;
     brasao_url: string | null;
 }
@@ -75,6 +76,7 @@ const grupos = computed(() => {
                     <div v-if="parametros?.msg_cab_estado">{{ parametros.msg_cab_estado }}</div>
                     <div v-if="parametros?.msg_cab_secretaria">{{ parametros.msg_cab_secretaria }}</div>
                     <div class="entidade">{{ parametros?.nome_entidade ?? '—' }}</div>
+                    <div v-if="parametros?.municipio" class="municipio">{{ parametros.municipio }}</div>
                 </div>
                 <div class="logo">
                     <img v-if="parametros?.brasao_url" :src="parametros.brasao_url" />
@@ -226,11 +228,18 @@ const grupos = computed(() => {
     .cab-textos { text-align: center; }
     .cab-textos div { font-size: 8pt; }
     .entidade { font-weight: 700; font-size: 9pt; }
+    .municipio { font-weight: 700; font-size: 8.5pt; text-transform: uppercase; }
     .titulo { text-align: center; font-size: 11pt; font-weight: 700; margin: 4px 0 2px; }
     .subtitulo { text-align: center; font-size: 9pt; margin-bottom: 6px; }
-    .grupo { page-break-inside: avoid; margin-bottom: 8px; }
-    .grupo-titulo { font-size: 9pt; font-weight: 700; background: #e5e7eb; padding: 3px 6px; border: 1px solid #444; border-bottom: 0; }
+    /* NÃO usa page-break-inside: avoid: uma turma grande não cabe sob o cabeçalho
+       e o "avoid" empurrava o bloco inteiro p/ a página seguinte, deixando a 1ª
+       só com o cabeçalho. Deixa a tabela fluir (thead repete e linhas não quebram),
+       então os dados começam já na 1ª página. */
+    .grupo { margin-bottom: 8px; }
+    .grupo-titulo { font-size: 9pt; font-weight: 700; background: #e5e7eb; padding: 3px 6px; border: 1px solid #444; border-bottom: 0; page-break-after: avoid; }
     .tab { width: 100%; border-collapse: collapse; }
+    .tab thead { display: table-header-group; }
+    .tab tr { page-break-inside: avoid; }
     .tab th, .tab td { border: 1px solid #444; padding: 2px 3px; font-size: 7pt; }
     .tab th { background: #f3f4f6; font-weight: 700; text-transform: uppercase; }
 }
