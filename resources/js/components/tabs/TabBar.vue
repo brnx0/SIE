@@ -26,8 +26,14 @@ const close = (id: string) => {
     const fallbackUrl = store.closeTab(id);
     if (store.tabs.length === 0) {
         router.visit('/dashboard');
+        return;
     }
-    void fallbackUrl;
+    // Move o Inertia para a URL da aba que assumiu o foco. Sem isso, o page.url
+    // continua na aba fechada e o TabRegistrar a REABRE no próximo sync de props.
+    const here = window.location.pathname + window.location.search;
+    if (fallbackUrl && fallbackUrl !== here) {
+        router.visit(fallbackUrl, { preserveState: true, preserveScroll: true, replace: true });
+    }
 };
 </script>
 
