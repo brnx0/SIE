@@ -102,7 +102,7 @@ const municipioTermo = () => props.escola.municipio ?? (props.parametros?.munici
 
             <div class="corpo">
                 Renovo a matrícula nesta Unidade Escolar para cursar o (a) <span class="preencher">{{ d.serie_nome ?? '' }}</span>
-                do Ensino <span class="preencher">{{ d.segmento_nome ?? '' }}</span> no ano letivo de <b>{{ filtros.anl_ano_prox }}</b>.
+                do Ensino <span class="preencher"></span> no ano letivo de <span class="preencher"></span>.
             </div>
 
             <div class="local-data">
