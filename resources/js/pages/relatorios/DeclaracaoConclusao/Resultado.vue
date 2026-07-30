@@ -19,6 +19,7 @@ interface Declaracao {
     serie_nome: string | null;
     segmento_nome: string | null;
     situacao_final: string | null;
+    concluiu: boolean;
     dt_conclusao: string | null;
 }
 
@@ -98,7 +99,7 @@ const localData = () => {
             <div class="corpo">
                 Declaramos para os devidos fins de direito, que o(a) aluno(a)
                 <b>{{ d.nome }}</b><span v-if="d.matricula">, matrícula nº {{ d.matricula }}</span><span v-if="d.dt_nascimento">, nascido(a) em {{ d.dt_nascimento }}</span><span v-if="d.municipio_nasc">, no município de {{ d.municipio_nasc }}</span><span v-if="filiacaoText(d)">, {{ filiacaoText(d) }}</span>,
-                concluiu o(a) <b>{{ cursoTexto(d) }}</b><span v-if="d.turma_nome">, turma {{ d.turma_nome }}</span>,
+<b>{{ d.concluiu ? 'concluiu' : 'não concluiu' }}</b> o(a) <b>{{ cursoTexto(d) }}</b><span v-if="d.turma_nome">, turma {{ d.turma_nome }}</span>,
                 neste estabelecimento de Ensino, no ano letivo de <b>{{ filtros.anl_ano }}</b><span v-if="d.dt_conclusao">, em {{ d.dt_conclusao }}</span>,
                 com situação final <b>{{ d.situacao_final ?? '—' }}</b>.
             </div>

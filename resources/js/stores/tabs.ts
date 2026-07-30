@@ -91,6 +91,18 @@ export const useTabStore = defineStore('tabs', {
             const i = this.tabs.findIndex((t) => t.id === id);
             if (i < 0) return this.activeTab?.url ?? null;
 
+            // Ao FECHAR a aba, descarta os filtros salvos daquela listagem — o
+            // snapshot (useFiltrosListagem) serve só para "voltar de um registro"
+            // dentro da MESMA aba; reentrar pelo menu deve vir limpo.
+            const slug = this.tabs[i].path.replace(/^\//, '').split('/')[0];
+            if (slug) {
+                try {
+                    sessionStorage.removeItem(`listagem:filtros:${slug}`);
+                } catch {
+                    /* storage indisponível → noop */
+                }
+            }
+
             const wasActive = this.activeId === id;
             this.tabs.splice(i, 1);
 

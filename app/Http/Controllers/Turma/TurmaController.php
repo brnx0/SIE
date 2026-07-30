@@ -59,7 +59,7 @@ class TurmaController extends Controller
         return Inertia::render('turmas/Index', [
             'turmas'      => $turmas,
             'filters'     => array_merge(
-                $request->only(['esc_id', 'anl_id', 'seg_id', 'turno', 'situacao']),
+                $request->only(['esc_id', 'anl_id', 'seg_id', 'turno', 'situacao', 'search']),
                 ['per_page' => $perPage],
             ),
             'anosLetivos' => $anosLetivos,

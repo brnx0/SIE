@@ -92,14 +92,19 @@ watch(perPage, () => { if (!restaurando) apply({ resetPage: true }); });
 const propEsc = () => (props.filters.esc_id as number | '' | null | undefined) ?? '';
 const propAnl = () => ((props.filters.anl_id as unknown) === 'all' ? '' : ((props.filters.anl_id as number | null | undefined) ?? ''));
 
+// Compara tolerante a tipo: o servidor devolve os filtros como STRING (query
+// string), o snapshot guarda NÚMERO — sem coagir, "5" !== 5 e o mesmoFiltro daria
+// sempre false, gerando loop infinito de apply → router.get → sincronizar.
+const eq = (a: unknown, b: unknown) => String(a ?? '') === String(b ?? '');
+
 /** O filtro salvo é o mesmo que o servidor está exibindo? */
 const mesmoFiltro = (s: FiltrosTurmas): boolean =>
-    (s.esc_id ?? '') === propEsc()
-    && (s.anl_id ?? '') === propAnl()
-    && (s.turno ?? '') === (props.filters.turno ?? '')
-    && (s.situacao ?? '') === (props.filters.situacao ?? '')
-    && (s.search ?? '') === (props.filters.search ?? '')
-    && (s.per_page ?? 10) === (props.filters.per_page ?? 10);
+    eq(s.esc_id, propEsc())
+    && eq(s.anl_id, propAnl())
+    && eq(s.turno, props.filters.turno)
+    && eq(s.situacao, props.filters.situacao)
+    && eq(s.search, props.filters.search)
+    && eq(s.per_page ?? 10, props.filters.per_page ?? 10);
 
 // Sincroniza a listagem com o filtro salvo. Não olha a URL (o shell de abas
 // restaura a URL da aba, então ela mente sobre o estado); compara os filtros

@@ -25,6 +25,12 @@ use Inertia\Response;
  */
 class DeclaracaoConclusaoController extends Controller
 {
+    // Situações de saída que caracterizam CONCLUSÃO (aprovação / progressão).
+    // Códigos de edu_turma_aluno_situacao: 6 Aprovado(a), 7 Apr. Conselho,
+    // 8 Aprovado pela Comissão, 22 Promovido(a), 24 Repr. c/ Progre. Parcial,
+    // 25 Progressão Continuada, 33 Ap. por Relatório, 40 Aprovado(a) c/ prog. parcial.
+    private const SITUACOES_APROVADO = [6, 7, 8, 22, 24, 25, 33, 40];
+
     public function form(): Response
     {
         $user = auth()->user();
@@ -98,6 +104,7 @@ class DeclaracaoConclusaoController extends Controller
                 'serie_nome'     => $serie?->ser_nome,
                 'segmento_nome'  => $turma?->segmento?->seg_nome_completo ?: $turma?->segmento?->seg_nome_reduzido,
                 'situacao_final' => $m->situacaoSaida?->tas_descricao,
+                'concluiu'       => in_array((int) ($m->situacaoSaida?->tas_cod ?? 0), self::SITUACOES_APROVADO, true),
                 'dt_conclusao'   => $dtConclusao ? Carbon::parse($dtConclusao)->format('d/m/Y') : null,
             ];
         });

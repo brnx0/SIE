@@ -139,7 +139,7 @@ class MovimentacaoController extends Controller
             'tipo',
             'matriculaOrigem.turma.escola',
             'matriculaOrigem.turma.segmento',
-            'matriculaOrigem.turma.serie.promoSerie1',
+            'matriculaOrigem.turma.serie',
             'matriculaOrigem.turma.anoLetivo',
         ]);
 
@@ -154,7 +154,9 @@ class MovimentacaoController extends Controller
             'escola'       => $turma?->escola,
             'segmento'     => $turma?->segmento,
             'serie'        => $turma?->serie,
-            'serieApto'    => $turma?->serie?->promoSerie1 ?? $turma?->serie,
+            // Transferência (geralmente no meio do ano): o aluno é apto a cursar a
+            // MESMA série na escola de destino, não a seguinte.
+            'serieApto'    => $turma?->serie,
             'anoLetivo'    => $turma?->anoLetivo,
         ])->render();
 
