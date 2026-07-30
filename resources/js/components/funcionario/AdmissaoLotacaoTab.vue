@@ -224,6 +224,10 @@ const isCargoDocente = computed(() => {
     return CARGOS_SALA_AULA_EXATOS.includes(nome);
 });
 
+// Escolaridade só é obrigatória p/ cargo docente. Bloqueia a lotação apenas quando
+// o cargo selecionado é docente E não há escolaridade cadastrada.
+const exigeEscolaridade = computed(() => isCargoDocente.value && semEscolaridade.value);
+
 const resetLotForm = () => {
     lotForm.lot_adm_id = null;
     lotForm.lot_esc_id = null;
@@ -481,8 +485,7 @@ const toggleFuncaoSala = (funcao: string) => {
                     type="button"
                     size="sm"
                     class="bg-indigo-600 text-white hover:bg-indigo-700"
-                    :disabled="!admissoes.length || semEscolaridade"
-                    :title="semEscolaridade ? 'Informe a escolaridade do funcionário antes de lotá-lo.' : ''"
+                    :disabled="!admissoes.length"
                     @click="openNewLot"
                 >
                     <Plus class="mr-1 size-4" /> Nova Lotação
@@ -490,9 +493,9 @@ const toggleFuncaoSala = (funcao: string) => {
             </div>
 
             <div class="grid gap-4 p-5">
-                <!-- Pré-requisito: sem escolaridade não há como comprovar habilitação. -->
+                <!-- Pré-requisito SÓ para docente: sem escolaridade não há como comprovar habilitação. -->
                 <p
-                    v-if="semEscolaridade"
+                    v-if="showLotForm && exigeEscolaridade"
                     class="flex items-start gap-2 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-200"
                 >
                     <AlertTriangle class="mt-0.5 size-4 shrink-0" />
@@ -651,7 +654,7 @@ const toggleFuncaoSala = (funcao: string) => {
                         <Button
                             type="button"
                             size="sm"
-                            :disabled="lotProcessing"
+                            :disabled="lotProcessing || exigeEscolaridade"
                             class="bg-indigo-600 text-white hover:bg-indigo-700"
                             @click="submitLot"
                         >

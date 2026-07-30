@@ -129,14 +129,18 @@ class FuncionarioLotacaoController extends Controller
      */
     protected function assertTemEscolaridade(Funcionario $funcionario, Request $request): void
     {
+        // Restrição vale SÓ para cargo docente (professor). Demais cargos podem
+        // ser lotados sem escolaridade informada.
+        if (! $this->isCargoDocente($request->input('lot_crg_id'))) {
+            return;
+        }
+
         if ($funcionario->escolaridades()->exists()) {
             return;
         }
 
         throw ValidationException::withMessages([
-            'lot_crg_id' => $this->isCargoDocente($request->input('lot_crg_id'))
-                ? 'Não é possível lotar o funcionário como professor. É necessário informar a escolaridade.'
-                : 'Não é possível lotar o funcionário. É necessário informar a escolaridade.',
+            'lot_crg_id' => 'Não é possível lotar o funcionário como professor. É necessário informar a escolaridade.',
         ]);
     }
 

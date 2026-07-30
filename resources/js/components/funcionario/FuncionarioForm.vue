@@ -312,6 +312,11 @@ const toggleArrayItem = (arr: string[], item: string) => {
 // "Outros" na coluna TGD revela as subopções e o campo de texto "Outro(a)".
 const tgdOutrosSelecionado = computed(() => form.saude.fus_transtornos_globais.includes(TGD_OUTROS));
 
+// Funcionário é adulto: exibe "Autismo - TEA" no lugar do termo infantil (que
+// vem do enum do censo do aluno). Só rótulo — o valor gravado não muda, para
+// não quebrar registros existentes.
+const tgdLabel = (t: string) => (t === 'Autismo Infantil - TEA' ? 'Autismo - TEA' : t);
+
 watch(tgdOutrosSelecionado, (v) => {
     if (!v) {
         form.saude.fus_deficiencia_outro = '';
@@ -1332,7 +1337,7 @@ const initials = computed(() => {
                                             @change="toggleArrayItem(form.saude.fus_transtornos_globais, t)"
                                             class="size-4 rounded border-gray-300 text-sky-600 focus:ring-sky-500"
                                         />
-                                        {{ t }}
+                                        {{ tgdLabel(t) }}
                                     </label>
                                     <!-- Subopções reveladas ao marcar "Outros" -->
                                     <div v-if="tgdOutrosSelecionado" class="ml-6 space-y-2 border-l pl-3">
