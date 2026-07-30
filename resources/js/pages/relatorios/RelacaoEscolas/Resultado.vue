@@ -249,7 +249,7 @@ const exportarExcel = () => window.open(`/relatorios/relacao-escolas/xlsx?${quer
                                 <th class="px-3 py-2 text-center">Zona</th>
                                 <th class="px-3 py-2 text-left">Telefone</th>
                                 <th class="px-3 py-2 text-left">E-mail</th>
-                                <th class="px-3 py-2 text-left">Situação</th>
+                                <th class="px-3 py-2 text-left whitespace-nowrap">Situação</th>
                                 <th class="px-3 py-2 text-center">Status</th>
                             </tr>
                         </thead>
@@ -269,7 +269,7 @@ const exportarExcel = () => window.open(`/relatorios/relacao-escolas/xlsx?${quer
                                 <td class="px-3 py-1.5 align-top text-center">{{ l.zona ?? '—' }}</td>
                                 <td class="px-3 py-1.5 align-top tabular-nums whitespace-nowrap">{{ l.telefone ?? '—' }}</td>
                                 <td class="px-3 py-1.5 align-top break-all text-xs">{{ l.email ?? '—' }}</td>
-                                <td class="px-3 py-1.5 align-top text-xs">{{ l.situacao_func ?? '—' }}</td>
+                                <td class="px-3 py-1.5 align-top text-xs whitespace-nowrap">{{ l.situacao_func ?? '—' }}</td>
                                 <td class="px-3 py-1.5 align-top text-center">
                                     <span
                                         class="rounded-full px-2 py-0.5 text-xs font-medium"

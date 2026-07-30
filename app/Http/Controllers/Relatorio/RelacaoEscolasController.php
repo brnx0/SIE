@@ -60,7 +60,9 @@ class RelacaoEscolasController extends Controller
                 ->when($escolasIds !== null, fn ($q) => $q->whereIn('e.esc_id', $escolasIds ?: [-1]))
                 ->distinct()
                 ->orderBy('s.seg_ordem')
-                ->get(['s.seg_id', 's.seg_nome_reduzido', 's.seg_nome_completo'])
+                // seg_ordem precisa estar no SELECT junto do DISTINCT (Postgres);
+                // é dependente do seg_id, então não altera o conjunto distinto.
+                ->get(['s.seg_id', 's.seg_nome_reduzido', 's.seg_nome_completo', 's.seg_ordem'])
                 ->map(fn ($s) => [
                     'seg_id'   => (int) $s->seg_id,
                     'seg_nome' => $s->seg_nome_reduzido ?: $s->seg_nome_completo,
