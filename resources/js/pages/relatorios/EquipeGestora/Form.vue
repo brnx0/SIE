@@ -121,9 +121,12 @@ function gerar() {
                             :key="t.id"
                             class="flex items-center gap-2 text-sm cursor-pointer"
                         >
+                            <!-- Checkbox (radix) usa checked/update:checked; com
+                                 model-value o clique não surtia efeito e o filtro
+                                 ia sempre com TODOS os tipos marcados. -->
                             <Checkbox
-                                :model-value="tiposSel.includes(t.id)"
-                                @update:model-value="(v: boolean) => toggleTipo(t.id, v)"
+                                :checked="tiposSel.includes(t.id)"
+                                @update:checked="(v: boolean | 'indeterminate') => toggleTipo(t.id, v === true)"
                             />
                             {{ t.label }}
                         </label>

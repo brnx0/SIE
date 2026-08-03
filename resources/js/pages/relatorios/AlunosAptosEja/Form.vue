@@ -131,7 +131,8 @@ function gerar() {
 
                 <div class="sm:col-span-2">
                     <label class="flex items-start gap-2 text-sm cursor-pointer">
-                        <Checkbox v-model:model-value="incluirEja" class="mt-0.5" />
+                        <!-- Checkbox (radix) expõe `checked`, não `modelValue`. -->
+                        <Checkbox v-model:checked="incluirEja" class="mt-0.5" />
                         <span>
                             Incluir alunos que já estão em turma de EJA
                             <span class="block text-xs text-muted-foreground">

@@ -109,17 +109,24 @@ class EquipeGestoraController extends Controller
      */
     private function montar(Request $request): array
     {
+        // Tipo de gestor é OBRIGATÓRIO (o form marca como tal): sem isto, uma
+        // requisição sem `tipos` caía no "todos" e o relatório trazia funções
+        // que o usuário não pediu.
         $data = $request->validate([
             'esc_id'  => ['nullable', 'integer', 'exists:edu_escola,esc_id'],
-            'tipos'   => ['nullable', 'array'],
+            'tipos'   => ['required', 'array', 'min:1'],
             'tipos.*' => ['string', 'in:' . implode(',', CargoGestao::tipos())],
             'formato' => ['nullable', 'in:consolidado,detalhado'],
-        ]);
+        ], [
+            'tipos.required' => 'Selecione ao menos um tipo de gestor.',
+            'tipos.min'      => 'Selecione ao menos um tipo de gestor.',
+        ], ['tipos' => 'tipo de gestor']);
 
-        $tipos = ! empty($data['tipos'])
-            // Preserva a ordem hierárquica de CargoGestao, não a ordem que veio na URL.
-            ? array_values(array_filter(CargoGestao::tipos(), fn ($t) => in_array($t, $data['tipos'], true)))
-            : CargoGestao::tipos();
+        // Preserva a ordem hierárquica de CargoGestao, não a ordem que veio na URL.
+        $tipos = array_values(array_filter(
+            CargoGestao::tipos(),
+            fn ($t) => in_array($t, $data['tipos'], true),
+        ));
 
         $formato = $data['formato'] ?? 'consolidado';
 

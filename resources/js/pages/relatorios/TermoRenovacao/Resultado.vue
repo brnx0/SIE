@@ -101,7 +101,7 @@ const municipioTermo = () => props.escola.municipio ?? (props.parametros?.munici
             </div>
 
             <div class="corpo">
-                Renovo a matrícula nesta Unidade Escolar para cursar o (a) <span class="preencher">{{ d.serie_nome ?? '' }}</span>
+                Renovo a matrícula nesta Unidade Escolar para cursar o (a) <span class="preencher"></span>
                 do Ensino <span class="preencher"></span> no ano letivo de <span class="preencher"></span>.
             </div>
 
@@ -173,12 +173,22 @@ const municipioTermo = () => props.escola.municipio ?? (props.parametros?.munici
         font-size: 10pt;
     }
 
+    /* 2 termos por página: o bloco não quebra no meio e a página só vira a cada
+       2º termo (o 1º da página ganha um pontilhado de corte no rodapé). */
     .folha-termo {
+        page-break-inside: avoid;
+        break-inside: avoid;
+        padding-bottom: 4mm;
+    }
+    .folha-termo:nth-child(even) {
         page-break-after: always;
         break-after: page;
-        page-break-inside: avoid;
     }
-    .folha-termo:last-child { page-break-after: auto; break-after: auto; }
+    /* O separador visual é a linha .corte que já existe no fim de cada termo. */
+    .folha-termo:last-child {
+        page-break-after: auto;
+        break-after: auto;
+    }
 
     .cabecalho-impressao {
         display: grid;
@@ -188,37 +198,38 @@ const municipioTermo = () => props.escola.municipio ?? (props.parametros?.munici
         padding-bottom: 4px;
         border-bottom: 2px solid #000;
     }
-    .brasao img, .logomarca img { max-width: 125px; max-height: 90px; object-fit: contain; }
-    .cab-textos { text-align: center; line-height: 1.3; }
-    .cab-linha { font-size: 13pt; font-weight: 700; }
-    .cab-linha:nth-child(2) { font-size: 11pt; }
-    .cab-entidade { font-size: 10pt; font-weight: 700; margin-top: 2px; }
-    .cab-endereco { text-align: center; font-size: 9pt; margin: 3px 0 10px; }
+    /* Alturas enxutas: dois termos precisam caber numa A4 retrato (~138mm cada). */
+    .brasao img, .logomarca img { max-width: 80px; max-height: 55px; object-fit: contain; }
+    .cab-textos { text-align: center; line-height: 1.25; }
+    .cab-linha { font-size: 11pt; font-weight: 700; }
+    .cab-linha:nth-child(2) { font-size: 9.5pt; }
+    .cab-entidade { font-size: 9pt; font-weight: 700; margin-top: 1px; }
+    .cab-endereco { text-align: center; font-size: 8pt; margin: 2px 0 6px; }
 
     .titulo-termo {
         border: 1px solid #000;
         text-align: center;
-        font-size: 13pt;
+        font-size: 11.5pt;
         font-weight: 700;
-        padding: 6px;
+        padding: 4px;
         margin-bottom: 0;
     }
 
     .quadro { border: 1px solid #000; border-top: none; }
     .quadro .linha { display: flex; border-top: 1px solid #000; }
     .quadro .linha:first-child { border-top: none; }
-    .quadro .celula { padding: 5px 8px; font-size: 10.5pt; }
+    .quadro .celula { padding: 3px 8px; font-size: 10pt; }
     .quadro .celula.full { flex: 1 1 100%; }
     .quadro .celula.g { flex: 1 1 70%; border-right: 1px solid #000; }
     .quadro .celula.p { flex: 1 1 30%; }
-    .quadro .celula.alto { padding-top: 8px; padding-bottom: 20px; }
+    .quadro .celula.alto { padding-top: 5px; padding-bottom: 12px; }
     .quadro .rot { font-size: 8.5pt; color: #000; }
 
     .corpo {
         text-align: justify;
-        line-height: 2.1;
-        font-size: 11pt;
-        margin: 20px 0 10px;
+        line-height: 1.9;
+        font-size: 10.5pt;
+        margin: 12px 0 6px;
     }
     .corpo .preencher {
         display: inline-block;
@@ -231,29 +242,29 @@ const municipioTermo = () => props.escola.municipio ?? (props.parametros?.munici
     .local-data {
         text-align: right;
         font-weight: 700;
-        font-size: 11pt;
-        margin: 18px 0 16px;
+        font-size: 10.5pt;
+        margin: 10px 0 8px;
     }
 
     .autorizacao {
         text-align: justify;
-        font-size: 7.8pt;
-        line-height: 1.35;
-        margin-bottom: 26px;
+        font-size: 7pt;
+        line-height: 1.25;
+        margin-bottom: 10px;
     }
 
     .assinatura-box {
         border: 1px solid #000;
-        height: 46px;
+        height: 32px;
     }
     .assinatura-legenda {
         text-align: center;
-        font-size: 9pt;
-        margin-top: 3px;
+        font-size: 8.5pt;
+        margin-top: 2px;
     }
 
     .corte {
-        margin-top: 12px;
+        margin-top: 6px;
         text-align: center;
         font-size: 9pt;
         letter-spacing: 1px;
