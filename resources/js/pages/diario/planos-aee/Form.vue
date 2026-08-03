@@ -169,7 +169,7 @@ const statusBadge = (s: PlanoStatus) => ({
 const statusLabel = (s: PlanoStatus) => ({
     pendente: 'Pendente',
     aprovado: 'Aprovado',
-    reprovado: 'Reprovado',
+    reprovado: 'Não Aprovado',
     correcao: 'Em correção',
 }[s]);
 

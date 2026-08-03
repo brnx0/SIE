@@ -48,4 +48,27 @@ trait ValidaPeriodoDaUnidade
             }
         }
     }
+
+    /**
+     * Período já encerrado (fim < hoje) não recebe plano NOVO: planejar é para
+     * frente, não se planeja um período que já passou. Chamar SÓ na criação — na
+     * edição, o período do próprio plano continua valendo, senão um plano antigo
+     * não poderia mais ser corrigido. Usa o fim SEM a extensão (a extensão é para
+     * lançar frequência/nota atrasada, não para planejar).
+     */
+    protected function validarUnidadeNaoEncerrada(Validator $v, int $uniId, string $campo = 'dpa_uni_id'): void
+    {
+        if (! $uniId) {
+            return;
+        }
+
+        $unidade = Unidade::find($uniId);
+        if (! $unidade || ! $unidade->uni_dt_fim) {
+            return;
+        }
+
+        if (Carbon::parse($unidade->uni_dt_fim)->startOfDay()->lt(Carbon::today())) {
+            $v->errors()->add($campo, 'Este período já encerrou. Escolha um período em andamento ou futuro para o plano.');
+        }
+    }
 }

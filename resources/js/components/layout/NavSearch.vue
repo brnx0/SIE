@@ -36,10 +36,13 @@ const norm = (s: string) =>
 const results = computed(() => {
     const q = norm(query.value.trim());
     if (!q) return [];
-    return props.items.filter((it) => {
-        const hay = norm([...it.path, it.title].join(' '));
-        return hay.includes(q);
-    });
+    return props.items
+        .filter((it) => {
+            const hay = norm([...it.path, it.title].join(' '));
+            return hay.includes(q);
+        })
+        // Ordem alfabética pelo nome da tela (ignora acento/caixa).
+        .sort((a, b) => norm(a.title).localeCompare(norm(b.title), 'pt-BR'));
 });
 
 const clear = () => emit('update:modelValue', '');

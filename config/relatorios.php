@@ -270,6 +270,14 @@ return [
         'icone' => 'School',
     ],
     [
+        'slug' => 'relacao-funcionarios',
+        'titulo' => 'Relação de Funcionários',
+        'descricao' => 'Relação de funcionários cadastrados: nome, matrícula, cargo/função, escolaridade, unidade de lotação e situação. Filtra por unidade escolar, situação (ativo/inativo) e cargo/função.',
+        'categoria' => 'Escola',
+        'grupo' => 'escola',
+        'icone' => 'UsersRound',
+    ],
+    [
         'slug' => 'levantamento-municipio',
         'titulo' => 'Levantamento de Dados do Município',
         'descricao' => 'Panorama consolidado da rede, uma linha por turma: escola, código/nome da turma, segmento, ano escolar, turno, capacidade, matriculados, vagas, professores responsáveis e indicadores de diário. Filtra por escola, segmento, série e turno.',

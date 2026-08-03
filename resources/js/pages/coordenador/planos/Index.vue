@@ -20,11 +20,8 @@ interface PlanoListaItem {
     dpa_dt_inicio: string;
     dpa_dt_fim: string;
     dpa_status: PlanoStatus;
-    turma?: {
-        tur_id: number;
-        tur_nome: string;
-        serie?: { ser_id: number; ser_nome: string; segmento?: { seg_nome_reduzido: string } };
-    };
+    // Plano de aula é por SÉRIE (dpa_ser_id), não por turma.
+    serie?: { ser_id: number; ser_nome: string; segmento?: { seg_nome_reduzido: string } };
     disciplina?: { dis_id: number; dis_nome: string };
     unidade?: { uni_id: number; uni_numero: number; uni_tipo: string };
     funcionario?: { fun_id: number; fun_nome: string };
@@ -37,7 +34,6 @@ const props = defineProps<{
         esc_id: number | string;
         seg_id: number | string;
         ser_id: number | string;
-        tur_id: number | string;
         dis_id: number | string;
         status: string;
         search: string;
@@ -51,7 +47,6 @@ const anlId = ref<number | null>(props.filters.anl_id ?? props.anoVigenteId);
 const escId = ref<number | null>(props.filters.esc_id ? Number(props.filters.esc_id) : null);
 const segId = ref<number | null>(props.filters.seg_id ? Number(props.filters.seg_id) : null);
 const serId = ref<number | null>(props.filters.ser_id ? Number(props.filters.ser_id) : null);
-const turId = ref<number | null>(props.filters.tur_id ? Number(props.filters.tur_id) : null);
 const status = ref<string>(props.filters.status ?? '');
 const search = ref<string>(props.filters.search ?? '');
 const perPage = ref<number>(props.filters.per_page ?? 10);
@@ -60,7 +55,6 @@ const anos = ref<{ anl_id: number; anl_ano: number; anl_fl_em_exercicio: boolean
 const escolas = ref<{ esc_id: number; esc_nome: string }[]>([]);
 const segmentos = ref<{ seg_id: number; seg_nome_reduzido: string }[]>([]);
 const series = ref<{ ser_id: number; ser_nome: string }[]>([]);
-const turmas = ref<{ tur_id: number; tur_nome: string }[]>([]);
 
 const fetchJson = async (url: string) => {
     const r = await fetch(url, { headers: { Accept: 'application/json' } });
@@ -82,10 +76,6 @@ const fetchSeries = async () => {
     if (!segId.value || !escId.value || !anlId.value) { series.value = []; return; }
     series.value = await fetchJson(`/api/coordenador/planos-lookup/series?seg_id=${segId.value}&esc_id=${escId.value}&anl_id=${anlId.value}`);
 };
-const fetchTurmas = async () => {
-    if (!escId.value || !anlId.value || !serId.value) { turmas.value = []; return; }
-    turmas.value = await fetchJson(`/api/coordenador/planos-lookup/turmas?esc_id=${escId.value}&anl_id=${anlId.value}&ser_id=${serId.value}`);
-};
 
 const apply = (resetPage = true) => {
     const params: Record<string, string | number> = {
@@ -93,7 +83,6 @@ const apply = (resetPage = true) => {
         esc_id: escId.value ?? '',
         seg_id: segId.value ?? '',
         ser_id: serId.value ?? '',
-        tur_id: turId.value ?? '',
         status: status.value,
         search: search.value,
         per_page: perPage.value,
@@ -107,36 +96,29 @@ watch(search, () => { if (timer) clearTimeout(timer); timer = setTimeout(() => a
 watch([status, perPage], () => apply(true));
 
 watch(anlId, async () => {
-    escId.value = null; segId.value = null; serId.value = null; turId.value = null;
-    segmentos.value = []; series.value = []; turmas.value = [];
+    escId.value = null; segId.value = null; serId.value = null;
+    segmentos.value = []; series.value = [];
     await fetchEscolas();
     apply(true);
 });
 watch(escId, async () => {
-    segId.value = null; serId.value = null; turId.value = null;
-    series.value = []; turmas.value = [];
+    segId.value = null; serId.value = null;
+    series.value = [];
     await fetchSegmentos();
     apply(true);
 });
 watch(segId, async () => {
-    serId.value = null; turId.value = null;
-    turmas.value = [];
+    serId.value = null;
     await fetchSeries();
     apply(true);
 });
-watch(serId, async () => {
-    turId.value = null;
-    await fetchTurmas();
-    apply(true);
-});
-watch(turId, () => apply(true));
+watch(serId, () => apply(true));
 
 onMounted(async () => {
     await fetchAnos();
     if (anlId.value) await fetchEscolas();
     if (escId.value) await fetchSegmentos();
     if (segId.value) await fetchSeries();
-    if (serId.value) await fetchTurmas();
 });
 
 const itemsAno = computed(() => anos.value.map((a) => ({
@@ -146,7 +128,6 @@ const itemsAno = computed(() => anos.value.map((a) => ({
 const itemsEscola = computed(() => escolas.value.map((e) => ({ id: e.esc_id, label: e.esc_nome })));
 const itemsSegmento = computed(() => segmentos.value.map((s) => ({ id: s.seg_id, label: s.seg_nome_reduzido })));
 const itemsSerie = computed(() => series.value.map((s) => ({ id: s.ser_id, label: s.ser_nome })));
-const itemsTurma = computed(() => turmas.value.map((t) => ({ id: t.tur_id, label: t.tur_nome })));
 
 const statusBadge = (s: PlanoStatus) => ({
     pendente: 'bg-amber-100 text-amber-800 ring-1 ring-amber-300',
@@ -158,7 +139,7 @@ const statusBadge = (s: PlanoStatus) => ({
 const statusLabel = (s: PlanoStatus) => ({
     pendente: 'Pendente',
     aprovado: 'Aprovado',
-    reprovado: 'Reprovado',
+    reprovado: 'Não Aprovado',
     correcao: 'Em correção',
 }[s]);
 
@@ -223,10 +204,6 @@ const breadcrumbs: BreadcrumbItem[] = [
                         <Label>Série</Label>
                         <LocalCombobox v-model="serId" :items="itemsSerie" placeholder="Série..." :disabled="!segId" />
                     </div>
-                    <div class="md:col-span-3">
-                        <Label>Turma</Label>
-                        <LocalCombobox v-model="turId" :items="itemsTurma" placeholder="Turma..." :disabled="!serId" />
-                    </div>
                 </div>
 
                 <div class="mt-3 flex flex-wrap items-center gap-3">
@@ -252,7 +229,6 @@ const breadcrumbs: BreadcrumbItem[] = [
                         <tr>
                             <th class="px-4 py-3 text-center">Status</th>
                             <th class="px-4 py-3">Série / Segmento</th>
-                            <th class="px-4 py-3">Turma</th>
                             <th class="px-4 py-3">Disciplina</th>
                             <th class="px-4 py-3">Professor</th>
                             <th class="px-4 py-3">Unidade</th>
@@ -263,12 +239,12 @@ const breadcrumbs: BreadcrumbItem[] = [
                     </thead>
                     <tbody class="divide-y">
                         <tr v-if="!escId">
-                            <td colspan="9" class="px-4 py-12 text-center text-muted-foreground">
+                            <td colspan="8" class="px-4 py-12 text-center text-muted-foreground">
                                 Selecione um ano e uma escola para listar os planos.
                             </td>
                         </tr>
                         <tr v-else-if="planos.data.length === 0">
-                            <td colspan="9" class="px-4 py-12 text-center text-muted-foreground">
+                            <td colspan="8" class="px-4 py-12 text-center text-muted-foreground">
                                 Nenhum plano encontrado.
                             </td>
                         </tr>
@@ -281,10 +257,9 @@ const breadcrumbs: BreadcrumbItem[] = [
                                 </span>
                             </td>
                             <td class="px-4 py-3">
-                                <div class="font-medium">{{ p.turma?.serie?.ser_nome ?? '—' }}</div>
-                                <div class="text-xs text-muted-foreground">{{ p.turma?.serie?.segmento?.seg_nome_reduzido ?? '—' }}</div>
+                                <div class="font-medium">{{ p.serie?.ser_nome ?? '—' }}</div>
+                                <div class="text-xs text-muted-foreground">{{ p.serie?.segmento?.seg_nome_reduzido ?? '—' }}</div>
                             </td>
-                            <td class="px-4 py-3">{{ p.turma?.tur_nome ?? '—' }}</td>
                             <td class="px-4 py-3">{{ p.disciplina?.dis_nome ?? '—' }}</td>
                             <td class="px-4 py-3">{{ p.funcionario?.fun_nome ?? '—' }}</td>
                             <td class="px-4 py-3 text-muted-foreground">

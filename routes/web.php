@@ -371,6 +371,9 @@ Route::middleware(['auth', 'verified', 'tela'])->group(function () {
     Route::get('relatorios/relacao-escolas', [RelacaoEscolasController::class, 'form'])->name('relatorios.relacao-escolas.form');
     Route::get('relatorios/relacao-escolas/gerar', [RelacaoEscolasController::class, 'gerar'])->name('relatorios.relacao-escolas.gerar');
     Route::get('relatorios/relacao-escolas/xlsx', [RelacaoEscolasController::class, 'exportarXlsx'])->name('relatorios.relacao-escolas.xlsx');
+    Route::get('relatorios/relacao-funcionarios', [\App\Http\Controllers\Relatorio\RelacaoFuncionariosController::class, 'form'])->name('relatorios.relacao-funcionarios.form');
+    Route::get('relatorios/relacao-funcionarios/gerar', [\App\Http\Controllers\Relatorio\RelacaoFuncionariosController::class, 'gerar'])->name('relatorios.relacao-funcionarios.gerar');
+    Route::get('relatorios/relacao-funcionarios/xlsx', [\App\Http\Controllers\Relatorio\RelacaoFuncionariosController::class, 'exportarXlsx'])->name('relatorios.relacao-funcionarios.xlsx');
     Route::get('relatorios/alunos-aptos-eja', [AlunosAptosEjaController::class, 'form'])->name('relatorios.alunos-aptos-eja.form');
     Route::get('relatorios/alunos-aptos-eja/gerar', [AlunosAptosEjaController::class, 'gerar'])->name('relatorios.alunos-aptos-eja.gerar');
     Route::get('relatorios/alunos-aptos-eja/xlsx', [AlunosAptosEjaController::class, 'exportarXlsx'])->name('relatorios.alunos-aptos-eja.xlsx');

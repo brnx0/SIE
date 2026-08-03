@@ -213,7 +213,13 @@ const itemsDisciplina = computed(() => {
 });
 const unidadeLabel = (u: PlanoUnidade) => `${u.uni_numero}º ${labelUnidade.value} (${fmtDate(u.uni_dt_inicio)} até ${fmtDate(u.uni_dt_fim)})`;
 const itemsUnidade = computed(() => {
-    const list = unidades.value.map((u) => ({ id: u.uni_id, label: unidadeLabel(u) }));
+    // Períodos JÁ ENCERRADOS (fim < hoje) saem da lista: não se cria plano para
+    // um período que já passou. Na edição, a unidade do próprio plano continua
+    // (prependada abaixo), mesmo encerrada. Comparação em 'YYYY-MM-DD' (sem fuso).
+    const h = new Date();
+    const hoje = `${h.getFullYear()}-${String(h.getMonth() + 1).padStart(2, '0')}-${String(h.getDate()).padStart(2, '0')}`;
+    const naoEncerrada = (u: PlanoUnidade) => !u.uni_dt_fim || u.uni_dt_fim.substring(0, 10) >= hoje;
+    const list = unidades.value.filter(naoEncerrada).map((u) => ({ id: u.uni_id, label: unidadeLabel(u) }));
     const s = props.plano?.unidade;
     if (s && !list.some((i) => i.id === s.uni_id)) list.unshift({ id: s.uni_id, label: unidadeLabel(s) });
     return list;
@@ -280,7 +286,7 @@ const statusBadge = (s: PlanoStatus) => ({
 const statusLabel = (s: PlanoStatus) => ({
     pendente: 'Pendente',
     aprovado: 'Aprovado',
-    reprovado: 'Reprovado',
+    reprovado: 'Não Aprovado',
     correcao: 'Em correção',
 }[s]);
 

@@ -44,10 +44,13 @@ class FichaMatriculaController extends Controller
 
     public function gerar(Request $request): Response
     {
+        // Modo "em branco": ficha vazia para preenchimento manual — dispensa turma/aluno.
+        $branco = $request->boolean('branco');
+
         $data = $request->validate([
             'anl_id' => ['required', 'integer', 'exists:cfg_ano_letivo,anl_id'],
             'esc_id' => ['required', 'integer', 'exists:edu_escola,esc_id'],
-            'tur_id' => ['required', 'integer', 'exists:edu_turma,tur_id'],
+            'tur_id' => [$branco ? 'nullable' : 'required', 'integer', 'exists:edu_turma,tur_id'],
             'aln_id' => ['nullable', 'integer', 'exists:edu_aluno,aln_id'],
         ]);
 
@@ -59,6 +62,9 @@ class FichaMatriculaController extends Controller
             'bairro:bai_id,bai_nome',
         ])->findOrFail($data['esc_id']);
 
+        if ($branco) {
+            $fichas = collect([$this->fichaVazia($anoLetivo)]);
+        } else {
         $matriculas = Matricula::query()
             ->with([
                 'aluno',
@@ -162,6 +168,7 @@ class FichaMatriculaController extends Controller
                 'turno'            => $turma?->tur_turno,
             ];
         });
+        }
 
         return Inertia::render('relatorios/FichaMatricula/Resultado', [
             'parametros' => $parametros ? $parametros->cabecalhoRelatorio() : null,
@@ -180,5 +187,33 @@ class FichaMatriculaController extends Controller
             'fichas' => $fichas,
             'total'  => $fichas->count(),
         ]);
+    }
+
+    /**
+     * Ficha totalmente em branco (mesma estrutura de uma preenchida), para
+     * impressão e preenchimento manual. Escalares vazios ('') deixam o campo em
+     * branco na tela (o `?? '—'` só cai no traço quando é null); arrays vazios.
+     *
+     * @return array<string,mixed>
+     */
+    private function fichaVazia(AnoLetivo $anoLetivo): array
+    {
+        return [
+            'nome' => '', 'dt_nascimento' => '', 'sexo' => '', 'naturalidade' => '',
+            'nacionalidade' => '', 'pais_origem' => '', 'cor_raca' => '', 'foto_url' => '',
+            'contato_emergencia' => '', 'telefone_emergencia' => '',
+            'cpf' => '', 'cd_inep' => '', 'nis' => '', 'nova_certidao' => '', 'cartao_sus' => '',
+            'filiacao_1' => '', 'filiacao_1_tipo' => '', 'filiacao_2' => '', 'filiacao_2_tipo' => '',
+            'cep' => '', 'logradouro' => '', 'numero' => '', 'complemento' => '',
+            'bairro' => '', 'cidade' => '', 'uf' => '',
+            'telefone' => '', 'celular' => '', 'email' => '', 'usa_transporte' => '',
+            'tipo_sanguineo' => '', 'plano_saude' => '', 'alergia' => '', 'restricoes_alimentares' => '',
+            'remedio_febre' => '', 'remedio_cefaleia' => '', 'patologias' => [], 'outra_doenca' => '',
+            'patologias_infancia' => [], 'outra_doenca_infancia' => '', 'clinicas' => [], 'recursos_inep' => [],
+            'pcd' => '', 'altas_habilidades' => '', 'deficiencias' => [], 'deficiencia_outro' => '',
+            'cid' => '', 'saude_obs' => '',
+            'nr_matricula' => '', 'dt_matricula' => '', 'ano_letivo' => $anoLetivo->anl_ano,
+            'serie' => '', 'segmento' => '', 'turma_nome' => '', 'turno' => '',
+        ];
     }
 }

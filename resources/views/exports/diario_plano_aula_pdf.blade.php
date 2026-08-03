@@ -37,7 +37,7 @@
         $hoje = \Carbon\Carbon::now($tz)->format('d/m/Y H:i');
         $dtIni = \Carbon\Carbon::parse($plano->dpa_dt_inicio)->format('d/m/Y');
         $dtFim = \Carbon\Carbon::parse($plano->dpa_dt_fim)->format('d/m/Y');
-        $statusMap = ['pendente'=>'Pendente','aprovado'=>'Aprovado','reprovado'=>'Reprovado','correcao'=>'Em correção'];
+        $statusMap = ['pendente'=>'Pendente','aprovado'=>'Aprovado','reprovado'=>'Não Aprovado','correcao'=>'Em correção'];
         $tipoUnidadeLabel = ucfirst(strtolower($plano->unidade->uni_tipo ?? 'Unidade'));
     @endphp
 

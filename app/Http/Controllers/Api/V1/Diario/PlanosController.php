@@ -370,6 +370,18 @@ class PlanosController extends Controller
         // 1) Datas dentro do período da unidade — SEM a extensão.
         $uni = DB::table('cfg_unidade')->where('uni_id', $data['dpa_uni_id'])->first(['uni_dt_inicio', 'uni_dt_fim']);
 
+        // 1a) Período já encerrado não recebe plano NOVO: planejar é para frente,
+        // não se planeja um período que já passou. Na EDIÇÃO ($exceto != null) o
+        // período do próprio plano continua valendo — senão um plano antigo não
+        // poderia mais ser corrigido.
+        if ($exceto === null && $uni && $uni->uni_dt_fim
+            && Carbon::parse($uni->uni_dt_fim)->toDateString() < now()->toDateString()
+        ) {
+            throw ValidationException::withMessages([
+                'dpa_uni_id' => 'Este período já encerrou. Escolha um período em andamento ou futuro para o plano.',
+            ]);
+        }
+
         if ($uni && $uni->uni_dt_inicio && $uni->uni_dt_fim) {
             $ini = Carbon::parse($uni->uni_dt_inicio)->toDateString();
             $fim = Carbon::parse($uni->uni_dt_fim)->toDateString();

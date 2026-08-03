@@ -47,8 +47,9 @@
         @forelse($planos as $p)
         <tr>
             <td style="text-align:center">
-                <span class="badge badge-{{ $p->dpa_status ?? $p->dae_status ?? 'pendente' }}">
-                    {{ \Illuminate\Support\Str::ucfirst($p->dpa_status ?? $p->dae_status ?? 'pendente') }}
+                @php $st = $p->dpa_status ?? $p->dae_status ?? 'pendente'; @endphp
+                <span class="badge badge-{{ $st }}">
+                    {{ ['pendente'=>'Pendente','aprovado'=>'Aprovado','reprovado'=>'Não Aprovado','correcao'=>'Em correção'][$st] ?? \Illuminate\Support\Str::ucfirst($st) }}
                 </span>
             </td>
             @if($mostraProfessor)<td>{{ $p->funcionario?->fun_nome ?? '—' }}</td>@endif

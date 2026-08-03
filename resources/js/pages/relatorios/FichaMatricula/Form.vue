@@ -125,6 +125,20 @@ function gerar() {
         onFinish: () => { gerando.value = false; },
     });
 }
+
+// Ficha em branco: só precisa de ano + escola (para o cabeçalho). Sem turma/aluno.
+function gerarBranco() {
+    if (!escId.value || !anlId.value) return;
+    gerando.value = true;
+    router.get('/relatorios/ficha-matricula/gerar', {
+        anl_id: Number(anlId.value),
+        esc_id: Number(escId.value),
+        branco: 1,
+    }, {
+        preserveScroll: true,
+        onFinish: () => { gerando.value = false; },
+    });
+}
 </script>
 
 <template>
@@ -179,7 +193,10 @@ function gerar() {
                     <p v-else class="text-xs text-muted-foreground">Selecione uma turma para filtrar aluno específico.</p>
                 </div>
 
-                <div class="sm:col-span-2 flex justify-end">
+                <div class="sm:col-span-2 flex flex-wrap items-center justify-end gap-2">
+                    <Button variant="outline" :disabled="!escId || !anlId || gerando" @click="gerarBranco" title="Gera uma ficha vazia para preenchimento manual (só precisa de ano e escola).">
+                        Gerar em branco
+                    </Button>
                     <Button :disabled="!escId || !anlId || !turId || gerando" class="bg-indigo-600 text-white hover:bg-indigo-700" @click="gerar">
                         <Loader2 v-if="gerando" class="mr-1 size-4 animate-spin" />
                         Gerar Ficha

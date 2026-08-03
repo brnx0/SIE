@@ -64,6 +64,12 @@ class StorePlanoAulaRequest extends FormRequest
             // Antes dos returns abaixo: a data fora do período independe dos demais vínculos.
             $this->validarDatasNaUnidade($v, (int) $this->input('dpa_uni_id'), $dtIni, $dtFim, 'dpa_dt_inicio', 'dpa_dt_fim');
 
+            // Período já encerrado não recebe plano NOVO (na edição, o período do
+            // próprio plano continua valendo).
+            if (! $this->route('plano')) {
+                $this->validarUnidadeNaoEncerrada($v, (int) $this->input('dpa_uni_id'));
+            }
+
             // A série precisa ter turma REGULAR nesta escola/ano (o plano é por série vinculada às turmas).
             $temTurmaRegular = \DB::table('edu_turma')
                 ->where('tur_ser_id', $serId)
