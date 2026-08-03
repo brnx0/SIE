@@ -38,6 +38,7 @@ class PlanoValidacaoController extends Controller
             $planos = DiarioPlanoAula::query()
                 ->with([
                     'serie:ser_id,ser_nome',
+                    'turma:tur_id,tur_nome',
                     'disciplina:dis_id,dis_nome',
                     'unidade:uni_id,uni_numero,uni_tipo',
                     'funcionario:edu_funcionario.fun_id,edu_funcionario.fun_nome',
@@ -73,13 +74,14 @@ class PlanoValidacaoController extends Controller
         return response()->streamDownload(function () use ($planos) {
             $out = fopen('php://output', 'w');
             fprintf($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
-            fputcsv($out, ['Status', 'Professor', 'Escola', 'Série', 'Disciplina', 'Unidade', 'Tema', 'Data Inicial', 'Data Final'], ';');
+            fputcsv($out, ['Status', 'Professor', 'Escola', 'Série', 'Turma', 'Disciplina', 'Unidade', 'Tema', 'Data Inicial', 'Data Final'], ';');
             foreach ($planos as $p) {
                 fputcsv($out, [
                     ucfirst($p->dpa_status ?? ''),
                     $p->funcionario?->fun_nome ?? '',
                     $p->escola?->esc_nome ?? '',
                     $p->serie?->ser_nome ?? '',
+                    $p->turma?->tur_nome ?? '',
                     $p->disciplina?->dis_nome ?? '',
                     $p->unidade ? ($p->unidade->uni_numero . 'º ' . $p->unidade->uni_tipo) : '',
                     $p->dpa_tema,
@@ -155,6 +157,8 @@ class PlanoValidacaoController extends Controller
                 $query = DiarioPlanoAula::query()
                     ->with([
                         'serie:ser_id,seg_id,ser_nome',
+                        // Opcional: preenchida só em série com turma multi.
+                        'turma:tur_id,tur_nome',
                         'serie.segmento:seg_id,seg_nome_reduzido,seg_nome_completo',
                         'disciplina:dis_id,dis_nome',
                         'unidade:uni_id,uni_numero,uni_tipo',

@@ -20,8 +20,10 @@ interface PlanoListaItem {
     dpa_dt_inicio: string;
     dpa_dt_fim: string;
     dpa_status: PlanoStatus;
-    // Plano de aula é por SÉRIE (dpa_ser_id), não por turma.
+    // Plano de aula é por SÉRIE (dpa_ser_id); a turma é opcional e só existe
+    // quando a série é turma multi (ser_fl_multi).
     serie?: { ser_id: number; ser_nome: string; segmento?: { seg_nome_reduzido: string } };
+    turma?: { tur_id: number; tur_nome: string } | null;
     disciplina?: { dis_id: number; dis_nome: string };
     unidade?: { uni_id: number; uni_numero: number; uni_tipo: string };
     funcionario?: { fun_id: number; fun_nome: string };
@@ -229,6 +231,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                         <tr>
                             <th class="px-4 py-3 text-center">Status</th>
                             <th class="px-4 py-3">Série / Segmento</th>
+                            <th class="px-4 py-3">Turma</th>
                             <th class="px-4 py-3">Disciplina</th>
                             <th class="px-4 py-3">Professor</th>
                             <th class="px-4 py-3">Unidade</th>
@@ -239,12 +242,12 @@ const breadcrumbs: BreadcrumbItem[] = [
                     </thead>
                     <tbody class="divide-y">
                         <tr v-if="!escId">
-                            <td colspan="8" class="px-4 py-12 text-center text-muted-foreground">
+                            <td colspan="9" class="px-4 py-12 text-center text-muted-foreground">
                                 Selecione um ano e uma escola para listar os planos.
                             </td>
                         </tr>
                         <tr v-else-if="planos.data.length === 0">
-                            <td colspan="8" class="px-4 py-12 text-center text-muted-foreground">
+                            <td colspan="9" class="px-4 py-12 text-center text-muted-foreground">
                                 Nenhum plano encontrado.
                             </td>
                         </tr>
@@ -259,6 +262,10 @@ const breadcrumbs: BreadcrumbItem[] = [
                             <td class="px-4 py-3">
                                 <div class="font-medium">{{ p.serie?.ser_nome ?? '—' }}</div>
                                 <div class="text-xs text-muted-foreground">{{ p.serie?.segmento?.seg_nome_reduzido ?? '—' }}</div>
+                            </td>
+                            <td class="px-4 py-3">
+                                <span v-if="p.turma">{{ p.turma.tur_nome }}</span>
+                                <span v-else class="text-xs text-muted-foreground">Todas</span>
                             </td>
                             <td class="px-4 py-3">{{ p.disciplina?.dis_nome ?? '—' }}</td>
                             <td class="px-4 py-3">{{ p.funcionario?.fun_nome ?? '—' }}</td>

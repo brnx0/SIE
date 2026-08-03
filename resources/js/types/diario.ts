@@ -45,6 +45,8 @@ export interface PlanoAula {
     dpa_esc_id: number;
     dpa_anl_id: number;
     dpa_ser_id: number;
+    /** Opcional — só em série com turma multi (ser_fl_multi). */
+    dpa_tur_id: number | null;
     dpa_dis_id: number;
     dpa_uni_id: number;
     dpa_tema: string;
@@ -59,6 +61,7 @@ export interface PlanoAula {
     dpa_obs_coordenador: string | null;
     dpa_status: PlanoStatus;
     serie?: { ser_id: number; ser_nome: string };
+    turma?: { tur_id: number; tur_nome: string };
     disciplina?: PlanoDisciplinaResumo;
     unidade?: PlanoUnidade;
     escola?: { esc_id: number; esc_nome: string };

@@ -69,7 +69,7 @@ function gerar() {
                 Relação de funcionários cadastrados com cargo, escolaridade e unidade de lotação. Filtros opcionais — vazio traz todos.
             </p>
 
-            <div class="rounded-xl border bg-card p-6 shadow-sm grid gap-4 sm:grid-cols-3">
+            <div class="rounded-xl border bg-card p-6 shadow-sm grid items-start gap-4 sm:grid-cols-3">
                 <div class="grid gap-1.5">
                     <FormLabel>Unidade Escolar</FormLabel>
                     <LocalCombobox

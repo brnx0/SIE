@@ -90,7 +90,7 @@ function gerar() {
                 Selecione a <strong>escola</strong>; deixe a turma em <strong>Todas</strong> para gerar todas as turmas dela.
             </p>
 
-            <div class="grid gap-4 rounded-xl border bg-card p-6 shadow-sm sm:grid-cols-2 lg:grid-cols-3">
+            <div class="grid items-start gap-4 rounded-xl border bg-card p-6 shadow-sm sm:grid-cols-2 lg:grid-cols-3">
                 <div class="grid gap-1.5">
                     <FormLabel :required="true">Ano Letivo</FormLabel>
                     <LocalCombobox v-model="anlId" :items="itemsAno" placeholder="Selecione o ano..." />

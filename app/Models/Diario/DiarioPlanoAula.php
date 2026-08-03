@@ -46,6 +46,8 @@ class DiarioPlanoAula extends Model
         'dpa_esc_id',
         'dpa_anl_id',
         'dpa_ser_id',
+        // Opcional: só usado em série com turma multi (ser_fl_multi).
+        'dpa_tur_id',
         'dpa_dis_id',
         'dpa_uni_id',
         'dpa_tema',
@@ -108,6 +110,12 @@ class DiarioPlanoAula extends Model
     public function serie(): BelongsTo
     {
         return $this->belongsTo(Serie::class, 'dpa_ser_id', 'ser_id');
+    }
+
+    /** Opcional — preenchida só em série com turma multi (ser_fl_multi). */
+    public function turma(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\Turma\Turma::class, 'dpa_tur_id', 'tur_id');
     }
 
     public function disciplina(): BelongsTo

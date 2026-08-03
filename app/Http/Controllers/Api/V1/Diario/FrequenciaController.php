@@ -184,6 +184,8 @@ class FrequenciaController extends Controller
         // Planos próprios elegíveis (pendente/aprovado) da série — base do "planejamento executado".
         $planos = DB::table('edu_diario_plano_aula')
             ->where('dpa_ser_id', (int) ($turmaInfo->tur_ser_id ?? 0))
+            // Turma multi: só o plano DESTA turma ou o que vale para todas (null).
+            ->where(fn ($q) => $q->whereNull('dpa_tur_id')->orWhere('dpa_tur_id', $turId))
             ->where('dpa_user_id', (int) $request->user()->id)
             ->whereIn('dpa_status', [DiarioPlanoAula::STATUS_PENDENTE, DiarioPlanoAula::STATUS_APROVADO])
             ->whereNull('dpa_deleted_at')
@@ -598,6 +600,8 @@ class FrequenciaController extends Controller
 
         $plano = DB::table('edu_diario_plano_aula')
             ->where('dpa_ser_id', $serId)
+            // Mesma regra da listagem: plano desta turma ou sem turma definida.
+            ->where(fn ($q) => $q->whereNull('dpa_tur_id')->orWhere('dpa_tur_id', $turId))
             ->where('dpa_dis_id', $disId)
             ->where('dpa_user_id', (int) $request->user()->id)
             ->whereIn('dpa_status', [DiarioPlanoAula::STATUS_PENDENTE, DiarioPlanoAula::STATUS_APROVADO])

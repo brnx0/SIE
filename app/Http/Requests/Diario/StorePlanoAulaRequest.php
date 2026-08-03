@@ -33,6 +33,8 @@ class StorePlanoAulaRequest extends FormRequest
             'dpa_esc_id'              => ['required', 'integer', 'exists:edu_escola,esc_id'],
             'dpa_anl_id'              => ['required', 'integer', 'exists:cfg_ano_letivo,anl_id'],
             'dpa_ser_id'              => ['required', 'integer', 'exists:edu_serie,ser_id'],
+            // Opcional: só aceito em série com turma multi (ver withValidator).
+            'dpa_tur_id'              => ['nullable', 'integer', 'exists:edu_turma,tur_id'],
             'dpa_dis_id'              => ['required', 'integer', 'exists:edu_disciplina,dis_id'],
             'dpa_uni_id'              => ['required', 'integer', 'exists:cfg_unidade,uni_id'],
             'dpa_tema'                => ['required', 'string', 'max:50'],
@@ -81,6 +83,26 @@ class StorePlanoAulaRequest extends FormRequest
             if (! $temTurmaRegular) {
                 $v->errors()->add('dpa_ser_id', 'Série sem turma regular nesta escola/ano.');
                 return;
+            }
+
+            // Turma é OPCIONAL e só vale em série multi (ser_fl_multi). Quando
+            // informada, precisa ser turma regular da série/escola/ano.
+            $turId = (int) $this->input('dpa_tur_id');
+            if ($turId) {
+                $serieMulti = (bool) \DB::table('edu_serie')->where('ser_id', $serId)->value('ser_fl_multi');
+                if (! $serieMulti) {
+                    $v->errors()->add('dpa_tur_id', 'Turma só pode ser informada em série com turma multi.');
+                } elseif (! \DB::table('edu_turma')
+                    ->where('tur_id', $turId)
+                    ->where('tur_ser_id', $serId)
+                    ->where('tur_esc_id', $escId)
+                    ->where('tur_anl_id', $anlId)
+                    ->where('tur_modalidade', Turma::MODALIDADE_REGULAR)
+                    ->whereNull('tur_deleted_at')
+                    ->exists()
+                ) {
+                    $v->errors()->add('dpa_tur_id', 'Turma não pertence à série/escola/ano informados.');
+                }
             }
 
             // Gestor global (admin/gestor_secretaria) cria para qualquer série/disciplina
@@ -132,6 +154,7 @@ class StorePlanoAulaRequest extends FormRequest
             'dpa_esc_id'              => 'escola',
             'dpa_anl_id'              => 'ano letivo',
             'dpa_ser_id'              => 'série',
+            'dpa_tur_id'              => 'turma',
             'dpa_dis_id'              => 'componente curricular',
             'dpa_uni_id'              => 'unidade',
             'dpa_tema'                => 'tema',

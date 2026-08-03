@@ -90,7 +90,7 @@ function gerar() {
                 Lista os alunos das turmas AEE com suas avaliações descritivas registradas e a situação na turma.
             </p>
 
-            <div class="rounded-xl border bg-card p-6 shadow-sm grid gap-4 sm:grid-cols-3">
+            <div class="rounded-xl border bg-card p-6 shadow-sm grid items-start gap-4 sm:grid-cols-3">
                 <div class="grid gap-1.5">
                     <FormLabel :required="true">Ano Letivo</FormLabel>
                     <select v-model="anlId" class="rounded-md border bg-background px-3 py-2 text-sm">

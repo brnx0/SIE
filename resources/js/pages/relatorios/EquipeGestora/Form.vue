@@ -79,7 +79,7 @@ function gerar() {
                 a partir das lotações ativas e vigentes hoje.
             </p>
 
-            <div class="rounded-xl border bg-card p-6 shadow-sm grid gap-5 sm:grid-cols-2">
+            <div class="rounded-xl border bg-card p-6 shadow-sm grid items-start gap-5 sm:grid-cols-2">
                 <div class="grid gap-1.5">
                     <FormLabel>Escola</FormLabel>
                     <LocalCombobox

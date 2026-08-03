@@ -97,7 +97,7 @@ function gerar() {
                 Alunos com {{ idadeMinima }} anos completos na data de referência, ordenados por escola, turma e nome.
             </p>
 
-            <div class="rounded-xl border bg-card p-6 shadow-sm grid gap-5 sm:grid-cols-2">
+            <div class="rounded-xl border bg-card p-6 shadow-sm grid items-start gap-5 sm:grid-cols-2">
                 <div class="grid gap-1.5">
                     <FormLabel :required="true">Ano Letivo</FormLabel>
                     <LocalCombobox v-model="anlId" :items="itemsAno" placeholder="Selecione o ano..." />

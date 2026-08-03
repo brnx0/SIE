@@ -77,7 +77,7 @@ function gerar() {
                 Itens em estoque cujo lote vence dentro do prazo informado. Lote sem data de validade não entra no relatório.
             </p>
 
-            <div class="grid gap-4 rounded-xl border bg-card p-6 shadow-sm sm:grid-cols-2 lg:grid-cols-3">
+            <div class="grid items-start gap-4 rounded-xl border bg-card p-6 shadow-sm sm:grid-cols-2 lg:grid-cols-3">
                 <div v-if="podeVerCentral" class="grid gap-1.5">
                     <FormLabel :required="true">Estoque</FormLabel>
                     <select

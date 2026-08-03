@@ -52,6 +52,7 @@ const form = useForm({
     dpa_esc_id: props.plano?.dpa_esc_id ?? null,
     dpa_anl_id: anlInicial.value,
     dpa_ser_id: props.plano?.dpa_ser_id ?? null,
+    dpa_tur_id: props.plano?.dpa_tur_id ?? null,
     dpa_dis_id: props.plano?.dpa_dis_id ?? null,
     dpa_uni_id: props.plano?.dpa_uni_id ?? null,
     dpa_tema: props.plano?.dpa_tema ?? '',
@@ -66,7 +67,13 @@ const form = useForm({
     indicadores: [...props.indicadoresSelecionados] as number[],
 });
 
-const series = ref<{ ser_id: number; ser_nome: string }[]>([]);
+const series = ref<{ ser_id: number; ser_nome: string; ser_fl_multi?: boolean }[]>([]);
+const turmas = ref<{ tur_id: number; tur_nome: string }[]>([]);
+
+// Série "turma multi" habilita a escolha (OPCIONAL) de uma turma daquela série.
+const serieMulti = computed(
+    () => !!series.value.find((s) => s.ser_id === form.dpa_ser_id)?.ser_fl_multi,
+);
 const disciplinas = ref<PlanoDisciplinaResumo[]>([]);
 const unidades = ref<PlanoUnidade[]>([]);
 const indicadores = ref<IndicadorResumo[]>([]);
@@ -93,6 +100,19 @@ const fetchSeries = async () => {
     url.searchParams.set('esc_id', String(form.dpa_esc_id));
     const r = await fetch(url, { headers: { Accept: 'application/json' } });
     if (r.ok) series.value = await r.json();
+};
+
+const fetchTurmas = async () => {
+    if (!form.dpa_ser_id) {
+        turmas.value = [];
+        return;
+    }
+    const url = new URL('/api/diario/planos/turmas', window.location.origin);
+    url.searchParams.set('ser_id', String(form.dpa_ser_id));
+    if (form.dpa_esc_id) url.searchParams.set('esc_id', String(form.dpa_esc_id));
+    if (form.dpa_anl_id) url.searchParams.set('anl_id', String(form.dpa_anl_id));
+    const r = await fetch(url, { headers: { Accept: 'application/json' } });
+    if (r.ok) turmas.value = await r.json();
 };
 
 const fetchDisciplinas = async () => {
@@ -162,8 +182,16 @@ watch(() => form.dpa_esc_id, () => {
 });
 watch(() => form.dpa_ser_id, () => {
     if (!isEdit.value) form.dpa_dis_id = null;
+    // Turma pertence à série anterior — sempre zera ao trocar de série.
+    form.dpa_tur_id = null;
+    turmas.value = [];
     fetchDisciplinas();
+    fetchTurmas();
     fetchIndicadores();
+});
+// Série deixou de ser multi (ex.: troca de seleção): a turma não se aplica mais.
+watch(serieMulti, (multi) => {
+    if (!multi) form.dpa_tur_id = null;
 });
 watch(() => form.dpa_dis_id, fetchIndicadores);
 
@@ -171,6 +199,7 @@ onMounted(async () => {
     await Promise.all([fetchEscolas(), fetchUnidades()]);
     if (form.dpa_esc_id) await fetchSeries();
     if (form.dpa_ser_id) await fetchDisciplinas();
+    if (form.dpa_ser_id) await fetchTurmas();
     if (form.dpa_ser_id) await fetchIndicadores();
 });
 
@@ -203,6 +232,13 @@ const itemsSerie = computed(() => {
     if (p && !list.some((i) => i.id === p.ser_id)) {
         list.unshift({ id: p.ser_id, label: p.ser_nome });
     }
+    return list;
+});
+const itemsTurma = computed(() => {
+    const list = turmas.value.map((t) => ({ id: t.tur_id, label: t.tur_nome }));
+    // Preserva a turma já salva mesmo que não volte no lookup (ex.: perdeu regência).
+    const p = (props.plano as any)?.turma;
+    if (p && !list.some((i) => i.id === p.tur_id)) list.unshift({ id: p.tur_id, label: p.tur_nome });
     return list;
 });
 const itemsDisciplina = computed(() => {
@@ -360,6 +396,14 @@ const breadcrumbs: BreadcrumbItem[] = [
                         <LocalCombobox v-model="form.dpa_ser_id" :items="itemsSerie"
                             placeholder="Selecione..." :invalid="!!form.errors.dpa_ser_id" />
                         <InputError :message="form.errors.dpa_ser_id" />
+                    </div>
+                    <!-- Turma: só em ano escolar com turma multi; opcional. -->
+                    <div v-if="serieMulti" class="md:col-span-2">
+                        <Label>Turma</Label>
+                        <LocalCombobox v-model="form.dpa_tur_id" :items="itemsTurma"
+                            placeholder="Todas as turmas" :invalid="!!form.errors.dpa_tur_id" />
+                        <InputError :message="form.errors.dpa_tur_id" />
+                        <p class="text-xs text-muted-foreground">Opcional — em branco vale para todas as turmas.</p>
                     </div>
                     <div class="md:col-span-3">
                         <Label>Componente Curricular <span class="text-rose-600">*</span></Label>

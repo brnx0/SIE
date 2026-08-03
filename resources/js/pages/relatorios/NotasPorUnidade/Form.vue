@@ -95,7 +95,7 @@ function gerar() {
             </h1>
             <p class="mb-6 text-sm text-muted-foreground">Médias da turma por disciplina na unidade selecionada.</p>
 
-            <div class="grid gap-4 rounded-xl border bg-card p-6 shadow-sm sm:grid-cols-2 lg:grid-cols-4">
+            <div class="grid items-start gap-4 rounded-xl border bg-card p-6 shadow-sm sm:grid-cols-2 lg:grid-cols-4">
                 <div class="grid gap-1.5">
                     <FormLabel :required="true">Ano Letivo</FormLabel>
                     <LocalCombobox v-model="anlId" :items="itemsAno" placeholder="Selecione o ano..." />

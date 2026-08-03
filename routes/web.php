@@ -532,6 +532,7 @@ Route::middleware(['auth', 'verified', 'tela'])->group(function () {
         Route::post('faltas/aula-nao-executada', [\App\Http\Controllers\Diario\FaltaController::class, 'salvarAulaNaoExecutada'])->name('faltas.aula-nao-executada');
         Route::get('planos/escolas', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'lookupEscolas'])->name('planos.escolas');
         Route::get('planos/series', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'lookupSeries'])->name('planos.series');
+        Route::get('planos/turmas', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'lookupTurmas'])->name('planos.turmas');
         Route::get('planos/disciplinas', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'lookupDisciplinas'])->name('planos.disciplinas');
         Route::get('planos/unidades', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'lookupUnidades'])->name('planos.unidades');
         Route::get('planos/indicadores', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'lookupIndicadores'])->name('planos.indicadores');

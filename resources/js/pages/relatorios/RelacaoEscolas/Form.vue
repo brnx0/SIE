@@ -69,7 +69,7 @@ function gerar() {
                 ofertados. Diferente dos demais relatórios, este também alcança escolas inativas.
             </p>
 
-            <div class="rounded-xl border bg-card p-6 shadow-sm grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            <div class="rounded-xl border bg-card p-6 shadow-sm grid items-start gap-5 sm:grid-cols-2 lg:grid-cols-3">
                 <div class="grid gap-1.5">
                     <FormLabel>Tipo de Ensino</FormLabel>
                     <LocalCombobox v-model="segId" :items="itemsSegmento" placeholder="Todos os tipos" />

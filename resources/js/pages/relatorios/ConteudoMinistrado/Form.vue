@@ -96,7 +96,7 @@ function gerar() {
             </h1>
             <p class="mb-6 text-sm text-muted-foreground">Por disciplina da turma, lista os dias com aula registrada na frequência, o planejamento executado e o conteúdo/metodologia do dia. Período em branco = todos.</p>
 
-            <div class="grid gap-4 rounded-xl border bg-card p-6 shadow-sm sm:grid-cols-2 lg:grid-cols-4">
+            <div class="grid items-start gap-4 rounded-xl border bg-card p-6 shadow-sm sm:grid-cols-2 lg:grid-cols-4">
                 <div class="grid gap-1.5">
                     <FormLabel :required="true">Ano Letivo</FormLabel>
                     <LocalCombobox v-model="anlId" :items="itemsAno" placeholder="Selecione o ano..." />

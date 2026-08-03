@@ -118,7 +118,7 @@ function gerar() {
                 Por turma e disciplina, agrupado por aluno e ordenado por indicador — mostra a opção atribuída em <strong>cada período</strong>. Deixe o aluno em <strong>Todos</strong> para gerar a turma inteira.
             </p>
 
-            <div class="grid gap-4 rounded-xl border bg-card p-6 shadow-sm sm:grid-cols-2 lg:grid-cols-3">
+            <div class="grid items-start gap-4 rounded-xl border bg-card p-6 shadow-sm sm:grid-cols-2 lg:grid-cols-3">
                 <div class="grid gap-1.5">
                     <FormLabel :required="true">Ano Letivo</FormLabel>
                     <LocalCombobox v-model="anlId" :items="itemsAno" placeholder="Selecione o ano..." />

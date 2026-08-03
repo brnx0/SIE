@@ -196,6 +196,7 @@ class PlanoAulaController extends Controller
 
         $plano->load([
             'serie:ser_id,ser_nome',
+            'turma:tur_id,tur_nome',
             'disciplina:dis_id,dis_nome',
             'unidade:uni_id,uni_numero,uni_tipo,uni_dt_inicio,uni_dt_fim,uni_anl_id',
             'escola:esc_id,esc_nome',
@@ -361,12 +362,59 @@ class PlanoAulaController extends Controller
             ->where('t.tur_modalidade', 'REGULAR')
             ->when($anlId, fn ($q) => $q->where('t.tur_anl_id', $anlId))
             ->when($escId, fn ($q) => $q->where('t.tur_esc_id', $escId))
-            ->select('s.ser_id', 's.ser_nome')
+            // ser_fl_multi: o form usa p/ liberar a escolha (opcional) da turma.
+            ->select('s.ser_id', 's.ser_nome', 's.ser_fl_multi')
             ->distinct()
             ->orderBy('s.ser_nome')
-            ->get();
+            ->get()
+            ->map(fn ($s) => [
+                'ser_id'       => (int) $s->ser_id,
+                'ser_nome'     => $s->ser_nome,
+                'ser_fl_multi' => (bool) $s->ser_fl_multi,
+            ]);
 
         return response()->json($series);
+    }
+
+    /**
+     * Turmas REGULARES da série (escola/ano) em que o professor tem regência.
+     * Usado só quando a série é turma multi — o plano segue por série e a turma
+     * é um recorte OPCIONAL.
+     */
+    public function lookupTurmas(Request $request): JsonResponse
+    {
+        $this->abortIfNotProfessor();
+
+        $user  = $request->user();
+        $funId = (int) $user->fun_id;
+        $anlId = (int) $request->input('anl_id');
+        $escId = (int) $request->input('esc_id');
+        $serId = (int) $request->input('ser_id');
+
+        if (! $serId) {
+            return response()->json([]);
+        }
+
+        $base = ($funId && ! $user->isGestorGlobal())
+            ? DB::table('edu_turma_professor as tp')
+                ->join('edu_turma as t', 't.tur_id', '=', 'tp.tup_tur_id')
+                ->where('tp.tup_fun_id', $funId)
+                ->whereNull('tp.tup_deleted_at')
+            : DB::table('edu_turma as t');
+
+        $turmas = $base
+            ->whereNull('t.tur_deleted_at')
+            ->where('t.tur_modalidade', 'REGULAR')
+            ->where('t.tur_ser_id', $serId)
+            ->when($anlId, fn ($q) => $q->where('t.tur_anl_id', $anlId))
+            ->when($escId, fn ($q) => $q->where('t.tur_esc_id', $escId))
+            ->select('t.tur_id', 't.tur_nome')
+            ->distinct()
+            ->orderBy('t.tur_nome')
+            ->get()
+            ->map(fn ($t) => ['tur_id' => (int) $t->tur_id, 'tur_nome' => $t->tur_nome]);
+
+        return response()->json($turmas);
     }
 
     /** Disciplinas que o professor leciona em turmas da série (ou toda a grade, se admin). */

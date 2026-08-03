@@ -48,7 +48,7 @@ function gerar() {
                 (Matrícula Inicial) e lista o que impediria o envio, no ano letivo em exercício.
             </p>
 
-            <div class="rounded-xl border bg-card p-6 shadow-sm grid gap-4 sm:grid-cols-2">
+            <div class="rounded-xl border bg-card p-6 shadow-sm grid items-start gap-4 sm:grid-cols-2">
                 <div class="grid gap-1.5">
                     <FormLabel>Ano Letivo (em exercício)</FormLabel>
                     <div class="rounded-md border bg-muted/40 px-3 py-2 text-sm">

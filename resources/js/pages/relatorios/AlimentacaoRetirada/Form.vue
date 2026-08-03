@@ -78,7 +78,7 @@ function gerar() {
                 Retiradas do estoque no período, com gráfico comparativo entre as unidades. Deixe a unidade em branco para comparar todas.
             </p>
 
-            <div class="grid gap-4 rounded-xl border bg-card p-6 shadow-sm sm:grid-cols-2 lg:grid-cols-4">
+            <div class="grid items-start gap-4 rounded-xl border bg-card p-6 shadow-sm sm:grid-cols-2 lg:grid-cols-4">
                 <div class="grid gap-1.5">
                     <FormLabel>Unidade Escolar <span class="text-xs font-normal text-muted-foreground">(opcional)</span></FormLabel>
                     <LocalCombobox v-model="escId" :items="itemsEscola" placeholder="Todas as unidades" />

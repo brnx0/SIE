@@ -136,7 +136,7 @@ function gerar() {
                 Gere por aluno, por turma ou em lote (todos da escola no ano).
             </p>
 
-            <div class="rounded-xl border bg-card p-6 shadow-sm grid gap-4 sm:grid-cols-2">
+            <div class="rounded-xl border bg-card p-6 shadow-sm grid items-start gap-4 sm:grid-cols-2">
                 <div class="grid gap-1.5">
                     <FormLabel :required="true">Ano Letivo</FormLabel>
                     <select v-model="anlId" class="rounded-md border bg-background px-3 py-2 text-sm">

@@ -75,7 +75,7 @@ function gerar() {
                 Itens entregues pela central a cada unidade no período, com campo de assinatura. Deixe a unidade em branco para gerar o protocolo de todas.
             </p>
 
-            <div class="grid gap-4 rounded-xl border bg-card p-6 shadow-sm sm:grid-cols-2 lg:grid-cols-3">
+            <div class="grid items-start gap-4 rounded-xl border bg-card p-6 shadow-sm sm:grid-cols-2 lg:grid-cols-3">
                 <div class="grid gap-1.5">
                     <FormLabel>Unidade Escolar <span class="text-xs font-normal text-muted-foreground">(opcional)</span></FormLabel>
                     <LocalCombobox v-model="escId" :items="itemsEscola" placeholder="Todas as unidades" />

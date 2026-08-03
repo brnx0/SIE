@@ -167,6 +167,9 @@ class FaltaController extends Controller
         $serId = (int) DB::table('edu_turma')->where('tur_id', $turId)->value('tur_ser_id');
         $planosQ = DB::table('edu_diario_plano_aula')
             ->where('dpa_ser_id', $serId)
+            // Turma multi: o plano pode ser de UMA turma (dpa_tur_id) ou valer para
+            // todas (null). Só entram os desta turma ou os sem turma definida.
+            ->where(fn ($q) => $q->whereNull('dpa_tur_id')->orWhere('dpa_tur_id', $turId))
             ->whereIn('dpa_status', [DiarioPlanoAula::STATUS_PENDENTE, DiarioPlanoAula::STATUS_APROVADO])
             ->whereNull('dpa_deleted_at');
         if (! $user->isAdmin()) {
@@ -467,6 +470,8 @@ class FaltaController extends Controller
 
         $plano = DB::table('edu_diario_plano_aula')
             ->where('dpa_ser_id', $serId)
+            // Mesma regra da listagem: plano desta turma ou sem turma definida.
+            ->where(fn ($q) => $q->whereNull('dpa_tur_id')->orWhere('dpa_tur_id', $turId))
             ->where('dpa_dis_id', $disId)
             ->whereIn('dpa_status', [DiarioPlanoAula::STATUS_PENDENTE, DiarioPlanoAula::STATUS_APROVADO])
             ->whereDate('dpa_dt_inicio', '<=', $d)

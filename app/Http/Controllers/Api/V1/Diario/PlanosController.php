@@ -223,11 +223,29 @@ class PlanosController extends Controller
                 ->where('t.tur_esc_id', $escId)
                 ->distinct()
                 ->orderBy('s.ser_nome')
-                ->get(['s.ser_id', 's.ser_nome'])
-                ->map(fn ($r) => ['ser_id' => (int) $r->ser_id, 'ser_nome' => $r->ser_nome])
+                // ser_fl_multi: o front usa p/ liberar a escolha (opcional) da turma.
+                ->get(['s.ser_id', 's.ser_nome', 's.ser_fl_multi'])
+                ->map(fn ($r) => [
+                    'ser_id'       => (int) $r->ser_id,
+                    'ser_nome'     => $r->ser_nome,
+                    'ser_fl_multi' => (bool) $r->ser_fl_multi,
+                ])
             : collect();
 
         $serId = (int) ($data['ser_id'] ?? 0);
+
+        // Turmas da série em que o professor tem regência — só fazem sentido
+        // quando a série é multi (o front só mostra o campo nesse caso).
+        $turmas = $anlId && $escId && $serId
+            ? (clone $base())
+                ->where('t.tur_anl_id', $anlId)
+                ->where('t.tur_esc_id', $escId)
+                ->where('t.tur_ser_id', $serId)
+                ->distinct()
+                ->orderBy('t.tur_nome')
+                ->get(['t.tur_id', 't.tur_nome'])
+                ->map(fn ($r) => ['tur_id' => (int) $r->tur_id, 'tur_nome' => $r->tur_nome])
+            : collect();
 
         // Disciplinas que ESTE professor leciona nesta série/escola/ano.
         $disciplinas = $anlId && $escId && $serId
@@ -261,6 +279,7 @@ class PlanosController extends Controller
             'anos'        => $anos->values(),
             'escolas'     => $escolas->values(),
             'series'      => $series->values(),
+            'turmas'      => $turmas->values(),
             'disciplinas' => $disciplinas->values(),
             'unidades'    => $unidades->values(),
         ]);
@@ -320,6 +339,8 @@ class PlanosController extends Controller
             'dpa_dt_fim'     => $p->dpa_dt_fim ? Carbon::parse($p->dpa_dt_fim)->toDateString() : null,
             'dpa_ser_id'     => (int) $p->dpa_ser_id,
             'ser_nome'       => $p->serie?->ser_nome,
+            'dpa_tur_id'     => $p->dpa_tur_id ? (int) $p->dpa_tur_id : null,
+            'tur_nome'       => $p->turma?->tur_nome,
             'dpa_dis_id'     => (int) $p->dpa_dis_id,
             'dis_nome'       => $p->disciplina?->dis_nome,
             'dpa_uni_id'     => (int) $p->dpa_uni_id,
@@ -343,6 +364,8 @@ class PlanosController extends Controller
             'dpa_esc_id'                   => ['required', 'integer', 'exists:edu_escola,esc_id'],
             'dpa_anl_id'                   => ['required', 'integer', 'exists:cfg_ano_letivo,anl_id'],
             'dpa_ser_id'                   => ['required', 'integer', 'exists:edu_serie,ser_id'],
+            // Opcional e só aceito em série multi (ver validarRegras).
+            'dpa_tur_id'                   => ['nullable', 'integer', 'exists:edu_turma,tur_id'],
             'dpa_dis_id'                   => ['required', 'integer', 'exists:edu_disciplina,dis_id'],
             'dpa_uni_id'                   => ['required', 'integer', 'exists:cfg_unidade,uni_id'],
             // 50 é o limite real cobrado pelo web, apesar da coluna ser varchar(255).
@@ -407,6 +430,35 @@ class PlanosController extends Controller
 
         if (! $temTurma) {
             throw ValidationException::withMessages(['dpa_ser_id' => 'Série sem turma regular nesta escola/ano.']);
+        }
+
+        // 2a) Turma é OPCIONAL e só vale em série multi (ser_fl_multi); quando
+        // informada, precisa ser uma turma regular daquela série/escola/ano.
+        if (! empty($data['dpa_tur_id'])) {
+            $serieMulti = DB::table('edu_serie')
+                ->where('ser_id', $data['dpa_ser_id'])
+                ->value('ser_fl_multi');
+
+            if (! $serieMulti) {
+                throw ValidationException::withMessages([
+                    'dpa_tur_id' => 'Turma só pode ser informada em série com turma multi.',
+                ]);
+            }
+
+            $turmaOk = Turma::query()
+                ->where('tur_id', $data['dpa_tur_id'])
+                ->where('tur_ser_id', $data['dpa_ser_id'])
+                ->where('tur_esc_id', $data['dpa_esc_id'])
+                ->where('tur_anl_id', $data['dpa_anl_id'])
+                ->where('tur_modalidade', Turma::MODALIDADE_REGULAR)
+                ->whereNull('tur_deleted_at')
+                ->exists();
+
+            if (! $turmaOk) {
+                throw ValidationException::withMessages([
+                    'dpa_tur_id' => 'Turma não pertence à série/escola/ano informados.',
+                ]);
+            }
         }
 
         // 3) O professor precisa lecionar a disciplina em alguma turma dessa série.
