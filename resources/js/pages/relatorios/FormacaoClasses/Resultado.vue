@@ -173,6 +173,9 @@ const exportarExcel = () => window.open(`/relatorios/formacao-classes/xlsx?${que
         <div v-for="[grupo, lista] in grupos" :key="`p-${grupo}`" class="grupo-segmento">
             <div class="grupo-titulo">{{ filtros.rede ? grupo : `Segmento: ${grupo}` }}</div>
             <table class="tabela-impressao">
+                <colgroup>
+                    <col class="fc-num" /><col class="fc-cod" /><col class="fc-turno" /><col class="fc-serie" /><col class="fc-turma" /><col class="fc-status" /><col class="fc-pcd" /><col class="fc-idade" /><col class="fc-cap" /><col class="fc-exp" /><col class="fc-rede" /><col class="fc-novos" /><col class="fc-vagas" /><col class="fc-prof" />
+                </colgroup>
                 <thead>
                     <tr>
                         <th>Nº</th>
@@ -224,6 +227,9 @@ const exportarExcel = () => window.open(`/relatorios/formacao-classes/xlsx?${que
         </div>
 
         <table v-if="linhas.length" class="tabela-impressao total-geral-tabela">
+            <colgroup>
+                <col class="fc-num" /><col class="fc-cod" /><col class="fc-turno" /><col class="fc-serie" /><col class="fc-turma" /><col class="fc-status" /><col class="fc-pcd" /><col class="fc-idade" /><col class="fc-cap" /><col class="fc-exp" /><col class="fc-rede" /><col class="fc-novos" /><col class="fc-vagas" /><col class="fc-prof" />
+            </colgroup>
             <tbody>
                 <tr class="linha-total-geral">
                     <td colspan="6"><b>TOTAL GERAL</b></td>
@@ -418,15 +424,33 @@ const exportarExcel = () => window.open(`/relatorios/formacao-classes/xlsx?${que
         border: 1px solid #000;
         table-layout: fixed;
     }
+    /* Larguras por coluna (soma 100%). Sem isto o table-layout:fixed divide as 14
+       colunas por igual e a de Professores fica espremida (texto cortado); e o
+       colgroup idêntico faz o TOTAL GERAL (tabela separada) alinhar com os dados. */
+    .tabela-impressao .fc-num    { width: 3%; }
+    .tabela-impressao .fc-cod    { width: 6%; }
+    .tabela-impressao .fc-turno  { width: 9%; }
+    .tabela-impressao .fc-serie  { width: 10%; }
+    .tabela-impressao .fc-turma  { width: 6%; }
+    .tabela-impressao .fc-status { width: 8%; }
+    .tabela-impressao .fc-pcd    { width: 3%; }
+    .tabela-impressao .fc-idade  { width: 5%; }
+    .tabela-impressao .fc-cap    { width: 4%; }
+    .tabela-impressao .fc-exp    { width: 4%; }
+    .tabela-impressao .fc-rede   { width: 4%; }
+    .tabela-impressao .fc-novos  { width: 5%; }
+    .tabela-impressao .fc-vagas  { width: 5%; }
+    .tabela-impressao .fc-prof   { width: 28%; }
     .tabela-impressao .celula-prof {
         font-size: 7pt;
         overflow-wrap: break-word;
         word-break: break-word;
+        text-align: left;
     }
     .tabela-impressao th {
         padding: 4px 5px;
         border: 1px solid #000;
-        text-align: left;
+        text-align: center;
         font-weight: 700;
         text-transform: uppercase;
         font-size: 7.5pt;
@@ -436,6 +460,11 @@ const exportarExcel = () => window.open(`/relatorios/formacao-classes/xlsx?${que
         padding: 3px 5px;
         border: 1px solid #000;
         vertical-align: top;
+        text-align: center;
+        /* Coluna de largura fixa: quebra o texto dentro da célula em vez de
+           estourar para a coluna seguinte. */
+        overflow-wrap: break-word;
+        word-break: break-word;
     }
     .tabela-impressao .centro { text-align: center; }
     .tabela-impressao .linha-total td { font-weight: 700; }
@@ -445,7 +474,11 @@ const exportarExcel = () => window.open(`/relatorios/formacao-classes/xlsx?${que
         border-bottom: 2px solid #000;
     }
 
-    .grupo-segmento { margin: 10px 0 6px; page-break-inside: avoid; }
+    /* NÃO usa page-break-inside: avoid: um segmento grande não cabe sob o
+       cabeçalho e o "avoid" empurrava o bloco inteiro p/ a página seguinte,
+       deixando a 1ª só com o cabeçalho. A tabela flui (thead repete, linhas não
+       quebram), então os dados começam já na 1ª página. */
+    .grupo-segmento { margin: 10px 0 6px; }
     .grupo-titulo {
         border: 1px solid #000;
         border-bottom: none;
@@ -454,6 +487,7 @@ const exportarExcel = () => window.open(`/relatorios/formacao-classes/xlsx?${que
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.5px;
+        page-break-after: avoid;
     }
     .total-geral-tabela { margin-top: 8px; }
 

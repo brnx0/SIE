@@ -72,7 +72,7 @@ function gerar() {
                 faixa etária e professores alocados. Deixe a escola em branco para varrer a rede inteira.
             </p>
 
-            <div class="rounded-xl border bg-card p-6 shadow-sm grid gap-4 sm:grid-cols-3">
+            <div class="rounded-xl border bg-card p-6 shadow-sm grid items-start gap-4 sm:grid-cols-3">
                 <div class="grid gap-1.5">
                     <FormLabel :required="true">Ano Letivo</FormLabel>
                     <select v-model="anlId" :class="CAMPO">
