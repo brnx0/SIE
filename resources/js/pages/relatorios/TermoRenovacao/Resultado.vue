@@ -173,14 +173,15 @@ const municipioTermo = () => props.escola.municipio ?? (props.parametros?.munici
         font-size: 10pt;
     }
 
-    /* 2 termos por página: o bloco não quebra no meio e a página só vira a cada
-       2º termo (o 1º da página ganha um pontilhado de corte no rodapé). */
+    /* 3 termos por página (~92mm cada em A4 retrato): o bloco não quebra no meio
+       e a página só vira a cada 3º termo. O separador é a linha .corte no rodapé
+       de cada termo. */
     .folha-termo {
         page-break-inside: avoid;
         break-inside: avoid;
-        padding-bottom: 4mm;
+        padding-bottom: 2mm;
     }
-    .folha-termo:nth-child(even) {
+    .folha-termo:nth-child(3n) {
         page-break-after: always;
         break-after: page;
     }
@@ -198,42 +199,42 @@ const municipioTermo = () => props.escola.municipio ?? (props.parametros?.munici
         padding-bottom: 4px;
         border-bottom: 2px solid #000;
     }
-    /* Alturas enxutas: dois termos precisam caber numa A4 retrato (~138mm cada). */
-    .brasao img, .logomarca img { max-width: 80px; max-height: 55px; object-fit: contain; }
-    .cab-textos { text-align: center; line-height: 1.25; }
-    .cab-linha { font-size: 11pt; font-weight: 700; }
-    .cab-linha:nth-child(2) { font-size: 9.5pt; }
-    .cab-entidade { font-size: 9pt; font-weight: 700; margin-top: 1px; }
-    .cab-endereco { text-align: center; font-size: 8pt; margin: 2px 0 6px; }
+    /* Alturas enxutas: TRÊS termos precisam caber numa A4 retrato (~92mm cada). */
+    .brasao img, .logomarca img { max-width: 52px; max-height: 34px; object-fit: contain; }
+    .cab-textos { text-align: center; line-height: 1.15; }
+    .cab-linha { font-size: 9pt; font-weight: 700; }
+    .cab-linha:nth-child(2) { font-size: 8pt; }
+    .cab-entidade { font-size: 8pt; font-weight: 700; margin-top: 0; }
+    .cab-endereco { text-align: center; font-size: 7pt; margin: 1px 0 3px; }
 
     .titulo-termo {
         border: 1px solid #000;
         text-align: center;
-        font-size: 11.5pt;
+        font-size: 9.5pt;
         font-weight: 700;
-        padding: 4px;
+        padding: 2px;
         margin-bottom: 0;
     }
 
     .quadro { border: 1px solid #000; border-top: none; }
     .quadro .linha { display: flex; border-top: 1px solid #000; }
     .quadro .linha:first-child { border-top: none; }
-    .quadro .celula { padding: 3px 8px; font-size: 10pt; }
+    .quadro .celula { padding: 2px 6px; font-size: 8.5pt; }
     .quadro .celula.full { flex: 1 1 100%; }
     .quadro .celula.g { flex: 1 1 70%; border-right: 1px solid #000; }
     .quadro .celula.p { flex: 1 1 30%; }
-    .quadro .celula.alto { padding-top: 5px; padding-bottom: 12px; }
-    .quadro .rot { font-size: 8.5pt; color: #000; }
+    .quadro .celula.alto { padding-top: 3px; padding-bottom: 7px; }
+    .quadro .rot { font-size: 7.5pt; color: #000; }
 
     .corpo {
         text-align: justify;
-        line-height: 1.9;
-        font-size: 10.5pt;
-        margin: 12px 0 6px;
+        line-height: 1.6;
+        font-size: 9pt;
+        margin: 6px 0 4px;
     }
     .corpo .preencher {
         display: inline-block;
-        min-width: 150px;
+        min-width: 120px;
         border-bottom: 1px solid #000;
         text-align: center;
         font-weight: 600;
@@ -242,31 +243,33 @@ const municipioTermo = () => props.escola.municipio ?? (props.parametros?.munici
     .local-data {
         text-align: right;
         font-weight: 700;
-        font-size: 10.5pt;
-        margin: 10px 0 8px;
+        font-size: 9pt;
+        margin: 5px 0 4px;
     }
 
+    /* 6pt é o piso de legibilidade em impressão — é o texto mais denso do termo
+       (~1.2 mil caracteres) e o que mais pesa para caber 3 por página. */
     .autorizacao {
         text-align: justify;
-        font-size: 7pt;
-        line-height: 1.25;
-        margin-bottom: 10px;
+        font-size: 6pt;
+        line-height: 1.15;
+        margin-bottom: 5px;
     }
 
     .assinatura-box {
         border: 1px solid #000;
-        height: 32px;
+        height: 22px;
     }
     .assinatura-legenda {
         text-align: center;
-        font-size: 8.5pt;
-        margin-top: 2px;
+        font-size: 7.5pt;
+        margin-top: 1px;
     }
 
     .corte {
-        margin-top: 6px;
+        margin-top: 3px;
         text-align: center;
-        font-size: 9pt;
+        font-size: 7pt;
         letter-spacing: 1px;
         color: #000;
     }

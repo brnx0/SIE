@@ -2,6 +2,7 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue';
 import FormLabel from '@/components/common/FormLabel.vue';
+import LocalCombobox from '@/components/common/LocalCombobox.vue';
 import { Button } from '@/components/ui/button';
 import type { BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
@@ -29,6 +30,11 @@ const breadcrumbs: BreadcrumbItem[] = [{ title: 'Confirmação de Renovação', 
 const anoDefault = [...props.anosLetivos].filter((a) => a.anl_fl_em_exercicio).sort((a, b) => b.anl_ano - a.anl_ano)[0] ?? props.anosLetivos[0];
 const anlId = ref<number | ''>(anoDefault?.anl_id ?? '');
 const escId = ref<number | ''>(props.userEscola?.esc_id ?? '');
+const itemsEscola = computed(() => props.escolas.map((e) => ({ id: e.esc_id, label: e.esc_nome })));
+const itemsAno = computed(() => props.anosLetivos.map((a) => ({
+    id: a.anl_id,
+    label: a.anl_fl_em_exercicio ? `${a.anl_ano} (em exercício)` : String(a.anl_ano),
+})));
 
 const carregando = ref(false);
 const carregado = ref(false);
@@ -220,17 +226,22 @@ const nomeTurmaDestino = (serId: number | null, turId: number | null): string =>
             <div class="mb-4 grid gap-4 rounded-xl border bg-card p-6 shadow-sm sm:grid-cols-3">
                 <div class="grid gap-1.5">
                     <FormLabel :required="true">Ano Letivo</FormLabel>
-                    <select v-model="anlId" class="rounded-md border bg-background px-3 py-2 text-sm">
-                        <option value="">—</option>
-                        <option v-for="a in anosLetivos" :key="a.anl_id" :value="a.anl_id">{{ a.anl_ano }}<span v-if="a.anl_fl_em_exercicio"> (em exercício)</span></option>
-                    </select>
+                    <LocalCombobox
+                        :model-value="anlId === '' ? null : anlId"
+                        :items="itemsAno"
+                        placeholder="Selecione..."
+                        @update:model-value="(v) => (anlId = v ?? '')"
+                    />
                 </div>
                 <div class="grid gap-1.5">
                     <FormLabel :required="true">Escola</FormLabel>
-                    <select v-model="escId" :disabled="!isAdmin && !!userEscola" class="rounded-md border bg-background px-3 py-2 text-sm">
-                        <option value="">Selecione...</option>
-                        <option v-for="e in escolas" :key="e.esc_id" :value="e.esc_id">{{ e.esc_nome }}</option>
-                    </select>
+                    <LocalCombobox
+                        :model-value="escId === '' ? null : escId"
+                        :items="itemsEscola"
+                        :disabled="!isAdmin && !!userEscola"
+                        placeholder="Selecione..."
+                        @update:model-value="(v) => (escId = v ?? '')"
+                    />
                 </div>
                 <div class="flex items-end">
                     <Button :disabled="!anlId || !escId || carregando" class="bg-indigo-600 text-white hover:bg-indigo-700" @click="listar">
