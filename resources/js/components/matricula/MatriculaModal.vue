@@ -639,11 +639,11 @@ const selectClass = 'flex h-10 w-full rounded-md border border-input bg-backgrou
             <div v-if="isMulti" class="shrink-0 border-b bg-amber-50 px-6 py-3 dark:bg-amber-900/20">
                 <div class="grid gap-1.5">
                     <FormLabel for="tma_ser_id" :required="true" class="text-amber-800 dark:text-amber-200">
-                        Série do aluno (turma multi)
-                    </FormLabel>
+                       Série de origem do aluno (turma multi)
+                    </FormLabel>"
                     <select
                         id="tma_ser_id"
-                        v-model="serieSelecionadaId"
+                        v-model="serieSelecionadaId""
                         class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground"
                     >
                         <option :value="null" disabled>Selecione a série...</option>
