@@ -181,15 +181,13 @@ class LancamentoManualController extends Controller
             if (($data['media'] ?? null) !== null && (float) $data['media'] > 10) {
                 throw ValidationException::withMessages(['media' => 'A média não pode passar de 10.']);
             }
-            // Média do PERÍODO: numérica NÃO arredonda (só a média final arredonda ao 0,5);
-            // conceitual-faixa mantém 0,5 p/ mapear na faixa.
-            if (($data['media'] ?? null) === null) {
-                $media = null;
-            } elseif ($tipo === 'numerica') {
-                $media = round((float) $data['media'], 2);
-            } else {
-                $media = round(((float) $data['media']) * 2) / 2;
-            }
+            // Média do PERÍODO não arredonda ao 0,5 — nem numérica nem
+            // conceitual-faixa. O 0,5 só é aplicado na média final anual
+            // (App\Support\CalculoNota::consolidar). A faixa do conceito é
+            // resolvida a partir do valor exato.
+            $media = ($data['media'] ?? null) === null
+                ? null
+                : round((float) $data['media'], 2);
         }
         $faltas = ($data['faltas'] ?? null) !== null ? (int) $data['faltas'] : null;
 

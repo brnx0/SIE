@@ -146,8 +146,9 @@ class CalculoNota
                 // Conceitual direto.
                 $out[$aln] = ['tipo' => 'conceitual', 'valor' => null, 'conceito' => self::conceitoArray(self::conceitoPorIdModel((int) $r->nmn_cnc_id, $conceitos))];
             } elseif ($r->nmn_media !== null && $r->nmn_tipo === 'conceitual') {
-                // Conceitual por faixa (valor numérico → conceito).
-                $v = self::roundMeio((float) $r->nmn_media);
+                // Conceitual por faixa (valor numérico → conceito). SEM arredondar:
+                // o 0,5 só é aplicado na média final anual (ver consolidar()).
+                $v = (float) $r->nmn_media;
                 $out[$aln] = ['tipo' => 'conceitual', 'valor' => $v, 'conceito' => self::faixaDe($v, $conceitos)];
             } elseif ($r->nmn_media !== null) {
                 // Numérica.
@@ -303,7 +304,8 @@ class CalculoNota
         foreach ($regulares as $a) {
             $soma += (float) ($notaMap[$a->ava_id][$alnId]['valor'] ?? 0);
         }
-        $soma = self::roundMeio($soma);
+        // SEM arredondar: a nota da unidade guarda o valor exato somado. O
+        // arredondamento ao 0,5 só acontece na média final anual (consolidar()).
 
         return ['valor' => $soma, 'conceito' => self::faixaDe($soma, $conceitos)];
     }
@@ -345,7 +347,8 @@ class CalculoNota
             if ($modo === 'faixa') {
                 $v = $notaMap[$a->ava_id][$alnId]['valor'] ?? null;
                 if ($v !== null) {
-                    $valor = self::roundMeio((float) $v);
+                    // SEM arredondar (só a média final anual arredonda).
+                    $valor = (float) $v;
                     $conceito = self::faixaDe($valor, $conceitos);
                 }
             } else {

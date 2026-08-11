@@ -528,7 +528,7 @@ const limitarValor1Casa = (e: Event) => {
                                 </td>
                                 <td class="border-b border-l-2 border-fuchsia-200 bg-fuchsia-50/40 px-3 py-1.5 text-center dark:border-fuchsia-900 dark:bg-fuchsia-950/20">
                                     <template v-if="resultado(row)">
-                                        <div v-if="modo === 'faixa' && valorFaixa(row) !== null" class="text-sm font-bold tabular-nums text-slate-700 dark:text-slate-200">{{ valorFaixa(row)!.toFixed(1) }}</div>
+                                        <div v-if="modo === 'faixa' && valorFaixa(row) !== null" class="text-sm font-bold tabular-nums text-slate-700 dark:text-slate-200">{{ valorFaixa(row)!.toFixed(2) }}</div>
                                         <div class="font-bold text-fuchsia-700 dark:text-fuchsia-300">{{ resultado(row)!.cnc_sigla }}</div>
                                         <div class="text-[10px] text-muted-foreground">{{ resultado(row)!.cnc_descricao }}</div>
                                     </template>
