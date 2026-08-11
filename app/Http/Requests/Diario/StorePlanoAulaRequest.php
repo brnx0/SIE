@@ -54,6 +54,15 @@ class StorePlanoAulaRequest extends FormRequest
     public function withValidator(Validator $validator): void
     {
         $validator->after(function (Validator $v) {
+            // Plano APROVADO é definitivo — a coordenação já validou. O form já
+            // fica somente-leitura (readonly), mas o servidor recusa também, para
+            // a regra valer mesmo fora da tela (e em paridade com a API v1).
+            $planoRota = $this->route('plano');
+            if ($planoRota && $planoRota->dpa_status === DiarioPlanoAula::STATUS_APROVADO) {
+                $v->errors()->add('dpa_uni_id', 'Plano aprovado não pode ser editado.');
+                return;
+            }
+
             $user = $this->user();
             $funId = (int) $user->fun_id;
             $serId = (int) $this->input('dpa_ser_id');

@@ -44,6 +44,14 @@ class StorePlanoAeeRequest extends FormRequest
     public function withValidator(Validator $validator): void
     {
         $validator->after(function (Validator $v) {
+            // Plano APROVADO é definitivo: não recebe mais edição (o form já fica
+            // somente-leitura, e o servidor recusa também — paridade com a API v1).
+            $planoRota = $this->route('plano');
+            if ($planoRota && $planoRota->dae_status === DiarioPlanoAee::STATUS_APROVADO) {
+                $v->errors()->add('dae_tur_id', 'Plano aprovado não pode ser editado.');
+                return;
+            }
+
             $user = $this->user();
             $funId = (int) $user->fun_id;
             $turId = (int) $this->input('dae_tur_id');

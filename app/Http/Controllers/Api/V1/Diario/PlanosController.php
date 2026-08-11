@@ -127,6 +127,8 @@ class PlanosController extends Controller
     public function update(Request $request, DiarioPlanoAula $plano): JsonResponse
     {
         $this->assertDono($request, $plano);
+        // Plano APROVADO é definitivo — a coordenação já validou. Não recebe edição.
+        abort_if($plano->dpa_status === DiarioPlanoAula::STATUS_APROVADO, 422, 'Plano aprovado não pode ser editado.');
         $data = $this->validarPlano($request);
         $this->validarRegras($request, $data, (int) $plano->dpa_id);
 

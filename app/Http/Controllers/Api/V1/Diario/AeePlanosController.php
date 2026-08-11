@@ -205,14 +205,14 @@ class AeePlanosController extends Controller
     {
         $this->assertDono($request, $plano);
 
+        // Plano APROVADO é definitivo — a coordenação já validou. Não recebe mais
+        // edição, em NENHUM lado: web (StorePlanoAulaRequest / o AEE equivalente),
+        // esta API e a UI de ambos. Regra firme, não só cosmética.
+        abort_if($plano->dae_status === DiarioPlanoAee::STATUS_APROVADO, 422, 'Plano aprovado não pode ser editado.');
+
         $data = $this->validarPlano($request);
         $this->validarRegras($request, $data, (int) $plano->dae_id);
 
-        // PARIDADE DELIBERADA: o web NÃO bloqueia editar plano 'aprovado' ou
-        // 'reprovado' no servidor — a trava existe só na UI, pela prop
-        // `podeEditar` do Form.vue. A v1 replica isso: quem decide mostrar
-        // somente-leitura é o app. Não adicione um abort por status aqui sem
-        // mudar o web junto, ou os dois diários divergem.
         if ($plano->dae_status === DiarioPlanoAee::STATUS_CORRECAO) {
             // Reenviar um plano "em correção" o devolve para a fila da coordenação.
             $data['dae_status'] = DiarioPlanoAee::STATUS_PENDENTE;
