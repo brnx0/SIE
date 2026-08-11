@@ -107,12 +107,15 @@ class MatriculaController extends Controller
         $matriculadoPor = \App\Models\User::find($matricula->tma_created_by_id)?->name ?? '—';
         $params = ParametroEntidade::current();
 
-        // Logo: caminho absoluto para mPDF renderizar
+        // Logo: caminho ABSOLUTO no disco — o mPDF lê o arquivo direto.
+        // Não embutir como data:base64: a logomarca pode ter alguns MB e o HTML
+        // resultante estoura o pcre.backtrack_limit do mPDF
+        // ("The HTML code size is larger than pcre.backtrack_limit").
         $logoPath = null;
         if ($params->par_logomarca) {
             $path = \Illuminate\Support\Facades\Storage::disk('public')->path($params->par_logomarca);
             if (file_exists($path)) {
-                $logoPath = 'data:' . mime_content_type($path) . ';base64,' . base64_encode(file_get_contents($path));
+                $logoPath = $path;
             }
         }
 
