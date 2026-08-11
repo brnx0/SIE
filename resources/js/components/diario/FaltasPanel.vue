@@ -26,6 +26,8 @@ interface Aluno {
     aln_nome: string;
     aln_nr_matricula: string | null;
     dt_saida: string | null;
+    /** Motivo real da saída (Transferido(a), Evadido(a)...). */
+    motivo_saida?: string | null;
 }
 interface Justificativa {
     aln_id: number;
@@ -423,6 +425,8 @@ const fmtData = (dt: string | null) => {
 };
 // Aluno saiu da turma antes do dia selecionado → lançamento bloqueado.
 const saiuNoDia = (a: Aluno) => !!a.dt_saida && dataSel.value > a.dt_saida;
+// Motivo real da saída (tas_cod_saida) — cai em "Saiu" só se não vier motivo.
+const motivoSaida = (a: Aluno) => a.motivo_saida || 'Saiu';
 // Rótulo + classe do badge de situação.
 const statusInfo = (aln: number): { label: string; cls: string } => {
     switch (statusDia(aln)) {
@@ -599,13 +603,13 @@ const statusInfo = (aln: number): { label: string; cls: string } => {
                                             <div class="min-w-0">
                                                 <div class="truncate text-sm font-medium text-slate-900 dark:text-slate-50">{{ a.aln_nome }}</div>
                                                 <div v-if="a.aln_nr_matricula" class="text-[10px] text-muted-foreground">Mat. {{ a.aln_nr_matricula }}</div>
-                                                <div v-if="a.dt_saida" class="mt-0.5 inline-flex items-center gap-1 rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">Saída {{ fmtData(a.dt_saida) }}</div>
+                                                <div v-if="a.dt_saida" class="mt-0.5 inline-flex items-center gap-1 rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">{{ motivoSaida(a) }} — {{ fmtData(a.dt_saida) }}</div>
                                             </div>
                                         </div>
                                     </td>
                                     <td v-for="t in temposDoDia" :key="t.trh_id" :class="['border-b border-l px-2 py-2 text-center transition-colors', i % 2 ? 'bg-muted/20' : '', 'group-hover:bg-indigo-50/40 dark:group-hover:bg-indigo-950/20']">
                                         <span v-if="aulaNaoExec(t.trh_id)" title="Aula não executada — não conta falta nem presença" class="inline-flex size-8 items-center justify-center rounded-md bg-amber-100 text-[10px] font-semibold text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">NE</span>
-                                        <span v-else-if="saiuNoDia(a)" :title="`Aluno saiu em ${fmtData(a.dt_saida)} — bloqueado`" class="inline-flex size-8 items-center justify-center rounded-md text-xs text-muted-foreground/40">·</span>
+                                        <span v-else-if="saiuNoDia(a)" :title="`${motivoSaida(a)} em ${fmtData(a.dt_saida)} — bloqueado`" class="inline-flex size-8 items-center justify-center rounded-md text-xs text-muted-foreground/40">·</span>
                                         <template v-else>
                                         <button
                                             v-if="t.pode_editar"
@@ -655,7 +659,7 @@ const statusInfo = (aln: number): { label: string; cls: string } => {
                                         </template>
                                     </td>
                                     <td :class="['border-b border-l px-2 py-2 text-center transition-colors', i % 2 ? 'bg-muted/20' : '', 'group-hover:bg-indigo-50/40 dark:group-hover:bg-indigo-950/20']">
-                                        <span v-if="saiuNoDia(a)" :title="`Saiu em ${fmtData(a.dt_saida)}`" class="inline-flex items-center gap-1 rounded-full bg-slate-200 px-2 py-0.5 text-[11px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">Saiu</span>
+                                        <span v-if="saiuNoDia(a)" :title="`${motivoSaida(a)} em ${fmtData(a.dt_saida)}`" class="inline-flex items-center gap-1 rounded-full bg-slate-200 px-2 py-0.5 text-[11px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">{{ motivoSaida(a) }}</span>
                                         <span v-else :class="['inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold', statusInfo(a.aln_id).cls]">
                                             {{ statusInfo(a.aln_id).label }}
                                             <span v-if="faltasDia(a.aln_id)" class="tabular-nums">· {{ faltasDia(a.aln_id) }}</span>

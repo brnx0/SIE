@@ -49,7 +49,11 @@ class AtividadeFrequenciaController extends Controller
                   ->orWhere(fn ($s) => $s->whereNotNull('tma_tas_cod_saida')->where('tma_tas_cod_saida', '!=', Matricula::TAS_REMANEJADO));
             })
             ->whereNull('tma_deleted_at')
-            ->with('aluno:aln_id,aln_nome,aln_nr_matricula')
+            ->with([
+                'aluno:aln_id,aln_nome,aln_nr_matricula',
+                // Motivo real da saída — o diário mostra no lugar de "Saiu".
+                'situacaoSaida:tas_cod,tas_descricao',
+            ])
             ->get()
             ->filter(fn ($m) => $m->aluno)
             ->unique(fn ($m) => $m->aluno->aln_id)
@@ -60,6 +64,7 @@ class AtividadeFrequenciaController extends Controller
                 'aln_nome'         => $m->aluno->aln_nome,
                 'aln_nr_matricula' => $m->aluno->aln_nr_matricula,
                 'dt_saida'         => $m->tma_dt_saida?->toDateString(),
+                'motivo_saida'     => $m->situacaoSaida?->tas_descricao,
             ]);
 
         $presencas = DB::table('edu_diario_atividade_frequencia')

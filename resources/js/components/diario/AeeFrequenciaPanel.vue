@@ -7,7 +7,7 @@ import { usePermissao } from '@/composables/usePermissao';
 
 const props = defineProps<{ anlId: number; escId: number; turId: number; uniId: number }>();
 
-interface Aluno { aln_id: number; aln_nome: string; aln_nr_matricula: string | null; dt_saida: string | null }
+interface Aluno { aln_id: number; aln_nome: string; aln_nr_matricula: string | null; dt_saida: string | null; motivo_saida?: string | null }
 interface Plano { dae_id: number; dt_inicio: string; dt_fim: string; conteudo: string | null; metodologia: string | null }
 interface ConteudoInfo { conteudo: string; metodologia: string; executado: boolean; dae_id: number | null }
 
@@ -127,6 +127,8 @@ const fmtData = (dt: string | null) => {
     return `${d}/${m}/${y}`;
 };
 const saiuNoDia = (a: Aluno) => !!a.dt_saida && dataSel.value > a.dt_saida;
+// Motivo real da saída (tas_cod_saida) — cai em "Saiu" só se não vier motivo.
+const motivoSaida = (a: Aluno) => a.motivo_saida || 'Saiu';
 
 const alunosFiltrados = computed(() => {
     const q = busca.value.trim().toLowerCase();
@@ -380,7 +382,7 @@ const toggleExecutado = (val: boolean) => {
                                     </div>
                                 </td>
                                 <td :class="['border-b border-l px-2 py-2 text-center transition-colors', i % 2 ? 'bg-muted/20' : '', 'group-hover:bg-indigo-50/40 dark:group-hover:bg-indigo-950/20']">
-                                    <span v-if="saiuNoDia(a)" :title="`Saiu em ${fmtData(a.dt_saida)}`" class="inline-flex size-8 items-center justify-center rounded-md text-xs text-muted-foreground/40">—</span>
+                                    <span v-if="saiuNoDia(a)" :title="`${motivoSaida(a)} em ${fmtData(a.dt_saida)}`" class="inline-flex size-8 items-center justify-center rounded-md text-xs text-muted-foreground/40">—</span>
                                     <button
                                         v-else
                                         type="button"
@@ -400,7 +402,7 @@ const toggleExecutado = (val: boolean) => {
                                     </button>
                                 </td>
                                 <td :class="['border-b border-l px-2 py-2 text-center transition-colors', i % 2 ? 'bg-muted/20' : '', 'group-hover:bg-indigo-50/40 dark:group-hover:bg-indigo-950/20']">
-                                    <span v-if="saiuNoDia(a)" :title="`Saiu em ${fmtData(a.dt_saida)}`" class="inline-flex items-center rounded-full bg-slate-200 px-2 py-0.5 text-[11px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">Saiu</span>
+                                    <span v-if="saiuNoDia(a)" :title="`${motivoSaida(a)} em ${fmtData(a.dt_saida)}`" class="inline-flex items-center rounded-full bg-slate-200 px-2 py-0.5 text-[11px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">{{ motivoSaida(a) }}</span>
                                     <span
                                         v-else
                                         :class="[
