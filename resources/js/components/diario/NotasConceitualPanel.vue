@@ -142,8 +142,11 @@ const somaValores = computed(() => regulares.value.reduce((s, a) => s + (Number(
 const valorDisponivel = computed(() => Math.max(0, Math.round((10 - somaValores.value) * 100) / 100));
 
 // ── Cálculo do conceito ──────────────────────────────────────────────────────
-// Arredonda ao múltiplo de 0,5 mais próximo (1 casa, termina em 0 ou 5): 1,2→1,0 · 1,3→1,5.
-const roundMeio = (n: number) => Math.round(n * 2) / 2;
+// A nota do instrumento e a soma da unidade NÃO são mais arredondadas ao 0,5 —
+// isso só acontece na média final ANUAL, no servidor (CalculoNota::consolidar).
+// Aqui só limitamos a 2 casas, que é a precisão da coluna (decimal(4,2)) e evita
+// ruído de ponto flutuante (0,1 + 0,2 = 0,30000000000000004).
+const round2 = (n: number) => Math.round(n * 100) / 100;
 
 // Faixa do total: maior conceito cujo limite inferior ≤ total (faixas contíguas, sem vãos).
 const faixaDe = (total: number): Conceito | null => {
@@ -168,7 +171,7 @@ const conceitoBase = (row: AlunoRow): Conceito | null => {
     const regs = regulares.value.filter((a) => !isFutura(a));
     if (!regs.length) return null;
     if (modo.value === 'faixa') {
-        const total = roundMeio(regs.reduce((s, a) => s + (Number(row.notas[a.ava_id]?.valor) || 0), 0));
+        const total = round2(regs.reduce((s, a) => s + (Number(row.notas[a.ava_id]?.valor) || 0), 0));
         return faixaDe(total);
     }
     // modo conceito: conta por conceito; moda única vence; empate → média dos pesos (arredondada).
@@ -199,7 +202,7 @@ const conceitoRecuperacao = (row: AlunoRow): Conceito | null => {
         let c: Conceito | null = null;
         if (modo.value === 'faixa') {
             const v = row.notas[a.ava_id]?.valor;
-            if (v !== null && v !== undefined) c = faixaDe(roundMeio(Number(v)));
+            if (v !== null && v !== undefined) c = faixaDe(round2(Number(v)));
         } else {
             c = conceitoPorId(row.notas[a.ava_id]?.cnc_id ?? null);
         }
@@ -220,7 +223,7 @@ const resultado = (row: AlunoRow): Conceito | null => {
 const valorFaixa = (row: AlunoRow): number | null => {
     if (modo.value !== 'faixa') return null;
     const regs = regulares.value.filter((a) => !isFutura(a));
-    const base = roundMeio(regs.reduce((s, a) => s + (Number(row.notas[a.ava_id]?.valor) || 0), 0));
+    const base = round2(regs.reduce((s, a) => s + (Number(row.notas[a.ava_id]?.valor) || 0), 0));
     const baseConc = regs.length ? faixaDe(base) : null;
 
     let recConc: Conceito | null = null;
@@ -229,7 +232,7 @@ const valorFaixa = (row: AlunoRow): number | null => {
         if (isFutura(a)) continue;
         const v = row.notas[a.ava_id]?.valor;
         if (v !== null && v !== undefined) {
-            const valor = roundMeio(Number(v));
+            const valor = round2(Number(v));
             const c = faixaDe(valor);
             if (c && (!recConc || c.cnc_peso > recConc.cnc_peso)) { recConc = c; recVal = valor; }
         }
@@ -261,8 +264,10 @@ const salvarNota = async (row: AlunoRow, ava: Avaliacao) => {
             st.status = 'invalid';
             return;
         }
-        // Arredonda a nota ao 0,5 no próprio instrumento (1,2→1,0 · 1,3→1,5).
-        const valor = bruto === null ? null : roundMeio(bruto);
+        // Grava o valor EXATO digitado (só normaliza a 2 casas). Nada de arredondar
+        // ao 0,5 aqui: isso corrompia o insumo e contaminava média da unidade,
+        // média final, boletim e ata.
+        const valor = bruto === null ? null : round2(bruto);
         if (valor !== null) row.notas[ava.ava_id].valor = valor; // reflete na célula
         body.nta_valor = valor;
     }
@@ -293,10 +298,10 @@ const erroLinha = ref<string | null>(null);
 const aoDigitarNota = (row: AlunoRow, ava: Avaliacao, e?: Event) => {
     if (!podeLancar.value || !turmaAberta.value || isFutura(ava) || row.bloqueado || semValor(ava)) return;
     if (modo.value === 'faixa') {
-        // Não permite 2 casas decimais (corta a partir da 2ª) já na digitação.
+        // Permite até 2 casas decimais (a coluna é decimal(4,2)); corta da 3ª em diante.
         const el = e?.target as HTMLInputElement | undefined;
-        if (el && /\.\d{2,}/.test(el.value)) {
-            el.value = el.value.replace(/^(-?\d*\.\d)\d+$/, '$1');
+        if (el && /\.\d{3,}/.test(el.value)) {
+            el.value = el.value.replace(/^(-?\d*\.\d{2})\d+$/, '$1');
             row.notas[ava.ava_id].valor = el.value === '' ? null : Number(el.value);
         }
         // Não deixa passar do valor máximo da avaliação (nem negativo). NÃO clampa pro
@@ -501,7 +506,7 @@ const limitarValor1Casa = (e: Event) => {
                                         <input
                                             v-if="modo === 'faixa'"
                                             v-model="row.notas[a.ava_id].valor"
-                                            type="number" step="0.1" min="0" :max="a.ava_valor ?? undefined"
+                                            type="number" step="0.01" min="0" :max="a.ava_valor ?? undefined"
                                             :disabled="!podeLancar || !turmaAberta || isFutura(a) || row.bloqueado || semValor(a)"
                                             :title="!turmaAberta ? 'Turma não está aberta.' : (semValor(a) ? 'Defina o valor da avaliação antes de lançar notas.' : '')"
                                             :class="['h-8 w-16 rounded-md border bg-background px-1.5 text-center text-sm tabular-nums shadow-sm focus:outline-none focus:ring-1 focus:ring-fuchsia-500 disabled:opacity-60', statusDe(row.aln_id, a.ava_id) === 'invalid' || statusDe(row.aln_id, a.ava_id) === 'error' ? 'border-rose-400' : 'border-input']"
