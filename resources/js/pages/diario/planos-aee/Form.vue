@@ -317,8 +317,8 @@ const breadcrumbs: BreadcrumbItem[] = [
             <section v-if="isEdit && statusAtual !== 'pendente'" class="rounded-xl border bg-card p-4 shadow-sm">
                 <div class="mb-3 flex items-center justify-between">
                     <h2 class="text-sm font-semibold text-muted-foreground">Observação do coordenador</h2>
-                    <div v-if="(plano as any)?.validado_por || (plano as any)?.dae_validado_em" class="text-xs text-muted-foreground">
-                        Validado por <span class="font-medium">{{ (plano as any)?.validado_por?.name ?? '—' }}</span>
+                    <div v-if="(plano as any)?.validadoPor || (plano as any)?.dae_validado_em" class="text-xs text-muted-foreground">
+                        Validado por <span class="font-medium">{{ (plano as any)?.validadoPor?.name ?? '—' }}</span>
                         em <span class="font-medium">{{ formatDateTime((plano as any)?.dae_validado_em) }}</span>
                     </div>
                 </div>
@@ -329,7 +329,7 @@ const breadcrumbs: BreadcrumbItem[] = [
             <!-- Rodapé -->
             <div class="flex justify-between border-t pt-4">
                 <Button variant="outline" @click="router.visit('/diario/planos-aee')">Voltar</Button>
-                <Button :disabled="form.processing || readonly"
+                <Button v-if="!readonly" :disabled="form.processing"
                     class="bg-indigo-600 text-white hover:bg-indigo-700" @click="submit">
                     <Save class="mr-2 size-4" /> Salvar
                 </Button>
