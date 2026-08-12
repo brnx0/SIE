@@ -159,67 +159,66 @@ const encerramentoMenu = [
         ],
     },
 ];
+// Um único menu com os antigos grupos virando subgrupos (mesmo padrão do
+// Transporte Escolar) — antes eram 6 itens soltos no primeiro nível.
 const alimentacaoMenu = [
-      {
-        title: 'Contratos',
-        icon: Archive,
-        children: [
-            { title: 'Contratos', href: '/alimentacao/contratos' },
-            { title: 'Empenhos', href: '/alimentacao/empenhos' },
-            { title: 'Ordens de Fornecimento', href: '/alimentacao/ordens-fornecimento' },
-            { title: 'Fornecedores', href: '/alimentacao/fornecedores' },
-        ],
-    },
     {
         title: 'Alimentação Escolar',
-        icon:UtensilsCrossed,
+        icon: UtensilsCrossed,
         children: [
-            { title: 'Controle Diário da Preparação', href: '/alimentacao/preparacoes' },
-            { title: 'Demanda de Merenda', href: '/alimentacao/demandas' },
-            { title: 'Consulta de Estoque', href: '/alimentacao/estoque' },
-            { title: 'Cardápio Semanal', href: '/alimentacao/cardapios' },
-            { title: 'Pratos', href: '/alimentacao/pratos' },
-            { title: 'Itens', href: '/alimentacao/itens' },
-  
- 
-        ],
-    },
-     {
-        title: 'Movimentações',
-        icon:ArrowRightLeft,
-        children: [
-            { title: 'Recebimento de Itens', href: '/alimentacao/recebimentos' },
-            { title: 'Transferência para Escolas', href: '/alimentacao/transferencias' },
-            { title: 'Retirada de Itens', href: '/alimentacao/retiradas' },
-        ],
-    },
-    {
-        title: 'Visitas Técnicas',
-        icon: ClipboardCheck,
-        children: [
-            { title: 'Visitas Técnicas', href: '/alimentacao/visitas' },
-            { title: 'Perguntas do Questionário', href: '/alimentacao/perguntas' },
-            { title: 'Tipos de Visita Técnica', href: '/alimentacao/tipos-visita' },
-            { title: 'Tipos de Questionário', href: '/alimentacao/tipos-questionario' },
-        ],
-    },
-    {
-        title: 'Cadastros Complementares',
-        icon:Cog,
-        children: [
-            { title: 'Unidades de Medida', href: '/alimentacao/unidades-medida' },
-            { title: 'Categorias de Alimento', href: '/alimentacao/categorias-alimento' },
-            { title: 'Tipos de Item', href: '/alimentacao/tipos-item' },
-            { title: 'Tipos de Retirada', href: '/alimentacao/tipos-retirada' },
-            { title: 'Marcas', href: '/alimentacao/marcas' },
-
-        ],
-    },
-    {
-        title: 'Relatórios',
-        icon: FileBarChart,
-        children: [
-            { title: 'Relatórios da Alimentação', href: '/relatorios-alimentacao' },
+            {
+                title: 'Merenda',
+                children: [
+                    { title: 'Controle Diário da Preparação', href: '/alimentacao/preparacoes' },
+                    { title: 'Demanda de Merenda', href: '/alimentacao/demandas' },
+                    { title: 'Consulta de Estoque', href: '/alimentacao/estoque' },
+                    { title: 'Cardápio Semanal', href: '/alimentacao/cardapios' },
+                    { title: 'Pratos', href: '/alimentacao/pratos' },
+                    { title: 'Itens', href: '/alimentacao/itens' },
+                ],
+            },
+            {
+                title: 'Contratos',
+                children: [
+                    { title: 'Contratos', href: '/alimentacao/contratos' },
+                    { title: 'Empenhos', href: '/alimentacao/empenhos' },
+                    { title: 'Ordens de Fornecimento', href: '/alimentacao/ordens-fornecimento' },
+                    { title: 'Fornecedores', href: '/alimentacao/fornecedores' },
+                ],
+            },
+            {
+                title: 'Movimentações',
+                children: [
+                    { title: 'Recebimento de Itens', href: '/alimentacao/recebimentos' },
+                    { title: 'Transferência para Escolas', href: '/alimentacao/transferencias' },
+                    { title: 'Retirada de Itens', href: '/alimentacao/retiradas' },
+                ],
+            },
+            {
+                title: 'Visitas Técnicas',
+                children: [
+                    { title: 'Visitas Técnicas', href: '/alimentacao/visitas' },
+                    { title: 'Perguntas do Questionário', href: '/alimentacao/perguntas' },
+                    { title: 'Tipos de Visita Técnica', href: '/alimentacao/tipos-visita' },
+                    { title: 'Tipos de Questionário', href: '/alimentacao/tipos-questionario' },
+                ],
+            },
+            {
+                title: 'Cadastros Complementares',
+                children: [
+                    { title: 'Unidades de Medida', href: '/alimentacao/unidades-medida' },
+                    { title: 'Categorias de Alimento', href: '/alimentacao/categorias-alimento' },
+                    { title: 'Tipos de Item', href: '/alimentacao/tipos-item' },
+                    { title: 'Tipos de Retirada', href: '/alimentacao/tipos-retirada' },
+                    { title: 'Marcas', href: '/alimentacao/marcas' },
+                ],
+            },
+            {
+                title: 'Relatórios',
+                children: [
+                    { title: 'Relatórios da Alimentação', href: '/relatorios-alimentacao' },
+                ],
+            },
         ],
     },
 ];
