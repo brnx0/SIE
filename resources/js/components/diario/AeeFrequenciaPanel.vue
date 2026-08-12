@@ -298,17 +298,26 @@ const toggleExecutado = (val: boolean) => {
                     <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
                         <span class="text-sm font-semibold">Registro do dia</span>
                         <div class="flex items-center gap-3">
-                            <div
-                                class="flex items-center gap-2 text-xs"
-                                :class="planoDoDia() ? 'text-slate-700 dark:text-slate-200' : 'text-muted-foreground'"
-                                :title="planoDoDia() ? 'Traz o conteúdo/metodologia do plano AEE' : 'Sem planejamento AEE (pendente/aprovado) para esta data'"
-                            >
+                            <!-- Como no app: a mensagem de "sem plano" fica VISÍVEL como
+                                 subtítulo (não escondida num tooltip). -->
+                            <div class="flex items-start gap-2 text-xs">
+                                <div class="leading-tight">
+                                    <div
+                                        class="font-medium"
+                                        :class="planoDoDia() ? 'text-slate-700 dark:text-slate-200' : 'text-muted-foreground'"
+                                    >Planejamento executado</div>
+                                    <div class="mt-0.5 max-w-[16rem] text-muted-foreground">
+                                        {{ planoDoDia()
+                                            ? 'Copia o conteúdo e a metodologia do seu plano de AEE para esta data.'
+                                            : 'Sem plano de AEE que cubra esta data.' }}
+                                    </div>
+                                </div>
                                 <Switch
                                     :model-value="infoDia().executado"
                                     :disabled="!editavel || !planoDoDia()"
+                                    class="mt-0.5"
                                     @update:model-value="toggleExecutado($event)"
                                 />
-                                <span>Planejamento executado</span>
                             </div>
                             <span class="text-xs">
                                 <span v-if="conteudoStatus[dataSel] === 'saving'" class="inline-flex items-center gap-1 text-amber-600"><Loader2 class="size-3.5 animate-spin" /> Salvando</span>
