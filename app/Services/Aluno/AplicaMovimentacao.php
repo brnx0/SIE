@@ -184,9 +184,7 @@ class AplicaMovimentacao
         $destino = Matricula::create([
             'tma_aln_id'          => $origem->tma_aln_id,
             'tma_tur_id'          => $turmaDestino->tur_id,
-            // Série explícita (preserva a do aluno em turmas multisseriadas).
-            // Sem o parâmetro, mantém o comportamento antigo (deriva da turma destino).
-            'tma_ser_id'          => $dados['tma_ser_id_destino'] ?? null,
+            'tma_ser_id'          => $this->serieDestino($origem, $turmaDestino, $tipo, $dados),
             'tma_anl_id'          => $turmaDestino->tur_anl_id,
             'tma_modalidade'      => $turmaDestino->tur_modalidade,
             'tma_situacao'        => Matricula::SITUACAO_ATIVA,
@@ -250,6 +248,58 @@ class AplicaMovimentacao
         }
 
         return $extras;
+    }
+
+    /**
+     * Ano escolar do aluno na turma de destino (edu_turma_aluno.tma_ser_id).
+     *
+     * Em turma MULTI a série da turma é a pseudo-série "MULTI", que não é ano
+     * escolar — quem carrega o ano real é a matrícula. Por isso:
+     *  · valor informado pela tela sempre ganha;
+     *  · REMANEJAMENTO preserva o ano escolar que o aluno já tinha (não muda de série);
+     *  · demais tipos assumem a série da turma de destino;
+     *  · se o resultado ainda for uma pseudo-série multi (ou nulo) numa turma multi,
+     *    exige que a tela informe — senão o aluno ficaria sem ano escolar, quebrando
+     *    boletim, encerramento, histórico e afins.
+     */
+    protected function serieDestino(Matricula $origem, Turma $turmaDestino, TipoMovimentacao $tipo, array $dados): ?int
+    {
+        $destinoMulti = (bool) DB::table('edu_serie')
+            ->where('ser_id', $turmaDestino->tur_ser_id)
+            ->value('ser_fl_multi');
+
+        // Turma COMUM: a série da turma JÁ é o ano escolar do aluno. Derivar da
+        // origem aqui só produziria divergência (ex.: no desvio Fundamental 2 → EJA
+        // gravaria a série do segmento antigo).
+        if (! $destinoMulti) {
+            return (int) $turmaDestino->tur_ser_id;
+        }
+
+        // Turma MULTI: a série da turma é a pseudo-série "MULTI"; o ano escolar
+        // real vem do que foi informado ou do que o aluno já tinha.
+        $informado = isset($dados['tma_ser_id_destino']) ? (int) $dados['tma_ser_id_destino'] : null;
+        $serId     = $informado ?: ($origem->tma_ser_id ?? $origem->turma?->tur_ser_id);
+
+        $serie = $serId
+            ? DB::table('edu_serie')->where('ser_id', $serId)->first(['ser_id', 'seg_id', 'ser_fl_multi'])
+            : null;
+
+        // Sem série, ou resolvida como a própria pseudo-série multi: não dá para
+        // adivinhar o ano escolar — a tela precisa informar.
+        if (! $serie || $serie->ser_fl_multi) {
+            throw ValidationException::withMessages([
+                'tma_ser_id_destino' => 'Informe o ano escolar do aluno: a turma de destino é multisseriada.',
+            ]);
+        }
+
+        // O ano escolar tem de pertencer ao segmento da turma de destino.
+        if ((int) $serie->seg_id !== (int) $turmaDestino->tur_seg_id) {
+            throw ValidationException::withMessages([
+                'tma_ser_id_destino' => 'O ano escolar informado não pertence ao segmento da turma de destino.',
+            ]);
+        }
+
+        return (int) $serie->ser_id;
     }
 
     protected function validarRemanejamento(Matricula $origem, array $dados): void

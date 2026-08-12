@@ -23,8 +23,9 @@ class SerieController extends Controller
         }
         $this->filtroAtivoOuIncluso($query, 'ser_fl_ativo', 'ser_id', $incluirIds);
 
+        // ser_fl_multi: telas usam p/ exigir o ano escolar do aluno em turma multi.
         return response()->json(
-            $query->orderBy('ser_ordem_no_segmento')->get(['ser_id', 'ser_nome', 'ser_idade'])
+            $query->orderBy('ser_ordem_no_segmento')->get(['ser_id', 'ser_nome', 'ser_idade', 'ser_fl_multi'])
         );
     }
 
@@ -71,7 +72,7 @@ class SerieController extends Controller
         $this->filtroAtivoOuIncluso($query, 'ser_fl_ativo', 'ser_id', $incluirIds);
 
         return response()->json(
-            $query->orderBy('ser_ordem_no_segmento')->get(['ser_id', 'ser_nome'])
+            $query->orderBy('ser_ordem_no_segmento')->get(['ser_id', 'ser_nome', 'ser_fl_multi'])
         );
     }
 
@@ -104,7 +105,7 @@ class SerieController extends Controller
         return response()->json(
             Serie::whereIn('ser_id', $serieIds)
                 ->orderBy('ser_ordem_no_segmento')
-                ->get(['ser_id', 'ser_nome', 'ser_idade'])
+                ->get(['ser_id', 'ser_nome', 'ser_idade', 'ser_fl_multi'])
         );
     }
 

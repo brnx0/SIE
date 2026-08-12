@@ -91,6 +91,10 @@ class MovimentacaoController extends Controller
 
         if ($tipo->exigeDestino()) {
             $rules['tur_id_destino'] = ['required', 'integer', 'exists:edu_turma,tur_id'];
+            // Ano escolar do aluno na turma de destino. Obrigatório só quando a
+            // turma destino é MULTI (lá a série da turma é a pseudo-série "MULTI",
+            // que não é ano escolar) — a checagem fica em AplicaMovimentacao.
+            $rules['tma_ser_id_destino'] = ['nullable', 'integer', 'exists:edu_serie,ser_id'];
         }
 
         $data = $request->validate($rules, [], [

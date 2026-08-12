@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import FormLabel from '@/components/common/FormLabel.vue';
 import InputError from '@/components/common/InputError.vue';
 import LocalCombobox from '@/components/common/LocalCombobox.vue';
+import { useErrorFocus } from '@/composables/useErrorFocus';
 import type { BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/vue3';
 import { ArrowDown, ArrowLeftRight, GraduationCap, Info, Loader2, User } from 'lucide-vue-next';
@@ -43,6 +44,8 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Nova', href: '/movimentacoes/create' },
 ];
 
+const { focusFirstError } = useErrorFocus();
+
 const form = useForm({
     tmv_cod: null as number | null,
     tma_id_origem: null as number | null,
@@ -63,7 +66,7 @@ const isRemanejamento   = computed(() => form.tmv_cod === 5);
 // ── Cascata Origem ────────────────────────────────────────────────────────────
 const anosLetivos    = ref<{ anl_id: number; anl_ano: number }[]>(props.anosLetivos);
 const segmentos      = ref<{ seg_id: number; seg_nome: string }[]>([]);
-const series         = ref<{ ser_id: number; ser_nome: string }[]>([]);
+const series         = ref<{ ser_id: number; ser_nome: string; ser_fl_multi?: boolean }[]>([]);
 const turmas         = ref<{ tur_id: number; tur_nome: string }[]>([]);
 const alunos         = ref<{ tma_id: number; aln_id: number; aln_nome: string }[]>([]);
 
@@ -118,11 +121,28 @@ watch(oTur, async (v) => {
 
 // ── Cascata Destino ────────────────────────────────────────────────────────────
 const segmentosD = ref<{ seg_id: number; seg_nome: string }[]>([]);
-const seriesD    = ref<{ ser_id: number; ser_nome: string }[]>([]);
+const seriesD    = ref<{ ser_id: number; ser_nome: string; ser_fl_multi?: boolean }[]>([]);
+// Séries REAIS do segmento (sem a pseudo-série MULTI) — usadas quando a turma de
+// destino é multi e é preciso informar o ano escolar do aluno.
+const seriesReaisD = ref<{ ser_id: number; ser_nome: string }[]>([]);
 const turmasD    = ref<{ tur_id: number; tur_nome: string }[]>([]);
 
 const dSeg = ref<number | ''>('');
 const dSer = ref<number | ''>('');
+// Ano escolar do aluno — obrigatório quando a turma de destino é multi, pois lá a
+// série da turma é a pseudo-série "MULTI" e não representa o ano do aluno.
+const dSerAluno = ref<number | ''>('');
+
+// Turma de destino é multi? (a flag mora na SÉRIE apontada pela turma).
+const destinoMulti = computed(
+    () => !!seriesD.value.find((s) => s.ser_id === Number(dSer.value))?.ser_fl_multi,
+);
+
+async function loadSeriesReaisDestino() {
+    if (!dSeg.value) { seriesReaisD.value = []; return; }
+    const r = await fetch(`/api/series?seg_id=${dSeg.value}&excluir_multi=1`);
+    if (r.ok) seriesReaisD.value = await r.json();
+}
 
 async function loadSegmentosDestino() {
     if (!oEsc.value || !oAnl.value) { segmentosD.value = []; return; }
@@ -134,13 +154,14 @@ watch([exigeDestino, oEsc, oAnl], async ([v]) => {
     if (v) {
         await loadSegmentosDestino();
     } else {
-        segmentosD.value = []; seriesD.value = []; turmasD.value = [];
-        dSeg.value = ''; dSer.value = ''; form.tur_id_destino = null;
+        segmentosD.value = []; seriesD.value = []; turmasD.value = []; seriesReaisD.value = [];
+        dSeg.value = ''; dSer.value = ''; dSerAluno.value = ''; form.tur_id_destino = null;
     }
 });
 watch(dSeg, async (v) => {
     seriesD.value = []; turmasD.value = [];
-    dSer.value = ''; form.tur_id_destino = null;
+    dSer.value = ''; dSerAluno.value = ''; form.tur_id_destino = null;
+    loadSeriesReaisDestino();
     if (v && oEsc.value && oAnl.value) {
         // Reclassificação: lista todas as séries do segmento (pode ir p/ série sem turma aberta ainda).
         // Demais: somente séries com turmas abertas.
@@ -152,7 +173,7 @@ watch(dSeg, async (v) => {
     }
 });
 watch(dSer, async (v) => {
-    turmasD.value = []; form.tur_id_destino = null;
+    turmasD.value = []; form.tur_id_destino = null; dSerAluno.value = '';
     if (v && oEsc.value && oAnl.value && dSeg.value) {
         const p = new URLSearchParams({ esc_id: String(oEsc.value), anl_id: String(oAnl.value), seg_id: String(dSeg.value), ser_id: String(v) });
         const r = await fetch(`/api/matriculas/turmas?${p}`);
@@ -209,6 +230,7 @@ const alunoItems     = computed(() => alunos.value.map(a => ({ id: a.tma_id, lab
 const segmentoDItems = computed(() => segmentosD.value.map(s => ({ id: s.seg_id, label: s.seg_nome })));
 const serieDItems    = computed(() => seriesDestinoFiltradas.value.map(s => ({ id: s.ser_id, label: s.ser_nome })));
 const turmaDItems    = computed(() => turmasD.value.map(t => ({ id: t.tur_id, label: t.tur_nome })));
+const serieAlunoItems = computed(() => seriesReaisD.value.map(s => ({ id: s.ser_id, label: s.ser_nome })));
 
 const destinoLabel = computed(() => {
     if (isRemanejamento.value) return 'Destino — mesma série, outra turma';
@@ -216,11 +238,29 @@ const destinoLabel = computed(() => {
     return 'Destino (mesma escola)';
 });
 
+// Turma destino multi: no REMANEJAMENTO o ano escolar não muda, então sugere o da
+// origem (quando é série real). Na RECLASSIFICAÇÃO o ano MUDA por definição — não
+// pré-preencher: sugerir a série de origem faria a reclassificação virar um no-op
+// silencioso, gravando o ano que o aluno está justamente deixando.
+watch(destinoMulti, (multi) => {
+    if (!multi) { dSerAluno.value = ''; return; }
+    if (dSerAluno.value || isReclassificacao.value) return;
+    const origem = series.value.find((s) => s.ser_id === Number(oSer.value));
+    if (origem && !origem.ser_fl_multi) dSerAluno.value = origem.ser_id;
+});
+
 function submit() {
     // Backend redireciona para movimentacoes.show do registro salvo — deixa a
     // navegação seguir o redirect (não forçar volta pra listagem).
+    form.transform((data) => ({
+        ...data,
+        // Só faz sentido em turma multi; fora disso o backend deriva sozinho.
+        tma_ser_id_destino: destinoMulti.value && dSerAluno.value ? Number(dSerAluno.value) : null,
+    }));
     form.post('/movimentacoes', {
         preserveScroll: true,
+        // Padrão do projeto: leva o usuário até o primeiro campo inválido.
+        onError: (errors: Record<string, string>) => focusFirstError(Object.keys(errors)),
     });
 }
 </script>
@@ -405,6 +445,29 @@ function submit() {
                                 @update:model-value="(v) => (form.tur_id_destino = v)"
                             />
                             <InputError :message="form.errors.tur_id_destino" />
+                        </div>
+
+                        <!-- Turma multi: a série da turma é a pseudo-série "MULTI",
+                             então o ano escolar do aluno precisa ser informado. -->
+                        <!-- id casa com a chave do erro: o focusFirstError rola até aqui. -->
+                        <div v-if="destinoMulti" id="tma_ser_id_destino" class="grid gap-1.5 sm:col-span-3">
+                            <div class="rounded-lg border border-amber-300 bg-amber-50 p-4 dark:border-amber-700 dark:bg-amber-900/20">
+                                <FormLabel :required="true" class="text-amber-900 dark:text-amber-200">
+                                    Ano escolar do aluno na turma multi
+                                </FormLabel>
+                                <LocalCombobox
+                                    :model-value="dSerAluno === '' ? null : dSerAluno"
+                                    :items="serieAlunoItems"
+                                    placeholder="Selecione o ano escolar..."
+                                    :disabled="!seriesReaisD.length"
+                                    :invalid="!!(form.errors as Record<string, string>).tma_ser_id_destino"
+                                    @update:model-value="(v) => (dSerAluno = v ?? '')"
+                                />
+                                <p class="mt-1 text-xs text-amber-800 dark:text-amber-300">
+                                    A turma de destino é multisseriada — informe em que ano escolar o aluno fica.
+                                </p>
+                                <InputError :message="(form.errors as Record<string, string>).tma_ser_id_destino" />
+                            </div>
                         </div>
                     </div>
                 </div>
