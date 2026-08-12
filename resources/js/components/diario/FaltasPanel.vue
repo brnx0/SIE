@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
 import Switch from '@/components/common/Switch.vue';
-import { Ban, ChevronLeft, ChevronRight, Loader2, RefreshCw, Search, TriangleAlert } from 'lucide-vue-next';
+import { Ban, ChevronLeft, ChevronRight, CopyPlus, Loader2, RefreshCw, Search, TriangleAlert, X } from 'lucide-vue-next';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
+import { usePage } from '@inertiajs/vue3';
 
 const props = defineProps<{
     anlId: number;
@@ -73,6 +74,112 @@ const status = reactive<Record<string, 'idle' | 'saving' | 'saved' | 'error'>>({
 const conteudoMap = reactive<Record<string, ConteudoInfo>>({});
 const conteudoStatus = reactive<Record<string, 'idle' | 'saving' | 'saved' | 'error'>>({});
 const conteudoTimer: Record<string, number> = {};
+
+// ── Replicação do "realizado no dia" para outras turmas do mesmo ano escolar ──
+interface DestinoReplica {
+    tur_id: number; tur_nome: string; esc_nome: string;
+    dt: string | null; sem_aula: boolean; ja_tem: boolean; autor: string | null;
+}
+interface ResultadoReplica {
+    tur_id: number; tur_nome: string;
+    status: 'replicada' | 'substituida' | 'pulada' | 'falhou';
+    dt?: string | null; motivo?: string | null;
+}
+// Habilitada por parâmetro do município (nem toda cidade usa).
+const podeReplicar = computed(
+    () => !!((usePage().props as any).params?.replicar_conteudo_diario),
+);
+const repAberto = ref(false);
+const repDisId = ref<number | null>(null);
+const repCarregando = ref(false);
+const repEnviando = ref(false);
+const repDestinos = ref<DestinoReplica[]>([]);
+const repSelecionados = reactive<Record<number, boolean>>({});
+const repSobrescrever = ref(false);
+const repResultado = ref<ResultadoReplica[] | null>(null);
+const repErro = ref<string | null>(null);
+
+const abrirReplicacao = async (disId: number) => {
+    repDisId.value = disId;
+    repAberto.value = true;
+    repResultado.value = null;
+    repErro.value = null;
+    repSobrescrever.value = false;
+    repDestinos.value = [];
+    Object.keys(repSelecionados).forEach((k) => delete repSelecionados[Number(k)]);
+    repCarregando.value = true;
+    try {
+        const url = new URL('/api/diario/faltas/conteudo/destinos', window.location.origin);
+        url.searchParams.set('tur_id', String(props.turId));
+        url.searchParams.set('uni_id', String(props.uniId));
+        url.searchParams.set('dis_id', String(disId));
+        url.searchParams.set('dt', dataSel.value);
+        const r = await fetch(url, { headers: { Accept: 'application/json' } });
+        if (!r.ok) { repErro.value = 'Não foi possível carregar as turmas.'; return; }
+        repDestinos.value = (await r.json()).turmas ?? [];
+    } catch {
+        repErro.value = 'Falha de comunicação.';
+    } finally {
+        repCarregando.value = false;
+    }
+};
+
+const repElegiveis = computed(() => repDestinos.value.filter((d) => !d.sem_aula));
+const repEscolhidas = computed(() => repElegiveis.value.filter((d) => repSelecionados[d.tur_id]));
+const repTemConflito = computed(() => repEscolhidas.value.some((d) => d.ja_tem));
+
+const REP_STATUS: Record<ResultadoReplica['status'], string> = {
+    replicada: 'Replicada',
+    substituida: 'Substituída',
+    pulada: 'Pulada',
+    falhou: 'Falhou',
+};
+
+// O servidor já prefere aula passada; só sobra data futura quando é a única do
+// período. Vale avisar, porque o professor estaria registrando um dia que não ocorreu.
+const repFutura = (dt: string | null) => !!dt && dt > new Date().toISOString().slice(0, 10);
+
+// Desmarcou a turma que motivou o aviso: o "substituir" tem que cair junto, senão
+// fica ligado e invisível e a próxima seleção sobrescreve sem o professor pedir.
+watch(repTemConflito, (tem) => {
+    if (!tem) repSobrescrever.value = false;
+});
+
+const confirmarReplicacao = async () => {
+    if (!repDisId.value || !repEscolhidas.value.length) return;
+    repEnviando.value = true;
+    repErro.value = null;
+    try {
+        const r = await fetch('/api/diario/faltas/conteudo/replicar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json', ...csrf() },
+            body: JSON.stringify({
+                tur_id: props.turId,
+                uni_id: props.uniId,
+                dis_id: repDisId.value,
+                dt: dataSel.value,
+                destinos: repEscolhidas.value.map((d) => d.tur_id),
+                sobrescrever: repSobrescrever.value,
+            }),
+        });
+        if (!r.ok) {
+            const j = await r.json().catch(() => null);
+            repErro.value = j?.message ?? 'Não foi possível replicar.';
+            return;
+        }
+        repResultado.value = (await r.json()).resultado ?? [];
+    } catch {
+        repErro.value = 'Falha de comunicação.';
+    } finally {
+        repEnviando.value = false;
+    }
+};
+
+const fmtDia = (d: string | null) => {
+    if (!d) return '—';
+    const [, m, dd] = d.split('-');
+    return `${dd}/${m}`;
+};
 const planos = ref<Plano[]>([]);
 const justificativas = ref<Justificativa[]>([]);
 // Sábados letivos do período (já filtrados pela escola da turma): cada um espelha um dia útil.
@@ -503,23 +610,45 @@ const statusInfo = (aln: number): { label: string; cls: string } => {
                             <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
                                 <span class="text-sm font-semibold">{{ d.dis_nome }}</span>
                                 <div class="flex items-center gap-3">
-                                    <div
-                                        class="flex items-center gap-2 text-xs"
-                                        :class="planoDoDia(d.dis_id) ? 'text-slate-700 dark:text-slate-200' : 'text-muted-foreground'"
-                                        :title="planoDoDia(d.dis_id) ? 'Traz o conteúdo/metodologia do plano de aula' : 'Sem planejamento (pendente/aprovado) para esta data'"
-                                    >
+                                    <!-- Como no app: a mensagem de "sem plano" fica VISÍVEL como
+                                         subtítulo (não escondida num tooltip). -->
+                                    <div class="flex items-start gap-2 text-xs">
+                                        <div class="leading-tight">
+                                            <div
+                                                class="font-medium"
+                                                :class="planoDoDia(d.dis_id) ? 'text-slate-700 dark:text-slate-200' : 'text-muted-foreground'"
+                                            >Planejamento executado</div>
+                                            <div class="mt-0.5 max-w-[16rem] text-muted-foreground">
+                                                {{ planoDoDia(d.dis_id)
+                                                    ? 'Copia o conteúdo e a metodologia do seu plano para esta data.'
+                                                    : 'Sem plano pendente ou aprovado que cubra esta data.' }}
+                                            </div>
+                                        </div>
                                         <Switch
                                             :model-value="infoOf(d.dis_id).executado"
                                             :disabled="!editavel || !planoDoDia(d.dis_id)"
+                                            class="mt-0.5"
                                             @update:model-value="toggleExecutado(d.dis_id, $event)"
                                         />
-                                        <span>Planejamento executado</span>
                                     </div>
                                     <span class="text-xs">
                                         <span v-if="conteudoStatus[`${dataSel}|${d.dis_id}`] === 'saving'" class="inline-flex items-center gap-1 text-amber-600"><Loader2 class="size-3.5 animate-spin" /> Salvando</span>
                                         <span v-else-if="conteudoStatus[`${dataSel}|${d.dis_id}`] === 'saved'" class="text-emerald-600">Salvo</span>
                                         <span v-else-if="conteudoStatus[`${dataSel}|${d.dis_id}`] === 'error'" class="text-rose-600">Erro ao salvar</span>
                                     </span>
+                                    <!-- Replicar para outras turmas do mesmo ano escolar (parametrizável). -->
+                                    <Button
+                                        v-if="podeReplicar && editavel"
+                                        type="button"
+                                        size="sm"
+                                        variant="outline"
+                                        class="h-7 gap-1 text-xs"
+                                        :disabled="!getConteudo(d.dis_id, 'conteudo')"
+                                        :title="getConteudo(d.dis_id, 'conteudo') ? 'Replicar este registro para outras turmas do mesmo ano escolar' : 'Preencha o conteúdo antes de replicar'"
+                                        @click="abrirReplicacao(d.dis_id)"
+                                    >
+                                        <CopyPlus class="size-3.5" /> Replicar
+                                    </Button>
                                 </div>
                             </div>
                             <div v-if="infoOf(d.dis_id).executado" class="mb-2 inline-flex items-center gap-1 rounded bg-indigo-50 px-2 py-0.5 text-[11px] font-medium text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300">
@@ -679,6 +808,104 @@ const statusInfo = (aln: number): { label: string; cls: string } => {
                     </p>
                 </template>
             </template>
+        </div>
+
+        <!-- Modal: replicar o registro do dia para outras turmas do mesmo ano escolar -->
+        <div v-if="repAberto" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" @click.self="repAberto = false">
+            <div class="max-h-[85vh] w-full max-w-2xl overflow-hidden rounded-xl bg-background shadow-xl">
+                <div class="flex items-center justify-between border-b px-5 py-3">
+                    <h3 class="text-sm font-semibold">Replicar registro do dia</h3>
+                    <button type="button" class="rounded p-1 hover:bg-muted" @click="repAberto = false"><X class="size-4" /></button>
+                </div>
+
+                <div class="max-h-[60vh] overflow-y-auto px-5 py-4">
+                    <div v-if="repErro" class="mb-3 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:border-rose-900 dark:bg-rose-950/40 dark:text-rose-300">{{ repErro }}</div>
+
+                    <!-- Resultado da replicação -->
+                    <template v-if="repResultado">
+                        <ul class="space-y-1.5 text-sm">
+                            <li v-for="r in repResultado" :key="r.tur_id" class="flex items-start gap-2">
+                                <span
+                                    class="mt-0.5 shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium"
+                                    :class="{
+                                        'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200': r.status === 'replicada' || r.status === 'substituida',
+                                        'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200': r.status === 'pulada',
+                                        'bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-200': r.status === 'falhou',
+                                    }"
+                                >{{ REP_STATUS[r.status] }}</span>
+                                <span>
+                                    <b>{{ r.tur_nome }}</b>
+                                    <span v-if="r.dt" class="text-muted-foreground"> — {{ fmtDia(r.dt) }}</span>
+                                    <span v-if="r.motivo" class="block text-xs text-muted-foreground">{{ r.motivo }}</span>
+                                </span>
+                            </li>
+                        </ul>
+                    </template>
+
+                    <!-- Seleção das turmas -->
+                    <template v-else>
+                        <p v-if="repCarregando" class="py-6 text-center text-sm text-muted-foreground">Carregando turmas...</p>
+                        <p v-else-if="!repDestinos.length" class="py-6 text-center text-sm text-muted-foreground">
+                            Nenhuma outra turma sua do mesmo ano escolar nesta disciplina.
+                        </p>
+                        <template v-else>
+                            <p class="mb-3 text-xs text-muted-foreground">
+                                O conteúdo é copiado como está. Para cada turma o sistema usa a data em que
+                                <b>ela</b> tem aula desta disciplina. Alterar depois na origem não afeta as cópias.
+                            </p>
+                            <ul class="space-y-1">
+                                <li v-for="t in repDestinos" :key="t.tur_id">
+                                    <label
+                                        class="flex items-start gap-2 rounded-md px-2 py-1.5 text-sm"
+                                        :class="t.sem_aula ? 'opacity-60' : 'cursor-pointer hover:bg-muted/50'"
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            class="mt-1 size-4 accent-indigo-600"
+                                            :disabled="t.sem_aula"
+                                            :checked="!!repSelecionados[t.tur_id]"
+                                            @change="repSelecionados[t.tur_id] = ($event.target as HTMLInputElement).checked"
+                                        />
+                                        <span>
+                                            <b>{{ t.tur_nome }}</b>
+                                            <span class="text-muted-foreground"> · {{ t.esc_nome }}</span>
+                                            <span v-if="!t.sem_aula" class="text-muted-foreground"> — {{ fmtDia(t.dt) }}</span>
+                                            <span v-if="t.sem_aula" class="block text-xs text-amber-700 dark:text-amber-400">Sem aula desta disciplina no período.</span>
+                                            <span v-else-if="repFutura(t.dt)" class="block text-xs text-amber-700 dark:text-amber-400">
+                                                Esta aula ainda não aconteceu — é a única data da disciplina no período.
+                                            </span>
+                                            <span v-else-if="t.ja_tem" class="block text-xs text-amber-700 dark:text-amber-400">
+                                                Já tem conteúdo neste dia<span v-if="t.autor"> (por {{ t.autor }})</span>.
+                                            </span>
+                                        </span>
+                                    </label>
+                                </li>
+                            </ul>
+                            <label v-if="repTemConflito" class="mt-3 flex items-start gap-2 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:border-amber-700 dark:bg-amber-900/20 dark:text-amber-200">
+                                <input type="checkbox" v-model="repSobrescrever" class="mt-0.5 size-4 accent-amber-600" />
+                                <span>Substituir o conteúdo já lançado nas turmas marcadas. Sem isto, elas são puladas.</span>
+                            </label>
+                        </template>
+                    </template>
+                </div>
+
+                <div class="flex justify-end gap-2 border-t px-5 py-3">
+                    <Button type="button" variant="outline" size="sm" @click="repAberto = false">
+                        {{ repResultado ? 'Fechar' : 'Cancelar' }}
+                    </Button>
+                    <Button
+                        v-if="!repResultado"
+                        type="button"
+                        size="sm"
+                        class="bg-indigo-600 text-white hover:bg-indigo-700"
+                        :disabled="!repEscolhidas.length || repEnviando"
+                        @click="confirmarReplicacao"
+                    >
+                        <Loader2 v-if="repEnviando" class="mr-1 size-4 animate-spin" />
+                        Replicar ({{ repEscolhidas.length }})
+                    </Button>
+                </div>
+            </div>
         </div>
     </section>
 </template>

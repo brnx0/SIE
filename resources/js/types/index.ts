@@ -24,6 +24,7 @@ export interface SystemParams {
     validar_idade_serie: boolean;
     gerar_matricula_auto: boolean;
     cpf_obrigatorio: boolean;
+    replicar_conteudo_diario: boolean;
 }
 
 export interface SharedData {

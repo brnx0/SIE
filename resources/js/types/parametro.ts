@@ -18,6 +18,7 @@ export interface ParametroEntidade {
     par_fl_validar_idade_serie: boolean;
     par_fl_gerar_matricula_auto: boolean;
     par_fl_cpf_obrigatorio: boolean;
+    par_fl_replicar_conteudo_diario: boolean;
     municipio?: Municipio | null;
 }
 
@@ -260,6 +261,7 @@ export interface ParametroEntidadeFormData {
     par_fl_validar_idade_serie: boolean;
     par_fl_gerar_matricula_auto: boolean;
     par_fl_cpf_obrigatorio: boolean;
+    par_fl_replicar_conteudo_diario: boolean;
     _method?: 'put' | 'post';
     [key: string]: any;
 }

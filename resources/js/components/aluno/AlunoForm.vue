@@ -64,6 +64,7 @@ const DEFAULT_PARAMS: SystemParams = {
     validar_idade_serie: false,
     gerar_matricula_auto: true,
     cpf_obrigatorio: false,
+    replicar_conteudo_diario: false,
 };
 const params = computed<SystemParams>(() => page.props.params ?? DEFAULT_PARAMS);
 const cpfRequired = computed(() => params.value.cpf_obrigatorio);

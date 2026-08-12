@@ -8,11 +8,16 @@ use App\Models\Diario\DiarioConteudo;
 use App\Models\Diario\DiarioFalta;
 use App\Models\Diario\DiarioPlanoAula;
 use App\Models\Matricula\Matricula;
+use App\Models\Parametro\DiaNaoLetivo;
+use App\Models\Parametro\ParametroEntidade;
+use App\Models\Turma\Turma;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 /**
  * Lançamento de frequência (faltas/presenças) no Diário de Classe.
@@ -279,6 +284,432 @@ class FaltaController extends Controller
             'conteudo'        => $conteudo,
             'metodologia'     => $metodologia,
         ]);
+    }
+
+    // ===================== Replicação do "realizado no dia" =====================
+
+    /**
+     * Turmas que podem receber a réplica do conteúdo de (turma, disciplina, data).
+     *
+     * Candidata = turma REGULAR e ABERTA, do mesmo ano letivo (inclusive de OUTRA
+     * escola), em que o professor leciona a MESMA disciplina e cujo ANO ESCOLAR
+     * cruza com o da origem. O dia da semana não filtra: para cada candidata o
+     * servidor escolhe a data em que ELA tem aula da disciplina.
+     */
+    public function destinosReplicacao(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'tur_id' => ['required', 'integer', 'exists:edu_turma,tur_id'],
+            'uni_id' => ['required', 'integer', 'exists:cfg_unidade,uni_id'],
+            'dis_id' => ['required', 'integer', 'exists:edu_disciplina,dis_id'],
+            'dt'     => ['required', 'date'],
+        ]);
+
+        $this->abortIfNotProfessor();
+        $this->assertReplicacaoHabilitada();
+        $this->assertLotadoNaTurma($request, (int) $data['tur_id']);
+        $this->assertDisciplinaDoProfessor($request, (int) $data['tur_id'], (int) $data['dis_id']);
+
+        $turId = (int) $data['tur_id'];
+        $disId = (int) $data['dis_id'];
+        $uniId = (int) $data['uni_id'];
+        $dt    = Carbon::parse($data['dt'])->toDateString();
+
+        $origem = DB::table('edu_turma')->where('tur_id', $turId)->first(['tur_anl_id']);
+        abort_unless($origem, 404);
+        $this->assertUnidadeDoAnoLetivo($uniId, (int) $origem->tur_anl_id);
+
+        $anosOrigem = $this->anosEscolaresDaTurma($turId);
+        if (empty($anosOrigem)) {
+            return response()->json(['turmas' => []]);
+        }
+
+        // Admin não tem lotação: a data é escolhida sem amarrar a um professor.
+        $funId = $request->user()->isAdmin() ? null : (int) $request->user()->fun_id;
+
+        // Turmas do professor (por horário — é também a fonte dos dias de aula).
+        $candidatas = DB::table('edu_turma as t')
+            ->join('edu_turma_horario as h', 'h.trh_tur_id', '=', 't.tur_id')
+            ->join('edu_escola as e', 'e.esc_id', '=', 't.tur_esc_id')
+            ->where('h.trh_dis_id', $disId)
+            ->when($funId !== null, fn ($q) => $q->where('h.trh_fun_id', $funId))
+            ->where('t.tur_anl_id', $origem->tur_anl_id)
+            ->where('t.tur_id', '!=', $turId)
+            ->where('t.tur_modalidade', Turma::MODALIDADE_REGULAR)
+            ->where('t.tur_situacao', 'ABERTA')
+            ->whereNull('t.tur_deleted_at')
+            ->whereNull('h.trh_deleted_at')
+            ->distinct()
+            ->orderBy('e.esc_nome')->orderBy('t.tur_nome')
+            ->get(['t.tur_id', 't.tur_nome', 't.tur_esc_id', 'e.esc_nome']);
+
+        $periodo = $this->periodoDaUnidade($uniId);
+
+        $out = [];
+        foreach ($candidatas as $c) {
+            // Ano escolar precisa cruzar (cobre turma multi nos dois sentidos).
+            if (! array_intersect($anosOrigem, $this->anosEscolaresDaTurma((int) $c->tur_id))) {
+                continue;
+            }
+
+            $dtDestino = $this->dataComAulaMaisProxima((int) $c->tur_id, $disId, $funId, $dt, $periodo);
+
+            $jaTem = $dtDestino ? DB::table('edu_diario_conteudo as dc')
+                ->leftJoin('users as u', 'u.id', '=', 'dc.dco_user_id')
+                ->where('dc.dco_tur_id', $c->tur_id)
+                ->where('dc.dco_dis_id', $disId)
+                ->whereDate('dc.dco_dt', $dtDestino)
+                ->whereNull('dc.dco_deleted_at')
+                ->first(['u.name as autor']) : null;
+
+            $out[] = [
+                'tur_id'     => (int) $c->tur_id,
+                'tur_nome'   => $c->tur_nome,
+                'esc_nome'   => $c->esc_nome,
+                'dt'         => $dtDestino,
+                'sem_aula'   => $dtDestino === null,
+                'ja_tem'     => (bool) $jaTem,
+                'autor'      => $jaTem->autor ?? null,
+            ];
+        }
+
+        return response()->json(['turmas' => $out]);
+    }
+
+    /**
+     * Replica o conteúdo do dia para as turmas escolhidas.
+     *
+     * A réplica é um SNAPSHOT: alterar a origem depois NÃO propaga. Cada turma
+     * repassa por todas as travas do lançamento normal e o plano de aula é
+     * RE-RESOLVIDO no destino (nunca se copia o vínculo da origem).
+     */
+    public function replicarConteudo(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'tur_id'      => ['required', 'integer', 'exists:edu_turma,tur_id'],
+            'uni_id'      => ['required', 'integer', 'exists:cfg_unidade,uni_id'],
+            'dis_id'      => ['required', 'integer', 'exists:edu_disciplina,dis_id'],
+            'dt'          => ['required', 'date'],
+            'destinos'    => ['required', 'array', 'min:1', 'max:60'],
+            'destinos.*'  => ['integer', 'exists:edu_turma,tur_id'],
+            'sobrescrever' => ['boolean'],
+        ]);
+
+        $this->abortIfNotProfessor();
+        $this->assertReplicacaoHabilitada();
+        $this->assertLotadoNaTurma($request, (int) $data['tur_id']);
+        $this->assertDisciplinaDoProfessor($request, (int) $data['tur_id'], (int) $data['dis_id']);
+
+        $turId        = (int) $data['tur_id'];
+        $disId        = (int) $data['dis_id'];
+        $uniId        = (int) $data['uni_id'];
+        $dt           = Carbon::parse($data['dt'])->toDateString();
+        $sobrescrever = (bool) ($data['sobrescrever'] ?? false);
+        $funId        = $request->user()->isAdmin() ? null : (int) $request->user()->fun_id;
+
+        $origem = DB::table('edu_turma')->where('tur_id', $turId)->first(['tur_anl_id']);
+        abort_unless($origem, 404);
+        $this->assertUnidadeDoAnoLetivo($uniId, (int) $origem->tur_anl_id);
+        // Origem também passa pelas travas: turma encerrada / período fechado não
+        // pode virar fonte de gravação em lote.
+        $this->assertTurmaAberta($turId);
+        $this->assertPeriodoAberto($uniId);
+
+        $fonte = DB::table('edu_diario_conteudo')
+            ->where('dco_tur_id', $data['tur_id'])
+            ->where('dco_dis_id', $disId)
+            ->whereDate('dco_dt', $dt)
+            ->whereNull('dco_deleted_at')
+            ->first(['dco_conteudo', 'dco_metodologia', 'dco_fl_plano_executado']);
+
+        abort_unless($fonte, 422, 'Não há conteúdo lançado neste dia para replicar.');
+
+        $periodo    = $this->periodoDaUnidade($uniId);
+        $anosOrigem = $this->anosEscolaresDaTurma($turId);
+        $resultado  = [];
+
+        foreach (array_unique($data['destinos']) as $destinoId) {
+            $destinoId = (int) $destinoId;
+            $turma     = null;
+
+            try {
+                abort_if($destinoId === $turId, 422, 'A turma de origem não pode ser destino.');
+
+                // Os MESMOS filtros estruturais de destinosReplicacao(): o endpoint de
+                // escrita não confia no que o de leitura listou. Só depois de passar
+                // aqui o nome da turma entra no resultado (senão o retorno viraria um
+                // enumerador de turmas do banco).
+                $turma = DB::table('edu_turma')
+                    ->where('tur_id', $destinoId)
+                    ->where('tur_anl_id', $origem->tur_anl_id)
+                    ->where('tur_modalidade', Turma::MODALIDADE_REGULAR)
+                    ->whereNull('tur_deleted_at')
+                    ->first(['tur_id', 'tur_nome']);
+
+                if (! $turma) {
+                    throw new \RuntimeException('Turma indisponível para replicação.');
+                }
+
+                if (! array_intersect($anosOrigem, $this->anosEscolaresDaTurma($destinoId))) {
+                    throw new \RuntimeException('Turma não é do mesmo ano escolar.');
+                }
+
+                $dtDestino = $this->dataComAulaMaisProxima($destinoId, $disId, $funId, $dt, $periodo);
+                if (! $dtDestino) {
+                    throw new \RuntimeException('Sem aula desta disciplina no período.');
+                }
+
+                // Travas idênticas às do lançamento normal, por turma.
+                $this->assertLotadoNaTurma($request, $destinoId);
+                $this->assertDisciplinaDoProfessor($request, $destinoId, $disId);
+                $this->assertTurmaAberta($destinoId);
+                $this->assertPeriodoAberto($uniId);
+                $this->assertDataNoPeriodo($uniId, $dtDestino);
+
+                $existente = DiarioConteudo::where('dco_tur_id', $destinoId)
+                    ->where('dco_dis_id', $disId)
+                    ->whereDate('dco_dt', $dtDestino)
+                    ->first();
+
+                if ($existente && ! $sobrescrever) {
+                    $resultado[] = ['tur_id' => $destinoId, 'tur_nome' => $turma->tur_nome ?? '', 'status' => 'pulada', 'motivo' => 'Já tinha conteúdo lançado neste dia.'];
+                    continue;
+                }
+
+                // Plano é RE-RESOLVIDO no destino; nunca se copia o vínculo da origem.
+                $conteudo    = $fonte->dco_conteudo;
+                $metodologia = $fonte->dco_metodologia;
+                $dpaId       = null;
+                $executado   = false;
+                $aviso       = null;
+
+                if ($fonte->dco_fl_plano_executado) {
+                    $plano = $this->planoParaTurma($request, $destinoId, $disId, $dtDestino);
+                    if ($plano) {
+                        $executado   = true;
+                        $dpaId       = (int) $plano->dpa_id;
+                        $conteudo    = $plano->dpa_objeto_conhecimento;
+                        $metodologia = $plano->dpa_estrategias;
+                    } else {
+                        $aviso = 'Sem plano válido nesta turma — replicado apenas o texto.';
+                    }
+                }
+
+                DiarioConteudo::updateOrCreate(
+                    ['dco_tur_id' => $destinoId, 'dco_dt' => $dtDestino, 'dco_dis_id' => $disId],
+                    [
+                        'dco_user_id'            => (int) $request->user()->id,
+                        'dco_uni_id'             => $uniId,
+                        'dco_conteudo'           => $conteudo,
+                        'dco_metodologia'        => $metodologia,
+                        'dco_fl_plano_executado' => $executado,
+                        'dco_dpa_id'             => $dpaId,
+                    ],
+                );
+
+                $resultado[] = [
+                    'tur_id'   => $destinoId,
+                    'tur_nome' => $turma->tur_nome ?? '',
+                    'status'   => $existente ? 'substituida' : 'replicada',
+                    'dt'       => $dtDestino,
+                    'motivo'   => $aviso,
+                ];
+            } catch (\Throwable $e) {
+                // Falha numa turma não derruba as demais — o resultado é por turma.
+                // Só mensagem NOSSA volta ao cliente: erro de infra (QueryException etc.)
+                // vazaria SQL/schema na tela.
+                $nossa = $e instanceof \RuntimeException
+                    || $e instanceof HttpExceptionInterface
+                    || $e instanceof ValidationException;
+
+                if (! $nossa) {
+                    report($e);
+                }
+
+                $resultado[] = [
+                    'tur_id'   => $destinoId,
+                    'tur_nome' => $turma->tur_nome ?? '',
+                    'status'   => 'falhou',
+                    'motivo'   => $nossa && $e->getMessage() !== ''
+                        ? $e->getMessage()
+                        : 'Não foi possível replicar para esta turma.',
+                ];
+            }
+        }
+
+        return response()->json(['resultado' => $resultado]);
+    }
+
+    /** Bloqueia a feature quando o município não a utiliza. */
+    private function assertReplicacaoHabilitada(): void
+    {
+        abort_unless(
+            (bool) (ParametroEntidade::current()->par_fl_replicar_conteudo_diario ?? false),
+            403,
+            'A replicação de conteúdo não está habilitada.',
+        );
+    }
+
+    /**
+     * Anos escolares REAIS de uma turma. Em turma multi a série da turma é a
+     * pseudo-série "MULTI", então o ano vem dos alunos (tma_ser_id).
+     *
+     * @return array<int,int>
+     */
+    private function anosEscolaresDaTurma(int $turId): array
+    {
+        $turma = DB::table('edu_turma as t')
+            ->join('edu_serie as s', 's.ser_id', '=', 't.tur_ser_id')
+            ->where('t.tur_id', $turId)
+            ->first(['t.tur_ser_id', 's.ser_fl_multi']);
+
+        if (! $turma) {
+            return [];
+        }
+
+        if (! $turma->ser_fl_multi) {
+            return [(int) $turma->tur_ser_id];
+        }
+
+        $anos = DB::table('edu_turma_aluno as tma')
+            ->join('edu_serie as s', 's.ser_id', '=', 'tma.tma_ser_id')
+            ->where('tma.tma_tur_id', $turId)
+            ->where('tma.tma_situacao', Matricula::SITUACAO_ATIVA)
+            ->whereNull('tma.tma_deleted_at')
+            ->where('s.ser_fl_multi', false)
+            ->distinct()
+            ->pluck('tma.tma_ser_id')
+            ->map(fn ($v) => (int) $v)
+            ->all();
+
+        // Nenhum aluno com ano escolar REAL (matrícula antiga ou migrada, que grava
+        // tma_ser_id = a própria pseudo-série): cai na série da turma, para a turma
+        // não sumir silenciosamente da replicação. Nesse caso ela só cruza com outra
+        // turma da mesma pseudo-série.
+        return $anos ?: [(int) $turma->tur_ser_id];
+    }
+
+    /** Unidade precisa ser do ano letivo da turma — senão o período viria de outro ano. */
+    private function assertUnidadeDoAnoLetivo(int $uniId, int $anlId): void
+    {
+        abort_unless(
+            DB::table('cfg_unidade')->where('uni_id', $uniId)->where('uni_anl_id', $anlId)->exists(),
+            422,
+            'A unidade selecionada não pertence ao ano letivo da turma.',
+        );
+    }
+
+    /** Janela da unidade JÁ com os dias de extensão — a mesma que assertDataNoPeriodo aceita. */
+    private function periodoDaUnidade(int $uniId): ?object
+    {
+        $uni = DB::table('cfg_unidade')->where('uni_id', $uniId)
+            ->first(['uni_dt_inicio', 'uni_dt_fim', 'uni_dias_extensao']);
+
+        if (! $uni || ! $uni->uni_dt_inicio || ! $uni->uni_dt_fim) {
+            return null;
+        }
+
+        return (object) [
+            'inicio' => Carbon::parse($uni->uni_dt_inicio)->startOfDay(),
+            'fim'    => Carbon::parse($uni->uni_dt_fim)->addDays((int) $uni->uni_dias_extensao)->startOfDay(),
+        ];
+    }
+
+    /**
+     * Data, dentro do período, em que a turma tem aula da disciplina COM ESTE
+     * professor e que fica mais próxima da data de origem.
+     *
+     * Feriados/recessos (cfg_dia_nao_letivo) são descartados. Empate → a anterior,
+     * e datas já ocorridas ganham das futuras: replicar para uma aula que ainda
+     * não aconteceu registraria conteúdo de um dia que não existiu.
+     */
+    private function dataComAulaMaisProxima(int $turId, int $disId, ?int $funId, string $dtRef, ?object $periodo): ?string
+    {
+        if (! $periodo) {
+            return null;
+        }
+
+        $dias = DB::table('edu_turma_horario')
+            ->where('trh_tur_id', $turId)
+            ->where('trh_dis_id', $disId)
+            ->when($funId !== null, fn ($q) => $q->where('trh_fun_id', $funId))
+            ->whereNull('trh_deleted_at')
+            ->distinct()
+            ->pluck('trh_dia')
+            ->all();
+
+        if (empty($dias)) {
+            return null;
+        }
+
+        $map  = ['dom' => 0, 'seg' => 1, 'ter' => 2, 'qua' => 3, 'qui' => 4, 'sex' => 5, 'sab' => 6];
+        $dows = array_values(array_filter(array_map(fn ($d) => $map[$d] ?? null, $dias), fn ($v) => $v !== null));
+
+        $anlId = (int) DB::table('edu_turma')->where('tur_id', $turId)->value('tur_anl_id');
+        $naoLetivos = $anlId
+            ? array_flip(DiaNaoLetivo::datasNoPeriodo(
+                $anlId,
+                $periodo->inicio->toDateString(),
+                $periodo->fim->toDateString(),
+            ))
+            : [];
+
+        $ref     = Carbon::parse($dtRef)->startOfDay();
+        $hoje    = Carbon::today()->startOfDay();
+        $melhor  = null;
+        $melhorD = null;
+        $melhorF = null;
+
+        for ($d = $periodo->inicio->copy(); $d->lte($periodo->fim); $d->addDay()) {
+            $iso = $d->toDateString();
+
+            if (! in_array($d->dayOfWeek, $dows, true) || isset($naoLetivos[$iso])) {
+                continue;
+            }
+
+            $futura = $d->gt($hoje);
+            $dist   = abs($d->diffInDays($ref));
+
+            // Data passada sempre vence data futura, mesmo estando mais longe.
+            // Dentro do mesmo grupo, '<' mantém a PRIMEIRA ocorrência: como varremos
+            // do início do período, a anterior vence a posterior no empate.
+            $melhorQue = $melhorD === null
+                || ($melhorF && ! $futura)
+                || ($melhorF === $futura && $dist < $melhorD);
+
+            if ($melhorQue) {
+                $melhorD = $dist;
+                $melhorF = $futura;
+                $melhor  = $iso;
+            }
+        }
+
+        return $melhor;
+    }
+
+    /** Plano elegível para a turma/disciplina/data do DESTINO (mesma regra do lançamento). */
+    private function planoParaTurma(Request $request, int $turId, int $disId, string $dt): ?object
+    {
+        $user  = $request->user();
+        $turma = DB::table('edu_turma')->where('tur_id', $turId)->first(['tur_ser_id', 'tur_esc_id', 'tur_anl_id']);
+        if (! $turma) {
+            return null;
+        }
+
+        return DB::table('edu_diario_plano_aula')
+            ->where('dpa_ser_id', $turma->tur_ser_id)
+            ->where(fn ($q) => $q->whereNull('dpa_tur_id')->orWhere('dpa_tur_id', $turId))
+            ->where('dpa_dis_id', $disId)
+            // Aprovação é escola-escopada: não importar plano de outra escola.
+            ->where('dpa_esc_id', $turma->tur_esc_id)
+            ->where('dpa_anl_id', $turma->tur_anl_id)
+            ->whereIn('dpa_status', [DiarioPlanoAula::STATUS_PENDENTE, DiarioPlanoAula::STATUS_APROVADO])
+            ->whereDate('dpa_dt_inicio', '<=', $dt)
+            ->whereDate('dpa_dt_fim', '>=', $dt)
+            ->whereNull('dpa_deleted_at')
+            ->when(! $user->isAdmin(), fn ($q) => $q->where('dpa_user_id', (int) $user->id))
+            ->orderBy('dpa_dt_inicio')
+            ->first(['dpa_id', 'dpa_objeto_conhecimento', 'dpa_estrategias']);
     }
 
     /** Marca presença/ausência de 1 aluno em 1 tempo/data (autosave). */

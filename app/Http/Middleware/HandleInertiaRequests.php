@@ -84,6 +84,7 @@ class HandleInertiaRequests extends Middleware
             'validar_idade_serie' => (bool) ($p->par_fl_validar_idade_serie ?? false),
             'gerar_matricula_auto' => (bool) ($p->par_fl_gerar_matricula_auto ?? true),
             'cpf_obrigatorio' => (bool) ($p->par_fl_cpf_obrigatorio ?? false),
+            'replicar_conteudo_diario' => (bool) ($p->par_fl_replicar_conteudo_diario ?? false),
         ];
     }
 }

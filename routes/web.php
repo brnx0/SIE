@@ -529,6 +529,8 @@ Route::middleware(['auth', 'verified', 'tela'])->group(function () {
         Route::post('faltas/salvar', [\App\Http\Controllers\Diario\FaltaController::class, 'salvarPresenca'])->name('faltas.salvar');
         Route::post('faltas/lote', [\App\Http\Controllers\Diario\FaltaController::class, 'salvarLote'])->name('faltas.lote');
         Route::post('faltas/conteudo', [\App\Http\Controllers\Diario\FaltaController::class, 'salvarConteudo'])->name('faltas.conteudo');
+        Route::get('faltas/conteudo/destinos', [\App\Http\Controllers\Diario\FaltaController::class, 'destinosReplicacao'])->name('faltas.conteudo.destinos');
+        Route::post('faltas/conteudo/replicar', [\App\Http\Controllers\Diario\FaltaController::class, 'replicarConteudo'])->name('faltas.conteudo.replicar');
         Route::post('faltas/aula-nao-executada', [\App\Http\Controllers\Diario\FaltaController::class, 'salvarAulaNaoExecutada'])->name('faltas.aula-nao-executada');
         Route::get('planos/escolas', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'lookupEscolas'])->name('planos.escolas');
         Route::get('planos/series', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'lookupSeries'])->name('planos.series');

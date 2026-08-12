@@ -58,7 +58,7 @@ const TAB_FIELDS: Record<TabId, string[]> = {
         'par_fl_nome_pessoa_caixa_alta', 'par_fl_nome_escola_caixa_alta',
         'par_fl_alertar_homonimos', 'par_fl_alertar_acentos_nomes',
         'par_fl_validar_idade_serie', 'par_fl_gerar_matricula_auto',
-        'par_fl_cpf_obrigatorio',
+        'par_fl_cpf_obrigatorio', 'par_fl_replicar_conteudo_diario',
     ],
     grade: [],
 };
@@ -80,6 +80,7 @@ const form = useForm<ParametroEntidadeFormData>({
     par_fl_validar_idade_serie: props.initial.par_fl_validar_idade_serie ?? false,
     par_fl_gerar_matricula_auto: props.initial.par_fl_gerar_matricula_auto ?? true,
     par_fl_cpf_obrigatorio: props.initial.par_fl_cpf_obrigatorio ?? false,
+    par_fl_replicar_conteudo_diario: props.initial.par_fl_replicar_conteudo_diario ?? false,
     _method: 'put',
 });
 
@@ -457,6 +458,10 @@ const fmtDateTime = (s?: string | null) => {
                             <div class="flex items-center gap-3">
                                 <Switch id="par_fl_cpf_obrigatorio" v-model="form.par_fl_cpf_obrigatorio" />
                                 <Label for="par_fl_cpf_obrigatorio" class="text-sm font-normal">Tornar CPF do aluno obrigatório</Label>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <Switch id="par_fl_replicar_conteudo_diario" v-model="form.par_fl_replicar_conteudo_diario" />
+                                <Label for="par_fl_replicar_conteudo_diario" class="text-sm font-normal">Permitir replicar o conteúdo do diário para outras turmas</Label>
                             </div>
                         </div>
                     </div>
