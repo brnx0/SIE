@@ -164,25 +164,43 @@ class MapaNotasDisciplinaController extends Controller
         // Média final (M.F) da unidade — autoritativa (inclui recuperação e override manual).
         $mf = CalculoNota::resultado($turId, $disId, $uniId);
 
-        // Cabeçalhos das colunas de instrumentos: nome do instrumento avaliativo
-        // (+ descrição/data quando houver) — a nota do aluno vai na célula.
-        $instrumentos = $regulares->map(fn ($a, $i) => [
-            'ava_id'    => (int) $a->ava_id,
-            'descricao' => $this->rotuloAvaliacao($a, $i),
-            'valor'     => $a->ava_valor !== null ? $this->numero((float) $a->ava_valor) : null,
-            'dt'        => $a->ava_dt ? Carbon::parse($a->ava_dt)->format('d/m') : null,
-        ])->values();
+        // Unifica avaliações pelo INSTRUMENTO (ava_iav_id): o mapa não exibe data
+        // nem descrição, então a mesma "observação" que existe em numérica E
+        // conceitual (ou em datas diferentes) deve ocupar UMA coluna só — a nota do
+        // aluno vem do tipo/lançamento em que ele foi avaliado. Avaliação sem
+        // instrumento fica numa chave única (não se une a outras). Como $regulares
+        // já vem ordenado por ava_dt/ava_id, os grupos saem na mesma ordem.
+        $chaveGrupo = fn ($a) => $a->ava_iav_id !== null ? 'iav:' . $a->ava_iav_id : 'ava:' . $a->ava_id;
+        $grupos = $regulares->groupBy($chaveGrupo)->values();
 
-        $notaTexto = function ($ava, ?int $alnId) use ($notaMap, $conceitos): string {
-            $n = $notaMap[$ava->ava_id][$alnId] ?? null;
-            if (! $n) {
-                return '—';
-            }
-            if ($ava->ava_tipo === DiarioAvaliacao::TIPO_NUMERICA) {
-                return $n['valor'] === null ? '—' : $this->numero($n['valor']);
+        // Cabeçalhos das colunas: um por GRUPO. Representante = o que tem valor
+        // (numérica/faixa) ou o primeiro; o rótulo é igual dentro do grupo.
+        $instrumentos = $grupos->map(function ($grupo, $i) {
+            $rep = $grupo->first(fn ($a) => $a->ava_valor !== null) ?? $grupo->first();
+            return [
+                'ava_id'    => (int) $rep->ava_id,
+                'descricao' => $this->rotuloAvaliacao($rep, $i),
+                'valor'     => $rep->ava_valor !== null ? $this->numero((float) $rep->ava_valor) : null,
+                'dt'        => $rep->ava_dt ? Carbon::parse($rep->ava_dt)->format('d/m') : null,
+            ];
+        })->values();
+
+        // Nota da célula do grupo: a do tipo em que o aluno foi avaliado — a
+        // primeira avaliação do grupo em que houver lançamento para ele.
+        $notaTextoGrupo = function ($grupo, ?int $alnId) use ($notaMap, $conceitos): string {
+            foreach ($grupo as $ava) {
+                $n = $notaMap[$ava->ava_id][$alnId] ?? null;
+                if (! $n) {
+                    continue;
+                }
+                if ($ava->ava_tipo === DiarioAvaliacao::TIPO_NUMERICA) {
+                    return $n['valor'] === null ? '—' : $this->numero($n['valor']);
+                }
+
+                return $n['cnc_id'] !== null ? ($conceitos[$n['cnc_id']] ?? '—') : '—';
             }
 
-            return $n['cnc_id'] !== null ? ($conceitos[$n['cnc_id']] ?? '—') : '—';
+            return '—';
         };
 
         $alunos = Matricula::query()
@@ -194,11 +212,11 @@ class MapaNotasDisciplinaController extends Controller
             ->filter(fn ($m) => $m->aluno)
             ->sortBy(fn ($m) => \Illuminate\Support\Str::ascii(mb_strtolower((string) $m->aluno->aln_nome)))
             ->values()
-            ->map(function (Matricula $m) use ($regulares, $recuperacoes, $instrumentos, $notaMap, $notaTexto, $mf) {
+            ->map(function (Matricula $m) use ($regulares, $recuperacoes, $grupos, $notaMap, $notaTextoGrupo, $mf) {
                 $alnId = (int) $m->aluno->aln_id;
 
-                // Notas de cada instrumento (mesma ordem das colunas).
-                $notas = $regulares->map(fn ($a) => $notaTexto($a, $alnId))->values();
+                // Notas de cada COLUNA (grupo), na mesma ordem de $instrumentos.
+                $notas = $grupos->map(fn ($grupo) => $notaTextoGrupo($grupo, $alnId))->values();
 
                 // Média do período (sem recuperação) — soma das notas regulares numéricas.
                 $numericas = $regulares->where('ava_tipo', DiarioAvaliacao::TIPO_NUMERICA);

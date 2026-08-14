@@ -68,7 +68,20 @@ class ConsultasController extends Controller
 
         $nomes = InstrumentoAvaliativo::pluck('iav_nome', 'iav_id');
 
-        $colunas = $regulares->values()->map(function ($a, $i) use ($nomes) {
+        // Unifica avaliações pelo INSTRUMENTO (ava_iav_id): o mapa não exibe data
+        // nem descrição, então a mesma "observação" que existe em numérica E
+        // conceitual (ou em datas diferentes) deve ocupar UMA coluna só — a nota do
+        // aluno vem do tipo/lançamento em que ele foi avaliado. Avaliação sem
+        // instrumento fica numa chave única. $regulares já vem ordenado por ava_dt/ava_id.
+        $chaveGrupo = fn ($a) => $a->ava_iav_id !== null ? 'iav:' . $a->ava_iav_id : 'ava:' . $a->ava_id;
+        $grupos = $regulares->groupBy($chaveGrupo)->values();
+
+        // Representante do grupo (o mesmo usado no cabeçalho e nas células, para
+        // casar por ava_id): o que tem valor (numérica/faixa) ou o primeiro.
+        $repDoGrupo = fn ($grupo) => $grupo->first(fn ($a) => $a->ava_valor !== null) ?? $grupo->first();
+
+        $colunas = $grupos->map(function ($grupo, $i) use ($nomes, $repDoGrupo) {
+            $a = $repDoGrupo($grupo);
             $instrumento = $nomes[$a->ava_iav_id] ?? null;
             $desc = $a->ava_descricao;
             // Mesmo rótulo do relatório: "Instrumento (descrição)" quando diferem.
@@ -94,15 +107,28 @@ class ConsultasController extends Controller
         // Fonte única da M.F — já com recuperação e override manual aplicados.
         $resultados = CalculoNota::resultado($turId, $disId, $uniId);
 
-        $linhas = $this->alunosDaTurma($turId)->map(function ($m) use ($regulares, $recuperacoes, $notas, $siglas, $resultados) {
+        $linhas = $this->alunosDaTurma($turId)->map(function ($m) use ($regulares, $grupos, $repDoGrupo, $recuperacoes, $notas, $siglas, $resultados) {
             $alnId = (int) $m->aluno->aln_id;
             $doAluno = $notas->get($alnId);
 
-            $celulas = $regulares->map(function ($a) use ($doAluno, $siglas) {
-                $n = $doAluno?->firstWhere('nta_ava_id', $a->ava_id);
+            // Uma célula por GRUPO (coluna). O `ava_id` é o do REPRESENTANTE (igual
+            // ao cabeçalho, para o app casar coluna×célula); o TEXTO vem da nota que
+            // o aluno tem no grupo — no tipo em que ele foi avaliado.
+            $celulas = $grupos->map(function ($grupo) use ($doAluno, $siglas, $repDoGrupo) {
+                $rep = $repDoGrupo($grupo);
+                $n = null;
+                $avaComNota = $rep;
+                foreach ($grupo as $a) {
+                    $achou = $doAluno?->firstWhere('nta_ava_id', $a->ava_id);
+                    if ($achou) {
+                        $avaComNota = $a;
+                        $n = $achou;
+                        break;
+                    }
+                }
                 return [
-                    'ava_id' => (int) $a->ava_id,
-                    'texto'  => $this->textoNota($a, $n, $siglas),
+                    'ava_id' => (int) $rep->ava_id,
+                    'texto'  => $this->textoNota($avaComNota, $n, $siglas),
                     'valor'  => $n && $n->nta_valor !== null ? (float) $n->nta_valor : null,
                 ];
             })->values();
