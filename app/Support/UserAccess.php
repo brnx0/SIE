@@ -13,7 +13,7 @@ class UserAccess
      * Roles globais sem lotação: enxergam todos os dados sem filtro de escola.
      * Não possuem vínculo de lotação, então não há escola a filtrar.
      */
-    public const ROLES_SEM_FILTRO_LOTACAO = ['admin', 'gestor_secretaria', 'coordenador_interno', 'nutricionista', 'almoxarife'];
+    public const ROLES_SEM_FILTRO_LOTACAO = ['admin', 'gestor_secretaria', 'coordenador_interno', 'nutricionista', 'almoxarife', 'nucleo_atendimento'];
 
     /**
      * Usuário que vê tudo sem filtro de lotação (admin e demais roles globais).

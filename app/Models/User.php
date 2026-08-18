@@ -31,6 +31,7 @@ class User extends Authenticatable
         'matricula_censo'      => 'Matrícula/Censo',
         'nutricionista'        => 'Nutricionista',
         'almoxarife'           => 'Almoxarife',
+        'nucleo_atendimento'   => 'Núcleo de Atendimento',
     ];
 
     protected $fillable = [

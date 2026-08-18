@@ -26,6 +26,10 @@ class TelaPermissaoSeeder extends Seeder
         'matricula_censo',
         'nutricionista',
         'almoxarife',
+        // Núcleo de Atendimento entra por ÚLTIMO de propósito: toda linha que não
+        // chega no índice 13 cai no `?? 0` do run(), então o perfil nasce sem
+        // acesso a nada e só as telas liberadas abaixo recebem o 14º valor (2).
+        'nucleo_atendimento',
     ];
 
     /**
@@ -38,18 +42,18 @@ class TelaPermissaoSeeder extends Seeder
      * sem precisar repetir dois zeros em cada uma das dezenas de linhas.
      */
     private const MATRIZ = [
-        ['/dashboard', 'Painel', 'Visão geral', 1, [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]],
+        ['/dashboard', 'Painel', 'Visão geral', 1, [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 2]],
 
-        ['/alunos', 'Alunos', 'Gestão', 2, [1, 1, 0, 0, 2, 2, 1, 1, 2, 0, 2]],
+        ['/alunos', 'Alunos', 'Gestão', 2, [1, 1, 0, 0, 2, 2, 1, 1, 2, 0, 2, 0, 0, 2]],
         ['/funcionarios', 'Funcionários', 'Gestão', 3, [1, 1, 0, 0, 2, 2, 1, 1, 2, 0, 2]],
         ['/segmentos', 'Segmentos', 'Gestão', 4, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
         ['/series', 'Séries', 'Gestão', 5, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
         ['/disciplinas', 'Disciplinas', 'Gestão', 6, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
         ['/grade-disciplinar', 'Grade Disciplinar', 'Gestão', 7, [1, 1, 0, 0, 2, 0, 0, 0, 0, 0, 0]],
         ['/escolas', 'Escolas', 'Gestão', 8, [1, 1, 0, 0, 0, 2, 0, 0, 2, 0, 2]],
-        ['/turmas', 'Turmas', 'Gestão', 9, [1, 1, 0, 0, 0, 2, 2, 2, 2, 0, 2]],
-        ['/turmas-aee', 'Turmas AEE', 'Gestão', 10, [1, 1, 0, 0, 0, 2, 2, 2, 2, 0, 2]],
-        ['/turmas-atividade', 'Turmas Atividades', 'Gestão', 11, [1, 1, 0, 0, 0, 2, 2, 2, 2, 0, 0]],
+        ['/turmas', 'Turmas', 'Gestão', 9, [1, 1, 0, 0, 0, 2, 2, 2, 2, 0, 2, 0, 0, 2]],
+        ['/turmas-aee', 'Turmas AEE', 'Gestão', 10, [1, 1, 0, 0, 0, 2, 2, 2, 2, 0, 2, 0, 0, 2]],
+        ['/turmas-atividade', 'Turmas Atividades', 'Gestão', 11, [1, 1, 0, 0, 0, 2, 2, 2, 2, 0, 0, 0, 0, 2]],
         ['/atendimentos-aee', 'Atendimentos AEE', 'Gestão', 12, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
         ['/atividades', 'Atividades', 'Gestão', 13, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
 
@@ -66,7 +70,7 @@ class TelaPermissaoSeeder extends Seeder
         ['/sabados-letivos', 'Sábados Letivos', 'Diário', 23, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
         ['/diario/planos', 'Planos de Aula', 'Diário', 24, [1, 1, 1, 0, 2, 2, 0, 0, 2, 0, 0]],
         ['/diario/planos-aee', 'Planos de Aula AEE', 'Diário', 25, [1, 2, 0, 1, 0, 2, 0, 0, 2, 0, 0]],
-        ['/relatorios-diario', 'Relatórios Diário', 'Diário', 26, [1, 1, 2, 2, 2, 2, 0, 2, 2, 0, 0]],
+        ['/relatorios-diario', 'Relatórios Diário', 'Diário', 26, [1, 1, 2, 2, 2, 2, 0, 2, 2, 0, 0, 0, 0, 2]],
 
         // Relatórios do Diário: uma tela por relatório, e não o /relatorios genérico.
         // Todos moram sob /relatorios/*, então sem estas linhas eles resolveriam (por
@@ -76,15 +80,15 @@ class TelaPermissaoSeeder extends Seeder
         // arrastaria junto os relatórios do grupo "central" (Ficha de Matrícula,
         // Declaração de Matrícula, Alunos por Escola...), que não são desses perfis.
         // Os demais perfis mantêm os níveis do /relatorios — ninguém perde acesso.
-        ['/relatorios/parecer-descritivo', 'Parecer Descritivo', 'Diário', 47, [1, 1, 2, 2, 2, 2, 2, 2, 2, 0, 2]],
-        ['/relatorios/boletim', 'Boletim do Aluno', 'Diário', 48, [1, 1, 2, 2, 2, 2, 2, 2, 2, 0, 2]],
+        ['/relatorios/parecer-descritivo', 'Parecer Descritivo', 'Diário', 47, [1, 1, 2, 2, 2, 2, 2, 2, 2, 0, 2, 0, 0, 2]],
+        ['/relatorios/boletim', 'Boletim do Aluno', 'Diário', 48, [1, 1, 2, 2, 2, 2, 2, 2, 2, 0, 2, 0, 0, 2]],
         ['/relatorios/notas-por-unidade', 'Notas por Unidade', 'Diário', 49, [1, 1, 2, 2, 2, 2, 2, 2, 2, 0, 2]],
         ['/relatorios/mapa-notas-disciplina', 'Mapa de Notas', 'Diário', 50, [1, 1, 2, 2, 2, 2, 2, 2, 2, 0, 2]],
         ['/relatorios/boletim-avaliativo', 'Boletim Avaliativo', 'Diário', 51, [1, 1, 2, 2, 2, 2, 2, 2, 2, 0, 2]],
         ['/relatorios/conteudo-ministrado', 'Conteúdo Ministrado', 'Diário', 52, [1, 1, 2, 2, 2, 2, 2, 2, 2, 0, 2]],
         ['/relatorios/frequencia-mensal', 'Diário de Frequência Mensal', 'Diário', 53, [1, 1, 2, 2, 2, 2, 2, 2, 2, 0, 2]],
-        ['/relatorios/diagnostico', 'Avaliações por Diagnóstico', 'Diário', 54, [1, 1, 2, 2, 2, 2, 2, 2, 2, 0, 2]],
-        ['/relatorios/desempenho-aee', 'Desempenho AEE', 'Diário', 55, [1, 1, 2, 2, 2, 2, 2, 2, 2, 0, 2]],
+        ['/relatorios/diagnostico', 'Avaliações por Diagnóstico', 'Diário', 54, [1, 1, 2, 2, 2, 2, 2, 2, 2, 0, 2, 0, 0, 2]],
+        ['/relatorios/desempenho-aee', 'Desempenho AEE', 'Diário', 55, [1, 1, 2, 2, 2, 2, 2, 2, 2, 0, 2, 0, 0, 2]],
 
         ['/coordenador/planos', 'Validação de Planos', 'Pedagógico', 27, [1, 2, 0, 0, 1, 1, 0, 0, 1, 0, 0]],
         ['/coordenador-interno/planos-aee', 'Validação de Planos AEE', 'Pedagógico', 28, [1, 2, 0, 0, 0, 1, 0, 0, 1, 0, 0]],
