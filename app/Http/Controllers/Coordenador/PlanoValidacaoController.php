@@ -226,6 +226,7 @@ class PlanoValidacaoController extends Controller
             'serie:ser_id,ser_nome',
             'disciplina:dis_id,dis_nome',
             'unidade:uni_id,uni_numero,uni_tipo',
+            'validadoPor:id,name',
         ]);
 
         $indicadores = DB::table('edu_diario_plano_indicador as p')

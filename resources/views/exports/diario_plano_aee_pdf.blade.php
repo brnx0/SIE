@@ -119,12 +119,20 @@
     <div class="section">
         <h3>Observação do Coordenador</h3>
         <div class="bloco">{{ $plano->dae_obs_coordenador }}</div>
-        @if(!empty($plano->validadoPor) || !empty($plano->dae_validado_em))
-            <div style="font-size:8.5px; color:#6b7280; margin-top:2mm">
-                Validado por {{ $plano->validadoPor->name ?? '—' }} em
-                {{ $plano->dae_validado_em ? \Carbon\Carbon::parse($plano->dae_validado_em)->format('d/m/Y H:i') : '—' }}
-            </div>
-        @endif
+    </div>
+    @endif
+
+    {{-- Quem validou sai FORA do bloco de observação: aprovar sem escrever
+         observação é o caso comum, e antes isso escondia a autoria toda. --}}
+    @if($plano->dae_status !== 'pendente' && ($plano->validadoPor || $plano->dae_validado_em))
+    <div class="section">
+        <div style="font-size:9px; color:#334155">
+            {{ $plano->dae_status === 'aprovado' ? 'Aprovado por' : 'Validado por' }}
+            <strong>{{ $plano->validadoPor->name ?? '—' }}</strong>
+            @if($plano->dae_validado_em)
+                em {{ \Carbon\Carbon::parse($plano->dae_validado_em)->format('d/m/Y H:i') }}
+            @endif
+        </div>
     </div>
     @endif
 

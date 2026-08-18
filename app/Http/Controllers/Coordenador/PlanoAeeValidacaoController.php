@@ -120,6 +120,7 @@ class PlanoAeeValidacaoController extends Controller
             'escola:esc_id,esc_nome',
             'anoLetivo:anl_id,anl_ano',
             'turma:tur_id,tur_nome',
+            'validadoPor:id,name',
         ]);
 
         $entidade = DB::table('cfg_parametros_entidade')->value('par_nome_entidade');
