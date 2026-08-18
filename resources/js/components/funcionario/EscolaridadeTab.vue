@@ -75,6 +75,11 @@ const temSuperiorCompletoCreate = computed(() =>
     rows.value.some((r) => ehSuperiorCompleto(r.fes_nivel)),
 );
 
+// ATENÇÃO: um patch por evento. `rows` é prop, e prop só chega atualizada no
+// próximo render — duas chamadas no mesmo tick fazem a segunda ler a linha VELHA
+// e desfazer a primeira. Por isso os comboboxes gravam id e objeto num único
+// patchRow (via @select, que já carrega os dois), e não em @update:model-value
+// + @select separados.
 const patchRow = (i: number, patch: Partial<EscolaridadeFormData>) => {
     emit(
         'update:modelValue',
@@ -331,8 +336,7 @@ const periodo = (ini: number | null | '', fim: number | null | ''): string => {
                     :model-value="row.fes_ies_id"
                     :initial="row.instituicao ?? null"
                     :invalid="!!errText(i, 'fes_ies_id')"
-                    @update:model-value="(v) => patchRow(i, { fes_ies_id: v })"
-                    @select="(c) => patchRow(i, { instituicao: c })"
+                    @select="(c) => patchRow(i, { fes_ies_id: c?.ies_id ?? null, instituicao: c })"
                 />
                 <InputError :message="errText(i, 'fes_ies_id')" />
             </div>
@@ -345,8 +349,7 @@ const periodo = (ini: number | null | '', fim: number | null | ''): string => {
                     :initial="row.curso ?? null"
                     :invalid="!!errText(i, 'fes_cfs_id')"
                     placeholder="Buscar curso..."
-                    @update:model-value="(v) => patchRow(i, { fes_cfs_id: v })"
-                    @select="(c) => patchRow(i, { curso: c })"
+                    @select="(c) => patchRow(i, { fes_cfs_id: c?.cfs_id ?? null, curso: c })"
                 />
                 <InputError :message="errText(i, 'fes_cfs_id')" />
             </div>
