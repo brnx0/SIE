@@ -3,7 +3,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { Button } from '@/components/ui/button';
 import type { BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/vue3';
-import { ArrowLeft, Printer, AlertTriangle, XCircle, CheckCircle2, ExternalLink } from 'lucide-vue-next';
+import { ArrowLeft, Printer, AlertTriangle, XCircle, CheckCircle2, ExternalLink, ChevronDown, ChevronsUpDown } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import { useIsActiveTab } from '@/composables/useIsActiveTab';
 
@@ -76,15 +76,33 @@ const grupos = computed(() => {
     }
     return [...porReg.entries()]
         .sort(([a], [b]) => a.localeCompare(b))
-        .map(([registro, ents]) => ({
-            registro,
-            label: REGISTRO_LABEL[registro] ?? `Reg ${registro}`,
-            // Mais erros primeiro; empata por alertas; depois ordem alfabética.
-            entidades: [...ents.values()].sort((x, y) =>
-                y.erros - x.erros || y.alertas - x.alertas || x.entidade.localeCompare(y.entidade),
-            ),
-        }));
+        .map(([registro, ents]) => {
+            const lista = [...ents.values()];
+            return {
+                registro,
+                label: REGISTRO_LABEL[registro] ?? `Reg ${registro}`,
+                erros: lista.reduce((s, e) => s + e.erros, 0),
+                alertas: lista.reduce((s, e) => s + e.alertas, 0),
+                // Mais erros primeiro; empata por alertas; depois ordem alfabética.
+                entidades: lista.sort((x, y) =>
+                    y.erros - x.erros || y.alertas - x.alertas || x.entidade.localeCompare(y.entidade),
+                ),
+            };
+        });
 });
+
+// Sanfona por registro: começa tudo recolhido (o cabeçalho já mostra os totais).
+const abertos = ref(new Set<string>());
+const isAberto = (reg: string) => abertos.value.has(reg);
+const toggleGrupo = (reg: string) => {
+    const s = new Set(abertos.value);
+    if (s.has(reg)) s.delete(reg); else s.add(reg);
+    abertos.value = s;
+};
+const todosAbertos = computed(() => grupos.value.length > 0 && grupos.value.every((g) => abertos.value.has(g.registro)));
+const alternarTodos = () => {
+    abertos.value = todosAbertos.value ? new Set() : new Set(grupos.value.map((g) => g.registro));
+};
 
 const linkEdicao = (e: { tipo: Tipo; entidade_id: number }): string | null => {
     if (e.tipo === 'aluno') return `/alunos/${e.entidade_id}/edit`;
@@ -206,7 +224,7 @@ const exportarCsv = () => {
             </div>
 
             <!-- Filtro de severidade -->
-            <div class="flex gap-2 mb-4 print:hidden">
+            <div class="flex flex-wrap items-center gap-2 mb-4 print:hidden">
                 <button
                     v-for="opt in (['todos', 'erro', 'alerta'] as const)"
                     :key="opt"
@@ -215,6 +233,13 @@ const exportarCsv = () => {
                     @click="filtro = opt"
                 >
                     {{ opt === 'todos' ? 'Todos' : opt === 'erro' ? 'Erros' : 'Alertas' }}
+                </button>
+                <button
+                    v-if="grupos.length"
+                    class="ml-auto inline-flex items-center gap-1 rounded-full border bg-background px-3 py-1 text-sm transition hover:bg-muted"
+                    @click="alternarTodos"
+                >
+                    <ChevronsUpDown class="size-4" /> {{ todosAbertos ? 'Recolher todos' : 'Expandir todos' }}
                 </button>
             </div>
 
@@ -228,10 +253,35 @@ const exportarCsv = () => {
             <!-- Grupos por registro → cadastro (cada entidade mostra TODOS os campos a atualizar) -->
             <div v-else class="space-y-5">
                 <div v-for="g in grupos" :key="g.registro" class="rounded-xl border bg-card shadow-sm overflow-hidden">
-                    <div class="border-b bg-muted/40 px-4 py-2 font-semibold text-sm flex items-center justify-between">
-                        <span>{{ g.label }}</span>
-                        <span class="text-xs font-normal text-muted-foreground">{{ g.entidades.length }} cadastro(s)</span>
-                    </div>
+                    <button
+                        type="button"
+                        class="w-full bg-muted/40 px-4 py-2 font-semibold text-sm flex items-center justify-between gap-2 text-left transition hover:bg-muted/70"
+                        :class="{ 'border-b': isAberto(g.registro) }"
+                        :aria-expanded="isAberto(g.registro)"
+                        @click="toggleGrupo(g.registro)"
+                    >
+                        <span class="flex items-center gap-2 min-w-0">
+                            <ChevronDown
+                                class="size-4 shrink-0 transition-transform duration-200"
+                                :class="{ '-rotate-90': !isAberto(g.registro) }"
+                            />
+                            <span class="break-words">{{ g.label }}</span>
+                        </span>
+                        <span class="flex items-center gap-2 shrink-0 text-xs font-normal">
+                            <span v-if="g.erros" class="inline-flex items-center gap-1 rounded-full bg-rose-100 px-2 py-0.5 text-rose-700 dark:bg-rose-950 dark:text-rose-300">
+                                <XCircle class="size-3" /> {{ g.erros }}
+                            </span>
+                            <span v-if="g.alertas" class="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-amber-700 dark:bg-amber-950 dark:text-amber-300">
+                                <AlertTriangle class="size-3" /> {{ g.alertas }}
+                            </span>
+                            <span class="text-muted-foreground">{{ g.entidades.length }} cadastro(s)</span>
+                        </span>
+                    </button>
+                    <div
+                        class="grid transition-[grid-template-rows] duration-300 ease-in-out"
+                        :class="isAberto(g.registro) ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'"
+                    >
+                    <div class="overflow-hidden">
                     <div class="divide-y">
                         <div v-for="e in g.entidades" :key="`${e.tipo}-${e.entidade_id}`" class="px-4 py-3">
                             <div class="flex items-center justify-between gap-2 mb-2">
@@ -265,6 +315,8 @@ const exportarCsv = () => {
                                 </li>
                             </ul>
                         </div>
+                    </div>
+                    </div>
                     </div>
                 </div>
             </div>

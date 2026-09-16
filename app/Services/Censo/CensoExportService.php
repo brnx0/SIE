@@ -45,7 +45,7 @@ class CensoExportService
         }
         // Reg 40 — vínculo do gestor escolar.
         foreach ($this->gestores($escola) as $g) {
-            $linhas[] = $this->linha($this->reg40($g, $inep));
+            $linhas[] = $this->linha($this->reg40($g, $inep, $escola));
         }
         // Reg 50 — vínculo do docente com a turma.
         foreach ($this->docentes($escola, $ano) as $d) {
@@ -519,16 +519,14 @@ class CensoExportService
             ->where('f.fun_fl_ativo', true)
             ->where(fn ($q) => $q->where('cg.crg_nome', 'ilike', '%diretor%')->orWhere('cg.crg_nome', 'ilike', '%gestor%'))
             ->distinct()
-            ->get(['f.fun_id', 'f.fun_cd_censo', 'cg.crg_nome', 'l.lot_criterio_acesso', 'l.lot_situacao_funcional']);
+            ->get(['f.fun_id', 'f.fun_cd_censo', 'cg.crg_nome', 'l.lot_criterio_acesso', 'l.lot_vinculo']);
     }
 
     /** @return array<int,string> 7 campos. */
-    private function reg40($g, string $inep): array
+    private function reg40($g, string $inep, Escola $e): array
     {
         $c = array_fill(1, 7, '');
-        $nome = mb_strtolower($g->crg_nome ?? '');
-        // Cargo (campo 5): Diretor(a) titular = 1; demais cargos de gestão = 2.
-        $diretorTitular = str_contains($nome, 'diretor') && ! str_contains($nome, 'vice') && ! str_contains($nome, 'adjunto');
+        $diretorTitular = self::isDiretorTitular($g->crg_nome);
 
         $c[1] = '40';
         $c[2] = $inep;
@@ -536,9 +534,47 @@ class CensoExportService
         $c[4] = $this->num($g->fun_cd_censo, 12);
         $c[5] = $diretorTitular ? '1' : '2';
         $c[6] = $this->criterioAcesso($g->lot_criterio_acesso);
-        $c[7] = blank($g->lot_situacao_funcional) ? '' : (string) ((int) $g->lot_situacao_funcional);
+        // Campo 7 só é preenchido quando exigido; senão deve ir nulo.
+        $c[7] = self::exigeSituacaoFuncional($diretorTitular, $e) ? self::situacaoFuncional($g->lot_vinculo) : '';
 
         return $c;
+    }
+
+    /** Cargo (campo 5 do Reg 40): Diretor(a) titular = 1; demais cargos de gestão = 2. */
+    public static function isDiretorTitular(?string $crgNome): bool
+    {
+        $nome = mb_strtolower($crgNome ?? '');
+
+        return str_contains($nome, 'diretor') && ! str_contains($nome, 'vice') && ! str_contains($nome, 'adjunto');
+    }
+
+    /**
+     * Campo 7 do Reg 40 é obrigatório (1-4) quando Cargo = 1, escola em atividade (situação = 1)
+     * e dependência administrativa pública (1, 2 ou 3); em qualquer outro caso deve ser nulo.
+     */
+    public static function exigeSituacaoFuncional(bool $diretorTitular, Escola $e): bool
+    {
+        return $diretorTitular
+            && (int) $e->esc_situacao_func === 1
+            && in_array((int) $e->esc_dep_administrativa, [1, 2, 3], true);
+    }
+
+    /**
+     * Situação funcional/regime de contratação (campo 7) a partir do Vínculo da lotação:
+     * 1 = Concursado/efetivo/estável; 2 = Contrato temporário; 3 = Contrato terceirizado; 4 = Contrato CLT.
+     * Vazio quando o vínculo não tem correspondência (ex.: Comissionado, Função Gratificada).
+     */
+    public static function situacaoFuncional(?string $vinculo): string
+    {
+        $v = mb_strtolower((string) $vinculo);
+
+        return match (true) {
+            str_contains($v, 'concurs') || str_contains($v, 'efetiv') => '1',
+            str_contains($v, 'tempor')  => '2',
+            str_contains($v, 'tercei')  => '3',
+            str_contains($v, 'clt')     => '4',
+            default => '',
+        };
     }
 
     /** Critério de acesso (campo 6): texto → código do domínio (1-7); vazio se desconhecido. */

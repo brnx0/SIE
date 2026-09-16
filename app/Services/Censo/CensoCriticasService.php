@@ -229,7 +229,8 @@ class CensoCriticasService
                 ->where('lot_fl_ativo', true))
             ->with(['admissoes.lotacoes' => fn ($q) => $q
                 ->where('lot_esc_id', $e->esc_id)
-                ->where('lot_fl_ativo', true)])
+                ->where('lot_fl_ativo', true)
+                ->with('cargo:crg_id,crg_nome')])
             ->get();
 
         foreach ($funcionarios as $f) {
@@ -271,8 +272,15 @@ class CensoCriticasService
                     if (blank($lot->lot_criterio_acesso)) {
                         $this->add('40', $suj, $id, 'Critério de acesso (campo 6)', 'Critério de acesso ao cargo não informado.', self::ERRO, 'funcionario');
                     }
-                    if (blank($lot->lot_situacao_funcional)) {
-                        $this->add('40', $suj, $id, 'Situação funcional (campo 7)', 'Situação funcional não informada.', self::ERRO, 'funcionario');
+                    // Campo 7 vem do Vínculo da lotação; só é exigido p/ Diretor(a) titular
+                    // de escola em atividade e pública (ver CensoExportService::exigeSituacaoFuncional).
+                    $diretorTitular = CensoExportService::isDiretorTitular($lot->cargo?->crg_nome);
+                    if (CensoExportService::exigeSituacaoFuncional($diretorTitular, $e)) {
+                        if (blank($lot->lot_vinculo)) {
+                            $this->add('40', $suj, $id, 'Situação funcional (campo 7)', 'Vínculo não informado na lotação.', self::ERRO, 'funcionario');
+                        } elseif (CensoExportService::situacaoFuncional($lot->lot_vinculo) === '') {
+                            $this->add('40', $suj, $id, 'Situação funcional (campo 7)', "Vínculo \"{$lot->lot_vinculo}\" não é aceito pelo Censo (use Concursado, Contrato Temporário, Contrato Terceirizado ou Contratado CLT).", self::ERRO, 'funcionario');
+                        }
                     }
                 }
             }
