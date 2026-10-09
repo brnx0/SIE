@@ -271,6 +271,7 @@ class PlanoAulaController extends Controller
             'escola:esc_id,esc_nome',
             'anoLetivo:anl_id,anl_ano',
             'serie:ser_id,ser_nome',
+            'turma:tur_id,tur_nome',
             'disciplina:dis_id,dis_nome',
             'unidade:uni_id,uni_numero,uni_tipo',
             'validadoPor:id,name',
