@@ -12,6 +12,7 @@ const store = useTabStore();
 
 const sync = () => {
     const name = page.component;
+    if (!name) return;
     // Telas de autenticação renderizam em tela cheia (TabShell), nunca como aba.
     // Cair nelas (ex.: sessão expirada → redirect /login) descarta as abas do
     // sistema, para não voltarem "fantasmas" ao logar de novo.

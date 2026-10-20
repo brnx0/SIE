@@ -26,8 +26,9 @@ const STANDALONE_COMPONENTS = ['ajuda/Index'];
 // Telas de autenticação (Login, ForgotPassword…) também são SEMPRE tela cheia:
 // quando a sessão expira no meio de uma navegação, o redirect para /login não
 // pode virar uma aba dentro do sistema (com sidebar) ao lado das abas abertas.
-const isAuthPage = computed(() => page.component.startsWith('auth/'));
-const isStandalone = computed(() => isAuthPage.value || STANDALONE_COMPONENTS.includes(page.component));
+// page.component ainda é undefined no 1º render (o motor Inertia monta no mesmo ciclo).
+const isAuthPage = computed(() => (page.component ?? '').startsWith('auth/'));
+const isStandalone = computed(() => isAuthPage.value || STANDALONE_COMPONENTS.includes(page.component ?? ''));
 // Renderiza a página standalone DIRETO do cache — fora do sistema de abas/store.
 // Assim não depende de openTab nem sofre com o store.clear() disparado na
 // hidratação autenticada (auth null→user), que era o que zerava a aba e deixava
