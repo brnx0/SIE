@@ -69,6 +69,8 @@ export interface Aluno {
     aln_fl_usa_biblioteca: boolean;
     aln_filiacao_1: string | null;
     aln_filiacao_2: string | null;
+    /** Só na listagem: filiação com tipo MAE (calculada no backend). */
+    nome_mae?: string | null;
     aln_cep: string | null;
     aln_logradouro: string | null;
     aln_numero: string | null;

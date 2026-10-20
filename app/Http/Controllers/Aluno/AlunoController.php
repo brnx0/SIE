@@ -253,13 +253,20 @@ class AlunoController extends Controller
     {
         $search = $request->string('search')->toString();
 
+        // Mãe = filiação marcada como MAE; sem tipo informado, assume a filiação 1.
+        $nomeMae = "CASE WHEN aln_filiacao_1_tipo = 'MAE' THEN aln_filiacao_1"
+            . " WHEN aln_filiacao_2_tipo = 'MAE' THEN aln_filiacao_2"
+            . " WHEN aln_filiacao_1_tipo IS NULL THEN aln_filiacao_1 END";
+
         $query = Aluno::query()
-            ->with('municipioNascimento:mun_id,mun_nome,mun_uf')
-            ->when($search, function ($q) use ($search) {
-                $q->where(function ($q) use ($search) {
+            ->select('edu_aluno.*')
+            ->selectRaw("{$nomeMae} AS nome_mae")
+            ->when($search, function ($q) use ($search, $nomeMae) {
+                $q->where(function ($q) use ($search, $nomeMae) {
                     $q->where('aln_nome', 'ilike', "%{$search}%")
                         ->orWhere('aln_cpf', 'like', "%{$search}%")
-                        ->orWhereRaw('CAST(aln_nr_matricula AS TEXT) LIKE ?', ["%{$search}%"]);
+                        ->orWhereRaw('CAST(aln_nr_matricula AS TEXT) LIKE ?', ["%{$search}%"])
+                        ->orWhereRaw("({$nomeMae}) ILIKE ?", ["%{$search}%"]);
                 });
             })
             ->orderBy('aln_nome');
@@ -275,7 +282,7 @@ class AlunoController extends Controller
         return response()->streamDownload(function () use ($alunos) {
             $out = fopen('php://output', 'w');
             fprintf($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
-            fputcsv($out, ['Matrícula', 'Nome', 'CPF', 'Nascimento', 'Município', 'UF'], ';');
+            fputcsv($out, ['Matrícula', 'Nome', 'CPF', 'Nascimento', 'Nome da mãe'], ';');
             foreach ($alunos as $a) {
                 $cpf = $a->aln_cpf
                     ? preg_replace('/(\d{3})(\d{3})(\d{3})(\d{2})/', '$1.$2.$3-$4', $a->aln_cpf)
@@ -285,8 +292,7 @@ class AlunoController extends Controller
                     $a->aln_nome,
                     $cpf,
                     $a->aln_dt_nascimento?->format('d/m/Y') ?? '',
-                    $a->municipioNascimento?->mun_nome ?? '',
-                    $a->municipioNascimento?->mun_uf ?? '',
+                    $a->nome_mae ?? '',
                 ], ';');
             }
             fclose($out);

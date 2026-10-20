@@ -32,7 +32,7 @@
             <th>Nome</th>
             <th>CPF</th>
             <th>Nascimento</th>
-            <th>Município / UF</th>
+            <th>Nome da mãe</th>
         </tr>
     </thead>
     <tbody>
@@ -45,7 +45,7 @@
             <td><strong>{{ $a->aln_nome }}</strong></td>
             <td>{{ $cpf }}</td>
             <td>{{ $a->aln_dt_nascimento?->format('d/m/Y') ?? '—' }}</td>
-            <td>{{ $a->municipioNascimento ? $a->municipioNascimento->mun_nome . ' / ' . $a->municipioNascimento->mun_uf : '—' }}</td>
+            <td>{{ $a->nome_mae ?: '—' }}</td>
         </tr>
         @empty
         <tr><td colspan="5" style="text-align:center;padding:20px;color:#94a3b8">Nenhum registro encontrado.</td></tr>

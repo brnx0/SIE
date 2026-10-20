@@ -23,7 +23,11 @@ const isAuthenticated = computed(() => !!(page.props as { auth?: { user?: unknow
 // Páginas públicas de tela cheia (ex.: Central de Ajuda) renderizam SEM o chrome
 // de app (sidebar/abas), mesmo com usuário logado — elas têm layout próprio.
 const STANDALONE_COMPONENTS = ['ajuda/Index'];
-const isStandalone = computed(() => STANDALONE_COMPONENTS.includes(page.component));
+// Telas de autenticação (Login, ForgotPassword…) também são SEMPRE tela cheia:
+// quando a sessão expira no meio de uma navegação, o redirect para /login não
+// pode virar uma aba dentro do sistema (com sidebar) ao lado das abas abertas.
+const isAuthPage = computed(() => page.component.startsWith('auth/'));
+const isStandalone = computed(() => isAuthPage.value || STANDALONE_COMPONENTS.includes(page.component));
 // Renderiza a página standalone DIRETO do cache — fora do sistema de abas/store.
 // Assim não depende de openTab nem sofre com o store.clear() disparado na
 // hidratação autenticada (auth null→user), que era o que zerava a aba e deixava
@@ -74,7 +78,11 @@ watch(isAuthenticated, () => store.clear());
 
     <!-- Página pública standalone (Ajuda): layout próprio, sem chrome de app nem
          abas, mesmo logado. Renderizada direto do cache do Inertia. -->
-    <component :is="standalonePage" v-if="isStandalone && standalonePage" v-bind="page.props" />
+    <template v-if="isStandalone && standalonePage">
+        <component :is="standalonePage" v-bind="page.props" />
+        <!-- Login recebe flash (ex.: "Sua sessão expirou") → precisa do toaster. -->
+        <FlashToaster v-if="isAuthPage" />
+    </template>
 
     <AppShell v-else-if="isAuthenticated" variant="sidebar">
         <AppSidebar />
