@@ -494,6 +494,10 @@ Route::middleware(['auth', 'verified', 'tela'])->group(function () {
             ->parameters(['instrumentos-avaliativos' => 'instrumento'])
             ->except(['show']);
 
+        // Termos (nomenclaturas) dos resultados da avaliação diagnóstica — rede inteira.
+        Route::get('termos-diagnostico', [\App\Http\Controllers\Diario\TermoDiagnosticoController::class, 'index'])->name('termos-diagnostico.index');
+        Route::put('termos-diagnostico', [\App\Http\Controllers\Diario\TermoDiagnosticoController::class, 'update'])->name('termos-diagnostico.update');
+
         Route::get('quadro-horario', [\App\Http\Controllers\Diario\QuadroHorarioController::class, 'index'])->name('quadro-horario.index');
         Route::post('quadro-horario/{turma}/horarios', [\App\Http\Controllers\Diario\QuadroHorarioController::class, 'store'])->name('quadro-horario.store');
         Route::delete('quadro-horario/{turma}/horarios/{turmaHorario}', [\App\Http\Controllers\Diario\QuadroHorarioController::class, 'destroy'])->name('quadro-horario.destroy');

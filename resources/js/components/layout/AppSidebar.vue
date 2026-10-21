@@ -90,6 +90,7 @@ const diarioMenu = [
                 children: [
                     { title: 'Instrumentos Avaliativos', href: '/diario/instrumentos-avaliativos' },
                     { title: 'Sábados Letivos', href: '/sabados-letivos' },
+                    { title: 'Termos da avaliação diagnóstica', href: '/diario/termos-diagnostico' },
                 ],
             },
             { title: 'Planos de Aula', href: '/diario/planos' },

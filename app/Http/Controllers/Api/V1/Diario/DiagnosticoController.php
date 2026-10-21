@@ -227,8 +227,9 @@ class DiagnosticoController extends Controller
     /** Ordem das chaves = ordem de exibição esperada. */
     private function opcoes(): array
     {
-        return collect(DiarioDiagnostico::OPCOES)
-            ->map(fn ($rotulo, $valor) => ['valor' => $valor, 'rotulo' => $rotulo])
+        // Rótulo/sigla parametrizados em Diário › Cadastro › Termos da avaliação diagnóstica.
+        return collect(\App\Models\Parametro\TermoDiagnostico::termos())
+            ->map(fn ($t, $valor) => ['valor' => $valor, 'rotulo' => $t['descricao'], 'sigla' => $t['sigla']])
             ->values()
             ->all();
     }

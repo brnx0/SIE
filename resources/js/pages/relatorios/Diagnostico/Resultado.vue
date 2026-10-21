@@ -18,6 +18,7 @@ const props = defineProps<{
     filtros: { anl_ano: number; esc_nome: string; turma: string; disciplina: string; aluno: string | null };
     unidades: Unidade[];
     opcoes: Record<string, string>;
+    siglas?: Record<string, string>;
     alunos: Aluno[];
 }>();
 
@@ -27,7 +28,9 @@ const tabId = inject(TAB_ID, null);
 const tabStore = useTabStore();
 const isActiveTab = computed(() => !tabId || tabId === tabStore.activeId);
 
-const SIGLA: Record<string, string> = { autonomia: 'A', apoio: 'Ap', nao_realiza: 'NR', nao_trabalha: 'NT' };
+// Siglas parametrizadas (Termos da avaliação diagnóstica); o fixo é só fallback.
+const SIGLA_PADRAO: Record<string, string> = { autonomia: 'A', apoio: 'Ap', nao_realiza: 'NR', nao_trabalha: 'NT' };
+const SIGLA = computed<Record<string, string>>(() => ({ ...SIGLA_PADRAO, ...(props.siglas ?? {}) }));
 const COR: Record<string, string> = {
     autonomia: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300',
     apoio: 'bg-sky-100 text-sky-800 dark:bg-sky-950/50 dark:text-sky-300',
@@ -37,7 +40,7 @@ const COR: Record<string, string> = {
 
 const opcoesKeys = computed(() => Object.keys(props.opcoes));
 const temIndicadores = computed(() => props.alunos.some((a) => a.linhas.length));
-const sigla = (k: string | null) => (k ? SIGLA[k] ?? '?' : '—');
+const sigla = (k: string | null) => (k ? SIGLA.value[k] ?? '?' : '—');
 const imprimir = () => window.print();
 </script>
 
