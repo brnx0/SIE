@@ -8,6 +8,7 @@ use App\Http\Requests\Diario\StoreAvaliacaoRequest;
 use App\Models\Diario\DiarioAvaliacao;
 use App\Models\Diario\DiarioNota;
 use App\Models\Diario\InstrumentoAvaliativo;
+use App\Support\Diario\RegrasParametrizacaoAvaliacao;
 use App\Models\Diario\NotaManual;
 use App\Models\Matricula\Matricula;
 use App\Models\Parametro\Conceito;
@@ -125,10 +126,9 @@ class NotaController extends Controller
                 ];
             });
 
-        $instrumentos = InstrumentoAvaliativo::query()
-            ->where('iav_fl_ativo', true)
-            ->orderBy('iav_nome')
-            ->get(['iav_id', 'iav_nome', 'iav_fl_recuperacao']);
+        // Instrumentos da unidade: os parametrizados pela coordenação (com valor) ou,
+        // sem parametrização, todos os ativos.
+        $param = RegrasParametrizacaoAvaliacao::contexto($uniId, $request->user()->isAdmin());
 
         $conceitos = Conceito::query()
             ->orderBy('cnc_peso')
@@ -144,7 +144,8 @@ class NotaController extends Controller
             // Intervalo do período (fim já com extensão) → min/max do seletor de data.
             'periodo_inicio'  => $intervalo['inicio'],
             'periodo_fim'     => $intervalo['fim'],
-            'instrumentos'    => $instrumentos,
+            'instrumentos'    => $param['instrumentos'],
+            'parametrizacao'  => $param['parametrizacao'],
             'conceitos'       => $conceitos,
             'avaliacoes'      => $avaliacoes->map(fn ($a) => $this->mapAvaliacao($a)),
             'alunos'          => $alunos,
@@ -161,7 +162,10 @@ class NotaController extends Controller
         $this->assertDataNoPeriodo((int) $data['ava_uni_id'], $data['ava_dt'] ?? null);
 
         $recuperacao = $this->instrumentoRecuperacao((int) $data['ava_iav_id']);
-        $valor = $this->resolverValor($data['ava_tipo'], (int) $data['ava_uni_id'], $data['ava_valor'] ?? null);
+        $valorInput = RegrasParametrizacaoAvaliacao::aplicar(
+            (int) $data['ava_uni_id'], (int) $data['ava_iav_id'], $data['ava_valor'] ?? null, $request->user()->isAdmin(),
+        );
+        $valor = $this->resolverValor($data['ava_tipo'], (int) $data['ava_uni_id'], $valorInput);
         if ($valor !== null && ! $recuperacao) {
             $this->assertSomaValores($data, null, (float) $valor);
         }
@@ -193,7 +197,11 @@ class NotaController extends Controller
         $this->assertDataNoPeriodo((int) $avaliacao->ava_uni_id, $data['ava_dt'] ?? null);
 
         $recuperacao = $this->instrumentoRecuperacao((int) $data['ava_iav_id']);
-        $valor = $this->resolverValor($avaliacao->ava_tipo, (int) $avaliacao->ava_uni_id, $data['ava_valor'] ?? null);
+        $valorInput = RegrasParametrizacaoAvaliacao::aplicar(
+            (int) $avaliacao->ava_uni_id, (int) $data['ava_iav_id'], $data['ava_valor'] ?? null,
+            $request->user()->isAdmin(), $avaliacao->ava_iav_id ? (int) $avaliacao->ava_iav_id : null,
+        );
+        $valor = $this->resolverValor($avaliacao->ava_tipo, (int) $avaliacao->ava_uni_id, $valorInput);
         if ($valor !== null && ! $recuperacao) {
             $this->assertSomaValores([
                 'ava_tur_id' => $avaliacao->ava_tur_id,

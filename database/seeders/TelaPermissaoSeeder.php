@@ -70,6 +70,8 @@ class TelaPermissaoSeeder extends Seeder
         ['/sabados-letivos', 'Sábados Letivos', 'Diário', 23, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
         // Nomenclaturas da avaliação diagnóstica (rede inteira): a coordenação pedagógica edita.
         ['/diario/termos-diagnostico', 'Termos da Avaliação Diagnóstica', 'Diário', 23, [1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0]],
+        // Instrumentos e valores das avaliações por unidade (rede inteira): coordenação pedagógica e administração.
+        ['/diario/parametrizacao-avaliacoes', 'Parametrização de Avaliações', 'Diário', 23, [1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0]],
         ['/diario/planos', 'Planos de Aula', 'Diário', 24, [1, 1, 1, 0, 2, 2, 0, 0, 2, 0, 0]],
         ['/diario/planos-aee', 'Planos de Aula AEE', 'Diário', 25, [1, 2, 0, 1, 0, 2, 0, 0, 2, 0, 0]],
         ['/relatorios-diario', 'Relatórios Diário', 'Diário', 26, [1, 1, 2, 2, 2, 2, 0, 2, 2, 0, 0, 0, 0, 2]],

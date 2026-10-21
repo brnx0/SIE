@@ -61,6 +61,7 @@ const PATH_LABELS: Record<string, string> = {
     '/diario/quadro-horario': 'Quadro de Horário',
     '/diario/instrumentos-avaliativos': 'Instrumentos Avaliativos',
     '/diario/termos-diagnostico': 'Termos da Avaliação Diagnóstica',
+    '/diario/parametrizacao-avaliacoes': 'Parametrização de Avaliações',
     '/coordenador/planos': 'Validação de Planos',
     '/coordenador-interno/planos-aee': 'Validação de Planos AEE',
     '/secretaria/acessos-professores': 'Acessos de Professores',
