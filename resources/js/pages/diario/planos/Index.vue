@@ -122,7 +122,7 @@ const fmtDate = (d: string) => {
                     <thead class="bg-muted/50 text-left text-xs uppercase tracking-wide text-muted-foreground">
                         <tr>
                             <th class="px-4 py-3">Tema</th>
-                            <th class="px-4 py-3">Série / Disciplina</th>
+                            <th class="px-4 py-3">Série / Turma / Disciplina</th>
                             <th class="px-4 py-3">Unidade</th>
                             <th class="px-4 py-3">Período</th>
                             <th class="px-4 py-3 text-center">Status</th>
@@ -143,7 +143,7 @@ const fmtDate = (d: string) => {
                                 </div>
                             </td>
                             <td class="px-4 py-3 text-muted-foreground">
-                                <div>{{ p.serie?.ser_nome ?? '—' }}</div>
+                                <div>{{ p.serie?.ser_nome ?? '—' }} · {{ p.turma?.tur_nome ? `Turma ${p.turma.tur_nome}` : 'Todas as turmas' }}</div>
                                 <div class="text-xs">{{ p.disciplina?.dis_nome }}</div>
                             </td>
                             <td class="px-4 py-3 text-muted-foreground">

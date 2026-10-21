@@ -33,7 +33,7 @@ class StorePlanoAulaRequest extends FormRequest
             'dpa_esc_id'              => ['required', 'integer', 'exists:edu_escola,esc_id'],
             'dpa_anl_id'              => ['required', 'integer', 'exists:cfg_ano_letivo,anl_id'],
             'dpa_ser_id'              => ['required', 'integer', 'exists:edu_serie,ser_id'],
-            // Opcional: só aceito em série com turma multi (ver withValidator).
+            // Opcional: em branco o plano vale para todas as turmas da série.
             'dpa_tur_id'              => ['nullable', 'integer', 'exists:edu_turma,tur_id'],
             'dpa_dis_id'              => ['required', 'integer', 'exists:edu_disciplina,dis_id'],
             'dpa_uni_id'              => ['required', 'integer', 'exists:cfg_unidade,uni_id'],
@@ -94,14 +94,11 @@ class StorePlanoAulaRequest extends FormRequest
                 return;
             }
 
-            // Turma é OPCIONAL e só vale em série multi (ser_fl_multi). Quando
-            // informada, precisa ser turma regular da série/escola/ano.
+            // Turma é OPCIONAL: em branco o plano vale para todas as turmas da
+            // série; informada, precisa ser turma regular da série/escola/ano.
             $turId = (int) $this->input('dpa_tur_id');
             if ($turId) {
-                $serieMulti = (bool) \DB::table('edu_serie')->where('ser_id', $serId)->value('ser_fl_multi');
-                if (! $serieMulti) {
-                    $v->errors()->add('dpa_tur_id', 'Turma só pode ser informada em série com turma multi.');
-                } elseif (! \DB::table('edu_turma')
+                if (! \DB::table('edu_turma')
                     ->where('tur_id', $turId)
                     ->where('tur_ser_id', $serId)
                     ->where('tur_esc_id', $escId)
@@ -130,12 +127,16 @@ class StorePlanoAulaRequest extends FormRequest
                     ->where('t.tur_esc_id', $escId)
                     ->where('t.tur_anl_id', $anlId)
                     ->where('t.tur_modalidade', Turma::MODALIDADE_REGULAR)
+                    // Plano de turma específica: precisa reger aquela turma.
+                    ->when($turId, fn ($q) => $q->where('t.tur_id', $turId))
                     ->whereNull('tp.tup_deleted_at')
                     ->whereNull('t.tur_deleted_at')
                     ->exists();
 
                 if (! $regente) {
-                    $v->errors()->add('dpa_ser_id', 'Você não leciona esta disciplina em turmas desta série.');
+                    $turId
+                        ? $v->errors()->add('dpa_tur_id', 'Você não leciona esta disciplina nesta turma.')
+                        : $v->errors()->add('dpa_ser_id', 'Você não leciona esta disciplina em turmas desta série.');
                 }
             }
 
@@ -148,11 +149,15 @@ class StorePlanoAulaRequest extends FormRequest
                 ->where('dpa_dis_id', $disId)
                 ->where('dpa_dt_inicio', $dtIni)
                 ->where('dpa_dt_fim', $dtFim)
+                // Planos de turmas diferentes (ou "todas") no mesmo período convivem.
+                ->when($turId, fn ($q) => $q->where('dpa_tur_id', $turId), fn ($q) => $q->whereNull('dpa_tur_id'))
                 ->when($planoId, fn ($q) => $q->where('dpa_id', '!=', $planoId))
                 ->exists();
 
             if ($duplicado) {
-                $v->errors()->add('dpa_dt_inicio', 'Já existe plano para esta série/disciplina no mesmo período.');
+                $v->errors()->add('dpa_dt_inicio', $turId
+                    ? 'Já existe plano para esta turma/disciplina no mesmo período.'
+                    : 'Já existe plano para esta série/disciplina no mesmo período.');
             }
         });
     }

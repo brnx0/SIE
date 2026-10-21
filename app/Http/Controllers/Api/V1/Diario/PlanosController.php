@@ -236,8 +236,8 @@ class PlanosController extends Controller
 
         $serId = (int) ($data['ser_id'] ?? 0);
 
-        // Turmas da série em que o professor tem regência — só fazem sentido
-        // quando a série é multi (o front só mostra o campo nesse caso).
+        // Turmas da série em que o professor tem regência — escolha OPCIONAL
+        // da turma do plano (em branco = todas as turmas da série).
         $turmas = $anlId && $escId && $serId
             ? (clone $base())
                 ->where('t.tur_anl_id', $anlId)
@@ -366,7 +366,7 @@ class PlanosController extends Controller
             'dpa_esc_id'                   => ['required', 'integer', 'exists:edu_escola,esc_id'],
             'dpa_anl_id'                   => ['required', 'integer', 'exists:cfg_ano_letivo,anl_id'],
             'dpa_ser_id'                   => ['required', 'integer', 'exists:edu_serie,ser_id'],
-            // Opcional e só aceito em série multi (ver validarRegras).
+            // Opcional: em branco o plano vale para todas as turmas da série.
             'dpa_tur_id'                   => ['nullable', 'integer', 'exists:edu_turma,tur_id'],
             'dpa_dis_id'                   => ['required', 'integer', 'exists:edu_disciplina,dis_id'],
             'dpa_uni_id'                   => ['required', 'integer', 'exists:cfg_unidade,uni_id'],
@@ -434,19 +434,10 @@ class PlanosController extends Controller
             throw ValidationException::withMessages(['dpa_ser_id' => 'Série sem turma regular nesta escola/ano.']);
         }
 
-        // 2a) Turma é OPCIONAL e só vale em série multi (ser_fl_multi); quando
-        // informada, precisa ser uma turma regular daquela série/escola/ano.
-        if (! empty($data['dpa_tur_id'])) {
-            $serieMulti = DB::table('edu_serie')
-                ->where('ser_id', $data['dpa_ser_id'])
-                ->value('ser_fl_multi');
-
-            if (! $serieMulti) {
-                throw ValidationException::withMessages([
-                    'dpa_tur_id' => 'Turma só pode ser informada em série com turma multi.',
-                ]);
-            }
-
+        // 2a) Turma é OPCIONAL: em branco o plano vale para todas as turmas da
+        // série; informada, precisa ser uma turma regular daquela série/escola/ano.
+        $turId = (int) ($data['dpa_tur_id'] ?? 0);
+        if ($turId) {
             $turmaOk = Turma::query()
                 ->where('tur_id', $data['dpa_tur_id'])
                 ->where('tur_ser_id', $data['dpa_ser_id'])
@@ -477,12 +468,16 @@ class PlanosController extends Controller
             ->where('t.tur_esc_id', $data['dpa_esc_id'])
             ->where('t.tur_anl_id', $data['dpa_anl_id'])
             ->where('t.tur_modalidade', Turma::MODALIDADE_REGULAR)
+            // Plano de turma específica: precisa reger aquela turma.
+            ->when($turId, fn ($q) => $q->where('t.tur_id', $turId))
             ->whereNull('tp.tup_deleted_at')
             ->whereNull('t.tur_deleted_at')
             ->exists();
 
         if (! $leciona) {
-            throw ValidationException::withMessages(['dpa_ser_id' => 'Você não leciona esta disciplina em turmas desta série.']);
+            throw ValidationException::withMessages($turId
+                ? ['dpa_tur_id' => 'Você não leciona esta disciplina nesta turma.']
+                : ['dpa_ser_id' => 'Você não leciona esta disciplina em turmas desta série.']);
         }
 
         // 4) Sem outro plano SEU com a mesma série/disciplina e datas idênticas.
@@ -492,12 +487,16 @@ class PlanosController extends Controller
             ->where('dpa_dis_id', $data['dpa_dis_id'])
             ->whereDate('dpa_dt_inicio', $data['dpa_dt_inicio'])
             ->whereDate('dpa_dt_fim', $data['dpa_dt_fim'])
+            // Planos de turmas diferentes (ou "todas") no mesmo período convivem.
+            ->when($turId, fn ($q) => $q->where('dpa_tur_id', $turId), fn ($q) => $q->whereNull('dpa_tur_id'))
             ->when($exceto, fn ($q) => $q->where('dpa_id', '!=', $exceto))
             ->exists();
 
         if ($duplicado) {
             throw ValidationException::withMessages([
-                'dpa_dt_inicio' => 'Já existe plano para esta série/disciplina no mesmo período.',
+                'dpa_dt_inicio' => $turId
+                    ? 'Já existe plano para esta turma/disciplina no mesmo período.'
+                    : 'Já existe plano para esta série/disciplina no mesmo período.',
             ]);
         }
     }

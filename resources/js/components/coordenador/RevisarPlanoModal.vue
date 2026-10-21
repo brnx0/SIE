@@ -145,8 +145,8 @@ const imprimir = () => {
                                 <div>{{ plano.escola?.esc_nome ?? '—' }}</div>
                             </div>
                             <div>
-                                <div class="text-xs text-muted-foreground">Turma</div>
-                                <div>{{ plano.turma?.serie?.ser_nome ?? '' }} / {{ plano.turma?.tur_nome ?? '—' }}</div>
+                                <div class="text-xs text-muted-foreground">Série / Turma</div>
+                                <div>{{ plano.serie?.ser_nome ?? '—' }} / {{ plano.turma?.tur_nome ?? 'Todas as turmas' }}</div>
                             </div>
                             <div>
                                 <div class="text-xs text-muted-foreground">Componente</div>

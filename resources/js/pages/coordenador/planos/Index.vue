@@ -20,8 +20,8 @@ interface PlanoListaItem {
     dpa_dt_inicio: string;
     dpa_dt_fim: string;
     dpa_status: PlanoStatus;
-    // Plano de aula é por SÉRIE (dpa_ser_id); a turma é opcional e só existe
-    // quando a série é turma multi (ser_fl_multi).
+    // Plano de aula é por SÉRIE (dpa_ser_id); a turma é opcional — sem ela o
+    // plano vale para todas as turmas da série.
     serie?: { ser_id: number; ser_nome: string; segmento?: { seg_nome_reduzido: string } };
     turma?: { tur_id: number; tur_nome: string } | null;
     disciplina?: { dis_id: number; dis_nome: string };
