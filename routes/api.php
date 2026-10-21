@@ -73,6 +73,9 @@ Route::prefix('v1')->group(function () {
             Route::prefix('diario/parecer')->group(function () {
                 Route::get('contexto', [ParecerController::class, 'contexto']);
                 Route::post('salvar', [ParecerController::class, 'salvar']);
+                // Parecer inicial: sem unidade letiva, antes dos pareceres das unidades.
+                Route::get('inicial/contexto', [ParecerController::class, 'contextoInicial']);
+                Route::post('inicial/salvar', [ParecerController::class, 'salvarInicial']);
             });
 
             // Diagnóstico — grade aluno × indicador. Marcar "autonomia"

@@ -29,6 +29,16 @@ Menu **Diário Online → Diário de Classe** (endereço `/diario`).
 - **Ano Letivo, Escola, Turma, Disciplina, Unidade** — filtros de contexto obrigatórios.
 - **Quadro de horário** — a frequência é organizada pelos tempos de aula da turma; você lança apenas os tempos em que está lotado.
 
+## Parecer inicial
+
+Em **Lançamentos → Parecer Inicial** você registra, para cada aluno, como ele chegou no início do ano — **antes** dos pareceres descritivos das unidades.
+
+- **Não tem unidade letiva**: basta Turma e Disciplina. O período selecionado não interfere.
+- Segue a mesma regra da série que a avaliação descritiva: **por aluno** (um parecer geral, vale para todas as disciplinas) ou **por disciplina**.
+- O texto é salvo automaticamente e pode ser editado enquanto a **turma estiver aberta**.
+- Aluno que saiu da turma continua na lista apenas para consulta.
+- No relatório **Parecer Descritivo** (sem filtro de período), o parecer inicial aparece no topo, antes das unidades.
+
 ## Avisos comuns
 
 - **"Você não leciona esta disciplina nesta turma."** — a disciplina precisa estar vinculada a você na turma (lotação). Fale com a secretaria.

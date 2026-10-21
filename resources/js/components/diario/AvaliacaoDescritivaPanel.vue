@@ -4,12 +4,15 @@ import { CheckCircle2, ChevronDown, Circle, Loader2, RefreshCw, Search, Triangle
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { usePermissao } from '@/composables/usePermissao';
 
+// `inicial`: modo Parecer Inicial — mesmo fluxo, mas SEM unidade letiva (tabela
+// própria, editável enquanto a turma estiver aberta). Ver AvaliacaoDescritivaController.
 const props = defineProps<{
     anlId: number;
     escId: number;
     turId: number;
     disId: number;
-    uniId: number;
+    uniId?: number | null;
+    inicial?: boolean;
 }>();
 
 type Status = 'idle' | 'dirty' | 'saving' | 'saved' | 'error';
@@ -51,10 +54,13 @@ const carregar = async () => {
     erroCarregar.value = null;
     abertoId.value = null;
     try {
-        const url = new URL('/api/diario/avaliacao-descritiva/alunos', window.location.origin);
+        const url = new URL(
+            props.inicial ? '/api/diario/parecer-inicial/alunos' : '/api/diario/avaliacao-descritiva/alunos',
+            window.location.origin,
+        );
         url.searchParams.set('tur_id', String(props.turId));
         url.searchParams.set('dis_id', String(props.disId));
-        url.searchParams.set('uni_id', String(props.uniId));
+        if (!props.inicial) url.searchParams.set('uni_id', String(props.uniId));
         const r = await fetch(url, { headers: { Accept: 'application/json' } });
         if (!r.ok) {
             let msg = 'Não foi possível carregar os alunos desta turma.';
@@ -89,7 +95,7 @@ const carregar = async () => {
 };
 
 onMounted(carregar);
-watch(() => [props.turId, props.disId, props.uniId], carregar);
+watch(() => [props.turId, props.disId, props.inicial ? null : props.uniId], carregar);
 
 const salvar = async (row: AlunoRow) => {
     if (row._timer) {
@@ -102,19 +108,29 @@ const salvar = async (row: AlunoRow) => {
     if (row.descricao === row._original) return; // nada mudou
     row._status = 'saving';
     try {
-        const r = await fetch('/api/diario/avaliacao-descritiva', {
+        const body = props.inicial
+            ? {
+                  dpr_esc_id: props.escId,
+                  dpr_anl_id: props.anlId,
+                  dpr_tur_id: props.turId,
+                  dpr_dis_id: props.disId,
+                  dpr_aln_id: row.aln_id,
+                  dpr_descricao: row.descricao,
+              }
+            : {
+                  dad_esc_id: props.escId,
+                  dad_anl_id: props.anlId,
+                  dad_tur_id: props.turId,
+                  dad_dis_id: props.disId,
+                  dad_uni_id: props.uniId,
+                  dad_aln_id: row.aln_id,
+                  dad_descricao: row.descricao,
+              };
+        const r = await fetch(props.inicial ? '/api/diario/parecer-inicial' : '/api/diario/avaliacao-descritiva', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', Accept: 'application/json', ...csrf() },
             credentials: 'same-origin',
-            body: JSON.stringify({
-                dad_esc_id: props.escId,
-                dad_anl_id: props.anlId,
-                dad_tur_id: props.turId,
-                dad_dis_id: props.disId,
-                dad_uni_id: props.uniId,
-                dad_aln_id: row.aln_id,
-                dad_descricao: row.descricao,
-            }),
+            body: JSON.stringify(body),
         });
         if (!r.ok) {
             row._status = 'error';
@@ -172,6 +188,18 @@ const filtrados = computed(() => {
     );
 });
 
+const titulo = computed(() => (props.inicial ? 'Parecer Inicial' : 'Avaliação Descritiva'));
+const placeholder = (row: AlunoRow) => {
+    if (row.bloqueado) {
+        return props.inicial
+            ? 'Aluno saiu da turma — parecer inicial apenas para consulta.'
+            : 'Aluno saiu antes deste período — lançamento bloqueado.';
+    }
+    return props.inicial
+        ? 'Registre a situação do aluno no início do ano, antes dos pareceres das unidades...'
+        : 'Descreva o desenvolvimento do aluno neste período...';
+};
+
 const total = computed(() => alunos.value.length);
 const avaliados = computed(() => alunos.value.filter((a) => a.descricao.trim().length > 0).length);
 </script>
@@ -184,7 +212,7 @@ const avaliados = computed(() => alunos.value.filter((a) => a.descricao.trim().l
         >
             <div>
                 <div class="flex items-center gap-2">
-                    <h2 class="text-sm font-semibold text-slate-900 dark:text-slate-50">Avaliação Descritiva</h2>
+                    <h2 class="text-sm font-semibold text-slate-900 dark:text-slate-50">{{ titulo }}</h2>
                     <span
                         class="rounded-full bg-indigo-50 px-2 py-0.5 text-[11px] font-medium text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300"
                     >
@@ -196,7 +224,10 @@ const avaliados = computed(() => alunos.value.filter((a) => a.descricao.trim().l
                     <span class="font-medium text-foreground">{{ avaliados }}</span> de {{ total }} avaliados
                     <span class="text-muted-foreground/60">· salvamento automático</span>
                 </p>
-                <p v-if="modo === 'por_aluno'" class="mt-0.5 text-[11px] text-muted-foreground">
+                <p v-if="inicial" class="mt-0.5 text-[11px] text-muted-foreground">
+                    Etapa anterior aos pareceres das unidades — sem vínculo com período letivo{{ modo === 'por_aluno' ? '; vale para todas as disciplinas' : '' }}.
+                </p>
+                <p v-else-if="modo === 'por_aluno'" class="mt-0.5 text-[11px] text-muted-foreground">
                     Parecer geral do aluno no período — vale para todas as disciplinas.
                 </p>
             </div>
@@ -224,7 +255,8 @@ const avaliados = computed(() => alunos.value.filter((a) => a.descricao.trim().l
                 class="mb-4 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200"
             >
                 <TriangleAlert class="mt-0.5 size-4 shrink-0" />
-                <span>
+                <span v-if="inicial">A turma não está aberta — parecer inicial apenas para consulta.</span>
+                <span v-else>
                     Este período está fechado para lançamento (fora da janela, incluindo a extensão) — apenas consulta.
                     Se houver outro período em andamento, selecione-o acima para fazer os lançamentos nele.
                 </span>
@@ -302,7 +334,7 @@ const avaliados = computed(() => alunos.value.filter((a) => a.descricao.trim().l
                             rows="5"
                             maxlength="20000"
                             :disabled="!podeLancar || row.bloqueado"
-                            :placeholder="row.bloqueado ? 'Aluno saiu antes deste período — lançamento bloqueado.' : 'Descreva o desenvolvimento do aluno neste período...'"
+                            :placeholder="placeholder(row)"
                             class="w-full resize-none overflow-y-auto rounded-md border bg-background p-2.5 text-sm leading-relaxed outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 disabled:cursor-not-allowed disabled:opacity-60 dark:focus:ring-indigo-950"
                             @input="() => aoDigitar(row)"
                             @blur="salvar(row)"

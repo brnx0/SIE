@@ -266,7 +266,24 @@ class ParecerDescritivoController extends Controller
                 ->groupBy('dad_aln_id');
         }
 
-        $linhas = $alunos->map(function (Matricula $m) use ($tipo, $grouped, $uniMap) {
+        // Parecer inicial (sem unidade): entra antes das unidades, só quando o
+        // relatório não está filtrado por um período específico.
+        $iniciais = collect();
+        if (! $uniId) {
+            $iniciais = DB::table('edu_diario_parecer_inicial as p')
+                ->leftJoin('edu_disciplina as dis', 'dis.dis_id', '=', 'p.dpr_dis_id')
+                ->where('p.dpr_tur_id', $turma->tur_id)
+                ->whereNull('p.dpr_deleted_at')
+                ->when($tipo === 'por_aluno',
+                    fn ($q) => $q->whereNull('p.dpr_dis_id'),
+                    fn ($q) => $q->whereNotNull('p.dpr_dis_id')->when($disId, fn ($q2) => $q2->where('p.dpr_dis_id', $disId)),
+                )
+                ->orderBy('dis.dis_nome')
+                ->get(['p.dpr_aln_id', 'dis.dis_nome', 'p.dpr_descricao'])
+                ->groupBy('dpr_aln_id');
+        }
+
+        $linhas = $alunos->map(function (Matricula $m) use ($tipo, $grouped, $uniMap, $iniciais) {
             $aln = $m->aluno;
             $pareceres = [];
 
@@ -282,6 +299,21 @@ class ParecerDescritivoController extends Controller
             }
 
             usort($pareceres, fn ($a, $b) => [$a['periodo'], (string) $a['disciplina']] <=> [$b['periodo'], (string) $b['disciplina']]);
+
+            // Etapa anterior às unidades: vai no topo.
+            $inicial = [];
+            foreach ($iniciais[$aln->aln_id] ?? [] as $r) {
+                if (trim((string) $r->dpr_descricao) === '') {
+                    continue;
+                }
+                $inicial[] = [
+                    'periodo'    => 'Parecer inicial',
+                    'disciplina' => $tipo === 'por_aluno' ? null : ($r->dis_nome ?? null),
+                    'descricao'  => $r->dpr_descricao,
+                    'inicial'    => true,
+                ];
+            }
+            $pareceres = array_merge($inicial, $pareceres);
 
             return [
                 'aln_id'           => $aln->aln_id,

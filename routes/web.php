@@ -517,6 +517,10 @@ Route::middleware(['auth', 'verified', 'tela'])->group(function () {
         Route::get('avaliacao-descritiva/alunos', [\App\Http\Controllers\Diario\AvaliacaoDescritivaController::class, 'alunos'])->name('avaliacao-descritiva.alunos');
         Route::post('avaliacao-descritiva', [\App\Http\Controllers\Diario\AvaliacaoDescritivaController::class, 'salvar'])->name('avaliacao-descritiva.salvar');
 
+        // Parecer inicial (sem unidade letiva) — antes dos pareceres descritivos.
+        Route::get('parecer-inicial/alunos', [\App\Http\Controllers\Diario\AvaliacaoDescritivaController::class, 'alunosInicial'])->name('parecer-inicial.alunos');
+        Route::post('parecer-inicial', [\App\Http\Controllers\Diario\AvaliacaoDescritivaController::class, 'salvarInicial'])->name('parecer-inicial.salvar');
+
         Route::get('quadro-horario/escolas', [\App\Http\Controllers\Diario\QuadroHorarioController::class, 'lookupEscolas'])->name('quadro-horario.escolas');
         Route::get('quadro-horario/turmas', [\App\Http\Controllers\Diario\QuadroHorarioController::class, 'lookupTurmas'])->name('quadro-horario.turmas');
         Route::get('quadro-horario/grade', [\App\Http\Controllers\Diario\QuadroHorarioController::class, 'grade'])->name('quadro-horario.grade');

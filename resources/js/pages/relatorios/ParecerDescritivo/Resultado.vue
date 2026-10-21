@@ -11,6 +11,8 @@ interface Parecer {
     periodo: string;
     disciplina: string | null;
     descricao: string;
+    /** Parecer inicial (sem unidade) — vem antes dos pareceres das unidades. */
+    inicial?: boolean;
 }
 interface Linha {
     aln_id: number;
@@ -187,7 +189,10 @@ const exportarExcel = () => {
 
                     <div v-if="l.pareceres.length" class="flex flex-col gap-3">
                         <div v-for="(p, j) in l.pareceres" :key="j">
-                            <div class="mb-0.5 text-xs font-semibold uppercase tracking-wide text-indigo-700 dark:text-indigo-300">
+                            <div
+                                class="mb-0.5 text-xs font-semibold uppercase tracking-wide"
+                                :class="p.inicial ? 'text-fuchsia-700 dark:text-fuchsia-300' : 'text-indigo-700 dark:text-indigo-300'"
+                            >
                                 {{ p.periodo }}<template v-if="p.disciplina"> · {{ p.disciplina }}</template>
                             </div>
                             <p class="whitespace-pre-wrap text-sm leading-relaxed text-slate-700 dark:text-slate-300">{{ p.descricao }}</p>

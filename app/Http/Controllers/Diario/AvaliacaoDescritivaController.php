@@ -4,8 +4,11 @@ namespace App\Http\Controllers\Diario;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Diario\SalvarAvaliacaoDescritivaRequest;
+use App\Http\Requests\Diario\SalvarParecerInicialRequest;
 use App\Models\Diario\DiarioAvaliacaoDescritiva;
+use App\Models\Diario\DiarioParecerInicial;
 use App\Models\Matricula\Matricula;
+use App\Support\Diario\DiarioEscritaGuard;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -68,19 +71,7 @@ class AvaliacaoDescritivaController extends Controller
         $uniInicio = $uniInicio ? Carbon::parse($uniInicio)->toDateString() : null;
 
         // Ativos + alunos que saíram (tma_tas_cod_saida).
-        $alunos = Matricula::query()
-            ->where('tma_tur_id', $turId)
-            ->where(function ($q) {
-                $q->where('tma_situacao', Matricula::SITUACAO_ATIVA)
-                  ->orWhere(fn ($s) => $s->whereNotNull('tma_tas_cod_saida')->where('tma_tas_cod_saida', '!=', Matricula::TAS_REMANEJADO));
-            })
-            ->whereNull('tma_deleted_at')
-            ->with('aluno:aln_id,aln_nome,aln_nr_matricula')
-            ->get()
-            ->filter(fn ($m) => $m->aluno)
-            ->unique(fn ($m) => $m->aluno->aln_id)
-            ->sortBy(fn ($m) => $m->aluno->aln_nome, SORT_FLAG_CASE | SORT_NATURAL)
-            ->values()
+        $alunos = $this->rosterTurma($turId)
             ->map(function ($m) use ($existentes, $uniInicio) {
                 $saida = $m->tma_dt_saida?->toDateString();
 
@@ -158,7 +149,135 @@ class AvaliacaoDescritivaController extends Controller
         ]);
     }
 
+    // ============ Parecer inicial ============
+
+    /**
+     * Roster + parecer inicial de cada aluno. Independe de unidade letiva: o
+     * contexto é só turma (+ disciplina, conforme a granularidade da série).
+     * Editável enquanto a turma estiver ABERTA.
+     */
+    public function alunosInicial(Request $request): JsonResponse
+    {
+        $this->abortIfNaoPodeVerDiario();
+
+        $turId = (int) $request->input('tur_id');
+        $disId = (int) $request->input('dis_id');
+
+        if (! $turId || ! $disId) {
+            return response()->json(['modo' => 'por_disciplina', 'periodo_aberto' => false, 'alunos' => []]);
+        }
+
+        if (! $this->soConsultaDiario()) {
+            $this->abortIfNotLeciona($request, $turId, $disId);
+        }
+
+        $tipo = $this->tipoDescritivaSerie($turId);
+        if (! $tipo) {
+            return response()->json([
+                'tipo_configurado' => false,
+                'modo'             => null,
+                'periodo_aberto'   => false,
+                'alunos'           => [],
+            ]);
+        }
+
+        $modo = $tipo === 'por_aluno' ? 'por_aluno' : 'por_disciplina';
+
+        $existentesQuery = DiarioParecerInicial::query()->where('dpr_tur_id', $turId);
+        $modo === 'por_aluno'
+            ? $existentesQuery->whereNull('dpr_dis_id')
+            : $existentesQuery->where('dpr_dis_id', $disId);
+        $existentes = $existentesQuery->pluck('dpr_descricao', 'dpr_aln_id');
+
+        $alunos = $this->rosterTurma($turId)->map(function ($m) use ($existentes) {
+            $saida = $m->tma_dt_saida?->toDateString();
+
+            return [
+                'aln_id'           => $m->aluno->aln_id,
+                'aln_nome'         => $m->aluno->aln_nome,
+                'aln_nr_matricula' => $m->aluno->aln_nr_matricula,
+                'descricao'        => (string) ($existentes[$m->aluno->aln_id] ?? ''),
+                'dt_saida'         => $saida,
+                // Saiu da turma: fica na lista só para consulta.
+                'bloqueado_saida'  => $saida !== null,
+            ];
+        });
+
+        return response()->json([
+            'tipo_configurado' => true,
+            'modo'             => $modo,
+            // Sem unidade não há janela de período: a trava é a turma aberta.
+            'periodo_aberto'   => DiarioEscritaGuard::turmaAberta($turId),
+            'alunos'           => $alunos,
+        ]);
+    }
+
+    /** Upsert do parecer inicial de um aluno (autosave). Chave: turma + disciplina|null + aluno. */
+    public function salvarInicial(SalvarParecerInicialRequest $request): JsonResponse
+    {
+        $data = $request->validated();
+        $turId = (int) $data['dpr_tur_id'];
+        $alnId = (int) $data['dpr_aln_id'];
+
+        $this->abortIfNotLeciona($request, $turId, (int) $data['dpr_dis_id']);
+
+        $tipo = $this->tipoDescritivaSerie($turId);
+        abort_unless(
+            $tipo,
+            422,
+            'Tipo de avaliação descritiva não configurado na série desta turma. Defina em Cadastro de Série.'
+        );
+
+        DiarioEscritaGuard::assertTurmaAberta($turId);
+
+        abort_if(
+            $this->dataSaidaAluno($turId, $alnId) !== null,
+            422,
+            'Aluno saiu da turma. O parecer inicial fica disponível apenas para consulta.'
+        );
+
+        $disId = $tipo === 'por_aluno' ? null : (int) $data['dpr_dis_id'];
+
+        $registro = DiarioParecerInicial::updateOrCreate(
+            [
+                'dpr_tur_id' => $turId,
+                'dpr_dis_id' => $disId,
+                'dpr_aln_id' => $alnId,
+            ],
+            [
+                'dpr_user_id'   => (int) $request->user()->id,
+                'dpr_esc_id'    => $data['dpr_esc_id'],
+                'dpr_anl_id'    => $data['dpr_anl_id'],
+                'dpr_descricao' => $data['dpr_descricao'] ?? null,
+            ],
+        );
+
+        return response()->json([
+            'ok'         => true,
+            'dpr_id'     => $registro->dpr_id,
+            'updated_at' => $registro->dpr_updated_at,
+        ]);
+    }
+
     // ============ Helpers ============
+
+    /** Ativos + alunos que saíram (exceto remanejados), 1 por aluno, em ordem alfabética. */
+    private function rosterTurma(int $turId)
+    {
+        return Matricula::query()
+            ->where('tma_tur_id', $turId)
+            ->where(function ($q) {
+                $q->where('tma_situacao', Matricula::SITUACAO_ATIVA)
+                  ->orWhere(fn ($s) => $s->whereNotNull('tma_tas_cod_saida')->where('tma_tas_cod_saida', '!=', Matricula::TAS_REMANEJADO));
+            })
+            ->whereNull('tma_deleted_at')
+            ->with('aluno:aln_id,aln_nome,aln_nr_matricula')
+            ->get()
+            ->filter(fn ($m) => $m->aluno)
+            ->unique(fn ($m) => $m->aluno->aln_id)
+            ->sortBy(fn ($m) => $m->aluno->aln_nome, SORT_FLAG_CASE | SORT_NATURAL)
+            ->values();
+    }
 
     private function abortIfNotProfessor(): void
     {
