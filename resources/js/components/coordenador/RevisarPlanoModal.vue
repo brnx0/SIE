@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import InputError from '@/components/common/InputError.vue';
 import PdfPreviewModal from '@/components/common/PdfPreviewModal.vue';
+import PlanoAnexos, { type PlanoAnexo } from '@/components/diario/PlanoAnexos.vue';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import type { PlanoStatus } from '@/types/diario';
@@ -16,6 +17,8 @@ const erro = ref<string | null>(null);
 
 const plano = ref<any>(null);
 const indicadores = ref<{ ind_id: number; ind_descricao: string }[]>([]);
+// Material de apoio do professor — só consulta (não entra no PDF).
+const anexos = ref<PlanoAnexo[]>([]);
 
 const statusOriginal = ref<PlanoStatus>('pendente');
 const statusNovo = ref<PlanoStatus | ''>('');
@@ -35,6 +38,7 @@ const carregar = async () => {
         const json = await r.json();
         plano.value = json.plano;
         indicadores.value = json.indicadores ?? [];
+        anexos.value = json.anexos ?? [];
         statusOriginal.value = json.plano.dpa_status;
         statusNovo.value = json.plano.dpa_status;
         obs.value = json.plano.dpa_obs_coordenador ?? '';
@@ -203,6 +207,14 @@ const imprimir = () => {
                             <h3 class="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Objetivos Complementares / Recomposição / Descritor</h3>
                             <p class="whitespace-pre-wrap text-sm">{{ plano.dpa_objetivos_complementares || '—' }}</p>
                         </div>
+                    </section>
+
+                    <!-- Anexos do professor (consulta) -->
+                    <section class="rounded-lg border bg-background p-4">
+                        <h3 class="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                            Anexos (material de apoio){{ anexos.length ? ` · ${anexos.length}` : '' }}
+                        </h3>
+                        <PlanoAnexos :anexos="anexos" />
                     </section>
 
                     <!-- Bloco Revisão -->

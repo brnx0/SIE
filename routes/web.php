@@ -479,6 +479,10 @@ Route::middleware(['auth', 'verified', 'tela'])->group(function () {
         Route::put('planos/{plano}', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'update'])->name('planos.update');
         Route::delete('planos/{plano}', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'destroy'])->name('planos.destroy');
         Route::get('planos/{plano}/pdf', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'pdf'])->name('planos.pdf');
+        // Anexos (material de apoio) do plano — disco privado, fora do PDF.
+        Route::post('planos/{plano}/anexos', [\App\Http\Controllers\Diario\PlanoAulaAnexoController::class, 'store'])->name('planos.anexos.store');
+        Route::get('planos/{plano}/anexos/{anexo}', [\App\Http\Controllers\Diario\PlanoAulaAnexoController::class, 'show'])->name('planos.anexos.show');
+        Route::delete('planos/{plano}/anexos/{anexo}', [\App\Http\Controllers\Diario\PlanoAulaAnexoController::class, 'destroy'])->name('planos.anexos.destroy');
 
         Route::get('planos-aee/export', [\App\Http\Controllers\Diario\PlanoAeeController::class, 'export'])->name('planos-aee.export');
         Route::get('planos-aee', [\App\Http\Controllers\Diario\PlanoAeeController::class, 'index'])->name('planos-aee.index');
@@ -602,6 +606,7 @@ Route::middleware(['auth', 'verified', 'tela'])->group(function () {
         Route::get('planos', [\App\Http\Controllers\Coordenador\PlanoValidacaoController::class, 'index'])->name('planos.index');
         Route::put('planos/{plano}/status', [\App\Http\Controllers\Coordenador\PlanoValidacaoController::class, 'update'])->name('planos.status');
         Route::get('planos/{plano}/pdf', [\App\Http\Controllers\Coordenador\PlanoValidacaoController::class, 'pdf'])->name('planos.pdf');
+        Route::get('planos/{plano}/anexos/{anexo}', [\App\Http\Controllers\Coordenador\PlanoValidacaoController::class, 'anexo'])->name('planos.anexo');
     });
     Route::prefix('api/coordenador')->name('api.coordenador.')->middleware('role:coordenador')->group(function () {
         Route::get('planos/{plano}',          [\App\Http\Controllers\Coordenador\PlanoValidacaoController::class, 'show'])->name('planos.show');

@@ -3,6 +3,7 @@ import InputError from '@/components/common/InputError.vue';
 import LocalCombobox from '@/components/common/LocalCombobox.vue';
 import { usePermissao } from '@/composables/usePermissao';
 import PdfPreviewModal from '@/components/common/PdfPreviewModal.vue';
+import PlanoAnexos, { type PlanoAnexo } from '@/components/diario/PlanoAnexos.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -27,7 +28,11 @@ const props = withDefaults(defineProps<{
     anosLetivos: AnoLetivoResumo[];
     indicadoresSelecionados: number[];
     podeEditar?: boolean;
-}>(), { podeEditar: true });
+    anexos?: PlanoAnexo[];
+}>(), { podeEditar: true, anexos: () => [] });
+
+// Sub-lista via computed das props (atualiza após upload/remoção com preserveState).
+const anexos = computed(() => props.anexos ?? []);
 
 const { isReadOnly } = usePermissao();
 
@@ -499,6 +504,20 @@ const breadcrumbs: BreadcrumbItem[] = [
                     </div>
 
                 </div>
+            </section>
+
+            <!-- Anexos (material de apoio) — só depois de salvo; fora da impressão -->
+            <section class="rounded-xl border bg-card p-4 shadow-sm">
+                <h2 class="mb-3 text-sm font-semibold text-muted-foreground">Anexos (material de apoio)</h2>
+                <PlanoAnexos
+                    v-if="isEdit"
+                    :anexos="anexos"
+                    :upload-url="`/diario/planos/${plano!.dpa_id}/anexos`"
+                    :pode-alterar="!readonly"
+                />
+                <p v-else class="rounded-lg border border-dashed px-4 py-6 text-sm text-muted-foreground">
+                    Salve o plano para anexar imagens e arquivos de apoio.
+                </p>
             </section>
 
             <!-- Coordenação (só se status != pendente) -->

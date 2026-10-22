@@ -221,6 +221,10 @@ class PlanoAulaController extends Controller
             'indicadoresSelecionados' => $plano->indicadores->pluck('dpi_ind_id')->all(),
             'podeEditar'  => $request->user()->isAdmin()
                 || (int) $plano->dpa_user_id === (int) $request->user()->id,
+            // Material de apoio: consulta para quem abre o plano; enviar/remover
+            // segue a edição (autor/admin) e trava no plano aprovado.
+            'anexos'      => $plano->anexos()->with('usuario:id,name')->orderBy('dax_created_at')->get()
+                ->map(fn ($a) => $a->resumo("/diario/planos/{$plano->dpa_id}/anexos"))->values(),
         ]);
     }
 
@@ -261,8 +265,16 @@ class PlanoAulaController extends Controller
             return back()->with('error', 'Plano só pode ser excluído enquanto estiver pendente.');
         }
 
-        return $this->safeDelete($plano)
-            ?? to_route('diario.planos.index')->with('success', 'Plano removido.');
+        // Os anexos saem pelo cascade do banco (sem evento do model): guarda os
+        // caminhos para apagar os arquivos só se a exclusão do plano der certo.
+        $arquivos = $plano->anexos()->pluck('dax_caminho')->all();
+
+        if ($erro = $this->safeDelete($plano)) {
+            return $erro;
+        }
+        \Illuminate\Support\Facades\Storage::disk(\App\Models\Diario\DiarioPlanoAnexo::DISCO)->delete($arquivos);
+
+        return to_route('diario.planos.index')->with('success', 'Plano removido.');
     }
 
     public function pdf(DiarioPlanoAula $plano, Request $request): HttpResponse|RedirectResponse
