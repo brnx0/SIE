@@ -86,7 +86,7 @@ class DistorcaoIdadeController extends Controller
         ['linhas' => $linhas] = $this->montar($request);
 
         $headers = [
-            'Escola', 'Cód. Escola', 'Turma', 'Ano Escolar / Série', 'Segmento',
+            'Escola', 'Cód. Escola', 'Turma', 'Ano Escolar / Série', 'Etapa',
             'Matrícula', 'Nome do Aluno', 'Data de Nascimento', 'Idade Atual',
             'Idade Esperada', 'Distorção (anos)',
         ];

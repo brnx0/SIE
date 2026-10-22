@@ -43,7 +43,7 @@ const cadastros = [
             {
                 title: 'Rede de Ensino',
                 children: [
-                    { title: 'Segmentos', href: '/segmentos' },
+                    { title: 'Etapas de Ensino', href: '/segmentos' },
                     { title: 'Séries', href: '/series' },
                     { title: 'Disciplinas', href: '/disciplinas' },
                     { title: 'Grade Disciplinar', href: '/grade-disciplinar' },

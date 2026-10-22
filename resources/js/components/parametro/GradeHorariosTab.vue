@@ -119,7 +119,7 @@ const submit = () => {
 };
 
 const remove = (grh: GradeHorario) => {
-    if (!confirm(`Remover horário ${grh.grh_hora} do segmento?`)) return;
+    if (!confirm(`Remover horário ${grh.grh_hora} da etapa de ensino?`)) return;
     router.delete(`/parametros/grade-horarios/${grh.grh_id}`, { preserveScroll: true, preserveState: true });
 };
 
@@ -169,7 +169,7 @@ const fmtHora = (h: string) => h.substring(0, 5);
     <div class="grid gap-6">
         <!-- Header -->
         <div class="flex items-center justify-between">
-            <h3 class="text-sm font-semibold">Grade de Horários por Segmento</h3>
+            <h3 class="text-sm font-semibold">Grade de Horários por Etapa de Ensino</h3>
             <div class="flex items-center gap-2">
                 <RefreshButton />
                 <Button v-if="!showForm" type="button" size="sm" class="bg-indigo-600 hover:bg-indigo-700" @click="openForm()">
@@ -189,7 +189,7 @@ const fmtHora = (h: string) => h.substring(0, 5);
 
             <div class="grid gap-4 sm:grid-cols-4">
                 <div class="grid gap-1.5">
-                    <FormLabel :required="true">Segmento</FormLabel>
+                    <FormLabel :required="true">Etapa de Ensino</FormLabel>
                     <select v-model="form.grh_seg_id" :class="selectClass(!!errors.grh_seg_id)" @change="recalcOrdem">
                         <option :value="null">Selecione...</option>
                         <option v-for="seg in segmentos" :key="seg.seg_id" :value="seg.seg_id">
@@ -266,7 +266,7 @@ const fmtHora = (h: string) => h.substring(0, 5);
 
             <div v-show="!collapsed[segmento.seg_id]">
             <div v-if="horarios.length === 0" class="px-4 py-6 text-center text-xs text-muted-foreground">
-                Nenhum horário cadastrado para este segmento.
+                Nenhum horário cadastrado para esta etapa de ensino.
             </div>
 
             <table v-else class="w-full text-sm">

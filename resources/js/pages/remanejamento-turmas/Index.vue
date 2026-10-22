@@ -178,7 +178,7 @@ const trocar = () => {
                 <ArrowRightLeft class="size-5 text-indigo-600" /> Troca entre Turmas
             </h1>
             <p class="mb-6 text-sm text-muted-foreground">
-                Move ou troca alunos entre turmas da mesma série (mesma escola e segmento).
+                Move ou troca alunos entre turmas da mesma série (mesma escola e etapa de ensino).
             </p>
 
             <!-- Filtros -->
@@ -201,7 +201,7 @@ const trocar = () => {
                     />
                 </div>
                 <div class="grid gap-1.5">
-                    <FormLabel>Segmento</FormLabel>
+                    <FormLabel>Etapa de Ensino</FormLabel>
                     <select v-model="segId" class="rounded-md border bg-background px-3 py-2 text-sm">
                         <option value="">Todos</option>
                         <option v-for="s in segmentos" :key="s.seg_id" :value="s.seg_id">{{ s.seg_nome_reduzido ?? s.seg_nome_completo }}</option>
@@ -303,7 +303,7 @@ const trocar = () => {
             </template>
             <div v-else-if="!carregandoTurmas" class="rounded-xl border bg-card py-12 text-center text-muted-foreground">
                 <Users class="mx-auto mb-2 size-8 text-muted-foreground" />
-                Selecione ano, escola e segmento e carregue as turmas.
+                Selecione ano, escola e etapa de ensino e carregue as turmas.
             </div>
         </div>
     </AppLayout>

@@ -71,6 +71,7 @@ const PATH_LABELS: Record<string, string> = {
     '/secretaria/historico-escolar': 'Histórico Escolar',
     '/secretaria/conteudo-ministrado': 'Conteúdo Ministrado',
     '/grade-disciplinar':  'Grade Disciplinar',
+    '/segmentos': 'Etapas de Ensino',
     '/sabados-letivos':   'Sábados Letivos',
     '/turmas-aee': 'Turmas AEE',
     '/movimentacoes': 'Movimentações',

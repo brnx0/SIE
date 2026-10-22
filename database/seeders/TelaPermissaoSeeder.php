@@ -46,7 +46,7 @@ class TelaPermissaoSeeder extends Seeder
 
         ['/alunos', 'Alunos', 'Gestão', 2, [1, 1, 0, 0, 2, 2, 1, 1, 2, 0, 2, 0, 0, 2]],
         ['/funcionarios', 'Funcionários', 'Gestão', 3, [1, 1, 0, 0, 2, 2, 1, 1, 2, 0, 2]],
-        ['/segmentos', 'Segmentos', 'Gestão', 4, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
+        ['/segmentos', 'Etapas de Ensino', 'Gestão', 4, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
         ['/series', 'Séries', 'Gestão', 5, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
         ['/disciplinas', 'Disciplinas', 'Gestão', 6, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
         ['/grade-disciplinar', 'Grade Disciplinar', 'Gestão', 7, [1, 1, 0, 0, 2, 0, 0, 0, 0, 0, 0]],

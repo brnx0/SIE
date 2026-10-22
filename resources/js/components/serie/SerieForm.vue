@@ -120,13 +120,13 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar série' : 'Salvar alter
 
             <!-- Segmento -->
             <div class="grid gap-2 sm:col-span-3">
-                <FormLabel for="seg_id" :required="true">Segmento</FormLabel>
+                <FormLabel for="seg_id" :required="true">Etapa de Ensino</FormLabel>
                 <select
                     id="seg_id"
                     v-model="form.seg_id"
                     class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground"
                 >
-                    <option :value="null" disabled>Selecione um segmento...</option>
+                    <option :value="null" disabled>Selecione uma etapa de ensino...</option>
                     <option v-for="seg in segmentos" :key="seg.seg_id" :value="seg.seg_id">
                         {{ seg.seg_nome_reduzido }}
                     </option>
@@ -307,7 +307,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar série' : 'Salvar alter
 
             <!-- Ordem da Série no Segmento -->
             <div class="grid gap-2 sm:col-span-4">
-                <FormLabel for="ser_ordem_no_segmento" :required="true">Ordem da Série no Segmento</FormLabel>
+                <FormLabel for="ser_ordem_no_segmento" :required="true">Ordem da Série na Etapa de Ensino</FormLabel>
                 <Input
                     id="ser_ordem_no_segmento"
                     type="number"
@@ -372,7 +372,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar série' : 'Salvar alter
                     placeholder="Selecionar série..."
                     :invalid="!!form.errors.ser_cons_ser_id_1"
                 />
-                <p v-if="conservacaoBloqueada" class="text-xs text-muted-foreground">Segmento sem conservação.</p>
+                <p v-if="conservacaoBloqueada" class="text-xs text-muted-foreground">Etapa de ensino sem conservação.</p>
                 <InputError :message="form.errors.ser_cons_ser_id_1" />
             </div>
 
@@ -386,7 +386,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar série' : 'Salvar alter
                     placeholder="Selecionar série..."
                     :invalid="!!form.errors.ser_cons_ser_id_2"
                 />
-                <p v-if="conservacaoBloqueada" class="text-xs text-muted-foreground">Segmento sem conservação.</p>
+                <p v-if="conservacaoBloqueada" class="text-xs text-muted-foreground">Etapa de ensino sem conservação.</p>
                 <InputError :message="form.errors.ser_cons_ser_id_2" />
             </div>
         </div>

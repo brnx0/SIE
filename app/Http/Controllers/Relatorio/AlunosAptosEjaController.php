@@ -83,7 +83,7 @@ class AlunosAptosEjaController extends Controller
         ['linhas' => $linhas] = $this->montar($request);
 
         $headers = [
-            'Escola', 'Cód. Escola', 'Turma', 'Ano Escolar / Série', 'Segmento',
+            'Escola', 'Cód. Escola', 'Turma', 'Ano Escolar / Série', 'Etapa',
             'Matrícula', 'Nome do Aluno', 'Data de Nascimento', 'Idade',
             'Situação da Matrícula', 'Situação do Aluno', 'Já em EJA',
         ];

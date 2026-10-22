@@ -80,16 +80,16 @@ class StoreSerieRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'ser_nome.unique'              => 'Já existe uma série com este nome neste segmento.',
-            'ser_nr_ordenacao.unique'      => 'Já existe outra série neste segmento com este nº para ordenação.',
-            'ser_ordem_no_segmento.unique' => 'Já existe outra série neste segmento com esta ordem no segmento.',
+            'ser_nome.unique'              => 'Já existe uma série com este nome nesta etapa de ensino.',
+            'ser_nr_ordenacao.unique'      => 'Já existe outra série nesta etapa de ensino com este nº para ordenação.',
+            'ser_ordem_no_segmento.unique' => 'Já existe outra série nesta etapa de ensino com esta ordem na etapa de ensino.',
         ];
     }
 
     public function attributes(): array
     {
         return [
-            'seg_id'                  => 'segmento',
+            'seg_id'                  => 'etapa de ensino',
             'ser_cd_referencia'       => 'código de referência',
             'ser_nome'                => 'nome da série',
             'ser_carga_horaria'       => 'carga horária',
@@ -98,7 +98,7 @@ class StoreSerieRequest extends FormRequest
             'ser_idade'               => 'idade na série',
             'ser_serie_equivalente'   => 'série equivalente',
             'ser_nr_ordenacao'        => 'nº para ordenação',
-            'ser_ordem_no_segmento'   => 'ordem da série no segmento',
+            'ser_ordem_no_segmento'   => 'ordem da série na etapa de ensino',
             'ser_tipo_avaliacao'      => 'tipo de avaliação',
             'ser_tipo_avaliacao_descritiva' => 'tipo de avaliação descritiva',
         ];

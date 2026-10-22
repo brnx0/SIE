@@ -199,8 +199,8 @@ const breadcrumbs: BreadcrumbItem[] = [
                         <LocalCombobox v-model="escId" :items="itemsEscola" placeholder="Escola..." :disabled="!anlId" />
                     </div>
                     <div class="md:col-span-2">
-                        <Label>Segmento</Label>
-                        <LocalCombobox v-model="segId" :items="itemsSegmento" placeholder="Segmento..." :disabled="!escId" />
+                        <Label>Etapa de Ensino</Label>
+                        <LocalCombobox v-model="segId" :items="itemsSegmento" placeholder="Etapa de ensino..." :disabled="!escId" />
                     </div>
                     <div class="md:col-span-2">
                         <Label>Série</Label>
@@ -230,7 +230,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                     <thead class="bg-muted/50 text-left text-xs uppercase tracking-wide text-muted-foreground">
                         <tr>
                             <th class="px-4 py-3 text-center">Status</th>
-                            <th class="px-4 py-3">Série / Segmento</th>
+                            <th class="px-4 py-3">Série / Etapa</th>
                             <th class="px-4 py-3">Turma</th>
                             <th class="px-4 py-3">Disciplina</th>
                             <th class="px-4 py-3">Professor</th>

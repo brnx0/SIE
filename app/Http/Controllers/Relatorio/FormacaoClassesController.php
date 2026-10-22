@@ -63,7 +63,7 @@ class FormacaoClassesController extends Controller
         ['linhas' => $linhas] = $this->montar($request);
 
         $headers = [
-            'Escola', 'Código da Turma', 'Nome da Turma', 'Segmento', 'Série / Ano Escolar', 'Turno',
+            'Escola', 'Código da Turma', 'Nome da Turma', 'Etapa', 'Série / Ano Escolar', 'Turno',
             'Status da Turma', 'Capacidade', 'Expansão', 'Matriculados',
             'Alunos da Rede', 'Alunos Novos', 'Vagas', 'PCD', 'Faixa Etária',
             'Professor(es) Alocado(s)', 'Professor(es) de Apoio',

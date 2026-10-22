@@ -224,7 +224,7 @@ return [
     [
         'slug' => 'pendencias-encerramento',
         'titulo' => 'Pendências de Encerramento e Renovação',
-        'descricao' => 'Escolas que ainda não encerraram turmas nem renovaram matrículas no ano letivo, com a contagem de turmas pendentes e os segmentos/anos escolares afetados. Filtra por escola, segmento e ano letivo.',
+        'descricao' => 'Escolas que ainda não encerraram turmas nem renovaram matrículas no ano letivo, com a contagem de turmas pendentes e as etapas de ensino/anos escolares afetados. Filtra por escola, etapa de ensino e ano letivo.',
         'categoria' => 'Escola',
         'grupo' => 'central',
         'icone' => 'AlarmClock',
@@ -288,7 +288,7 @@ return [
     [
         'slug' => 'levantamento-municipio',
         'titulo' => 'Levantamento de Dados do Município',
-        'descricao' => 'Panorama consolidado da rede, uma linha por turma: escola, código/nome da turma, segmento, ano escolar, turno, capacidade, matriculados, vagas, professores responsáveis e indicadores de diário. Filtra por escola, segmento, série e turno.',
+        'descricao' => 'Panorama consolidado da rede, uma linha por turma: escola, código/nome da turma, etapa de ensino, ano escolar, turno, capacidade, matriculados, vagas, professores responsáveis e indicadores de diário. Filtra por escola, etapa de ensino, série e turno.',
         'categoria' => 'Escola',
         'grupo' => 'escola',
         'icone' => 'ClipboardList',

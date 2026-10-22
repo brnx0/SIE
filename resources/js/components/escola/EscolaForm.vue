@@ -347,13 +347,13 @@ const isLast = computed(() => activeTab.value === TABS.value[TABS.value.length -
             </Link>
             <div class="flex items-center gap-3">
                 <span v-if="segmentoEditando" class="text-xs font-medium text-amber-600 dark:text-amber-400">
-                    Finalize o segmento antes de salvar a escola.
+                    Finalize a etapa de ensino antes de salvar a escola.
                 </span>
                 <Button
                     v-if="!isReadOnly"
                     type="submit"
                     :disabled="form.processing || segmentoEditando"
-                    :title="segmentoEditando ? 'Finalize a edição do segmento primeiro' : ''"
+                    :title="segmentoEditando ? 'Finalize a edição da etapa de ensino primeiro' : ''"
                     class="bg-sky-600 text-white hover:bg-sky-700 disabled:cursor-not-allowed dark:bg-sky-500 dark:hover:bg-sky-400"
                 >
                     <LoaderCircle v-if="form.processing" class="mr-2 size-4 animate-spin" />
@@ -368,7 +368,7 @@ const isLast = computed(() => activeTab.value === TABS.value[TABS.value.length -
                 <TabsTrigger value="identificacao" :has-error="tabHasError('identificacao')">1. Identificação</TabsTrigger>
                 <TabsTrigger value="contato" :has-error="tabHasError('contato')">2. Endereço e Contato</TabsTrigger>
                 <TabsTrigger value="ata-autorizacao" :has-error="tabHasError('ata-autorizacao')">3. Ata de Autorização</TabsTrigger>
-                <TabsTrigger v-if="mode === 'edit'" value="segmentos">4. Segmentos</TabsTrigger>
+                <TabsTrigger v-if="mode === 'edit'" value="segmentos">4. Etapas de Ensino</TabsTrigger>
                 <TabsTrigger v-if="mode === 'edit'" value="censo">5. Censo</TabsTrigger>
             </TabsList>
             <fieldset :disabled="isReadOnly" class="contents">

@@ -34,7 +34,7 @@
             <th>Turma</th>
             <th>Escola</th>
             <th style="text-align:center">Ano</th>
-            <th>Segmento</th>
+            <th>Etapa</th>
             <th>Série</th>
             <th>Turno</th>
             <th style="text-align:center">Cap.</th>

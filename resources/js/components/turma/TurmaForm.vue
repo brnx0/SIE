@@ -260,7 +260,7 @@ const selectClass = (hasError: boolean) =>
                         <Lock class="mt-0.5 size-4 shrink-0" />
                         <div>
                             <p class="font-semibold">Turma ABERTA — campos estruturais bloqueados</p>
-                            <p class="mt-1 text-xs">Escola, ano letivo, segmento, série e semestre não podem ser alterados após a turma estar aberta.</p>
+                            <p class="mt-1 text-xs">Escola, ano letivo, etapa de ensino, série e semestre não podem ser alterados após a turma estar aberta.</p>
                         </div>
                     </div>
 
@@ -304,7 +304,7 @@ const selectClass = (hasError: boolean) =>
 
                             <!-- Segmento -->
                             <div class="grid gap-1.5 sm:col-span-5">
-                                <FormLabel :required="true">Segmento</FormLabel>
+                                <FormLabel :required="true">Etapa de Ensino</FormLabel>
                                 <select
                                     v-model="form.tur_seg_id"
                                     :disabled="estruturalLocked || !form.tur_esc_id || !form.tur_anl_id"
@@ -324,7 +324,7 @@ const selectClass = (hasError: boolean) =>
                                     :disabled="estruturalLocked || !form.tur_seg_id"
                                     :class="selectClass(!!form.errors.tur_ser_id)"
                                 >
-                                    <option :value="null">{{ !form.tur_seg_id ? 'Selecione segmento primeiro' : 'Selecione...' }}</option>
+                                    <option :value="null">{{ !form.tur_seg_id ? 'Selecione a etapa de ensino primeiro' : 'Selecione...' }}</option>
                                     <option v-for="ser in series" :key="ser.ser_id" :value="ser.ser_id">{{ ser.ser_nome }}</option>
                                 </select>
                                 <InputError :message="form.errors.tur_ser_id" />

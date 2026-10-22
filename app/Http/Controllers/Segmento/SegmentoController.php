@@ -54,7 +54,7 @@ class SegmentoController extends Controller
     {
         $segmento = Segmento::create($request->validated());
 
-        return to_route('segmentos.edit', $segmento)->with('success', 'Segmento cadastrado com sucesso.');
+        return to_route('segmentos.edit', $segmento)->with('success', 'Etapa de ensino cadastrada com sucesso.');
     }
 
     public function edit(Segmento $segmento): Response
@@ -66,13 +66,13 @@ class SegmentoController extends Controller
     {
         $segmento->update($request->validated());
 
-        return to_route('segmentos.edit', $segmento)->with('success', 'Segmento atualizado com sucesso.');
+        return to_route('segmentos.edit', $segmento)->with('success', 'Etapa de ensino atualizada com sucesso.');
     }
 
     public function destroy(Segmento $segmento): RedirectResponse
     {
         return $this->safeDelete($segmento)
-            ?? to_route('segmentos.index')->with('success', 'Segmento removido com sucesso.');
+            ?? to_route('segmentos.index')->with('success', 'Etapa de ensino removida com sucesso.');
     }
 
     private function baseQuery(Request $request)
@@ -89,7 +89,7 @@ class SegmentoController extends Controller
 
     private function exportCsv(iterable $segmentos): StreamedResponse
     {
-        $filename = 'segmentos_' . now()->format('Ymd_His') . '.csv';
+        $filename = 'etapas_ensino_' . now()->format('Ymd_His') . '.csv';
 
         return response()->streamDownload(function () use ($segmentos) {
             $out = fopen('php://output', 'w');
@@ -117,7 +117,7 @@ class SegmentoController extends Controller
     private function exportPdf(iterable $segmentos, Request $request): HttpResponse
     {
         $collection = collect($segmentos);
-        $filename   = 'segmentos_' . now()->format('Ymd_His') . '.pdf';
+        $filename   = 'etapas_ensino_' . now()->format('Ymd_His') . '.pdf';
 
         $html = view('exports.segmentos_pdf', [
             'segmentos'     => $collection,

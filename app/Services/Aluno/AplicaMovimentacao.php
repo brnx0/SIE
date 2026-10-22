@@ -79,7 +79,7 @@ class AplicaMovimentacao
                 if (! $destino || $destino->tur_situacao !== 'ABERTA') { $erros[] = "{$nome}: turma destino indisponível."; continue; }
                 if ((int) $destino->tur_id === (int) $origem->tma_tur_id) { $erros[] = "{$nome}: já está nessa turma."; continue; }
                 if ((int) $destino->tur_esc_id !== (int) $origem->turma->tur_esc_id || (int) $destino->tur_seg_id !== (int) $origem->turma->tur_seg_id) {
-                    $erros[] = "{$nome}: escola/segmento incompatível.";
+                    $erros[] = "{$nome}: escola/etapa de ensino incompatível.";
                     continue;
                 }
                 $plano[] = ['origem' => $origem, 'destino' => $destino, 'ser' => $it['tma_ser_id_destino'] ?? null, 'nome' => $nome];
@@ -295,7 +295,7 @@ class AplicaMovimentacao
         // O ano escolar tem de pertencer ao segmento da turma de destino.
         if ((int) $serie->seg_id !== (int) $turmaDestino->tur_seg_id) {
             throw ValidationException::withMessages([
-                'tma_ser_id_destino' => 'O ano escolar informado não pertence ao segmento da turma de destino.',
+                'tma_ser_id_destino' => 'O ano escolar informado não pertence à etapa de ensino da turma de destino.',
             ]);
         }
 
@@ -327,7 +327,7 @@ class AplicaMovimentacao
 
             if ($segOrigem !== $fund2 || ! in_array($segDestino, $ejaIds, true)) {
                 throw ValidationException::withMessages([
-                    'tur_id_destino' => 'Troca de segmento permitida apenas de Fundamental 2 para EJA.',
+                    'tur_id_destino' => 'Troca de etapa de ensino permitida apenas de Fundamental 2 para EJA.',
                 ]);
             }
 

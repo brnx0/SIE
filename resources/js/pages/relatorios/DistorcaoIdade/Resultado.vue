@@ -101,7 +101,7 @@ const exportarCsv = () => {
     const aspas = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`;
 
     const headers = [
-        'Escola', 'Cód. Escola', 'Turma', 'Ano Escolar / Série', 'Segmento',
+        'Escola', 'Cód. Escola', 'Turma', 'Ano Escolar / Série', 'Etapa',
         'Matrícula', 'Nome do Aluno', 'Data de Nascimento', 'Idade Atual',
         'Idade Esperada', 'Distorção (anos)',
     ];
@@ -245,7 +245,7 @@ const exportarExcel = () => window.open(`/relatorios/distorcao-idade/xlsx?${quer
                                 <th class="px-3 py-2 text-left">Escola</th>
                                 <th class="px-3 py-2 text-left">Turma</th>
                                 <th class="px-3 py-2 text-left">Ano Escolar / Série</th>
-                                <th class="px-3 py-2 text-left">Segmento</th>
+                                <th class="px-3 py-2 text-left">Etapa</th>
                                 <th class="px-3 py-2 text-left">Matrícula</th>
                                 <th class="px-3 py-2 text-left">Nome do Aluno</th>
                                 <th class="px-3 py-2 text-center">Nascimento</th>

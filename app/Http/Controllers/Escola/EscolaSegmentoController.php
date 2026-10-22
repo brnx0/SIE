@@ -16,7 +16,7 @@ class EscolaSegmentoController extends Controller
         $escola->segmentos()->create($request->validated());
 
         return to_route('escolas.edit', $escola)
-            ->with('success', 'Segmento adicionado com sucesso.');
+            ->with('success', 'Etapa de ensino adicionada com sucesso.');
     }
 
     public function update(StoreEscolaSegmentoRequest $request, Escola $escola, int $esg): RedirectResponse
@@ -28,7 +28,7 @@ class EscolaSegmentoController extends Controller
         $escolaSegmento->update($request->validated());
 
         return to_route('escolas.edit', $escola)
-            ->with('success', 'Segmento atualizado com sucesso.');
+            ->with('success', 'Etapa de ensino atualizada com sucesso.');
     }
 
     public function destroy(Escola $escola, int $esg): RedirectResponse
@@ -46,10 +46,10 @@ class EscolaSegmentoController extends Controller
             ->count();
 
         if ($qtdTurmas > 0) {
-            return back()->with('error', "Não é possível remover: há {$qtdTurmas} turma(s) vinculada(s) a este segmento nesta escola. Remova as turmas antes de excluir o segmento.");
+            return back()->with('error', "Não é possível remover: há {$qtdTurmas} turma(s) vinculada(s) a esta etapa de ensino nesta escola. Remova as turmas antes de excluir a etapa de ensino.");
         }
 
         return $this->safeDelete($escolaSegmento)
-            ?? to_route('escolas.edit', $escola)->with('success', 'Segmento removido com sucesso.');
+            ?? to_route('escolas.edit', $escola)->with('success', 'Etapa de ensino removida com sucesso.');
     }
 }

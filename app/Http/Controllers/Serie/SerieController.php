@@ -198,7 +198,7 @@ class SerieController extends Controller
         return response()->streamDownload(function () use ($series) {
             $out = fopen('php://output', 'w');
             fprintf($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
-            fputcsv($out, ['Nome', 'Segmento', 'Cód. Referência', 'Carga Horária (h)', 'Idade', 'Ordem', 'Situação'], ';');
+            fputcsv($out, ['Nome', 'Etapa', 'Cód. Referência', 'Carga Horária (h)', 'Idade', 'Ordem', 'Situação'], ';');
             foreach ($series as $s) {
                 fputcsv($out, [
                     $s->ser_nome,

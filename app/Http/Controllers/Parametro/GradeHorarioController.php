@@ -33,7 +33,7 @@ class GradeHorarioController extends Controller
             'grh_hora'   => ['required', 'date_format:H:i'],
             'grh_ordem'  => ['required', 'integer', 'min:1', 'max:99'],
         ], [], [
-            'grh_seg_id' => 'segmento',
+            'grh_seg_id' => 'etapa de ensino',
             'grh_turno'  => 'turno',
             'grh_hora'   => 'horário',
             'grh_ordem'  => 'ordem',
@@ -49,7 +49,7 @@ class GradeHorarioController extends Controller
             ->exists();
 
         if ($exists) {
-            return back()->withErrors(['grh_hora' => 'Este horário já está cadastrado para o segmento e turno.']);
+            return back()->withErrors(['grh_hora' => 'Este horário já está cadastrado para a etapa de ensino e turno.']);
         }
 
         GradeHorario::create($data);
@@ -80,7 +80,7 @@ class GradeHorarioController extends Controller
             ->exists();
 
         if ($exists) {
-            return back()->withErrors(['grh_hora' => 'Este horário já está cadastrado para o segmento e turno.']);
+            return back()->withErrors(['grh_hora' => 'Este horário já está cadastrado para a etapa de ensino e turno.']);
         }
 
         $gradeHorario->update($data);

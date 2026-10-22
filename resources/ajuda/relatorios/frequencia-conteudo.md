@@ -11,7 +11,7 @@ slug: frequencia-conteudo
 
 Dois relatórios que acompanham o dia a dia da turma no diário:
 
-- **Diário de Frequência Mensal** — a frequência da turma em um mês, com percentual e situação por aluno. Turmas de Fundamental II e EJA são contadas por dias letivos; os demais segmentos, pelas aulas da turma.
+- **Diário de Frequência Mensal** — a frequência da turma em um mês, com percentual e situação por aluno. Turmas de Fundamental II e EJA são contadas por dias letivos; as demais etapas de ensino, pelas aulas da turma.
 - **Conteúdo Ministrado** — por disciplina, lista os dias com aula registrada na frequência, o planejamento executado e o conteúdo/metodologia de cada dia.
 
 ## Como acessar

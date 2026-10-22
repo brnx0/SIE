@@ -275,7 +275,7 @@ const remove = (trh: TurmaHorario) => {
                                         </select>
                                         <InputError :message="errors.trh_hora" />
                                         <p v-if="horasOpts.length === 0" class="text-xs text-amber-600">
-                                            Cadastre a grade de horários do segmento em Parâmetros.
+                                            Cadastre a grade de horários da etapa de ensino em Parâmetros.
                                         </p>
                                         <p v-else-if="horasDisponiveis.length === 0" class="text-xs text-amber-600">
                                             Todos os horários deste dia já foram utilizados.

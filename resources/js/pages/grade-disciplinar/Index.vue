@@ -22,7 +22,7 @@ const breadcrumbs: BreadcrumbItem[] = [
         <div class="mx-auto flex w-[95%] flex-col gap-6 p-4 md:p-6">
             <div>
                 <h1 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">Grade Disciplinar</h1>
-                <p class="text-sm text-slate-500 dark:text-slate-400">Gerencie as disciplinas por segmento, série e ano letivo.</p>
+                <p class="text-sm text-slate-500 dark:text-slate-400">Gerencie as disciplinas por etapa de ensino, série e ano letivo.</p>
             </div>
             <GradeDisciplinarTab :anos-letivos="anosLetivos" :anos-com-grade="anosComGrade" :segmentos="segmentos" />
         </div>

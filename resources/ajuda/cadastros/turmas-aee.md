@@ -27,7 +27,7 @@ Menu → **Cadastros → Rede de Ensino → Turmas AEE**.
 
 - **Escola, Ano Letivo, Nome, Turno, Capacidade, Situação** — obrigatórios.
 - **Tipo de Atendimento** — fixo em "Atendimento Educacional Especializado - AEE".
-- Sem segmento e sem série (não se aplicam ao AEE).
+- Sem etapa de ensino e sem série (não se aplicam ao AEE).
 
 ## Avisos comuns
 

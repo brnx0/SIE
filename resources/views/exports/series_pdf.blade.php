@@ -34,7 +34,7 @@
     <thead>
         <tr>
             <th>Nome</th>
-            <th>Segmento</th>
+            <th>Etapa</th>
             <th>Cód. Ref.</th>
             <th style="text-align:center">Carga (h)</th>
             <th style="text-align:center">Idade</th>

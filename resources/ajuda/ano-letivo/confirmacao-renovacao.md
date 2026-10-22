@@ -20,7 +20,7 @@ A secretaria opera apenas as escolas em que está lotada; o administrador, todas
 ## Passo a passo
 
 1. Selecione **Ano Letivo** e **Escola**.
-2. Se quiser, filtre por **segmento** e escolha a **Turma** (encerrada).
+2. Se quiser, filtre por **etapa de ensino** e escolha a **Turma** (encerrada).
 3. A tela lista os alunos com a **situação final** e se marcaram **interesse em renovar**.
 4. Para cada aluno, escolha a **série de destino** sugerida e a **turma destino** do ano seguinte.
 5. Confirme **um a um** ou use a confirmação **em lote** para todos que vão para a mesma turma.

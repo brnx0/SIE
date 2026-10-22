@@ -72,7 +72,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const detalhado = computed(() => props.filtros.formato === 'detalhado');
 const escopo = computed(() => props.filtros.esc_nome ?? 'Todas as escolas da rede');
-const segmentoLabel = computed(() => props.filtros.seg_nome ?? 'Todos os segmentos');
+const segmentoLabel = computed(() => props.filtros.seg_nome ?? 'Todas as etapas de ensino');
 
 /** Modo detalhado: uma linha por turma pendente. */
 const linhasDetalhe = computed(() =>
@@ -113,14 +113,14 @@ const exportarCsv = () => {
     let corpo: (string | number)[][];
 
     if (detalhado.value) {
-        headers = ['Escola', 'Código', 'Segmento', 'Ano Escolar / Série', 'Turma', 'Turno', 'Situação da Turma', 'Pendência', 'Alunos', 'Alunos Renovados'];
+        headers = ['Escola', 'Código', 'Etapa', 'Ano Escolar / Série', 'Turma', 'Turno', 'Situação da Turma', 'Pendência', 'Alunos', 'Alunos Renovados'];
         corpo = linhasDetalhe.value.map(({ escola, turma }) => [
             escola.esc_nome, escola.esc_codigo ?? '',
             turma.segmento ?? '', turma.serie ?? '', turma.turma ?? '', turma.turno ?? '',
             turma.situacao ?? '', turma.pendencia, turma.alunos, turma.renovados,
         ]);
     } else {
-        headers = ['Escola', 'Código', 'Turmas sem Encerramento', 'Turmas sem Renovação', 'Total Pendente', 'Total de Turmas', 'Segmentos / Anos Escolares Afetados'];
+        headers = ['Escola', 'Código', 'Turmas sem Encerramento', 'Turmas sem Renovação', 'Total Pendente', 'Total de Turmas', 'Etapas / Anos Escolares Afetados'];
         corpo = props.linhas.map((l) => [
             l.esc_nome, l.esc_codigo ?? '',
             l.sem_encerramento, l.sem_renovacao, l.total_pendente, l.total_turmas,
@@ -154,7 +154,7 @@ const exportarExcel = () => window.open(`/relatorios/pendencias-encerramento/xls
             <div class="subtitulo-impressao">
                 <span><b>Ano Letivo:</b> {{ filtros.anl_ano }}</span>
                 <span><b>Escola:</b> {{ escopo }}</span>
-                <span><b>Segmento:</b> {{ segmentoLabel }}</span>
+                <span><b>Etapa de Ensino:</b> {{ segmentoLabel }}</span>
                 <span><b>Escolas pendentes:</b> {{ resumo.escolas_pendentes }}</span>
             </div>
         </div>
@@ -168,7 +168,7 @@ const exportarExcel = () => window.open(`/relatorios/pendencias-encerramento/xls
                 <tr>
                     <th>Escola</th>
                     <th>Código</th>
-                    <th>Segmento</th>
+                    <th>Etapa</th>
                     <th>Ano Escolar</th>
                     <th>Turma</th>
                     <th>Turno</th>
@@ -184,7 +184,7 @@ const exportarExcel = () => window.open(`/relatorios/pendencias-encerramento/xls
                     <th class="centro">Sem Encerr.</th>
                     <th class="centro">Sem Renov.</th>
                     <th class="centro">Total Pend.</th>
-                    <th>Segmentos / Anos Escolares Afetados</th>
+                    <th>Etapas / Anos Escolares Afetados</th>
                 </tr>
             </thead>
 
@@ -244,7 +244,7 @@ const exportarExcel = () => window.open(`/relatorios/pendencias-encerramento/xls
             <div class="rounded-xl border bg-card p-4 shadow-sm mb-4 text-sm grid gap-1 sm:grid-cols-2">
                 <div><strong>Ano Letivo:</strong> {{ filtros.anl_ano }}</div>
                 <div><strong>Escola:</strong> {{ escopo }}</div>
-                <div><strong>Segmento:</strong> {{ segmentoLabel }}</div>
+                <div><strong>Etapa de Ensino:</strong> {{ segmentoLabel }}</div>
                 <div><strong>Escolas com pendência:</strong> {{ resumo.escolas_pendentes }} de {{ resumo.escolas_avaliadas }}</div>
             </div>
 
@@ -280,7 +280,7 @@ const exportarExcel = () => window.open(`/relatorios/pendencias-encerramento/xls
                                 <th class="px-3 py-2 text-left">#</th>
                                 <th class="px-3 py-2 text-left">Escola</th>
                                 <th class="px-3 py-2 text-left">Código</th>
-                                <th class="px-3 py-2 text-left">Segmento</th>
+                                <th class="px-3 py-2 text-left">Etapa</th>
                                 <th class="px-3 py-2 text-left">Ano Escolar / Série</th>
                                 <th class="px-3 py-2 text-left">Turma</th>
                                 <th class="px-3 py-2 text-left">Turno</th>
@@ -331,7 +331,7 @@ const exportarExcel = () => window.open(`/relatorios/pendencias-encerramento/xls
                                 <th class="px-3 py-2 text-center">Turmas sem Renovação</th>
                                 <th class="px-3 py-2 text-center">Total Pendente</th>
                                 <th class="px-3 py-2 text-center">Total de Turmas</th>
-                                <th class="px-3 py-2 text-left">Segmentos / Anos Escolares Afetados</th>
+                                <th class="px-3 py-2 text-left">Etapas / Anos Escolares Afetados</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y">

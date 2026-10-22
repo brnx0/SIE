@@ -83,7 +83,7 @@ function gerar() {
             <h1 class="mb-1 flex items-center gap-2 text-xl font-semibold">
                 <CalendarCheck class="size-5 text-indigo-600" /> Diário de Frequência Mensal
             </h1>
-            <p class="mb-6 text-sm text-muted-foreground">Frequência da turma em um mês. Fundamental II e EJA contam por dias letivos; demais segmentos por aulas da turma.</p>
+            <p class="mb-6 text-sm text-muted-foreground">Frequência da turma em um mês. Fundamental II e EJA contam por dias letivos; demais etapas de ensino por aulas da turma.</p>
 
             <div class="grid items-start gap-4 rounded-xl border bg-card p-6 shadow-sm sm:grid-cols-2 lg:grid-cols-4">
                 <div class="grid gap-1.5">

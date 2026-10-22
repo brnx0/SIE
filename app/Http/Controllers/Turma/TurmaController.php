@@ -232,7 +232,7 @@ class TurmaController extends Controller
         return response()->streamDownload(function () use ($turmas) {
             $out = fopen('php://output', 'w');
             fprintf($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
-            fputcsv($out, ['Turma', 'Escola', 'Ano Letivo', 'Segmento', 'Série', 'Turno', 'Capacidade', 'Situação'], ';');
+            fputcsv($out, ['Turma', 'Escola', 'Ano Letivo', 'Etapa', 'Série', 'Turno', 'Capacidade', 'Situação'], ';');
             foreach ($turmas as $t) {
                 fputcsv($out, [
                     $t->tur_nome,

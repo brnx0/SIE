@@ -17,7 +17,7 @@ Menu **Matrículas**.
 
 ## Passo a passo
 
-1. Preencha os filtros **Ano Letivo**, **Escola**, **Segmento**, **Série / Ano Escolar** e **Semestre**. Só depois de todos preenchidos a lista de turmas aparece.
+1. Preencha os filtros **Ano Letivo**, **Escola**, **Etapa de Ensino**, **Série / Ano Escolar** e **Semestre**. Só depois de todos preenchidos a lista de turmas aparece.
 2. No campo **Aluno a ser matriculado**, busque por nome, matrícula ou CPF e selecione o aluno. Se o aluno ainda não existe no sistema, marque **Aluno não cadastrado na base** — os dados serão informados na próxima etapa.
 3. Na lista **Turmas disponíveis**, confira as **Vagas disp.** e clique em **Matricular** na turma escolhida.
 4. Na janela de matrícula, confira ou preencha os dados do aluno, a **Data da Matrícula** e a **Observação**, e conclua.

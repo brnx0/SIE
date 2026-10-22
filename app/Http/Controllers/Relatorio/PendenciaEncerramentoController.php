@@ -78,7 +78,7 @@ class PendenciaEncerramentoController extends Controller
         $nome = 'pendencias_encerramento_' . now()->format('Ymd_His') . '.xlsx';
 
         if ($filtros['formato'] === 'detalhado') {
-            $headers = ['Escola', 'Código', 'Segmento', 'Ano Escolar / Série', 'Turma', 'Turno', 'Situação da Turma', 'Pendência', 'Alunos', 'Alunos Renovados'];
+            $headers = ['Escola', 'Código', 'Etapa', 'Ano Escolar / Série', 'Turma', 'Turno', 'Situação da Turma', 'Pendência', 'Alunos', 'Alunos Renovados'];
 
             $rows = [];
             foreach ($linhas as $l) {
@@ -94,7 +94,7 @@ class PendenciaEncerramentoController extends Controller
             return XlsxExport::download($nome, $headers, $rows);
         }
 
-        $headers = ['Escola', 'Código', 'Turmas sem Encerramento', 'Turmas sem Renovação', 'Total Pendente', 'Total de Turmas', 'Segmentos / Anos Escolares Afetados'];
+        $headers = ['Escola', 'Código', 'Turmas sem Encerramento', 'Turmas sem Renovação', 'Total Pendente', 'Total de Turmas', 'Etapas / Anos Escolares Afetados'];
 
         $rows = $linhas->map(fn ($l) => [
             $l['esc_nome'],

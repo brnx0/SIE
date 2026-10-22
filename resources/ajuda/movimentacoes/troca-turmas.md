@@ -9,7 +9,7 @@ slug: troca-turmas
 
 ## O que é
 
-Tela para mover ou trocar alunos em lote entre duas turmas da **mesma série** (mesma escola e segmento). Ideal para acertos de turno ou balanceamento de turmas no início do ano, sem registrar cada aluno individualmente.
+Tela para mover ou trocar alunos em lote entre duas turmas da **mesma série** (mesma escola e etapa de ensino). Ideal para acertos de turno ou balanceamento de turmas no início do ano, sem registrar cada aluno individualmente.
 
 ## Como acessar
 
@@ -17,7 +17,7 @@ Menu **Movimentações → Troca entre Turmas**.
 
 ## Passo a passo
 
-1. Selecione **Ano Letivo**, **Escola** e, se quiser, **Segmento**, e clique em **Carregar Turmas**.
+1. Selecione **Ano Letivo**, **Escola** e, se quiser, **Etapa de Ensino**, e clique em **Carregar Turmas**.
 2. No painel **Turma A**, escolha a primeira turma; os alunos aparecem com caixas de seleção.
 3. No painel **Turma B (mesma série de A)**, escolha a segunda turma. Só aparecem turmas da mesma série de A.
 4. Marque os alunos desejados em cada painel. Use o campo **Buscar** para localizar por nome ou matrícula.

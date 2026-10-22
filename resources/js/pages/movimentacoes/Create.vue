@@ -358,7 +358,7 @@ function submit() {
                             />
                         </div>
                         <div class="grid gap-1.5">
-                            <FormLabel :required="true">Segmento</FormLabel>
+                            <FormLabel :required="true">Etapa de Ensino</FormLabel>
                             <LocalCombobox
                                 :model-value="oSeg === '' ? null : oSeg"
                                 :items="segmentoItems"
@@ -414,7 +414,7 @@ function submit() {
                     <h3 class="text-sm font-semibold text-fuchsia-800">{{ destinoLabel }}</h3>
                     <div class="grid items-start gap-4 sm:grid-cols-3">
                         <div class="grid gap-1.5">
-                            <FormLabel :required="true">Segmento</FormLabel>
+                            <FormLabel :required="true">Etapa de Ensino</FormLabel>
                             <LocalCombobox
                                 :model-value="dSeg === '' ? null : dSeg"
                                 :items="segmentoDItems"

@@ -34,7 +34,7 @@ class StoreEscolaSegmentoRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'seg_id'        => 'segmento',
+            'seg_id'        => 'etapa de ensino',
             'anl_id_inicio' => 'ano letivo inicial',
             'anl_id_fim'    => 'ano letivo final',
             'ser_id_inicio' => 'ano escolar inicial',
