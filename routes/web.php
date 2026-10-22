@@ -12,6 +12,7 @@ use App\Http\Controllers\Relatorio\DadosAlunosTurmaController;
 use App\Http\Controllers\Relatorio\EquipeGestoraController;
 use App\Http\Controllers\Relatorio\AlunosAptosEjaController;
 use App\Http\Controllers\Relatorio\DistorcaoIdadeController;
+use App\Http\Controllers\Relatorio\IndicesAprovacaoController;
 use App\Http\Controllers\Relatorio\TurmasMultisseriadasController;
 use App\Http\Controllers\Relatorio\LevantamentoMunicipioController;
 use App\Http\Controllers\Relatorio\PendenciaEncerramentoController;
@@ -380,6 +381,9 @@ Route::middleware(['auth', 'verified', 'tela'])->group(function () {
     Route::get('relatorios/distorcao-idade', [DistorcaoIdadeController::class, 'form'])->name('relatorios.distorcao-idade.form');
     Route::get('relatorios/distorcao-idade/gerar', [DistorcaoIdadeController::class, 'gerar'])->name('relatorios.distorcao-idade.gerar');
     Route::get('relatorios/distorcao-idade/xlsx', [DistorcaoIdadeController::class, 'exportarXlsx'])->name('relatorios.distorcao-idade.xlsx');
+    Route::get('relatorios/indices-aprovacao', [IndicesAprovacaoController::class, 'form'])->name('relatorios.indices-aprovacao.form');
+    Route::get('relatorios/indices-aprovacao/gerar', [IndicesAprovacaoController::class, 'gerar'])->name('relatorios.indices-aprovacao.gerar');
+    Route::get('relatorios/indices-aprovacao/xlsx', [IndicesAprovacaoController::class, 'exportarXlsx'])->name('relatorios.indices-aprovacao.xlsx');
     Route::get('relatorios/turmas-multisseriadas', [TurmasMultisseriadasController::class, 'form'])->name('relatorios.turmas-multisseriadas.form');
     Route::get('relatorios/turmas-multisseriadas/gerar', [TurmasMultisseriadasController::class, 'gerar'])->name('relatorios.turmas-multisseriadas.gerar');
     Route::get('relatorios/turmas-multisseriadas/xlsx', [TurmasMultisseriadasController::class, 'exportarXlsx'])->name('relatorios.turmas-multisseriadas.xlsx');

@@ -113,6 +113,8 @@ class TelaPermissaoSeeder extends Seeder
 
         ['/relatorios', 'Central de Relatórios', 'Relatórios', 39, [1, 1, 0, 0, 0, 2, 2, 2, 2, 0, 2]],
         ['/relatorios-escola', 'Relatórios Gerais', 'Relatórios', 40, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 2]],
+        // Tela própria (senão /relatorios/* herdaria a /relatorios): mesmos perfis do hub Relatórios Gerais.
+        ['/relatorios/indices-aprovacao', 'Índices de Aprovação e Reprovação', 'Relatórios', 40, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 2]],
 
         // Censo — menu próprio (crescerá com mais funcionalidades do Educacenso).
         // matricula_censo (índice 10) é o perfil que opera o censo.

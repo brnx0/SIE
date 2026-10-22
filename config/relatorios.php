@@ -254,6 +254,14 @@ return [
         'icone' => 'LayoutGrid',
     ],
     [
+        'slug' => 'indices-aprovacao',
+        'titulo' => 'Índices de Aprovação e Reprovação',
+        'descricao' => 'Aprovados, reprovados e pendentes por trimestre e no ano, a partir das notas/conceitos lançados no Diário Online: quantidades e percentuais por turma, escola e total da rede (percentual sobre os alunos já classificados). Filtra por ano, período, escola, série e turma. Exporta Excel e PDF.',
+        'categoria' => 'Desempenho',
+        'grupo' => 'escola',
+        'icone' => 'FileBarChart',
+    ],
+    [
         'slug' => 'distorcao-idade',
         'titulo' => 'Distorção Idade-Série',
         'descricao' => 'Alunos com idade acima da recomendada para a série/ano em que estão matriculados: nome, matrícula, escola, turma/série, nascimento, idade atual, idade esperada e distorção. Filtra por escola, turma e série. Ordenado por escola e turma. Exporta Excel e PDF.',
