@@ -9,7 +9,7 @@ ENV COMPOSER_CACHE_DIR=/tmp/composer-cache
 COPY composer.json composer.lock ./
 # sem scripts: artisan ainda nao tem app completa aqui.
 # --ignore-platform-reqs: imagem composer nao tem gd/pgsql, mas o runtime
-# (php:8.3-fpm) tem. So resolvemos deps aqui; extensoes reais existem la.
+# (php:8.5-fpm) tem. So resolvemos deps aqui; extensoes reais existem la.
 # cache mount: pacotes ja baixados sao reaproveitados entre builds -> mesmo
 # quando o composer.lock muda, nao re-baixa tudo (so resolve o que faltou).
 RUN --mount=type=cache,target=/tmp/composer-cache \
@@ -24,7 +24,7 @@ RUN --mount=type=cache,target=/tmp/composer-cache \
 ############################
 # Stage 2 - assets (Vite) #
 ############################
-FROM node:20-bookworm-slim AS assets
+FROM node:26.12.1-bookworm-slim AS assets
 WORKDIR /app
 COPY package.json package-lock.json* ./
 # usa lockfile se existir; senao install normal.
@@ -43,14 +43,15 @@ RUN npm run build
 #########################
 # Stage 3 - runtime PHP #
 #########################
-FROM php:8.3-fpm-bookworm AS runtime
+FROM php:8.5.12-fpm-bookworm AS runtime
 
-# Extensoes: pgsql (db), gd (mpdf), mbstring/bcmath/intl/zip + opcache
+# Extensoes: pgsql (db), gd (mpdf), mbstring/bcmath/intl/zip. O OPcache ja vem
+# embutido no PHP 8.5 (deixou de ser extensao instalavel) - so a config do php.ini.
 RUN apt-get update && apt-get install -y --no-install-recommends \
         libpq-dev libzip-dev libicu-dev libpng-dev libjpeg62-turbo-dev libfreetype6-dev \
         locales \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j"$(nproc)" pdo_pgsql pgsql gd zip intl bcmath opcache \
+    && docker-php-ext-install -j"$(nproc)" pdo_pgsql pgsql gd zip intl bcmath \
     && sed -i '/pt_BR.UTF-8/s/^# //' /etc/locale.gen && locale-gen \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 

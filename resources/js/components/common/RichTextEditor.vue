@@ -40,7 +40,8 @@ const editor = useEditor({
 watch(() => props.modelValue, (v) => {
     if (!editor.value) return;
     if (v !== editor.value.getHTML()) {
-        editor.value.commands.setContent(v || '', false);
+        // Tiptap 3: opções em objeto (o booleano do v2 era ignorado e reemitia update).
+        editor.value.commands.setContent(v || '', { emitUpdate: false });
     }
 });
 
