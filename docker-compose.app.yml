@@ -18,7 +18,11 @@
 # e serve estaticos de ./public (entrypoint do app sincroniza public/build).
 #
 # .env: APP_KEY setada, APP_ENV=production, APP_DEBUG=false. DB_HOST/DB_PORT
-# sao SOBRESCRITOS p/ a rede interna (db:5432).
+# sao SOBRESCRITOS p/ o container: padrao db:5432 (Postgres do docker-compose.db.yml
+# na rede sie_net). Banco em OUTRA maquina: defina no .env do municipio
+#   DB_HOST_DOCKER=<ip/host do servidor de banco>   (e DB_PORT_DOCKER, se nao for 5432)
+# - o servidor de banco precisa aceitar conexao vinda desta maquina (listen_addresses,
+# pg_hba.conf e firewall/security list liberando a porta para o IP do app).
 
 services:
   app:
@@ -31,8 +35,8 @@ services:
     env_file: .env
     environment:
       # conexao pela rede docker - ignora DB_HOST/DB_PORT do .env
-      DB_HOST: db
-      DB_PORT: 5432
+      DB_HOST: ${DB_HOST_DOCKER:-db}
+      DB_PORT: ${DB_PORT_DOCKER:-5432}
       # migrations NAO rodam no boot (prod = controlado). Deploy:
       #   docker compose -f docker-compose.app.yml run --rm app php artisan migrate --force
       RUN_MIGRATIONS: "${RUN_MIGRATIONS:-false}"
@@ -58,8 +62,8 @@ services:
     restart: unless-stopped
     env_file: .env
     environment:
-      DB_HOST: db
-      DB_PORT: 5432
+      DB_HOST: ${DB_HOST_DOCKER:-db}
+      DB_PORT: ${DB_PORT_DOCKER:-5432}
     # --timeout=1900 > timeout do CommitCensoLoteJob (1800); --max-time recicla de hora em hora.
     command: php artisan queue:work --sleep=3 --tries=3 --max-time=3600 --timeout=1900
     volumes:
