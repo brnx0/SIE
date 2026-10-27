@@ -169,7 +169,7 @@ const salvar = async (aln: number | null, ind: number, val: string) => {
                 <!-- Cabeçalho: dica + alternância de visualização -->
                 <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
                     <p class="text-xs text-muted-foreground">
-                        Ao marcar <b>Realiza com autonomia</b>, os períodos seguintes são preenchidos com a mesma opção (editável).
+                        Ao marcar <b>{{ opcoes.autonomia ?? 'Realiza com autonomia' }}</b>, os períodos seguintes são preenchidos com a mesma opção (editável).
                     </p>
                     <div class="inline-flex shrink-0 rounded-lg border bg-muted/40 p-0.5 text-xs font-medium">
                         <button type="button" :class="['rounded-md px-3 py-1.5 transition', view === 'foco' ? 'bg-background text-slate-900 shadow-sm dark:text-slate-50' : 'text-muted-foreground hover:text-foreground']" @click="view = 'foco'">Foco no aluno</button>

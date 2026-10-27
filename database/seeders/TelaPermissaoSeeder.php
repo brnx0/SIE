@@ -46,7 +46,7 @@ class TelaPermissaoSeeder extends Seeder
 
         ['/alunos', 'Alunos', 'Gestão', 2, [1, 1, 0, 0, 2, 2, 1, 1, 2, 0, 2, 0, 0, 2]],
         ['/funcionarios', 'Funcionários', 'Gestão', 3, [1, 1, 0, 0, 2, 2, 1, 1, 2, 0, 2]],
-        ['/segmentos', 'Segmentos', 'Gestão', 4, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
+        ['/segmentos', 'Etapas de Ensino', 'Gestão', 4, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
         ['/series', 'Séries', 'Gestão', 5, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
         ['/disciplinas', 'Disciplinas', 'Gestão', 6, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
         ['/grade-disciplinar', 'Grade Disciplinar', 'Gestão', 7, [1, 1, 0, 0, 2, 0, 0, 0, 0, 0, 0]],
@@ -68,6 +68,10 @@ class TelaPermissaoSeeder extends Seeder
         ['/diario-atividade', 'Diário Atividade', 'Diário', 21, [1, 1, 0, 0, 0, 0, 0, 2, 0, 1, 0]],
         ['/diario/instrumentos-avaliativos', 'Instrumentos Avaliativos', 'Diário', 22, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
         ['/sabados-letivos', 'Sábados Letivos', 'Diário', 23, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
+        // Nomenclaturas da avaliação diagnóstica (rede inteira): a coordenação pedagógica edita.
+        ['/diario/termos-diagnostico', 'Termos da Avaliação Diagnóstica', 'Diário', 23, [1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0]],
+        // Instrumentos e valores das avaliações por unidade (rede inteira): coordenação pedagógica e administração.
+        ['/diario/parametrizacao-avaliacoes', 'Parametrização de Avaliações', 'Diário', 23, [1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0]],
         ['/diario/planos', 'Planos de Aula', 'Diário', 24, [1, 1, 1, 0, 2, 2, 0, 0, 2, 0, 0]],
         ['/diario/planos-aee', 'Planos de Aula AEE', 'Diário', 25, [1, 2, 0, 1, 0, 2, 0, 0, 2, 0, 0]],
         ['/relatorios-diario', 'Relatórios Diário', 'Diário', 26, [1, 1, 2, 2, 2, 2, 0, 2, 2, 0, 0, 0, 0, 2]],
@@ -109,6 +113,8 @@ class TelaPermissaoSeeder extends Seeder
 
         ['/relatorios', 'Central de Relatórios', 'Relatórios', 39, [1, 1, 0, 0, 0, 2, 2, 2, 2, 0, 2]],
         ['/relatorios-escola', 'Relatórios Gerais', 'Relatórios', 40, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 2]],
+        // Tela própria (senão /relatorios/* herdaria a /relatorios): mesmos perfis do hub Relatórios Gerais.
+        ['/relatorios/indices-aprovacao', 'Índices de Aprovação e Reprovação', 'Relatórios', 40, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 2]],
 
         // Censo — menu próprio (crescerá com mais funcionalidades do Educacenso).
         // matricula_censo (índice 10) é o perfil que opera o censo.

@@ -180,8 +180,8 @@ const marcarRenovar = async (a: AlunoLinha, val: boolean) => {
                 </div>
                 <template v-else>
                     <div class="mb-3 flex flex-wrap items-center justify-end gap-2">
-                        <select v-if="segmentos.length" v-model="segId" class="h-9 rounded-md border border-input bg-background px-3 text-sm" title="Filtrar por segmento">
-                            <option value="">Todos os segmentos</option>
+                        <select v-if="segmentos.length" v-model="segId" class="h-9 rounded-md border border-input bg-background px-3 text-sm" title="Filtrar por etapa de ensino">
+                            <option value="">Todas as etapas de ensino</option>
                             <option v-for="sg in segmentos" :key="sg.seg_id" :value="sg.seg_id">{{ sg.seg_nome }}</option>
                         </select>
                         <div class="relative w-full max-w-xs sm:w-56">

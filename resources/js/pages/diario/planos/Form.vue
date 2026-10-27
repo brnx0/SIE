@@ -3,6 +3,7 @@ import InputError from '@/components/common/InputError.vue';
 import LocalCombobox from '@/components/common/LocalCombobox.vue';
 import { usePermissao } from '@/composables/usePermissao';
 import PdfPreviewModal from '@/components/common/PdfPreviewModal.vue';
+import PlanoAnexos, { type PlanoAnexo } from '@/components/diario/PlanoAnexos.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -27,7 +28,11 @@ const props = withDefaults(defineProps<{
     anosLetivos: AnoLetivoResumo[];
     indicadoresSelecionados: number[];
     podeEditar?: boolean;
-}>(), { podeEditar: true });
+    anexos?: PlanoAnexo[];
+}>(), { podeEditar: true, anexos: () => [] });
+
+// Sub-lista via computed das props (atualiza após upload/remoção com preserveState).
+const anexos = computed(() => props.anexos ?? []);
 
 const { isReadOnly } = usePermissao();
 
@@ -68,12 +73,8 @@ const form = useForm({
 });
 
 const series = ref<{ ser_id: number; ser_nome: string; ser_fl_multi?: boolean }[]>([]);
+// Turma é OPCIONAL: em branco o plano vale para todas as turmas da série.
 const turmas = ref<{ tur_id: number; tur_nome: string }[]>([]);
-
-// Série "turma multi" habilita a escolha (OPCIONAL) de uma turma daquela série.
-const serieMulti = computed(
-    () => !!series.value.find((s) => s.ser_id === form.dpa_ser_id)?.ser_fl_multi,
-);
 const disciplinas = ref<PlanoDisciplinaResumo[]>([]);
 const unidades = ref<PlanoUnidade[]>([]);
 const indicadores = ref<IndicadorResumo[]>([]);
@@ -188,10 +189,6 @@ watch(() => form.dpa_ser_id, () => {
     fetchDisciplinas();
     fetchTurmas();
     fetchIndicadores();
-});
-// Série deixou de ser multi (ex.: troca de seleção): a turma não se aplica mais.
-watch(serieMulti, (multi) => {
-    if (!multi) form.dpa_tur_id = null;
 });
 watch(() => form.dpa_dis_id, fetchIndicadores);
 
@@ -397,8 +394,8 @@ const breadcrumbs: BreadcrumbItem[] = [
                             placeholder="Selecione..." :invalid="!!form.errors.dpa_ser_id" />
                         <InputError :message="form.errors.dpa_ser_id" />
                     </div>
-                    <!-- Turma: só em ano escolar com turma multi; opcional. -->
-                    <div v-if="serieMulti" class="md:col-span-2">
+                    <!-- Turma: opcional; em branco o plano vale para todas as turmas do ano escolar. -->
+                    <div class="md:col-span-2">
                         <Label>Turma</Label>
                         <LocalCombobox v-model="form.dpa_tur_id" :items="itemsTurma"
                             placeholder="Todas as turmas" :invalid="!!form.errors.dpa_tur_id" />
@@ -507,6 +504,20 @@ const breadcrumbs: BreadcrumbItem[] = [
                     </div>
 
                 </div>
+            </section>
+
+            <!-- Anexos (material de apoio) — só depois de salvo; fora da impressão -->
+            <section class="rounded-xl border bg-card p-4 shadow-sm">
+                <h2 class="mb-3 text-sm font-semibold text-muted-foreground">Anexos (material de apoio)</h2>
+                <PlanoAnexos
+                    v-if="isEdit"
+                    :anexos="anexos"
+                    :upload-url="`/diario/planos/${plano!.dpa_id}/anexos`"
+                    :pode-alterar="!readonly"
+                />
+                <p v-else class="rounded-lg border border-dashed px-4 py-6 text-sm text-muted-foreground">
+                    Salve o plano para anexar imagens e arquivos de apoio.
+                </p>
             </section>
 
             <!-- Coordenação (só se status != pendente) -->

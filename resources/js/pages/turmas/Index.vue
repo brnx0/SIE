@@ -224,7 +224,7 @@ const exportFilters = () => ({
                             <th class="px-4 py-3">Escola</th>
                             <th class="px-4 py-3">Ano</th>
                             <th class="px-4 py-3 text-center">Sem.</th>
-                            <th class="px-4 py-3">Segmento</th>
+                            <th class="px-4 py-3">Etapa</th>
                             <th class="px-4 py-3">Turno</th>
                             <th class="px-4 py-3 text-center">Cap.</th>
                             <th class="px-4 py-3 text-center">Situação</th>

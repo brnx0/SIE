@@ -244,7 +244,7 @@ const selectClass = (hasError: boolean) =>
             </div>
 
             <div class="grid gap-1.5">
-                <FormLabel :required="true">Segmento</FormLabel>
+                <FormLabel :required="true">Etapa de Ensino</FormLabel>
                 <select v-model="fSegId" :class="selectClass(false)" class="min-w-[280px]">
                     <option :value="''">Selecione...</option>
                     <option v-for="seg in segmentos" :key="seg.seg_id" :value="seg.seg_id">{{ seg.seg_nome_completo }}</option>
@@ -254,7 +254,7 @@ const selectClass = (hasError: boolean) =>
             <div class="grid gap-1.5">
                 <FormLabel :required="true">Série</FormLabel>
                 <select v-model="fSerId" :disabled="!fSegId" :class="selectClass(false)" class="min-w-[180px]">
-                    <option :value="''">{{ !fSegId ? 'Selecione segmento primeiro' : 'Selecione...' }}</option>
+                    <option :value="''">{{ !fSegId ? 'Selecione a etapa de ensino primeiro' : 'Selecione...' }}</option>
                     <option v-for="s in series" :key="s.ser_id" :value="s.ser_id">{{ s.ser_nome }}</option>
                 </select>
             </div>
@@ -313,7 +313,7 @@ const selectClass = (hasError: boolean) =>
                         :invalid="!!errors.grd_dis_id"
                     />
                     <p v-if="!loadingDisciplinas && disciplinas.length === 0" class="text-xs text-muted-foreground">
-                        Nenhuma disciplina compatível com este segmento.
+                        Nenhuma disciplina compatível com esta etapa de ensino.
                     </p>
                     <InputError :message="errors.grd_dis_id" />
                 </div>
@@ -381,7 +381,7 @@ const selectClass = (hasError: boolean) =>
                 <tbody>
                     <tr v-if="!fAnlId || !fSegId || !fSerId">
                         <td colspan="6" class="px-3 py-6 text-center text-muted-foreground">
-                            Selecione ano letivo, segmento e série para visualizar a grade.
+                            Selecione ano letivo, etapa de ensino e série para visualizar a grade.
                         </td>
                     </tr>
                     <tr v-else-if="loadingGrade">

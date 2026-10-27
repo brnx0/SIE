@@ -60,7 +60,7 @@ const submit = () => {
     }
 };
 
-const submitLabel = props.mode === 'create' ? 'Cadastrar segmento' : 'Salvar alterações';
+const submitLabel = props.mode === 'create' ? 'Cadastrar etapa de ensino' : 'Salvar alterações';
 </script>
 
 <template>
@@ -102,7 +102,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar segmento' : 'Salvar alt
 
             <!-- Nome Reduzido -->
             <div class="grid gap-2 sm:col-span-2">
-                <FormLabel for="seg_nome_reduzido" :required="true">Nome Reduzido do Segmento</FormLabel>
+                <FormLabel for="seg_nome_reduzido" :required="true">Nome Reduzido da Etapa de Ensino</FormLabel>
                 <Input
                     id="seg_nome_reduzido"
                     v-model="form.seg_nome_reduzido"
@@ -129,7 +129,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar segmento' : 'Salvar alt
 
             <!-- Nome Completo -->
             <div class="grid gap-2 sm:col-span-4">
-                <FormLabel for="seg_nome_completo" :required="true">Nome Completo do Segmento</FormLabel>
+                <FormLabel for="seg_nome_completo" :required="true">Nome Completo da Etapa de Ensino</FormLabel>
                 <Input
                     id="seg_nome_completo"
                     v-model="form.seg_nome_completo"

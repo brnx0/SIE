@@ -55,7 +55,7 @@ class StoreGradeDisciplinarRequest extends FormRequest
                 ->exists();
 
             if ($dup) {
-                $v->errors()->add('grd_dis_id', 'Esta disciplina já está vinculada a esta grade (ano + segmento + série).');
+                $v->errors()->add('grd_dis_id', 'Esta disciplina já está vinculada a esta grade (ano + etapa de ensino + série).');
             }
         });
     }
@@ -64,7 +64,7 @@ class StoreGradeDisciplinarRequest extends FormRequest
     {
         return [
             'grd_anl_id'           => 'ano letivo',
-            'grd_seg_id'           => 'segmento',
+            'grd_seg_id'           => 'etapa de ensino',
             'grd_ser_id'           => 'série',
             'grd_dis_id'           => 'disciplina',
             'grd_nome_alternativo' => 'nome alternativo',

@@ -104,7 +104,7 @@ class StoreTurmaRequest extends FormRequest
         return [
             'tur_esc_id'             => 'escola',
             'tur_anl_id'             => 'ano letivo',
-            'tur_seg_id'             => 'segmento',
+            'tur_seg_id'             => 'etapa de ensino',
             'tur_ser_id'             => 'série',
             'tur_cd_inep'            => 'código INEP',
             'tur_nome'               => 'nome da turma',

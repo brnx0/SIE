@@ -37,26 +37,26 @@ watch(search, () => {
 
 watch(perPage, () => apply(true));
 
-const breadcrumbs: BreadcrumbItem[] = [{ title: 'Segmentos', href: '/segmentos' }];
+const breadcrumbs: BreadcrumbItem[] = [{ title: 'Etapas de Ensino', href: '/segmentos' }];
 
 const remove = (seg: Segmento) => {
-    if (!confirm(`Remover segmento "${seg.seg_nome_reduzido}"?`)) return;
+    if (!confirm(`Remover etapa de ensino "${seg.seg_nome_reduzido}"?`)) return;
     router.delete(`/segmentos/${seg.seg_id}`, { preserveScroll: true });
 };
 </script>
 
 <template>
-    <Head title="Segmentos" />
+    <Head title="Etapas de Ensino" />
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex flex-col gap-6 p-4 md:p-6">
             <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                    <h1 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">Segmentos</h1>
-                    <p class="text-sm text-slate-500 dark:text-slate-400">Gerencie os segmentos da rede de ensino.</p>
+                    <h1 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">Etapas de Ensino</h1>
+                    <p class="text-sm text-slate-500 dark:text-slate-400">Gerencie as etapas de ensino da rede.</p>
                 </div>
                 <Link v-if="!isReadOnly" href="/segmentos/create">
                     <Button class="bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400">
-                        <Plus class="mr-2 size-4" /> Novo segmento
+                        <Plus class="mr-2 size-4" /> Nova etapa de ensino
                     </Button>
                 </Link>
             </div>
@@ -81,7 +81,7 @@ const remove = (seg: Segmento) => {
                 <table class="w-full text-sm">
                     <thead class="bg-muted/50 text-left text-xs uppercase tracking-wide text-muted-foreground">
                         <tr>
-                            <th class="px-4 py-3">Segmento</th>
+                            <th class="px-4 py-3">Etapa</th>
                             <th class="px-4 py-3">Código INEP</th>
                             <th class="px-4 py-3 text-center">Anos</th>
                             <th class="px-4 py-3 text-center">Ordem</th>
@@ -91,7 +91,7 @@ const remove = (seg: Segmento) => {
                     </thead>
                     <tbody class="divide-y">
                         <tr v-if="segmentos.data.length === 0">
-                            <td colspan="6" class="px-4 py-12 text-center text-muted-foreground">Nenhum segmento cadastrado.</td>
+                            <td colspan="6" class="px-4 py-12 text-center text-muted-foreground">Nenhuma etapa de ensino cadastrada.</td>
                         </tr>
                         <tr v-for="seg in segmentos.data" :key="seg.seg_id" class="transition-colors hover:bg-muted/30">
                             <td class="px-4 py-3">

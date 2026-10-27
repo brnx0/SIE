@@ -34,7 +34,7 @@
 </div>
 
 @if($grade->isEmpty() || empty($diasAtivos))
-    <p style="color:#94a3b8;text-align:center;padding:24px">Nenhuma grade de horários configurada para este segmento.</p>
+    <p style="color:#94a3b8;text-align:center;padding:24px">Nenhuma grade de horários configurada para esta etapa de ensino.</p>
 @else
 <table>
     <thead>

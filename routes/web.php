@@ -12,6 +12,7 @@ use App\Http\Controllers\Relatorio\DadosAlunosTurmaController;
 use App\Http\Controllers\Relatorio\EquipeGestoraController;
 use App\Http\Controllers\Relatorio\AlunosAptosEjaController;
 use App\Http\Controllers\Relatorio\DistorcaoIdadeController;
+use App\Http\Controllers\Relatorio\IndicesAprovacaoController;
 use App\Http\Controllers\Relatorio\TurmasMultisseriadasController;
 use App\Http\Controllers\Relatorio\LevantamentoMunicipioController;
 use App\Http\Controllers\Relatorio\PendenciaEncerramentoController;
@@ -380,6 +381,9 @@ Route::middleware(['auth', 'verified', 'tela'])->group(function () {
     Route::get('relatorios/distorcao-idade', [DistorcaoIdadeController::class, 'form'])->name('relatorios.distorcao-idade.form');
     Route::get('relatorios/distorcao-idade/gerar', [DistorcaoIdadeController::class, 'gerar'])->name('relatorios.distorcao-idade.gerar');
     Route::get('relatorios/distorcao-idade/xlsx', [DistorcaoIdadeController::class, 'exportarXlsx'])->name('relatorios.distorcao-idade.xlsx');
+    Route::get('relatorios/indices-aprovacao', [IndicesAprovacaoController::class, 'form'])->name('relatorios.indices-aprovacao.form');
+    Route::get('relatorios/indices-aprovacao/gerar', [IndicesAprovacaoController::class, 'gerar'])->name('relatorios.indices-aprovacao.gerar');
+    Route::get('relatorios/indices-aprovacao/xlsx', [IndicesAprovacaoController::class, 'exportarXlsx'])->name('relatorios.indices-aprovacao.xlsx');
     Route::get('relatorios/turmas-multisseriadas', [TurmasMultisseriadasController::class, 'form'])->name('relatorios.turmas-multisseriadas.form');
     Route::get('relatorios/turmas-multisseriadas/gerar', [TurmasMultisseriadasController::class, 'gerar'])->name('relatorios.turmas-multisseriadas.gerar');
     Route::get('relatorios/turmas-multisseriadas/xlsx', [TurmasMultisseriadasController::class, 'exportarXlsx'])->name('relatorios.turmas-multisseriadas.xlsx');
@@ -479,6 +483,10 @@ Route::middleware(['auth', 'verified', 'tela'])->group(function () {
         Route::put('planos/{plano}', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'update'])->name('planos.update');
         Route::delete('planos/{plano}', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'destroy'])->name('planos.destroy');
         Route::get('planos/{plano}/pdf', [\App\Http\Controllers\Diario\PlanoAulaController::class, 'pdf'])->name('planos.pdf');
+        // Anexos (material de apoio) do plano — disco privado, fora do PDF.
+        Route::post('planos/{plano}/anexos', [\App\Http\Controllers\Diario\PlanoAulaAnexoController::class, 'store'])->name('planos.anexos.store');
+        Route::get('planos/{plano}/anexos/{anexo}', [\App\Http\Controllers\Diario\PlanoAulaAnexoController::class, 'show'])->name('planos.anexos.show');
+        Route::delete('planos/{plano}/anexos/{anexo}', [\App\Http\Controllers\Diario\PlanoAulaAnexoController::class, 'destroy'])->name('planos.anexos.destroy');
 
         Route::get('planos-aee/export', [\App\Http\Controllers\Diario\PlanoAeeController::class, 'export'])->name('planos-aee.export');
         Route::get('planos-aee', [\App\Http\Controllers\Diario\PlanoAeeController::class, 'index'])->name('planos-aee.index');
@@ -494,6 +502,14 @@ Route::middleware(['auth', 'verified', 'tela'])->group(function () {
             ->parameters(['instrumentos-avaliativos' => 'instrumento'])
             ->except(['show']);
 
+        // Termos (nomenclaturas) dos resultados da avaliação diagnóstica — rede inteira.
+        Route::get('termos-diagnostico', [\App\Http\Controllers\Diario\TermoDiagnosticoController::class, 'index'])->name('termos-diagnostico.index');
+        Route::put('termos-diagnostico', [\App\Http\Controllers\Diario\TermoDiagnosticoController::class, 'update'])->name('termos-diagnostico.update');
+
+        // Parametrização das avaliações por unidade (instrumentos + valor máximo) — rede inteira.
+        Route::get('parametrizacao-avaliacoes', [\App\Http\Controllers\Diario\ParametrizacaoAvaliacaoController::class, 'index'])->name('parametrizacao-avaliacoes.index');
+        Route::put('parametrizacao-avaliacoes', [\App\Http\Controllers\Diario\ParametrizacaoAvaliacaoController::class, 'update'])->name('parametrizacao-avaliacoes.update');
+
         Route::get('quadro-horario', [\App\Http\Controllers\Diario\QuadroHorarioController::class, 'index'])->name('quadro-horario.index');
         Route::post('quadro-horario/{turma}/horarios', [\App\Http\Controllers\Diario\QuadroHorarioController::class, 'store'])->name('quadro-horario.store');
         Route::delete('quadro-horario/{turma}/horarios/{turmaHorario}', [\App\Http\Controllers\Diario\QuadroHorarioController::class, 'destroy'])->name('quadro-horario.destroy');
@@ -508,6 +524,10 @@ Route::middleware(['auth', 'verified', 'tela'])->group(function () {
         // Lançamento de avaliação descritiva (autosave por aluno)
         Route::get('avaliacao-descritiva/alunos', [\App\Http\Controllers\Diario\AvaliacaoDescritivaController::class, 'alunos'])->name('avaliacao-descritiva.alunos');
         Route::post('avaliacao-descritiva', [\App\Http\Controllers\Diario\AvaliacaoDescritivaController::class, 'salvar'])->name('avaliacao-descritiva.salvar');
+
+        // Parecer inicial (sem unidade letiva) — antes dos pareceres descritivos.
+        Route::get('parecer-inicial/alunos', [\App\Http\Controllers\Diario\AvaliacaoDescritivaController::class, 'alunosInicial'])->name('parecer-inicial.alunos');
+        Route::post('parecer-inicial', [\App\Http\Controllers\Diario\AvaliacaoDescritivaController::class, 'salvarInicial'])->name('parecer-inicial.salvar');
 
         Route::get('quadro-horario/escolas', [\App\Http\Controllers\Diario\QuadroHorarioController::class, 'lookupEscolas'])->name('quadro-horario.escolas');
         Route::get('quadro-horario/turmas', [\App\Http\Controllers\Diario\QuadroHorarioController::class, 'lookupTurmas'])->name('quadro-horario.turmas');
@@ -590,6 +610,7 @@ Route::middleware(['auth', 'verified', 'tela'])->group(function () {
         Route::get('planos', [\App\Http\Controllers\Coordenador\PlanoValidacaoController::class, 'index'])->name('planos.index');
         Route::put('planos/{plano}/status', [\App\Http\Controllers\Coordenador\PlanoValidacaoController::class, 'update'])->name('planos.status');
         Route::get('planos/{plano}/pdf', [\App\Http\Controllers\Coordenador\PlanoValidacaoController::class, 'pdf'])->name('planos.pdf');
+        Route::get('planos/{plano}/anexos/{anexo}', [\App\Http\Controllers\Coordenador\PlanoValidacaoController::class, 'anexo'])->name('planos.anexo');
     });
     Route::prefix('api/coordenador')->name('api.coordenador.')->middleware('role:coordenador')->group(function () {
         Route::get('planos/{plano}',          [\App\Http\Controllers\Coordenador\PlanoValidacaoController::class, 'show'])->name('planos.show');

@@ -49,7 +49,7 @@
 <body>
 
 <div class="header">
-    <h1>Segmentos</h1>
+    <h1>Etapas de Ensino</h1>
     <p>Relatório gerado em {{ now()->format('d/m/Y \à\s H:i') }}
         @if($search) · Filtro: "{{ $search }}" @endif
     </p>

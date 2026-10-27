@@ -133,7 +133,8 @@ class DiagnosticoRelatorioController extends Controller
                 'aluno'      => $alnId ? ($alunos->first()?->aluno?->aln_nome) : null,
             ],
             'unidades' => $unidades->values(),
-            'opcoes'   => DiarioDiagnostico::OPCOES,
+            'opcoes'   => \App\Models\Parametro\TermoDiagnostico::rotulos(),
+            'siglas'   => \App\Models\Parametro\TermoDiagnostico::siglas(),
             'alunos'   => $alunosPayload,
         ]);
     }

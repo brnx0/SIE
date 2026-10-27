@@ -109,7 +109,7 @@ const remove = (esg: EscolaSegmento) => {
         <!-- Cabeçalho -->
         <div class="flex items-center justify-between">
             <p class="text-sm text-slate-500 dark:text-slate-400">
-                Segmentos ofertados por esta escola. O registro é válido do ano letivo inicial
+                Etapas de ensino ofertadas por esta escola. O registro é válido do ano letivo inicial
                 até o ano letivo final (vazio = sem encerramento previsto).
             </p>
             <div class="flex items-center gap-2">
@@ -119,7 +119,7 @@ const remove = (esg: EscolaSegmento) => {
                     @click="openCreate"
                     class="bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
                 >
-                    <Plus class="mr-2 size-4" /> Adicionar segmento
+                    <Plus class="mr-2 size-4" /> Adicionar etapa de ensino
                 </Button>
             </div>
         </div>
@@ -129,7 +129,7 @@ const remove = (esg: EscolaSegmento) => {
             <table class="w-full text-sm">
                 <thead class="bg-muted/50 text-left text-xs uppercase tracking-wide text-muted-foreground">
                     <tr>
-                        <th class="px-4 py-3">Segmento</th>
+                        <th class="px-4 py-3">Etapa</th>
                         <th class="px-4 py-3 text-center">Ano Letivo Início</th>
                         <th class="px-4 py-3 text-center">Ano Letivo Fim</th>
                         <th class="px-4 py-3">Ano Escolar Inicial</th>
@@ -142,7 +142,7 @@ const remove = (esg: EscolaSegmento) => {
                 <tbody class="divide-y">
                     <tr v-if="escolaSegmentos.length === 0">
                         <td colspan="8" class="px-4 py-10 text-center text-muted-foreground">
-                            Nenhum segmento cadastrado para esta escola.
+                            Nenhuma etapa de ensino cadastrada para esta escola.
                         </td>
                     </tr>
                     <tr
@@ -204,7 +204,7 @@ const remove = (esg: EscolaSegmento) => {
             <div class="mb-4 flex flex-col gap-3 border-b border-indigo-100 pb-4 dark:border-indigo-900/40 sm:flex-row sm:items-center sm:justify-between">
                 <h3 class="flex items-center gap-2 text-sm font-semibold text-indigo-800 dark:text-indigo-200">
                     <BookOpen class="size-4" />
-                    {{ editingId ? 'Editar segmento da escola' : 'Novo segmento da escola' }}
+                    {{ editingId ? 'Editar etapa de ensino da escola' : 'Nova etapa de ensino da escola' }}
                 </h3>
                 <div class="flex items-center gap-2">
                     <Button type="button" variant="outline" @click="cancel">
@@ -217,7 +217,7 @@ const remove = (esg: EscolaSegmento) => {
                         class="bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
                     >
                         <Check class="mr-1.5 size-4" />
-                        {{ editingId ? 'Salvar segmento' : 'Adicionar segmento' }}
+                        {{ editingId ? 'Salvar etapa de ensino' : 'Adicionar etapa de ensino' }}
                     </Button>
                 </div>
             </div>
@@ -225,7 +225,7 @@ const remove = (esg: EscolaSegmento) => {
             <div class="grid gap-4 sm:grid-cols-4">
                 <!-- Segmento -->
                 <div class="grid gap-2 sm:col-span-2">
-                    <FormLabel for="esg_seg_id" :required="true">Segmento</FormLabel>
+                    <FormLabel for="esg_seg_id" :required="true">Etapa de Ensino</FormLabel>
                     <select
                         id="esg_seg_id"
                         v-model="form.seg_id"
@@ -242,7 +242,7 @@ const remove = (esg: EscolaSegmento) => {
                 <!-- Ativo -->
                 <div class="flex items-center gap-3 self-end pb-1 sm:col-span-2">
                     <Switch id="esg_fl_ativo" v-model="form.esg_fl_ativo" />
-                    <FormLabel for="esg_fl_ativo" class="font-normal">Segmento ativo na escola</FormLabel>
+                    <FormLabel for="esg_fl_ativo" class="font-normal">Etapa de ensino ativa na escola</FormLabel>
                 </div>
 
                 <!-- Ano Letivo Início -->
@@ -287,7 +287,7 @@ const remove = (esg: EscolaSegmento) => {
                         class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-background dark:text-foreground"
                     >
                         <option :value="null" disabled>
-                            {{ !form.seg_id ? 'Selecione o segmento...' : loadingSeries ? 'Carregando...' : 'Selecione...' }}
+                            {{ !form.seg_id ? 'Selecione a etapa de ensino...' : loadingSeries ? 'Carregando...' : 'Selecione...' }}
                         </option>
                         <option v-for="ser in series" :key="ser.ser_id" :value="ser.ser_id">
                             {{ ser.ser_nome }}
@@ -306,7 +306,7 @@ const remove = (esg: EscolaSegmento) => {
                         class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-background dark:text-foreground"
                     >
                         <option :value="null" disabled>
-                            {{ !form.seg_id ? 'Selecione o segmento...' : loadingSeries ? 'Carregando...' : 'Selecione...' }}
+                            {{ !form.seg_id ? 'Selecione a etapa de ensino...' : loadingSeries ? 'Carregando...' : 'Selecione...' }}
                         </option>
                         <option v-for="ser in series" :key="ser.ser_id" :value="ser.ser_id">
                             {{ ser.ser_nome }}
@@ -322,7 +322,7 @@ const remove = (esg: EscolaSegmento) => {
                         id="esg_motivo"
                         v-model="form.esg_motivo"
                         rows="2"
-                        placeholder="Opcional — justificativa para inclusão ou encerramento do segmento..."
+                        placeholder="Opcional — justificativa para inclusão ou encerramento da etapa de ensino..."
                         class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     />
                     <InputError :message="form.errors.esg_motivo" />

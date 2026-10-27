@@ -133,6 +133,12 @@ class DiarioPlanoAula extends Model
         return $this->hasMany(DiarioPlanoIndicador::class, 'dpi_dpa_id', 'dpa_id');
     }
 
+    /** Material de apoio (consulta) — fora do PDF do plano. */
+    public function anexos(): HasMany
+    {
+        return $this->hasMany(DiarioPlanoAnexo::class, 'dax_dpa_id', 'dpa_id');
+    }
+
     public function isPendente(): bool
     {
         return $this->dpa_status === self::STATUS_PENDENTE;

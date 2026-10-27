@@ -32,6 +32,7 @@ class PlanoAulaController extends Controller
             ->when(! $user->isAdmin() && ! $this->soVisualizacaoTela($request), fn ($q) => $q->where('dpa_user_id', (int) $user->id))
             ->with([
                 'serie:ser_id,ser_nome',
+                'turma:tur_id,tur_nome',
                 'disciplina:dis_id,dis_nome',
                 'unidade:uni_id,uni_numero,uni_tipo',
                 'escola:esc_id,esc_nome',
@@ -59,13 +60,14 @@ class PlanoAulaController extends Controller
         return response()->streamDownload(function () use ($planos) {
             $out = fopen('php://output', 'w');
             fprintf($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
-            fputcsv($out, ['Status', 'Professor', 'Escola', 'Série', 'Disciplina', 'Unidade', 'Tema', 'Data Inicial', 'Data Final'], ';');
+            fputcsv($out, ['Status', 'Professor', 'Escola', 'Série', 'Turma', 'Disciplina', 'Unidade', 'Tema', 'Data Inicial', 'Data Final'], ';');
             foreach ($planos as $p) {
                 fputcsv($out, [
                     ucfirst($p->dpa_status ?? ''),
                     $p->funcionario?->fun_nome ?? '',
                     $p->escola?->esc_nome ?? '',
                     $p->serie?->ser_nome ?? '',
+                    $p->turma?->tur_nome ?? 'Todas',
                     $p->disciplina?->dis_nome ?? '',
                     $p->unidade ? ($p->unidade->uni_numero . 'º ' . $p->unidade->uni_tipo) : '',
                     $p->dpa_tema,
@@ -120,6 +122,7 @@ class PlanoAulaController extends Controller
             ->when(! $user->isAdmin() && ! $this->soVisualizacaoTela($request), fn ($q) => $q->where('dpa_user_id', (int) $user->id))
             ->with([
                 'serie:ser_id,ser_nome',
+                'turma:tur_id,tur_nome',
                 'disciplina:dis_id,dis_nome',
                 'unidade:uni_id,uni_numero,uni_tipo',
                 'escola:esc_id,esc_nome',
@@ -218,6 +221,10 @@ class PlanoAulaController extends Controller
             'indicadoresSelecionados' => $plano->indicadores->pluck('dpi_ind_id')->all(),
             'podeEditar'  => $request->user()->isAdmin()
                 || (int) $plano->dpa_user_id === (int) $request->user()->id,
+            // Material de apoio: consulta para quem abre o plano; enviar/remover
+            // segue a edição (autor/admin) e trava no plano aprovado.
+            'anexos'      => $plano->anexos()->with('usuario:id,name')->orderBy('dax_created_at')->get()
+                ->map(fn ($a) => $a->resumo("/diario/planos/{$plano->dpa_id}/anexos"))->values(),
         ]);
     }
 
@@ -258,8 +265,16 @@ class PlanoAulaController extends Controller
             return back()->with('error', 'Plano só pode ser excluído enquanto estiver pendente.');
         }
 
-        return $this->safeDelete($plano)
-            ?? to_route('diario.planos.index')->with('success', 'Plano removido.');
+        // Os anexos saem pelo cascade do banco (sem evento do model): guarda os
+        // caminhos para apagar os arquivos só se a exclusão do plano der certo.
+        $arquivos = $plano->anexos()->pluck('dax_caminho')->all();
+
+        if ($erro = $this->safeDelete($plano)) {
+            return $erro;
+        }
+        \Illuminate\Support\Facades\Storage::disk(\App\Models\Diario\DiarioPlanoAnexo::DISCO)->delete($arquivos);
+
+        return to_route('diario.planos.index')->with('success', 'Plano removido.');
     }
 
     public function pdf(DiarioPlanoAula $plano, Request $request): HttpResponse|RedirectResponse
@@ -364,7 +379,7 @@ class PlanoAulaController extends Controller
             ->where('t.tur_modalidade', 'REGULAR')
             ->when($anlId, fn ($q) => $q->where('t.tur_anl_id', $anlId))
             ->when($escId, fn ($q) => $q->where('t.tur_esc_id', $escId))
-            // ser_fl_multi: o form usa p/ liberar a escolha (opcional) da turma.
+            // ser_fl_multi: informativo (a turma do plano é opcional em qualquer série).
             ->select('s.ser_id', 's.ser_nome', 's.ser_fl_multi')
             ->distinct()
             ->orderBy('s.ser_nome')
@@ -380,7 +395,7 @@ class PlanoAulaController extends Controller
 
     /**
      * Turmas REGULARES da série (escola/ano) em que o professor tem regência.
-     * Usado só quando a série é turma multi — o plano segue por série e a turma
+     * O plano segue por série e a turma
      * é um recorte OPCIONAL.
      */
     public function lookupTurmas(Request $request): JsonResponse

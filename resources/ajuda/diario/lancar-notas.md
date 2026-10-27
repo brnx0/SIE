@@ -31,6 +31,15 @@ Dentro do **Diário de Classe** (`/diario`), após selecionar turma, disciplina 
 - **Valor** — quanto a avaliação vale (o teto do conjunto é 10).
 - **Nota do aluno** — numérica ou conceito, dependendo da série.
 
+## Parametrização da unidade
+
+A coordenação pode definir, em **Diário Online › Cadastro › Parametrização de avaliações**, quais instrumentos cada unidade terá e o valor máximo de cada um (vale para toda a rede).
+
+- Com a unidade parametrizada, a lista de instrumentos mostra só os definidos e o **valor já vem preenchido** ao escolher o instrumento.
+- Se os valores estiverem **bloqueados**, o campo Valor fica travado no valor definido pela coordenação.
+- Avaliações criadas antes da parametrização continuam editáveis com o instrumento que já tinham.
+- A soma das avaliações regulares continua limitada a 10.
+
 ## Avisos comuns
 
 - **"A soma dos valores das avaliações não pode passar de 10."** — reduza o valor da nova avaliação ou ajuste as existentes.

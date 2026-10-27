@@ -157,7 +157,7 @@ class CensoCriticasService
                 $this->add($reg, $suj, $t->tur_id, 'Mediação didático-pedagógica (campo 6)', 'Tipo de mediação não informado.', self::ERRO, 'turma');
             }
             if (blank($t->tur_seg_id)) {
-                $this->add($reg, $suj, $t->tur_id, 'Etapa/Segmento', 'Turma sem segmento definido (necessário p/ etapa).', self::ERRO, 'turma');
+                $this->add($reg, $suj, $t->tur_id, 'Etapa de Ensino', 'Turma sem etapa de ensino definida (necessária p/ a etapa do Censo).', self::ERRO, 'turma');
             }
             if (blank($t->tur_ser_id)) {
                 $this->add($reg, $suj, $t->tur_id, 'Série', 'Turma sem série definida.', self::ALERTA, 'turma');

@@ -21,7 +21,7 @@ A tela é visível para o **coordenador** e para o administrador. O coordenador 
 
 1. Escolha o **Ano Letivo** (já vem selecionado o ano em exercício).
 2. Selecione a **Escola**.
-3. Refine com os filtros de **Segmento, Série, Turma e Disciplina**, se quiser.
+3. Refine com os filtros de **Etapa de Ensino, Série, Turma e Disciplina**, se quiser.
 4. Use o campo de **busca** para procurar pelo tema do plano ou pelo nome do professor.
 5. Clique em um plano para abrir os detalhes (tema, período, indicadores).
 6. Registre sua decisão de **aprovar** ou **reprovar** e salve. A revisão fica registrada com seu nome e a data.

@@ -321,7 +321,7 @@ const sexoLabel = (s: string | null) => {
                 <thead>
                     <tr>
                         <th>DATA</th>
-                        <th>SEGMENTO</th>
+                        <th>ETAPA</th>
                         <th>ANO</th>
                         <th>ASSINATURA DO RESPONSÁVEL</th>
                         <th>OBSERVAÇÃO</th>

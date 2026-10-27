@@ -45,7 +45,7 @@ export interface PlanoAula {
     dpa_esc_id: number;
     dpa_anl_id: number;
     dpa_ser_id: number;
-    /** Opcional — só em série com turma multi (ser_fl_multi). */
+    /** Opcional — em branco o plano vale para todas as turmas da série. */
     dpa_tur_id: number | null;
     dpa_dis_id: number;
     dpa_uni_id: number;

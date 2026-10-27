@@ -32,6 +32,15 @@ Menu **Diário Online → Planos de Aula** (endereço `/diario/planos`). Você v
 - **Datas inicial/final** — período coberto pelo plano.
 - **Status** — Pendente, Aprovado ou Em correção.
 
+## Anexos (material de apoio)
+
+Depois de salvar o plano, a seção **Anexos** permite enviar imagens e arquivos que fundamentam o planejamento.
+
+- Formatos: **PDF**, imagens (**JPG, PNG, WEBP**) e documentos do Office (**DOC, DOCX, XLS, XLSX, PPT, PPTX**), até **10 MB** cada e no máximo **10 anexos** por plano.
+- A coordenação vê e abre os anexos na tela de **Validação de Planos**.
+- Os anexos **não entram na impressão/PDF** do plano — servem só para consulta.
+- Só o autor do plano envia ou remove anexos; com o plano **aprovado** eles ficam apenas para consulta.
+
 ## Avisos comuns
 
 - **"Você não leciona esta disciplina em turmas desta série."** — só é possível planejar o que você leciona.

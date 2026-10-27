@@ -72,7 +72,7 @@ const remove = (ser: Serie) => {
                     <thead class="bg-muted/50 text-left text-xs uppercase tracking-wide text-muted-foreground">
                         <tr>
                             <th class="px-4 py-3">Série</th>
-                            <th class="px-4 py-3">Segmento</th>
+                            <th class="px-4 py-3">Etapa</th>
                             <th class="px-4 py-3 text-center">Carga (h)</th>
                             <th class="px-4 py-3 text-center">Idade</th>
                             <th class="px-4 py-3 text-center">Ordem</th>

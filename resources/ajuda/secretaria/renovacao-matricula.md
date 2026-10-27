@@ -20,7 +20,7 @@ A secretaria opera apenas as escolas em que está lotada; o administrador, todas
 ## Passo a passo
 
 1. Selecione **Ano Letivo** e **Escola**.
-2. Se quiser, filtre por **segmento** e escolha a **Turma**.
+2. Se quiser, filtre por **etapa de ensino** e escolha a **Turma**.
 3. A tela lista os **alunos ativos** da turma.
 4. Para cada aluno, marque **quer renovar** ou **não quer renovar**. A marcação é salva automaticamente.
 

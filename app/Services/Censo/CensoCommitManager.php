@@ -422,7 +422,7 @@ class CensoCommitManager
             $segId = $etapa->ced_seg_id
                 ?: DB::table('edu_serie')->where('ser_id', $etapa->ced_ser_id)->value('seg_id');
             if (! $segId) {
-                $this->marcarErro($reg, "Série {$etapa->ced_ser_id} sem segmento (edu_serie.seg_id).");
+                $this->marcarErro($reg, "Série {$etapa->ced_ser_id} sem etapa de ensino (edu_serie.seg_id).");
                 $resumo['turmas_bloqueadas']++;
                 continue;
             }

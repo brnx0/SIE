@@ -18,7 +18,7 @@ import type {
     ProfessorResumoDiario,
 } from '@/types/diario';
 import { Head } from '@inertiajs/vue3';
-import { BookOpenCheck, CalendarCheck, CalendarClock, Calculator, ClipboardList, ListChecks, Pencil, Stethoscope } from 'lucide-vue-next';
+import { BookOpenCheck, CalendarCheck, CalendarClock, Calculator, ClipboardList, ListChecks, NotebookPen, Pencil, Stethoscope } from 'lucide-vue-next';
 import { computed, onMounted, ref, watch } from 'vue';
 
 const props = defineProps<{
@@ -184,6 +184,7 @@ watch(turId, () => {
 });
 
 const contextoCompleto = computed(() => !!(anlId.value && escId.value && turId.value && disId.value && uniId.value));
+const contextoDisciplina = computed(() => !!(anlId.value && escId.value && turId.value && disId.value));
 
 // Tipos de avaliação configurados na série da turma selecionada.
 const turmaSelecionada = computed(() => turmas.value.find((t) => Number(t.tur_id) === Number(turId.value)));
@@ -203,7 +204,8 @@ const tiposAvaliacao = computed<string[]>(() => {
 
 // Módulos do diário (compartilham os mesmos filtros). Carregam só quando o
 // usuário aciona o gatilho (clique no módulo) — nunca imediato.
-// req: 'turma' = basta a turma selecionada · 'completo' = exige contexto completo.
+// req: 'turma' = basta a turma selecionada · 'completo' = exige contexto completo
+// · 'disciplina' = turma + disciplina, sem período (parecer inicial).
 const moduloAtivo = ref<string | null>(null);
 const modulos = computed(() => [
     { key: 'quadro-horario', label: 'Quadro de Horário', icon: CalendarClock, req: 'turma', grupo: 'Consulta' },
@@ -216,6 +218,8 @@ const modulos = computed(() => [
     ...(tiposAvaliacao.value.includes('diagnostico')
         ? [{ key: 'diagnostico', label: 'Avaliação por Diagnóstico', icon: Stethoscope, req: 'completo', grupo: 'Lançamentos' }]
         : []),
+    // Parecer inicial vem ANTES dos pareceres das unidades e não depende do período.
+    { key: 'parecer-inicial', label: 'Parecer Inicial', icon: NotebookPen, req: 'disciplina', grupo: 'Lançamentos' },
     { key: 'avaliacao-descritiva', label: 'Avaliação Descritiva', icon: ClipboardList, req: 'completo', grupo: 'Lançamentos' },
     { key: 'faltas', label: 'Frequência', icon: CalendarCheck, req: 'periodo', grupo: 'Lançamentos' },
 ]);
@@ -231,7 +235,9 @@ const moduloPronto = (req: string) =>
         ? !!turId.value
         : req === 'periodo'
           ? !!(turId.value && uniId.value)
-          : contextoCompleto.value;
+          : req === 'disciplina'
+            ? contextoDisciplina.value
+            : contextoCompleto.value;
 
 // Reclicar no módulo ativo força recarregar o painel (ex.: trocou parâmetro do ano).
 const recarregarSeq = ref(0);
@@ -247,6 +253,7 @@ const painelVisivel = computed(() => {
     if (moduloAtivo.value === 'notas-numerica') return contextoCompleto.value;
     if (moduloAtivo.value === 'notas-conceitual') return contextoCompleto.value;
     if (moduloAtivo.value === 'diagnostico') return contextoCompleto.value;
+    if (moduloAtivo.value === 'parecer-inicial') return contextoDisciplina.value;
     if (moduloAtivo.value === 'avaliacao-descritiva') return contextoCompleto.value;
     if (moduloAtivo.value === 'faltas') return !!(turId.value && uniId.value);
     return false;
@@ -438,6 +445,17 @@ const semVinculo = computed(() => props.anosLetivos.length === 0);
                 :tur-id="turId!"
                 :dis-id="disId!"
                 :uni-id="uniId!"
+            />
+
+            <!-- Módulo ativo: Parecer Inicial — turma + disciplina, sem período -->
+            <AvaliacaoDescritivaPanel
+                v-if="!semVinculo && contextoDisciplina && moduloAtivo === 'parecer-inicial'"
+                :key="`pi-${anlId}-${escId}-${turId}-${disId}-${recarregarSeq}`"
+                :anl-id="anlId!"
+                :esc-id="escId!"
+                :tur-id="turId!"
+                :dis-id="disId!"
+                inicial
             />
 
             <!-- Módulo ativo: Avaliação Descritiva -->

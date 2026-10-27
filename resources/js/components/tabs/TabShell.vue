@@ -43,6 +43,10 @@ const activeBreadcrumbs = computed(() => store.activeTab?.breadcrumbs ?? []);
 // Sincroniza URL do browser com aba ativa (cosmético; replaceState não
 // dispara nova requisição nem cria entry no histórico).
 const syncUrl = () => {
+    // Página standalone (Login, Ajuda…) fica fora das abas e é dona da URL. Sem
+    // isto, indo de "/" (Welcome, aba ativa) para /login, a URL voltava para "/"
+    // e o back() do erro de credencial levava à página inicial, sem a mensagem.
+    if (isStandalone.value) return;
     const url = store.activeTab?.url;
     if (url && url !== window.location.pathname + window.location.search) {
         window.history.replaceState(window.history.state, '', url);

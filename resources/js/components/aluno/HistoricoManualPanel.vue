@@ -314,7 +314,7 @@ const err = (k: string) => errors.value[k];
                     <InputError :message="err('hmn_ano')" />
                 </div>
                 <div class="grid gap-1.5">
-                    <FormLabel>Segmento</FormLabel>
+                    <FormLabel>Etapa de Ensino</FormLabel>
                     <select v-model.number="form.seg_id" class="h-9 w-full min-w-0 truncate rounded-md border border-input bg-background px-3 text-sm" @change="onSegmentoChange">
                         <option :value="null">Todos</option>
                         <option v-for="s in segmentos" :key="s.seg_id" :value="s.seg_id">{{ s.seg_nome_reduzido }}</option>

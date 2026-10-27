@@ -156,7 +156,7 @@ function gerar() {
                 </div>
 
                 <div class="grid gap-1.5">
-                    <FormLabel>Segmento</FormLabel>
+                    <FormLabel>Etapa de Ensino</FormLabel>
                     <select v-model="segId" :disabled="!segmentos.length" class="rounded-md border bg-background px-3 py-2 text-sm">
                         <option value="">Todos</option>
                         <option v-for="s in segmentos" :key="s.seg_id" :value="s.seg_id">{{ s.seg_nome }}</option>

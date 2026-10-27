@@ -20,7 +20,11 @@ class DiarioDiagnostico extends Model
     /** Opção que, ao ser marcada, propaga para os períodos seguintes. */
     public const OPCAO_AUTONOMIA = 'autonomia';
 
-    /** Opções válidas → rótulos. */
+    /**
+     * Opções válidas → rótulos PADRÃO. O texto apresentado vem de
+     * TermoDiagnostico (parametrizável pela coordenação); aqui ficam as chaves
+     * gravadas em dgn_opcao e o fallback.
+     */
     public const OPCOES = [
         'autonomia'    => 'Realiza com autonomia',
         'apoio'        => 'Realiza com apoio',

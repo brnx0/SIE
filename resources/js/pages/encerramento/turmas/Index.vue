@@ -298,9 +298,9 @@ const pendentesTurma = (t: TurmaLinha) => t.alunos.filter((a) => !podeEncerrar(a
                                 v-if="segmentos.length"
                                 v-model="segId"
                                 class="h-9 rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                                title="Filtrar por segmento"
+                                title="Filtrar por etapa de ensino"
                             >
-                                <option value="">Todos os segmentos</option>
+                                <option value="">Todas as etapas de ensino</option>
                                 <option v-for="sg in segmentos" :key="sg.seg_id" :value="sg.seg_id">{{ sg.seg_nome }}</option>
                             </select>
                             <div class="relative w-full max-w-xs sm:w-64">
@@ -310,7 +310,7 @@ const pendentesTurma = (t: TurmaLinha) => t.alunos.filter((a) => !podeEncerrar(a
                         </div>
                     </div>
                     <div v-if="!turmasFiltradas.length" class="rounded-xl border bg-card py-10 text-center text-sm text-muted-foreground">
-                        Nenhuma turma encontrada<span v-if="busca"> para "{{ busca }}"</span><span v-if="segId !== ''"> neste segmento</span>.
+                        Nenhuma turma encontrada<span v-if="busca"> para "{{ busca }}"</span><span v-if="segId !== ''"> nesta etapa de ensino</span>.
                     </div>
                     <div v-else class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                         <button

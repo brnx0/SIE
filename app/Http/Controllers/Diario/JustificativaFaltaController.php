@@ -95,6 +95,7 @@ class JustificativaFaltaController extends Controller
         $data = $request->validated();
         $this->assertDentroVigente((int) $data['jfa_anl_id'], $data['jfa_dt_inicio'], $data['jfa_dt_fim']);
         $this->assertSemSobreposicao((int) $data['jfa_aln_id'], $data['jfa_dt_inicio'], $data['jfa_dt_fim']);
+        $this->assertSemPresencaNoPeriodo((int) $data['jfa_aln_id'], $data['jfa_dt_inicio'], $data['jfa_dt_fim']);
         $data['jfa_user_id'] = auth()->id();
         JustificativaFalta::create($data);
 
@@ -106,6 +107,7 @@ class JustificativaFaltaController extends Controller
         $data = $request->validated();
         $this->assertDentroVigente((int) $data['jfa_anl_id'], $data['jfa_dt_inicio'], $data['jfa_dt_fim']);
         $this->assertSemSobreposicao((int) $data['jfa_aln_id'], $data['jfa_dt_inicio'], $data['jfa_dt_fim'], $justificativa->jfa_id);
+        $this->assertSemPresencaNoPeriodo((int) $data['jfa_aln_id'], $data['jfa_dt_inicio'], $data['jfa_dt_fim']);
         $justificativa->update($data);
 
         return back()->with('success', 'Justificativa atualizada com sucesso.');
@@ -175,6 +177,35 @@ class JustificativaFaltaController extends Controller
         throw ValidationException::withMessages([
             'jfa_dt_fim' => "O período deve estar dentro de um trimestre em andamento ({$lista}).",
         ]);
+    }
+
+    /**
+     * Só se justifica falta: bloqueia o período que tiver dia em que o aluno esteve
+     * PRESENTE (frequência lançada e nenhuma falta no dia, em qualquer turma). Dia
+     * com alguma falta ou ainda sem frequência registrada continua permitido.
+     */
+    private function assertSemPresencaNoPeriodo(int $alnId, string $dtInicio, string $dtFim): void
+    {
+        $ini = Carbon::parse($dtInicio)->toDateString();
+        $fim = Carbon::parse($dtFim)->toDateString();
+
+        $diasPresente = DB::table('edu_diario_falta as f')
+            ->join('edu_diario_aula as a', 'a.aul_id', '=', 'f.fal_aul_id')
+            ->where('f.fal_aln_id', $alnId)
+            ->whereBetween('a.aul_dt', [$ini, $fim])
+            ->whereNull('f.fal_deleted_at')
+            ->whereNull('a.aul_deleted_at')
+            ->groupBy('a.aul_dt')
+            ->havingRaw('bool_and(f.fal_fl_presente)')
+            ->orderBy('a.aul_dt')
+            ->pluck('a.aul_dt');
+
+        if ($diasPresente->isNotEmpty()) {
+            $dias = $diasPresente->map(fn ($d) => Carbon::parse($d)->format('d/m/Y'))->implode(', ');
+            throw ValidationException::withMessages([
+                'jfa_dt_inicio' => "O aluno esteve presente em {$dias}. Só é possível justificar dias com falta ou sem frequência registrada.",
+            ]);
+        }
     }
 
     /** Bloqueia justificativas com período sobreposto para o mesmo aluno (não justificar o mesmo dia 2x). */

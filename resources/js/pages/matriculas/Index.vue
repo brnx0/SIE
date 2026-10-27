@@ -313,14 +313,14 @@ const formatarNomeAluno = (a: AlunoResumo) => {
 
                     <!-- Segmento (obrigatório) -->
                     <div class="grid gap-1.5">
-                        <FormLabel :required="true">Segmento</FormLabel>
+                        <FormLabel :required="true">Etapa de Ensino</FormLabel>
                         <select
                             v-model.number="fSegId"
                             :disabled="!fEscId || loadingSegmentos"
                             :class="selectClass"
                         >
                             <option value="" disabled>
-                                {{ !fEscId ? 'Selecione a escola primeiro' : loadingSegmentos ? 'Carregando...' : 'Selecione o segmento...' }}
+                                {{ !fEscId ? 'Selecione a escola primeiro' : loadingSegmentos ? 'Carregando...' : 'Selecione a etapa de ensino...' }}
                             </option>
                             <option v-for="s in segmentos" :key="s.seg_id" :value="s.seg_id">
                                 {{ s.seg_nome }}
@@ -337,7 +337,7 @@ const formatarNomeAluno = (a: AlunoResumo) => {
                             :class="selectClass"
                         >
                             <option value="" disabled>
-                                {{ !fSegId ? 'Selecione o segmento primeiro' : loadingSeries ? 'Carregando...' : 'Selecione a série...' }}
+                                {{ !fSegId ? 'Selecione a etapa de ensino primeiro' : loadingSeries ? 'Carregando...' : 'Selecione a série...' }}
                             </option>
                             <option v-for="s in series" :key="s.ser_id" :value="s.ser_id">
                                 {{ s.ser_nome }}
@@ -443,7 +443,7 @@ const formatarNomeAluno = (a: AlunoResumo) => {
                 v-if="!fEscId || !fSegId || !fSerId || !fSemestre"
                 class="rounded-xl border bg-card p-10 text-center text-sm text-muted-foreground shadow-sm"
             >
-                Selecione um <strong>Ano Letivo</strong>, uma <strong>Escola</strong>, um <strong>Segmento</strong>, uma <strong>Série</strong> e o <strong>Semestre</strong> para visualizar as turmas disponíveis.
+                Selecione um <strong>Ano Letivo</strong>, uma <strong>Escola</strong>, uma <strong>Etapa de Ensino</strong>, uma <strong>Série</strong> e o <strong>Semestre</strong> para visualizar as turmas disponíveis.
             </div>
 
             <!-- Tabela de turmas -->

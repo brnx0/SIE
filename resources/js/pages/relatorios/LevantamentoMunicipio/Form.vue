@@ -99,7 +99,7 @@ function gerar() {
                 <ClipboardList class="size-5 text-indigo-600" /> Levantamento de Dados do Município
             </h1>
             <p class="text-sm text-muted-foreground mb-6">
-                Panorama consolidado da rede, com uma linha por turma: identificação, segmento e ano escolar,
+                Panorama consolidado da rede, com uma linha por turma: identificação, etapa de ensino e ano escolar,
                 turno, capacidade, matrícula, professores responsáveis e indicadores de diário.
             </p>
 
@@ -129,15 +129,15 @@ function gerar() {
                 </div>
 
                 <div class="grid gap-1.5">
-                    <FormLabel>Segmento</FormLabel>
-                    <LocalCombobox v-model="segId" :items="itemsSegmento" placeholder="Todos os segmentos" />
+                    <FormLabel>Etapa de Ensino</FormLabel>
+                    <LocalCombobox v-model="segId" :items="itemsSegmento" placeholder="Todas as etapas de ensino" />
                 </div>
 
                 <div class="grid gap-1.5">
                     <FormLabel>Ano Escolar / Série</FormLabel>
                     <LocalCombobox v-model="serId" :items="itemsSerie" placeholder="Todas as séries" />
                     <p v-if="segId" class="text-xs text-muted-foreground">
-                        Mostrando apenas as séries do segmento selecionado.
+                        Mostrando apenas as séries da etapa de ensino selecionada.
                     </p>
                 </div>
 
@@ -150,7 +150,7 @@ function gerar() {
                     <strong class="text-foreground">Sobre a coluna “Freq. lançada”:</strong>
                     é a razão entre presenças e registros de chamada das aulas executadas no ano — um indicador de
                     <em>preenchimento do diário</em> por turma. Não é a frequência oficial do aluno usada para
-                    aprovação por falta, que é calculada por aluno (com regra própria por segmento) nos relatórios
+                    aprovação por falta, que é calculada por aluno (com regra própria por etapa de ensino) nos relatórios
                     de Frequência Mensal e no encerramento do ano.
                 </div>
 

@@ -43,7 +43,7 @@ const cadastros = [
             {
                 title: 'Rede de Ensino',
                 children: [
-                    { title: 'Segmentos', href: '/segmentos' },
+                    { title: 'Etapas de Ensino', href: '/segmentos' },
                     { title: 'Séries', href: '/series' },
                     { title: 'Disciplinas', href: '/disciplinas' },
                     { title: 'Grade Disciplinar', href: '/grade-disciplinar' },
@@ -90,6 +90,8 @@ const diarioMenu = [
                 children: [
                     { title: 'Instrumentos Avaliativos', href: '/diario/instrumentos-avaliativos' },
                     { title: 'Sábados Letivos', href: '/sabados-letivos' },
+                    { title: 'Termos da avaliação diagnóstica', href: '/diario/termos-diagnostico' },
+                    { title: 'Parametrização de avaliações', href: '/diario/parametrizacao-avaliacoes' },
                 ],
             },
             { title: 'Planos de Aula', href: '/diario/planos' },

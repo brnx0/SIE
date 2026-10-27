@@ -287,7 +287,19 @@ class PlanoValidacaoController extends Controller
         return response()->json([
             'plano'       => $plano,
             'indicadores' => $indicadoresDescricao,
+            // Material de apoio do professor — só consulta (fora do PDF).
+            'anexos'      => $plano->anexos()->with('usuario:id,name')->orderBy('dax_created_at')->get()
+                ->map(fn ($a) => $a->resumo("/coordenador/planos/{$plano->dpa_id}/anexos"))->values(),
         ]);
+    }
+
+    /** Abre um anexo do plano (mesma checagem de lotação do modal de revisão). */
+    public function anexo(DiarioPlanoAula $plano, \App\Models\Diario\DiarioPlanoAnexo $anexo, Request $request): \Symfony\Component\HttpFoundation\BinaryFileResponse
+    {
+        $this->abortIfNotCoordenador();
+        $this->abortIfNotLotadoNaEscolaDoPlano($plano, $request);
+
+        return \App\Http\Controllers\Diario\PlanoAulaAnexoController::entregar($plano, $anexo);
     }
 
     // ============ Lookups ============

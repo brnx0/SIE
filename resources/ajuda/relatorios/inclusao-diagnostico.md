@@ -24,7 +24,7 @@ Menu **Relatórios → Relatórios Gerais** (Alunos com Deficiência, Alunos com
 
 1. Selecione o **Ano Letivo** (obrigatório).
 2. Refine conforme o relatório:
-   - **Alunos com Deficiência / Transtorno**: **Escola** é opcional; em **Transtorno** você pode filtrar ainda por **Segmento** e **Série**.
+   - **Alunos com Deficiência / Transtorno**: **Escola** é opcional; em **Transtorno** você pode filtrar ainda por **Etapa de Ensino** e **Série**.
    - **Desempenho AEE**: escolha a **Turma AEE** (opcional).
    - **Avaliações por Diagnóstico**: **Turma** e **Disciplina** são obrigatórias; o **Aluno** é opcional (deixe em **Todos** para a turma inteira).
 3. Clique em **Gerar**. O PDF abre em uma nova aba.

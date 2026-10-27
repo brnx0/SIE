@@ -29,7 +29,7 @@ class DiagnosticoController extends Controller
         $uniId = (int) $request->input('uni_id');
 
         if (! $turId || ! $disId || ! $uniId) {
-            return response()->json(['indicadores' => [], 'alunos' => [], 'valores' => [], 'opcoes' => DiarioDiagnostico::OPCOES, 'tipo_disponivel' => false, 'periodo_aberto' => false, 'turma_aberta' => false]);
+            return response()->json(['indicadores' => [], 'alunos' => [], 'valores' => [], 'opcoes' => \App\Models\Parametro\TermoDiagnostico::rotulos(), 'tipo_disponivel' => false, 'periodo_aberto' => false, 'turma_aberta' => false]);
         }
 
         // Supervisão consulta qualquer turma; o vínculo de regência só vale para quem lança.
@@ -76,7 +76,7 @@ class DiagnosticoController extends Controller
             'indicadores'     => $indicadores,
             'alunos'          => $alunos,
             'valores'         => $valores,
-            'opcoes'          => DiarioDiagnostico::OPCOES,
+            'opcoes'          => \App\Models\Parametro\TermoDiagnostico::rotulos(),
             'tipo_disponivel' => in_array(self::TIPO, $this->tiposSerie($turId), true),
             'periodo_aberto'  => $this->periodoAberto($uniId),
             'turma_aberta'    => $this->turmaAberta($turId),

@@ -1411,7 +1411,7 @@ const initials = computed(() => {
                                     {{ matriculasRegulares.length }}
                                 </span>
                             </div>
-                            <span class="text-xs text-muted-foreground">Ensino regular / segmento curricular</span>
+                            <span class="text-xs text-muted-foreground">Ensino regular / etapa curricular</span>
                         </div>
 
                         <div v-if="matriculasRegulares.length === 0" class="py-8 text-center text-sm text-muted-foreground">
@@ -1428,7 +1428,7 @@ const initials = computed(() => {
                                         <th class="px-3 py-2.5 text-left font-semibold">Série</th>
                                         <th class="px-3 py-2.5 text-center font-semibold">Turma</th>
                                         <th class="px-3 py-2.5 text-left font-semibold">Turno</th>
-                                        <th class="px-3 py-2.5 text-left font-semibold">Segmento</th>
+                                        <th class="px-3 py-2.5 text-left font-semibold">Etapa</th>
                                         <th class="px-3 py-2.5 text-center font-semibold">Resultado Final</th>
                                         <th class="px-3 py-2.5 text-center font-semibold">Situação de Saída</th>
                                     </tr>

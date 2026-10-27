@@ -224,7 +224,7 @@ return [
     [
         'slug' => 'pendencias-encerramento',
         'titulo' => 'Pendências de Encerramento e Renovação',
-        'descricao' => 'Escolas que ainda não encerraram turmas nem renovaram matrículas no ano letivo, com a contagem de turmas pendentes e os segmentos/anos escolares afetados. Filtra por escola, segmento e ano letivo.',
+        'descricao' => 'Escolas que ainda não encerraram turmas nem renovaram matrículas no ano letivo, com a contagem de turmas pendentes e as etapas de ensino/anos escolares afetados. Filtra por escola, etapa de ensino e ano letivo.',
         'categoria' => 'Escola',
         'grupo' => 'central',
         'icone' => 'AlarmClock',
@@ -254,6 +254,14 @@ return [
         'icone' => 'LayoutGrid',
     ],
     [
+        'slug' => 'indices-aprovacao',
+        'titulo' => 'Índices de Aprovação e Reprovação',
+        'descricao' => 'Aprovados, reprovados e pendentes por trimestre e no ano, a partir das notas/conceitos lançados no Diário Online: quantidades e percentuais por turma, escola e total da rede (percentual sobre os alunos já classificados). Filtra por ano, período, escola, série e turma. Exporta Excel e PDF.',
+        'categoria' => 'Desempenho',
+        'grupo' => 'escola',
+        'icone' => 'FileBarChart',
+    ],
+    [
         'slug' => 'distorcao-idade',
         'titulo' => 'Distorção Idade-Série',
         'descricao' => 'Alunos com idade acima da recomendada para a série/ano em que estão matriculados: nome, matrícula, escola, turma/série, nascimento, idade atual, idade esperada e distorção. Filtra por escola, turma e série. Ordenado por escola e turma. Exporta Excel e PDF.',
@@ -280,7 +288,7 @@ return [
     [
         'slug' => 'levantamento-municipio',
         'titulo' => 'Levantamento de Dados do Município',
-        'descricao' => 'Panorama consolidado da rede, uma linha por turma: escola, código/nome da turma, segmento, ano escolar, turno, capacidade, matriculados, vagas, professores responsáveis e indicadores de diário. Filtra por escola, segmento, série e turno.',
+        'descricao' => 'Panorama consolidado da rede, uma linha por turma: escola, código/nome da turma, etapa de ensino, ano escolar, turno, capacidade, matriculados, vagas, professores responsáveis e indicadores de diário. Filtra por escola, etapa de ensino, série e turno.',
         'categoria' => 'Escola',
         'grupo' => 'escola',
         'icone' => 'ClipboardList',

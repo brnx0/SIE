@@ -10,6 +10,7 @@ use App\Models\Diario\NotaManual;
 use App\Models\Matricula\Matricula;
 use App\Support\CalculoNota;
 use App\Support\Diario\DiarioEscritaGuard as Guard;
+use App\Support\Diario\RegrasParametrizacaoAvaliacao;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -120,6 +121,8 @@ class NotasController extends Controller
             ];
         })->values();
 
+        $param = RegrasParametrizacaoAvaliacao::contexto($uniId, $request->user()->isAdmin());
+
         return response()->json([
             'tipo_disponivel' => true,
             'tipo'            => $tipo,
@@ -127,14 +130,9 @@ class NotasController extends Controller
             'turma_aberta'    => Guard::turmaAberta($turId),
             // 'faixa' = professor digita número; 'conceito' = escolhe o conceito.
             'modo'            => $this->conceitoModo($uniId),
-            'instrumentos'    => InstrumentoAvaliativo::where('iav_fl_ativo', true)
-                ->orderBy('iav_nome')
-                ->get(['iav_id', 'iav_nome', 'iav_fl_recuperacao'])
-                ->map(fn ($i) => [
-                    'iav_id'             => (int) $i->iav_id,
-                    'iav_nome'           => $i->iav_nome,
-                    'iav_fl_recuperacao' => (bool) $i->iav_fl_recuperacao,
-                ]),
+            // Parametrizados da unidade (com valor_param) ou todos os ativos.
+            'instrumentos'    => $param['instrumentos'],
+            'parametrizacao'  => $param['parametrizacao'],
             'conceitos'       => DB::table('cfg_conceito')
                 ->orderBy('cnc_peso')
                 ->get(['cnc_id', 'cnc_sigla', 'cnc_descricao', 'cnc_limite_inferior', 'cnc_limite_superior', 'cnc_peso'])
@@ -177,7 +175,10 @@ class NotasController extends Controller
         // professor não entenderia a diferença. Se a rede quiser essa trava, ela
         // deve entrar nos dois lados (aqui e no NotaController web).
         $ehRecuperacao = $this->instrumentoRecuperacao((int) $data['ava_iav_id']);
-        $valor = $this->resolverValor($tipo, $uniId, $data['ava_valor'] ?? null);
+        $valorInput = RegrasParametrizacaoAvaliacao::aplicar(
+            $uniId, (int) $data['ava_iav_id'], $data['ava_valor'] ?? null, $request->user()->isAdmin(),
+        );
+        $valor = $this->resolverValor($tipo, $uniId, $valorInput);
 
         if ($valor !== null && ! $ehRecuperacao) {
             $this->assertSomaValores($turId, $disId, $uniId, $tipo, $valor, null);
@@ -217,7 +218,11 @@ class NotasController extends Controller
         Guard::assertPeriodoAberto($uniId);
 
         $ehRecuperacao = $this->instrumentoRecuperacao((int) $data['ava_iav_id']);
-        $valor = $this->resolverValor($tipo, $uniId, $data['ava_valor'] ?? null);
+        $valorInput = RegrasParametrizacaoAvaliacao::aplicar(
+            $uniId, (int) $data['ava_iav_id'], $data['ava_valor'] ?? null,
+            $request->user()->isAdmin(), $avaliacao->ava_iav_id ? (int) $avaliacao->ava_iav_id : null,
+        );
+        $valor = $this->resolverValor($tipo, $uniId, $valorInput);
 
         if ($valor !== null && ! $ehRecuperacao) {
             $this->assertSomaValores($turId, $disId, $uniId, $tipo, $valor, (int) $avaliacao->ava_id);

@@ -29,6 +29,6 @@ Dentro do **Diário de Classe** (`/diario`), após selecionar turma, disciplina 
 
 ## Avisos comuns
 
-- Ao marcar **"Realiza com autonomia"**, os **períodos seguintes** ainda vazios são preenchidos automaticamente com a mesma opção — mas você pode editar depois. Períodos que você já preencheu não são sobrescritos.
+- Ao marcar **"Realiza com autonomia"** (ou o termo definido pela coordenação em *Diário Online › Cadastro › Termos da avaliação diagnóstica*), os **períodos seguintes** ainda vazios são preenchidos automaticamente com a mesma opção — mas você pode editar depois. Períodos que você já preencheu não são sobrescritos.
 - Só é possível lançar com a **turma aberta** e dentro do **período** da unidade.
 - Se a área não aparecer, a série não está configurada para diagnóstico; fale com a secretaria.

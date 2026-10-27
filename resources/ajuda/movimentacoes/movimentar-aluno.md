@@ -19,8 +19,8 @@ Menu **Movimentações**. Use **Nova Movimentação** para registrar uma nova.
 
 1. Escolha o **Tipo de Movimentação**. Uma explicação do tipo selecionado aparece logo abaixo.
 2. Informe a **Data** e, se houver, o **Protocolo nº**.
-3. No bloco **Origem**, selecione em cascata: **Ano Letivo → Escola → Segmento → Série → Turma → Aluno**.
-4. Se o tipo exigir, preencha o bloco **Destino** (segmento, série e turma).
+3. No bloco **Origem**, selecione em cascata: **Ano Letivo → Escola → Etapa de Ensino → Série → Turma → Aluno**.
+4. Se o tipo exigir, preencha o bloco **Destino** (etapa de ensino, série e turma).
 5. Confira o **Resumo da Movimentação** e clique em **Salvar**.
 
 ## Campos principais

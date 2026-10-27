@@ -16,7 +16,7 @@ const props = defineProps<{
 
 const TIPO = 'conceitual';
 
-interface Instrumento { iav_id: number; iav_nome: string; iav_fl_recuperacao: boolean }
+interface Instrumento { iav_id: number; iav_nome: string; iav_fl_recuperacao: boolean; valor_param?: number | null }
 interface Conceito {
     cnc_id: number;
     cnc_sigla: string;
@@ -98,6 +98,7 @@ const carregar = async () => {
         modo.value = data.modo === 'conceito' ? 'conceito' : 'faixa';
         avaliacoes.value = data.avaliacoes ?? [];
         instrumentos.value = data.instrumentos ?? [];
+        parametrizacao.value = data.parametrizacao ?? { ativa: false, bloqueado: false };
         conceitos.value = data.conceitos ?? [];
         rows.value = ((data.alunos ?? []) as any[]).map((a) => ({
             aln_id: a.aln_id,
@@ -331,17 +332,37 @@ const enviandoAval = ref(false);
 const erroAval = ref<string | null>(null);
 const form = reactive({ iavId: null as number | null, descricao: '', dt: '', valor: '' as number | string });
 
-const instrumentoSelecionado = computed(() => instrumentos.value.find((i) => i.iav_id === Number(form.iavId)));
+const instrumentoSelecionado = computed(() => opcoesInstrumento.value.find((i) => i.iav_id === Number(form.iavId)));
 const recuperacaoSelecionada = computed(() => !!instrumentoSelecionado.value?.iav_fl_recuperacao);
+
+// Parametrização da unidade (Diário › Cadastro › Parametrização de avaliações):
+// instrumentos restritos aos parametrizados e valor pré-preenchido; `bloqueado`
+// (já sem a exceção do admin) trava o valor no parametrizado.
+const parametrizacao = ref<{ ativa: boolean; bloqueado: boolean }>({ ativa: false, bloqueado: false });
+const avaliacaoEditada = ref<Avaliacao | null>(null);
+// Na edição, mantém na lista o instrumento atual mesmo fora da parametrização
+// (avaliação criada antes dela) — o backend aceita enquanto não for trocado.
+const opcoesInstrumento = computed<Instrumento[]>(() => {
+    const a = avaliacaoEditada.value;
+    if (!a?.ava_iav_id || instrumentos.value.some((i) => i.iav_id === a.ava_iav_id)) return instrumentos.value;
+    return [...instrumentos.value, { iav_id: a.ava_iav_id, iav_nome: a.iav_nome ?? 'Instrumento', iav_fl_recuperacao: a.ava_fl_recuperacao, valor_param: null }];
+});
+const valorTravado = computed(() => parametrizacao.value.bloqueado && instrumentoSelecionado.value?.valor_param != null);
+const aplicarValorParam = () => {
+    const v = instrumentoSelecionado.value?.valor_param;
+    if (v != null) form.valor = Number(v);
+};
 
 const abrirNovo = () => {
     editId.value = null;
+    avaliacaoEditada.value = null;
     erroAval.value = null;
     form.iavId = null; form.descricao = ''; form.dt = ''; form.valor = '';
     showModal.value = true;
 };
 const abrirEdit = (a: Avaliacao) => {
     editId.value = a.ava_id;
+    avaliacaoEditada.value = a;
     erroAval.value = null;
     form.iavId = a.ava_iav_id;
     form.descricao = a.ava_descricao ?? '';
@@ -564,10 +585,11 @@ const limitarValor1Casa = (e: Event) => {
                 <div class="flex flex-col gap-3 p-5">
                     <div>
                         <Label>Instrumento <span class="text-rose-600">*</span></Label>
-                        <select v-model.number="form.iavId" class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-fuchsia-500">
+                        <select v-model.number="form.iavId" class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-fuchsia-500" @change="aplicarValorParam">
                             <option :value="null" disabled>Selecione o instrumento...</option>
-                            <option v-for="i in instrumentos" :key="i.iav_id" :value="i.iav_id">{{ i.iav_nome }}</option>
+                            <option v-for="i in opcoesInstrumento" :key="i.iav_id" :value="i.iav_id">{{ i.iav_nome }}</option>
                         </select>
+                        <p v-if="parametrizacao.ativa" class="mt-1 text-[11px] text-muted-foreground">Instrumentos parametrizados pela coordenação para esta unidade.</p>
                     </div>
                     <div>
                         <Label>Descrição (opcional)</Label>
@@ -580,7 +602,8 @@ const limitarValor1Casa = (e: Event) => {
                         </div>
                         <div v-if="modo === 'faixa'">
                             <Label>Valor <span class="text-rose-600">*</span></Label>
-                            <Input v-model="form.valor" type="number" step="0.1" min="0.1" max="10" @input="limitarValor1Casa" />
+                            <Input v-model="form.valor" type="number" step="0.1" min="0.1" max="10" :readonly="valorTravado" :class="valorTravado ? 'bg-muted' : ''" @input="limitarValor1Casa" />
+                            <p v-if="valorTravado" class="mt-1 text-[11px] text-amber-700 dark:text-amber-300">Valor definido pela coordenação.</p>
                             <p v-if="!recuperacaoSelecionada" class="mt-1 text-[11px] text-muted-foreground">Disponível p/ regulares: {{ valorDisponivel.toFixed(2) }}</p>
                         </div>
                     </div>

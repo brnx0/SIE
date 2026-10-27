@@ -62,7 +62,7 @@ const imprimir = () => window.print();
         <div class="ident">
             <span><b>Escola:</b> {{ filtros.esc_nome }}</span>
             <span><b>Turma:</b> {{ filtros.turma }}</span>
-            <span><b>Segmento:</b> {{ filtros.segmento }}</span>
+            <span><b>Etapa de Ensino:</b> {{ filtros.segmento }}</span>
             <span><b>Dias letivos:</b> {{ dias_letivos ?? '—' }}</span>
             <span><b>Aulas no mês:</b> {{ total_aulas }}</span>
         </div>
@@ -71,7 +71,7 @@ const imprimir = () => window.print();
                 <tr>
                     <th>#</th>
                     <th class="esq">Aluno</th>
-                    <th v-if="multi" class="esq">Segmento</th>
+                    <th v-if="multi" class="esq">Etapa</th>
                     <th>Base</th>
                     <th>Faltas</th>
                     <th>Frequência</th>
@@ -106,7 +106,7 @@ const imprimir = () => window.print();
 
             <div class="mb-4 rounded-xl border bg-card p-4 text-sm shadow-sm">
                 <div><strong>Mês:</strong> {{ filtros.mes_label }} · <strong>Escola:</strong> {{ filtros.esc_nome }}</div>
-                <div><strong>Turma:</strong> {{ filtros.turma }} · <strong>Segmento:</strong> {{ filtros.segmento }}</div>
+                <div><strong>Turma:</strong> {{ filtros.turma }} · <strong>Etapa de Ensino:</strong> {{ filtros.segmento }}</div>
                 <div>
                     <strong>Dias letivos:</strong> {{ dias_letivos ?? '—' }} · <strong>Aulas no mês:</strong> {{ total_aulas }}
                     <span class="text-muted-foreground">· Pré/Fund. I contam por dias (falta = dia sem presença em nenhuma disciplina); Fund. II/EJA/Creche por aulas</span>
@@ -125,7 +125,7 @@ const imprimir = () => window.print();
                         <tr>
                             <th class="px-3 py-2 text-left">#</th>
                             <th class="px-3 py-2 text-left">Aluno</th>
-                            <th v-if="multi" class="px-3 py-2 text-left">Segmento</th>
+                            <th v-if="multi" class="px-3 py-2 text-left">Etapa</th>
                             <th class="px-3 py-2 text-center">Base</th>
                             <th class="px-3 py-2 text-center">Faltas</th>
                             <th class="px-3 py-2 text-center">Frequência</th>

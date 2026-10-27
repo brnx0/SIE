@@ -124,7 +124,7 @@ const exportarCsv = () => {
     const aspas = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`;
 
     const headers = [
-        'Escola', 'Cód. Escola', 'Cód. Turma', 'Turma', 'Modalidade', 'Segmento', 'Ano Escolar / Série',
+        'Escola', 'Cód. Escola', 'Cód. Turma', 'Turma', 'Modalidade', 'Etapa', 'Ano Escolar / Série',
         'Turno', 'Situação da Turma', 'Capacidade', 'Expansão', 'Matriculados', 'Vagas', '% Ocupação',
         'Transferidos', 'Evadidos', 'Cancelados', 'Total de Vínculos',
         'Nº Professores', 'Professor(es) Responsável(is)', 'Professores de Apoio',
@@ -179,7 +179,7 @@ const exportarExcel = () => window.open(`/relatorios/levantamento-municipio/xlsx
                     <th>Escola</th>
                     <th>Cód. Turma</th>
                     <th>Turma</th>
-                    <th>Segmento</th>
+                    <th>Etapa</th>
                     <th>Ano Escolar</th>
                     <th>Turno</th>
                     <th class="centro">Cap.</th>
@@ -284,7 +284,7 @@ const exportarExcel = () => window.open(`/relatorios/levantamento-municipio/xlsx
                                 <th class="px-3 py-2 text-left">Cód. Turma</th>
                                 <th class="px-3 py-2 text-left">Turma</th>
                                 <th class="px-3 py-2 text-left">Modalidade</th>
-                                <th class="px-3 py-2 text-left">Segmento</th>
+                                <th class="px-3 py-2 text-left">Etapa</th>
                                 <th class="px-3 py-2 text-left">Ano Escolar / Série</th>
                                 <th class="px-3 py-2 text-left">Turno</th>
                                 <th class="px-3 py-2 text-center">Capac.</th>

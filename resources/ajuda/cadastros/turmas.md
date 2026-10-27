@@ -17,7 +17,7 @@ Menu → **Cadastros → Rede de Ensino → Turmas**.
 
 ## Passo a passo
 
-1. Clique em **Novo** e preencha **Dados Gerais**: escola, ano letivo, segmento, série, turno, nome, capacidade e situação.
+1. Clique em **Novo** e preencha **Dados Gerais**: escola, ano letivo, etapa de ensino, série, turno, nome, capacidade e situação.
 2. Salve. No modo de edição aparecem as abas de composição.
 3. Em **Professores**, adicione professor + disciplina.
 4. Em **Professores de Apoio**, inclua apoios se houver.
@@ -26,13 +26,13 @@ Menu → **Cadastros → Rede de Ensino → Turmas**.
 
 ## Campos principais
 
-- **Escola, Ano Letivo, Segmento, Série, Turno, Nome, Capacidade, Situação** — obrigatórios.
+- **Escola, Ano Letivo, Etapa de Ensino, Série, Turno, Nome, Capacidade, Situação** — obrigatórios.
 - **Situação** — ABERTA (em uso) ou ENCERRADA.
 - **Dias de Funcionamento e Horários** — definem quando a turma funciona.
 
 ## Avisos comuns
 
 - O **Nome da Turma** não pode repetir na mesma escola, ano, série e turno.
-- Depois de **ABERTA**, os campos estruturais (escola, ano, segmento, série, semestre) ficam bloqueados.
+- Depois de **ABERTA**, os campos estruturais (escola, ano, etapa de ensino, série, semestre) ficam bloqueados.
 - Turma **ENCERRADA** fica somente leitura.
 - **Excluir x Inativar:** turma com professores, horários ou alunos vinculados não pode ser excluída — mude a **Situação** para ENCERRADA.

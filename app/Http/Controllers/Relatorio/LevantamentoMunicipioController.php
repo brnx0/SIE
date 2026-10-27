@@ -93,7 +93,7 @@ class LevantamentoMunicipioController extends Controller
         ['linhas' => $linhas] = $this->montar($request);
 
         $headers = [
-            'Escola', 'Cód. Escola', 'Cód. Turma', 'Turma', 'Modalidade', 'Segmento', 'Ano Escolar / Série',
+            'Escola', 'Cód. Escola', 'Cód. Turma', 'Turma', 'Modalidade', 'Etapa', 'Ano Escolar / Série',
             'Turno', 'Situação da Turma', 'Capacidade', 'Expansão', 'Matriculados', 'Vagas', '% Ocupação',
             'Transferidos', 'Evadidos', 'Cancelados', 'Total de Vínculos',
             'Nº Professores', 'Professor(es) Responsável(is)', 'Professores de Apoio',

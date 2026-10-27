@@ -121,7 +121,7 @@ const queryFiltros = () => {
 };
 
 const COLUNAS = [
-    'Escola', 'Código da Turma', 'Nome da Turma', 'Segmento', 'Série / Ano Escolar', 'Turno',
+    'Escola', 'Código da Turma', 'Nome da Turma', 'Etapa', 'Série / Ano Escolar', 'Turno',
     'Status da Turma', 'Capacidade', 'Expansão', 'Matriculados',
     'Alunos da Rede', 'Alunos Novos', 'Vagas', 'PCD', 'Faixa Etária',
     'Professor(es) Alocado(s)', 'Professor(es) de Apoio',
@@ -171,7 +171,7 @@ const exportarExcel = () => window.open(`/relatorios/formacao-classes/xlsx?${que
         </div>
 
         <div v-for="[grupo, lista] in grupos" :key="`p-${grupo}`" class="grupo-segmento">
-            <div class="grupo-titulo">{{ filtros.rede ? grupo : `Segmento: ${grupo}` }}</div>
+            <div class="grupo-titulo">{{ filtros.rede ? grupo : `Etapa de Ensino: ${grupo}` }}</div>
             <table class="tabela-impressao">
                 <colgroup>
                     <col class="fc-num" /><col class="fc-cod" /><col class="fc-turno" /><col class="fc-serie" /><col class="fc-turma" /><col class="fc-status" /><col class="fc-pcd" /><col class="fc-idade" /><col class="fc-cap" /><col class="fc-exp" /><col class="fc-rede" /><col class="fc-novos" /><col class="fc-vagas" /><col class="fc-prof" />
@@ -283,7 +283,7 @@ const exportarExcel = () => window.open(`/relatorios/formacao-classes/xlsx?${que
             </div>
             <div v-for="[grupo, lista] in grupos" :key="grupo" class="mb-6 rounded-xl border bg-card shadow-sm overflow-hidden">
                 <div class="border-b bg-indigo-50 px-4 py-2 font-semibold text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-200">
-                    {{ filtros.rede ? grupo : `Segmento: ${grupo}` }}
+                    {{ filtros.rede ? grupo : `Etapa de Ensino: ${grupo}` }}
                     <span class="text-xs font-normal text-muted-foreground">({{ lista.length }} turma{{ lista.length !== 1 ? 's' : '' }})</span>
                 </div>
                 <div class="overflow-x-auto">

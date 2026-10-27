@@ -97,8 +97,8 @@ function gerar() {
                 </div>
 
                 <div class="grid gap-1.5">
-                    <FormLabel>Segmento</FormLabel>
-                    <LocalCombobox v-model="segId" :items="itemsSegmento" placeholder="Todos os segmentos" />
+                    <FormLabel>Etapa de Ensino</FormLabel>
+                    <LocalCombobox v-model="segId" :items="itemsSegmento" placeholder="Todas as etapas de ensino" />
                 </div>
 
                 <div class="grid gap-1.5">
