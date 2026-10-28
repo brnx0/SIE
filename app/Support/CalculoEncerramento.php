@@ -176,6 +176,9 @@ class CalculoEncerramento
         $segPorSer = DB::table('edu_serie as s')->leftJoin('edu_segmento as seg', 'seg.seg_id', '=', 's.seg_id')->whereIn('s.ser_id', $serIds ?: [0])->pluck('seg.seg_nome_reduzido', 's.ser_id')->all();
         $turmaSeg  = DB::table('edu_segmento')->where('seg_id', $turma->seg_id)->value('seg_nome_reduzido');
 
+        // Faltas justificadas com motivo que abona não contam (mesma regra do relatório mensal).
+        $justificados = \App\Support\Diario\JustificativasFalta::porDia(array_map('intval', $alunos), $ano->anl_ano . '-01-01', $ano->anl_ano . '-12-31');
+
         $out = [];
         foreach ($alunos as $aln) {
             $serId = (int) ($serPorAln[$aln] ?? $turSerId);
@@ -183,19 +186,9 @@ class CalculoEncerramento
             $modo  = self::modoPorSegmento($seg);
             $aus   = $absent[$aln] ?? [];
 
-            if ($modo === 'dias') {
-                $diasFalta = 0;
-                foreach ($aulasPorDia as $auls) {
-                    if (! empty($auls) && count(array_intersect($auls, array_keys($aus))) === count($auls)) {
-                        $diasFalta++;
-                    }
-                }
-                $base   = $diasLetivos;
-                $faltas = $diasFalta;
-            } else {
-                $base   = $totalAulas;
-                $faltas = count($aus);
-            }
+            $c      = \App\Support\Diario\JustificativasFalta::contar($modo, $aus, $aulasPorDia, $justificados[(int) $aln] ?? []);
+            $base   = $modo === 'dias' ? $diasLetivos : $totalAulas;
+            $faltas = $c['faltas'] - $c['abonadas'];
 
             // Sem base (diário vazio / dias letivos não cadastrados) → não penaliza por frequência.
             $out[$aln] = ($base && $base > 0) ? round(max(0, $base - $faltas) / $base * 100, 1) : 100.0;

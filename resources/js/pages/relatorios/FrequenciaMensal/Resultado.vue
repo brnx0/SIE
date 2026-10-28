@@ -14,6 +14,9 @@ interface Aluno {
     modo: 'dias' | 'aulas';
     base: number | null;
     faltas: number;
+    // Justificadas (Secretaria › Justificativa de Falta); abonadas não contam no %.
+    faltas_justificadas: number;
+    faltas_abonadas: number;
     frequencia: number | null;
     situacao: string;
 }
@@ -40,6 +43,9 @@ const dataEmissao = computed(() => {
     return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 });
 const freqTxt = (f: number | null) => (f === null ? '—' : `${f.toFixed(1)}%`);
+// "3 (2)" = 3 justificadas, 2 delas abonadas (fora do %); sem justificativa → "—".
+const justTxt = (a: Aluno) =>
+    !a.faltas_justificadas ? '—' : a.faltas_abonadas ? `${a.faltas_justificadas} (${a.faltas_abonadas})` : String(a.faltas_justificadas);
 import { useIsActiveTab } from '@/composables/useIsActiveTab';
 
 const isActiveTab = useIsActiveTab();
@@ -74,6 +80,7 @@ const imprimir = () => window.print();
                     <th v-if="multi" class="esq">Etapa</th>
                     <th>Base</th>
                     <th>Faltas</th>
+                    <th>Justif.</th>
                     <th>Frequência</th>
                     <th>Situação</th>
                 </tr>
@@ -85,6 +92,7 @@ const imprimir = () => window.print();
                     <td v-if="multi" class="esq">{{ a.segmento }}</td>
                     <td>{{ a.base ?? '—' }} {{ unidade(a.modo) }}</td>
                     <td>{{ a.faltas }}</td>
+                    <td>{{ justTxt(a) }}</td>
                     <td>{{ freqTxt(a.frequencia) }}</td>
                     <td>{{ a.situacao }}</td>
                 </tr>
@@ -111,6 +119,9 @@ const imprimir = () => window.print();
                     <strong>Dias letivos:</strong> {{ dias_letivos ?? '—' }} · <strong>Aulas no mês:</strong> {{ total_aulas }}
                     <span class="text-muted-foreground">· Pré/Fund. I contam por dias (falta = dia sem presença em nenhuma disciplina); Fund. II/EJA/Creche por aulas</span>
                 </div>
+                <div class="text-muted-foreground">
+                    Justificadas: faltas cobertas por justificativa da Secretaria. As abonadas (entre parênteses), cujo motivo abona a falta, não contam na frequência.
+                </div>
             </div>
 
             <div v-if="semBase" class="mb-4 flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
@@ -128,6 +139,7 @@ const imprimir = () => window.print();
                             <th v-if="multi" class="px-3 py-2 text-left">Etapa</th>
                             <th class="px-3 py-2 text-center">Base</th>
                             <th class="px-3 py-2 text-center">Faltas</th>
+                            <th class="px-3 py-2 text-center" title="Faltas justificadas; entre parênteses, as abonadas (não contam no %)">Justificadas</th>
                             <th class="px-3 py-2 text-center">Frequência</th>
                             <th class="px-3 py-2 text-left">Situação</th>
                         </tr>
@@ -142,6 +154,7 @@ const imprimir = () => window.print();
                             <td v-if="multi" class="px-3 py-1.5 text-muted-foreground">{{ a.segmento }}</td>
                             <td class="px-3 py-1.5 text-center tabular-nums">{{ a.base ?? '—' }} <span class="text-[10px] text-muted-foreground">{{ unidade(a.modo) }}</span></td>
                             <td class="px-3 py-1.5 text-center tabular-nums">{{ a.faltas }}</td>
+                            <td class="px-3 py-1.5 text-center tabular-nums" :class="a.faltas_justificadas ? 'text-indigo-700 dark:text-indigo-300' : 'text-muted-foreground'">{{ justTxt(a) }}</td>
                             <td class="px-3 py-1.5 text-center font-semibold tabular-nums" :class="a.frequencia !== null && a.frequencia < 75 ? 'text-rose-600' : 'text-emerald-600'">{{ freqTxt(a.frequencia) }}</td>
                             <td class="px-3 py-1.5">{{ a.situacao }}</td>
                         </tr>

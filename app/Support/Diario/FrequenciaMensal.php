@@ -23,7 +23,9 @@ use Illuminate\Support\Str;
  *    executado é descontado da base de dias letivos;
  *  · `aul_fl_migrada = false` exclui as aulas espelho de remanejamento;
  *  · sem dias letivos cadastrados a base fica nula e a frequência sai `null`
- *    (célula vazia) — diferente do cálculo ANUAL, que nesse caso devolve 100.
+ *    (célula vazia) — diferente do cálculo ANUAL, que nesse caso devolve 100;
+ *  · falta justificada com motivo que ABONA não conta no percentual; sem abono,
+ *    só é informada (ver JustificativasFalta — mesma regra do anual).
  */
 class FrequenciaMensal
 {
@@ -102,9 +104,17 @@ class FrequenciaMensal
             ->pluck('seg.seg_nome_reduzido', 's.ser_id')
             ->all();
 
+        // Dias justificados no mês, por aluno.
+        $iniMes = sprintf('%04d-%02d-01', $anlAno, $mes);
+        $justificados = JustificativasFalta::porDia(
+            $matriculas->map(fn ($m) => (int) $m->aluno->aln_id)->all(),
+            $iniMes,
+            date('Y-m-t', strtotime($iniMes)),
+        );
+
         $modosUsados = [];
         $alunos = $matriculas->map(function (Matricula $m) use (
-            $absent, $aulasPorDia, $totalAulas, $diasLetivos, $situacoes, $segPorSerie, $turSerId, $turmaSegNome, &$modosUsados
+            $absent, $aulasPorDia, $totalAulas, $diasLetivos, $situacoes, $segPorSerie, $turSerId, $turmaSegNome, $justificados, &$modosUsados
         ) {
             $alnId = (int) $m->aluno->aln_id;
             $aus = $absent[$alnId] ?? [];
@@ -113,22 +123,13 @@ class FrequenciaMensal
             $modo = self::modoPorSegmento($segAln);
             $modosUsados[$modo] = true;
 
-            if ($modo === 'dias') {
-                // Falta = dia em que faltou a TODAS as aulas executadas.
-                $diasFalta = 0;
-                foreach ($aulasPorDia as $auls) {
-                    if (! empty($auls) && count(array_intersect($auls, array_keys($aus))) === count($auls)) {
-                        $diasFalta++;
-                    }
-                }
-                $base = $diasLetivos;
-                $faltas = $diasFalta;
-            } else {
-                $base = $totalAulas;
-                $faltas = count($aus);
-            }
+            // dias: falta = dia em que faltou a TODAS as aulas executadas; aulas: cada aula.
+            $c = JustificativasFalta::contar($modo, $aus, $aulasPorDia, $justificados[$alnId] ?? []);
+            $base = $modo === 'dias' ? $diasLetivos : $totalAulas;
+            $faltas = $c['faltas'];
 
-            $freq = ($base && $base > 0) ? round(max(0, $base - $faltas) / $base * 100, 1) : null;
+            // Falta abonada (motivo que abona) não conta no percentual.
+            $freq = ($base && $base > 0) ? round(max(0, $base - ($faltas - $c['abonadas'])) / $base * 100, 1) : null;
             $codSit = $m->tma_tas_cod_entrada;
 
             return [
@@ -139,6 +140,8 @@ class FrequenciaMensal
                 'modo'             => $modo,
                 'base'             => $base,
                 'faltas'           => $faltas,
+                'faltas_justificadas' => $c['justificadas'],
+                'faltas_abonadas'  => $c['abonadas'],
                 'frequencia'       => $freq,
                 'situacao'         => $codSit !== null ? ($situacoes[(int) $codSit] ?? '—') : '—',
             ];
