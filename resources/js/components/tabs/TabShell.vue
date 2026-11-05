@@ -68,9 +68,21 @@ onBeforeUnmount(() => {
     offNavigate();
 });
 
-// Reset de abas em transições de auth (login/logout) → evita aba "Login"
-// persistir após autenticar, e abas autenticadas após logout.
-watch(isAuthenticated, () => store.clear());
+// Reset de abas em transições de auth (login/logout/troca de usuário) → evita aba
+// "Login" persistir após autenticar, e abas autenticadas após logout.
+// Só em troca REAL: no carregamento direto da URL (ou F5) o shell nasce antes do
+// Inertia entregar a página (page.component ainda undefined → "não autenticado"),
+// e a hidratação undefined→usuário apagava a aba que o TabRegistrar acabara de
+// abrir, deixando o conteúdo em branco. undefined = página ainda não hidratada.
+const authUserId = computed<number | string | null | undefined>(() => {
+    if (!page.component) return undefined;
+    const user = (page.props as { auth?: { user?: { id?: number | string } | null } })?.auth?.user;
+    return user ? (user.id ?? 'anon') : null;
+});
+watch(authUserId, (atual, anterior) => {
+    if (anterior === undefined || atual === undefined) return;
+    if (atual !== anterior) store.clear();
+});
 </script>
 
 <template>
