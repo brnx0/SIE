@@ -72,6 +72,8 @@ const PATH_LABELS: Record<string, string> = {
     '/secretaria/conteudo-ministrado': 'Conteúdo Ministrado',
     '/grade-disciplinar':  'Grade Disciplinar',
     '/segmentos': 'Etapas de Ensino',
+    '/cursos-formacao-superior': 'Curso de Formação Superior',
+    '/niveis-graduacao': 'Nível de Graduação',
     '/sabados-letivos':   'Sábados Letivos',
     '/turmas-aee': 'Turmas AEE',
     '/movimentacoes': 'Movimentações',

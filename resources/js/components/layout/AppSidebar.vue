@@ -39,7 +39,14 @@ const cadastros = [
         icon: UserPlus,
         children: [
             { title: 'Alunos', href: '/alunos' },
-            { title: 'Funcionários', href: '/funcionarios' },
+            {
+                title: 'Professor/Funcionário',
+                children: [
+                    { title: 'Funcionários', href: '/funcionarios' },
+                    { title: 'Curso de Formação Superior', href: '/cursos-formacao-superior' },
+                    { title: 'Nível de Graduação Acadêmica', href: '/niveis-graduacao' },
+                ],
+            },
             {
                 title: 'Rede de Ensino',
                 children: [

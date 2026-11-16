@@ -76,6 +76,8 @@ use App\Http\Controllers\Api\EscolaController as EscolaApiController;
 use App\Http\Controllers\Api\FuncionarioController as FuncionarioApiController;
 use App\Http\Controllers\Funcionario\FuncionarioAdmissaoController;
 use App\Http\Controllers\Funcionario\FuncionarioController;
+use App\Http\Controllers\Funcionario\CursoFormacaoSuperiorController;
+use App\Http\Controllers\Funcionario\NivelGraduacaoController;
 use App\Http\Controllers\Funcionario\FuncionarioEscolaridadeController;
 use App\Http\Controllers\Funcionario\FuncionarioLotacaoController;
 use App\Http\Controllers\Parametro\AnoLetivoController;
@@ -192,6 +194,16 @@ Route::middleware(['auth', 'verified', 'tela'])->group(function () {
         Route::put('/{escolaridade}', [FuncionarioEscolaridadeController::class, 'update'])->name('update');
         Route::delete('/{escolaridade}', [FuncionarioEscolaridadeController::class, 'destroy'])->name('destroy');
     });
+
+    // Formação acadêmica: catálogo de cursos (INEP) e níveis de graduação
+    Route::get('cursos-formacao-superior/export', [CursoFormacaoSuperiorController::class, 'export'])->name('cursos-formacao-superior.export');
+    Route::resource('cursos-formacao-superior', CursoFormacaoSuperiorController::class)
+        ->parameters(['cursos-formacao-superior' => 'curso'])
+        ->except(['show']);
+    Route::get('niveis-graduacao/export', [NivelGraduacaoController::class, 'export'])->name('niveis-graduacao.export');
+    Route::resource('niveis-graduacao', NivelGraduacaoController::class)
+        ->parameters(['niveis-graduacao' => 'nivel'])
+        ->except(['show']);
 
     Route::get('turmas/export', [TurmaController::class, 'export'])->name('turmas.export');
     Route::resource('turmas', TurmaController::class)->except(['show']);
