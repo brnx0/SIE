@@ -29,7 +29,11 @@
 <body>
 <div class="header">
     <h1>Disciplinas</h1>
-    <p>Relatório gerado em {{ now()->format('d/m/Y \à\s H:i') }}@if($search) · Filtro: "{{ $search }}"@endif@if($areaFiltro) · Área: {{ $areaFiltro }}@endif</p>
+    <p>
+        Relatório gerado em {{ now()->format('d/m/Y \à\s H:i') }}
+        @if($search) · Filtro: "{{ $search }}" @endif
+        @if($areaFiltro) · Área: {{ $areaFiltro }} @endif
+    </p>
 </div>
 <table>
     <thead>
