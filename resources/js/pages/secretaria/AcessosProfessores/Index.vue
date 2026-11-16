@@ -163,6 +163,9 @@ const motivoClass = (m: string) => {
 
                 <!-- Tabela -->
                 <div class="overflow-hidden rounded-xl border bg-card shadow-sm">
+                    <!-- overflow-x-auto: em telas estreitas a coluna "Ação" (botão Criar)
+                         ficava cortada pelo overflow-hidden e o clique não chegava ao botão. -->
+                    <div class="overflow-x-auto">
                     <table class="w-full text-sm">
                         <thead class="bg-muted/50 text-left text-xs uppercase tracking-wide text-muted-foreground">
                             <tr>
@@ -209,7 +212,7 @@ const motivoClass = (m: string) => {
                                         {{ p.motivo_label }}
                                     </span>
                                 </td>
-                                <td class="px-4 py-3 text-right">
+                                <td class="whitespace-nowrap px-4 py-3 text-right">
                                     <Button
                                         v-if="p.pode_gerar"
                                         type="button"
@@ -226,6 +229,7 @@ const motivoClass = (m: string) => {
                             </tr>
                         </tbody>
                     </table>
+                    </div>
                     <div class="flex items-center justify-between border-t bg-muted/20 px-4 py-3 text-sm">
                         <span class="text-muted-foreground">
                             <template v-if="professores.total > 0">{{ professores.from }}–{{ professores.to }} de {{ professores.total }} professor{{ professores.total !== 1 ? 'es' : '' }}</template>

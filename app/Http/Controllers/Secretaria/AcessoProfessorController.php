@@ -46,7 +46,7 @@ class AcessoProfessorController extends Controller
                 'status'   => $request->string('status')->toString(),
                 'per_page' => $perPage,
             ],
-            'semVinculo'  => ! $user->isAdmin() && $escolaIds !== null && empty($escolaIds),
+            'semVinculo'  => ! $user->isGestorGlobal() && $escolaIds !== null && empty($escolaIds),
         ]);
     }
 
@@ -117,7 +117,7 @@ class AcessoProfessorController extends Controller
 
     /**
      * Escolas que o usuário pode operar.
-     * - Admin → null (todas)
+     * - Admin / gestor_secretaria → null (todas — gestor é global na rede)
      * - Secretária → ids das escolas onde possui lotação ATIVA
      * - Secretária sem fun_id/lotação → [] (nenhuma)
      *
@@ -125,7 +125,7 @@ class AcessoProfessorController extends Controller
      */
     private function escolasDoUsuario(User $user): ?array
     {
-        if ($user->isAdmin()) {
+        if ($user->isGestorGlobal()) {
             return null;
         }
 

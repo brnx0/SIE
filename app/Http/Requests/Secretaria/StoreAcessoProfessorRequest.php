@@ -10,7 +10,7 @@ class StoreAcessoProfessorRequest extends FormRequest
     {
         $user = $this->user();
 
-        return $user && ($user->isAdmin() || $user->hasRole('secretaria_escola'));
+        return $user && ($user->isGestorGlobal() || $user->hasRole('secretaria_escola'));
     }
 
     public function rules(): array
