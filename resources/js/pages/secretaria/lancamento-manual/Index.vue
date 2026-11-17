@@ -7,6 +7,7 @@ import type { BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
 import { ChevronDown, ClipboardList, Loader2, Lock, RefreshCw, Search, TriangleAlert } from 'lucide-vue-next';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
+import { pesoPelaRegraDoConceito } from '@/lib/conceitoRegra';
 
 interface AnoLetivo { anl_id: number; anl_ano: number }
 interface Escola { esc_id: number; esc_nome: string }
@@ -218,7 +219,7 @@ const cel = (dis: number, aln: number, uni: number): CelVal => {
 // ===== Média final do aluno na disciplina =====
 // Regra: soma os valores de todos os períodos e divide pela quantidade de períodos.
 // Só calcula quando TODOS os períodos têm valor. Numérica/faixa → número (0,5 mais próximo);
-// conceito (letra) → média dos pesos arredondada, exibida como a letra correspondente.
+// conceito (letra) → regra do conceito (ver lib/conceitoRegra.ts), exibida como a letra.
 const roundMeio = (v: number) => Math.round(v * 2) / 2;
 
 const pesoConceito = (cncId: number | null): number | null => {
@@ -245,7 +246,7 @@ const mediaFinal = (dis: number, aln: number): string | null => {
     const us = unidades.value;
     if (!us.length || !entrada.value) return null;
 
-    // Conceito direto: média dos pesos → letra.
+    // Conceito direto: regra do conceito sobre os conceitos das unidades → letra.
     if (entrada.value === 'conceito') {
         const pesos: number[] = [];
         for (const u of us) {

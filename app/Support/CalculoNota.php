@@ -179,15 +179,11 @@ class CalculoNota
         $temConceitoDireto = $tipo === 'conceitual' && collect($validos)->every(fn ($r) => $r['valor'] === null);
 
         if ($temConceitoDireto) {
-            // Média dos pesos dos conceitos das unidades → conceito.
+            // Conceito anual = regra do conceito aplicada aos conceitos das UNIDADES
+            // (unidade sem conceito é ignorada). Ver conceitoPelaRegra().
             $pesos = array_values(array_filter(array_map(fn ($r) => $r['conceito']['peso'] ?? null, $validos), fn ($p) => $p !== null));
-            if (empty($pesos)) {
-                return ['tipo' => $tipo, 'valor' => null, 'conceito' => null];
-            }
-            $media = array_sum($pesos) / count($pesos);
-            $conceito = self::conceitoPorPeso((int) round($media), self::conceitos());
 
-            return ['tipo' => $tipo, 'valor' => null, 'conceito' => $conceito];
+            return ['tipo' => $tipo, 'valor' => null, 'conceito' => self::conceitoPelaRegra($pesos, self::conceitos())];
         }
 
         if (empty($valores)) {
@@ -312,30 +308,63 @@ class CalculoNota
 
     private static function baseConceito($regulares, array $notaMap, int $alnId, $conceitos): array
     {
-        $counts = [];
-        $pesos  = [];
+        // Conceito da unidade = regra do conceito aplicada às AVALIAÇÕES da unidade.
+        $pesos = [];
         foreach ($regulares as $a) {
             $cid = $notaMap[$a->ava_id][$alnId]['cnc_id'] ?? null;
             if ($cid) {
-                $counts[$cid] = ($counts[$cid] ?? 0) + 1;
                 $pesos[] = self::pesoPorId($cid, $conceitos);
             }
         }
-        if (empty($counts)) {
-            return ['valor' => null, 'conceito' => null];
+
+        return ['valor' => null, 'conceito' => self::conceitoPelaRegra($pesos, $conceitos)];
+    }
+
+    /**
+     * Regra do modo 'conceito' — a mesma do legado (Maracás: FN_GET_CONCEITO_MEDIA
+     * para a unidade, FN_GET_CONCEITO_MEDIA_CONCEITOS para o ano). Pesos na escala
+     * do cadastro (ex.: R/I = 1, S = 2, H = 3); "menor" e "maior" são o menor e o
+     * maior peso cadastrados.
+     *  1. Maioria absoluta: um conceito com mais ocorrências que todos os outros juntos vence.
+     *  2. Menor, menor, meio, maior (R, R, S, H em qualquer ordem) → maior.
+     *  3. Empate menor × maior, sem nenhum do meio (R, H / R, R, H, H) → maior.
+     *  4. Demais: média dos pesos arredondada PARA CIMA (1,5 → 2; 2,33 → 3).
+     * Mantenha igual a resources/js/lib/conceitoRegra.ts.
+     *
+     * @param  array<int|float>  $pesos
+     */
+    public static function conceitoPelaRegra(array $pesos, $conceitos): ?array
+    {
+        $pesos = array_map('intval', array_values(array_filter($pesos, fn ($p) => $p !== null && (int) $p > 0)));
+        if (empty($pesos) || $conceitos->isEmpty()) {
+            return null;
         }
 
-        $max  = max($counts);
-        $tied = array_keys(array_filter($counts, fn ($c) => $c === $max));
+        $n    = count($pesos);
+        $qtd  = array_count_values($pesos);
 
-        if (count($tied) === 1) {
-            return ['valor' => null, 'conceito' => self::conceitoArray(self::conceitoPorIdModel((int) $tied[0], $conceitos))];
+        foreach ($qtd as $peso => $q) {
+            if ($q > $n - $q) {
+                return self::conceitoPorPeso((int) $peso, $conceitos);
+            }
         }
 
-        // empate → média dos pesos arredondada
-        $media = array_sum($pesos) / count($pesos);
+        $escala = $conceitos->map(fn ($c) => (int) $c->cnc_peso);
+        $menor  = $escala->min();
+        $maior  = $escala->max();
+        $qMenor = $qtd[$menor] ?? 0;
+        $qMaior = $qtd[$maior] ?? 0;
+        $qMeio  = $n - $qMenor - $qMaior;
 
-        return ['valor' => null, 'conceito' => self::conceitoPorPeso((int) round($media), $conceitos)];
+        if ($qMenor === 2 && $qMeio === 1 && $qMaior === 1) {
+            return self::conceitoPorPeso($maior, $conceitos);
+        }
+        if ($qMenor === $qMaior && $qMenor > 0 && $qMeio === 0) {
+            return self::conceitoPorPeso($maior, $conceitos);
+        }
+
+        // round(…, 6) evita 2.0000000001 virar 3 no ceil.
+        return self::conceitoPorPeso((int) ceil(round(array_sum($pesos) / $n, 6)), $conceitos);
     }
 
     private static function melhorRecuperacao($recuperacao, array $notaMap, int $alnId, string $modo, $conceitos): ?array

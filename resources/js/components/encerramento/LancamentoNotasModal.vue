@@ -2,6 +2,7 @@
 import { Dialog, DialogScrollContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Loader2, Lock, Trash2, TriangleAlert } from 'lucide-vue-next';
 import { computed, reactive, ref, watch } from 'vue';
+import { pesoPelaRegraDoConceito } from '@/lib/conceitoRegra';
 
 const props = defineProps<{
     open: boolean;
@@ -86,7 +87,7 @@ const entrada = computed<'numerica' | 'faixa' | 'conceito' | null>(() => {
 
 // ===== Média final do aluno na disciplina =====
 // Soma os períodos e divide pela quantidade de períodos. Só calcula com todos preenchidos.
-// Numérica/faixa → número (0,5 mais próximo); conceito (letra) → média dos pesos → letra.
+// Numérica/faixa → número (0,5 mais próximo); conceito (letra) → regra do conceito → letra.
 const roundMeio = (v: number) => Math.round(v * 2) / 2;
 const pesoConceito = (cncId: number | null): number | null => {
     if (cncId == null) return null;
@@ -111,7 +112,7 @@ const mediaFinal = (dis: number): string | null => {
     const us = unidades.value;
     if (!us.length || !entrada.value) return null;
 
-    // Conceito direto: média dos pesos → letra.
+    // Conceito direto: regra do conceito sobre os conceitos das unidades → letra.
     if (entrada.value === 'conceito') {
         const pesos: number[] = [];
         for (const u of us) {
@@ -119,8 +120,8 @@ const mediaFinal = (dis: number): string | null => {
             if (p == null) return null;
             pesos.push(p);
         }
-        const m = Math.round(pesos.reduce((s, v) => s + v, 0) / us.length);
-        return conceitoPorPeso(m)?.cnc_sigla ?? null;
+        const m = pesoPelaRegraDoConceito(pesos, conceitos.value.map((c) => Number(c.cnc_peso)).filter((p) => p > 0));
+        return m == null ? null : conceitoPorPeso(m)?.cnc_sigla ?? null;
     }
 
     // Numérica e conceitual-faixa: média numérica (0,5). Faixa exibe a letra; numérica, o número.

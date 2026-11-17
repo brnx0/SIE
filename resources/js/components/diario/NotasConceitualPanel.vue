@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label';
 import { CheckCircle2, Loader2, Pencil, Plus, RefreshCw, Search, TriangleAlert, X } from 'lucide-vue-next';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { usePermissao } from '@/composables/usePermissao';
+import { pesoPelaRegraDoConceito } from '@/lib/conceitoRegra';
 
 const props = defineProps<{
     anlId: number;
@@ -175,25 +176,14 @@ const conceitoBase = (row: AlunoRow): Conceito | null => {
         const total = round2(regs.reduce((s, a) => s + (Number(row.notas[a.ava_id]?.valor) || 0), 0));
         return faixaDe(total);
     }
-    // modo conceito: conta por conceito; moda única vence; empate → média dos pesos (arredondada).
-    const counts = new Map<number, number>();
+    // modo conceito: regra do conceito (maioria absoluta, casos especiais, média p/ cima).
     const pesos: number[] = [];
     for (const a of regs) {
         const cid = row.notas[a.ava_id]?.cnc_id;
-        if (cid) {
-            counts.set(cid, (counts.get(cid) ?? 0) + 1);
-            pesos.push(pesoPorId(cid));
-        }
+        if (cid) pesos.push(pesoPorId(cid));
     }
-    if (!counts.size) return null;
-    const max = Math.max(...counts.values());
-    const tied = [...counts.entries()].filter(([, c]) => c === max).map(([cid]) => cid);
-    if (tied.length === 1) {
-        return conceitoPorId(tied[0]);
-    }
-    // empate na frequência → média dos pesos de TODAS as avaliações, arredondada.
-    const media = pesos.reduce((s, p) => s + p, 0) / pesos.length;
-    return conceitoPorPeso(Math.round(media));
+    const peso = pesoPelaRegraDoConceito(pesos, conceitos.value.map((c) => c.cnc_peso));
+    return peso == null ? null : conceitoPorPeso(peso);
 };
 
 const conceitoRecuperacao = (row: AlunoRow): Conceito | null => {
@@ -567,7 +557,7 @@ const limitarValor1Casa = (e: Event) => {
                         </tbody>
                     </table>
                     <p class="mt-2 text-xs text-muted-foreground">
-                        <template v-if="modo === 'conceito'">Conceito final = mais frequente; empate → média dos pesos.</template>
+                        <template v-if="modo === 'conceito'">Conceito da unidade = o que tiver maioria absoluta; senão, média dos pesos arredondada para cima (R, R, S, H e empate R × H valem H).</template>
                         <template v-else>Conceito final = soma das notas regulares → faixa.</template>
                         Recuperação (âmbar) fica fora do cálculo e só sobrescreve se for melhor.
                     </p>
