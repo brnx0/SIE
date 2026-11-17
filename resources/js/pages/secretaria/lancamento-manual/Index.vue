@@ -122,6 +122,10 @@ const calcAtivo = (key: string): CalcCel | null => {
     return c && c.completo && c.tipo === tipoSel.value ? c : null;
 };
 
+// Professor já tem nota no diário para a célula (média calculada, qualquer tipo):
+// a secretaria NÃO pode sobrepor — média/conceito ficam travados (faltas seguem editáveis).
+const notaProfessor = (dis: number, aln: number, uni: number): boolean => !!calc[ck(dis, aln, uni)]?.completo;
+
 // (Re)constrói as células a partir dos overrides manuais (+ faltas) e das médias calculadas.
 // Sem override e com cálculo aplicável → exibe a média calculada como "auto" (não salva até editar).
 // Depende de tipoSel, por isso roda também ao alternar numérica/conceitual.
@@ -134,7 +138,8 @@ function montarCelulas() {
                 const key = ck(d.dis_id, Number(aln), Number(uni));
                 const m = v[aln][uni];
                 const c = calcAtivo(key);
-                const temOverride = m.media != null || m.cnc_id != null;
+                // Com nota do professor, um override antigo é ignorado: vale a média do diário.
+                const temOverride = !calc[key]?.completo && (m.media != null || m.cnc_id != null);
                 vals[key] = {
                     media: temOverride ? m.media : (c ? c.media : null),
                     cnc_id: temOverride ? m.cnc_id : (c ? c.cnc_id : null),
@@ -254,8 +259,8 @@ const mediaFinal = (dis: number, aln: number): string | null => {
             if (p == null) return null;
             pesos.push(p);
         }
-        const m = Math.round(pesos.reduce((s, v) => s + v, 0) / us.length);
-        return conceitoPorPeso(m)?.cnc_sigla ?? null;
+        const m = pesoPelaRegraDoConceito(pesos, conceitos.value.map((c) => Number(c.cnc_peso)).filter((p) => p > 0));
+        return m == null ? null : conceitoPorPeso(m)?.cnc_sigla ?? null;
     }
 
     // Numérica e conceitual-faixa: média numérica (0,5). Faixa exibe a letra; numérica, o número.
@@ -296,7 +301,8 @@ const tipoLancadoLabel = (dis: number, aln: number): string =>
 
 const tituloCel = (dis: number, aln: number, uni: number, msgBloqueio: string): string => {
     if (bloqueado(dis, aln)) return msgBloqueio;
-    return cel(dis, aln, uni).auto ? 'Média calculada das notas do diário. Edite para sobrescrever.' : '';
+    if (notaProfessor(dis, aln, uni)) return 'Nota lançada pelo professor no diário — não pode ser sobreposta.';
+    return '';
 };
 
 // Reflete no snapshot do fetch o estado gravado de uma célula (ou sua remoção do banco).
@@ -323,6 +329,8 @@ function sincronizarSnapshot(dis: number, aln: number, uni: number, media: numbe
 async function salvar(dis: number, aln: number, uni: number) {
     const key = ck(dis, aln, uni);
     const c = cel(dis, aln, uni);
+    // Nota do professor: nunca envia média/conceito (só faltas).
+    if (notaProfessor(dis, aln, uni)) c.auto = true;
     status[key] = 'saving';
     const norm = (v: number | string | null) => (v === '' || v === null || v === undefined ? null : v);
     // Célula "auto" (média calculada não editada) NÃO vira override: envia média/conceito nulos,
@@ -445,12 +453,12 @@ const toggleTodas = () => {
             <h1 class="mb-1 flex items-center gap-2 text-xl font-semibold">
                 <ClipboardList class="size-5 text-indigo-600" /> Notas e Faltas
             </h1>
-            <p class="mb-3 text-sm text-muted-foreground">Lance a média e as faltas por aluno em cada período. A média é arredondada ao 0,5 mais próximo. Se o professor alterar as notas depois, o ajuste é descartado e a média volta a ser recalculada.</p>
+            <p class="mb-3 text-sm text-muted-foreground">Lance a média e as faltas por aluno em cada período. A média é arredondada ao 0,5 mais próximo. Onde o professor já lançou as notas no diário, a média dele prevalece e não pode ser sobreposta.</p>
 
             <!-- Legenda do destaque -->
             <div class="mb-6 flex items-center gap-2 rounded-lg border border-indigo-200 bg-indigo-50/40 px-3 py-2 text-xs text-indigo-800 dark:border-indigo-800 dark:bg-indigo-950/30 dark:text-indigo-200">
                 <span class="grid h-7 w-12 place-items-center rounded-md border border-dashed border-indigo-300 italic text-indigo-500/80 dark:border-indigo-800">8,5</span>
-                <span><strong>Nota lançada pelo professor</strong> — média calculada do diário (em itálico/tracejado). Edite o campo para sobrescrever.</span>
+                <span><strong>Nota lançada pelo professor</strong> — média calculada do diário (em itálico/tracejado). Fica bloqueada: só as faltas podem ser lançadas.</span>
             </div>
 
             <!-- Filtros -->
@@ -561,9 +569,9 @@ const toggleTodas = () => {
                                             <select
                                                 v-if="entrada === 'conceito'"
                                                 v-model="cel(bloco.dis_id, a.aln_id, u.uni_id).cnc_id"
-                                                :disabled="bloqueado(bloco.dis_id, a.aln_id)"
+                                                :disabled="bloqueado(bloco.dis_id, a.aln_id) || notaProfessor(bloco.dis_id, a.aln_id, u.uni_id)"
                                                 :title="tituloCel(bloco.dis_id, a.aln_id, u.uni_id, 'Aluno já tem lançamento numérico nesta disciplina.')"
-                                                class="h-8 w-20 rounded-md border bg-background px-1 text-center text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
+                                                class="h-8 w-20 rounded-md border bg-background px-1 text-center text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-80"
                                                 :class="cel(bloco.dis_id, a.aln_id, u.uni_id).auto ? 'border-dashed border-indigo-300 italic text-indigo-500/80 dark:border-indigo-800' : 'border-input'"
                                                 @change="onInputMedia(bloco.dis_id, a.aln_id, u.uni_id)"
                                             >
@@ -574,9 +582,9 @@ const toggleTodas = () => {
                                                 v-else
                                                 v-model="cel(bloco.dis_id, a.aln_id, u.uni_id).media"
                                                 type="number" step="0.01" min="0" max="10"
-                                                :disabled="bloqueado(bloco.dis_id, a.aln_id)"
+                                                :disabled="bloqueado(bloco.dis_id, a.aln_id) || notaProfessor(bloco.dis_id, a.aln_id, u.uni_id)"
                                                 :title="tituloCel(bloco.dis_id, a.aln_id, u.uni_id, 'Aluno já tem lançamento conceitual nesta disciplina.')"
-                                                class="h-8 w-16 rounded-md border bg-background px-1.5 text-center text-sm tabular-nums focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
+                                                class="h-8 w-16 rounded-md border bg-background px-1.5 text-center text-sm tabular-nums focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-80"
                                                 :class="cel(bloco.dis_id, a.aln_id, u.uni_id).auto ? 'border-dashed border-indigo-300 italic text-indigo-500/80 dark:border-indigo-800' : 'border-input'"
                                                 @input="onInputMedia(bloco.dis_id, a.aln_id, u.uni_id)"
                                             />

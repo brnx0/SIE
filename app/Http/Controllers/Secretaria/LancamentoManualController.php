@@ -191,6 +191,16 @@ class LancamentoManualController extends Controller
         }
         $faltas = ($data['faltas'] ?? null) !== null ? (int) $data['faltas'] : null;
 
+        // Nota já lançada pelo professor (média do diário completa) não pode ser sobreposta.
+        if ($media !== null || $cncId !== null) {
+            $calc = CalculoNota::calculadoTurma((int) $data['tur_id'], [(int) $data['dis_id']], [(int) $data['uni_id']]);
+            if (isset($calc[(int) $data['dis_id']][(int) $data['aln_id']][(int) $data['uni_id']])) {
+                throw ValidationException::withMessages([
+                    'media' => 'O professor já lançou a nota deste aluno no período. A nota do professor não pode ser sobreposta.',
+                ]);
+            }
+        }
+
         // Exclusão mútua: aluno não pode ter numérica e conceitual na mesma disciplina.
         if ($media !== null || $cncId !== null) {
             $temOutroTipo = NotaManual::where('nmn_tur_id', $data['tur_id'])
