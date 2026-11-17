@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Dialog, DialogScrollContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Loader2, Lock, Trash2, TriangleAlert } from 'lucide-vue-next';
-import { computed, onMounted, reactive, ref } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 
 const props = defineProps<{
     open: boolean;
@@ -329,7 +329,11 @@ const limparTodos = async () => {
 
 const close = () => emit('update:open', false);
 
-onMounted(carregar);
+watch(
+    () => [props.open, props.aluno.aln_id, props.turId] as const,
+    ([aberto]) => { if (aberto) carregar(); },
+    { immediate: true },
+);
 </script>
 
 <template>
