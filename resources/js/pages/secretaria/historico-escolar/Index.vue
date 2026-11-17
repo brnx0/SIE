@@ -5,12 +5,18 @@ import RemoteCombobox from '@/components/common/RemoteCombobox.vue';
 import HistoricoManualPanel from '@/components/aluno/HistoricoManualPanel.vue';
 import type { BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
-import { GraduationCap } from 'lucide-vue-next';
+import { Button } from '@/components/ui/button';
+import { GraduationCap, Printer } from 'lucide-vue-next';
 import { ref } from 'vue';
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Histórico Escolar', href: '/secretaria/historico-escolar' }];
 
 const aluno = ref<{ aln_id: number; aln_nome: string } | null>(null);
+
+// Impressão rápida: abre o PDF do histórico direto no gesto do usuário.
+const imprimir = () => {
+    if (aluno.value) window.open(`/alunos/${aluno.value.aln_id}/historico`, '_blank');
+};
 
 const onAluno = (item: { id: number; label: string } | null) => {
     aluno.value = item ? { aln_id: item.id, aln_nome: item.label } : null;
@@ -47,7 +53,12 @@ const onAluno = (item: { id: number; label: string } | null) => {
 
             <!-- Lançamentos do aluno selecionado -->
             <div v-if="aluno" class="mt-4 overflow-hidden rounded-xl border bg-card shadow-sm">
-                <div class="border-b bg-muted/40 px-4 py-2 text-sm font-semibold">{{ aluno.aln_nome }}</div>
+                <div class="flex items-center justify-between gap-3 border-b bg-muted/40 px-4 py-2">
+                    <span class="text-sm font-semibold">{{ aluno.aln_nome }}</span>
+                    <Button size="sm" variant="outline" class="gap-1.5" title="Gerar o PDF do histórico escolar" @click="imprimir">
+                        <Printer class="size-4" /> Imprimir histórico
+                    </Button>
+                </div>
                 <HistoricoManualPanel :aluno="aluno" />
             </div>
 

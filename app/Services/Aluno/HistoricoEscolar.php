@@ -31,11 +31,9 @@ class HistoricoEscolar
     /** Aprovado pelo Conselho — MF exibida sobe até a média de aprovação. */
     private const CONSELHO = 7;
 
-    public function gerar(int $alnId, int $escEmissoraId): array
+    public function gerar(int $alnId): array
     {
         $aluno = Aluno::with('municipioNascimento:mun_id,mun_nome,mun_uf')->findOrFail($alnId);
-        $emissora = Escola::with('municipio:mun_id,mun_nome,mun_uf', 'bairro:bai_id,bai_nome')
-            ->findOrFail($escEmissoraId);
 
         // Matrículas REGULAR aprovadas do aluno (qualquer escola da rede).
         $matriculas = Matricula::query()
