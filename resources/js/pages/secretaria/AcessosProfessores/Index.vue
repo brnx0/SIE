@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import ExportMenu from '@/components/common/ExportMenu.vue';
+import LocalCombobox from '@/components/common/LocalCombobox.vue';
 import PerPageSelect from '@/components/common/PerPageSelect.vue';
 import RefreshButton from '@/components/common/RefreshButton.vue';
 import { Button } from '@/components/ui/button';
@@ -33,7 +34,8 @@ const props = defineProps<{
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Acessos de Professores', href: '/secretaria/acessos-professores' }];
 
 const search  = ref(props.filters.search ?? '');
-const escola  = ref<number | ''>(props.filters.escola ?? '');
+const escola  = ref<number | null>(props.filters.escola ?? null);
+const itemsEscola = computed(() => props.escolas.map((e) => ({ id: e.esc_id, label: e.esc_nome })));
 const status  = ref(props.filters.status ?? '');
 const perPage = ref(props.filters.per_page ?? 10);
 
@@ -147,10 +149,9 @@ const motivoClass = (m: string) => {
                         <Search class="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                         <Input v-model="search" placeholder="Buscar por nome ou CPF..." class="pl-9" />
                     </div>
-                    <select v-model="escola" class="h-9 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring">
-                        <option value="">Todas as escolas</option>
-                        <option v-for="e in escolas" :key="e.esc_id" :value="e.esc_id">{{ e.esc_nome }}</option>
-                    </select>
+                    <div class="w-72">
+                        <LocalCombobox v-model="escola" :items="itemsEscola" placeholder="Todas as escolas" />
+                    </div>
                     <select v-model="status" class="h-9 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring">
                         <option v-for="o in STATUS_OPCOES" :key="o.value" :value="o.value">{{ o.label }}</option>
                     </select>
