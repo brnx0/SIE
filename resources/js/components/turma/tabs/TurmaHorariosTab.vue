@@ -177,7 +177,7 @@ const remove = (trh: TurmaHorario) => {
                 <thead>
                     <tr class="border-b bg-muted/30">
                         <th class="px-3 py-2 text-center text-xs font-medium text-muted-foreground w-10">Tempo</th>
-                        <th class="px-3 py-2 text-left text-xs font-medium text-muted-foreground">Professor / Disciplina</th>
+                        <th class="px-3 py-2 text-left text-xs font-medium text-muted-foreground">Docente / Disciplina</th>
                         <th class="w-8 px-2 py-2"></th>
                     </tr>
                 </thead>
@@ -220,7 +220,7 @@ const remove = (trh: TurmaHorario) => {
                                     <button
                                         type="button"
                                         class="rounded p-1 hover:bg-muted"
-                                        title="Atribuir professor"
+                                        title="Atribuir docente"
                                         @click="openForm(dia.value, tempo)"
                                     >
                                         <Plus class="size-3.5 text-indigo-600" />
@@ -235,17 +235,17 @@ const remove = (trh: TurmaHorario) => {
                                 <div class="grid gap-3">
                                     <div class="grid gap-3 sm:grid-cols-2">
                                         <div class="grid min-w-0 gap-1">
-                                            <FormLabel :required="true">Professor</FormLabel>
+                                            <FormLabel :required="true">Docente</FormLabel>
                                             <LocalCombobox
                                                 :model-value="form.trh_fun_id"
                                                 :items="professoresItems"
                                                 :invalid="!!errors.trh_fun_id"
-                                                placeholder="Buscar professor..."
+                                                placeholder="Buscar docente..."
                                                 @update:model-value="onProfessorChange"
                                             />
                                             <InputError :message="errors.trh_fun_id" />
                                             <p v-if="professoresItems.length === 0" class="text-xs text-amber-600">
-                                                Nenhum professor alocado nesta turma. Aloque na aba Professores.
+                                                Nenhum docente alocado nesta turma. Aloque na aba Docentes.
                                             </p>
                                         </div>
                                         <div class="grid min-w-0 gap-1">

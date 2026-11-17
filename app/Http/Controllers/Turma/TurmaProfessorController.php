@@ -39,7 +39,7 @@ class TurmaProfessorController extends Controller
             ->exists();
 
         if ($apoio) {
-            return back()->withErrors(['tup_fun_id' => 'Este professor já está alocado como apoio nesta turma. Remova da lista de apoio para alocá-lo como regente.']);
+            return back()->withErrors(['tup_fun_id' => 'Este docente já está alocado como apoio nesta turma. Remova da lista de apoio para alocá-lo como regente.']);
         }
 
         $temPerfil = Funcionario::where('fun_id', $data['tup_fun_id'])
@@ -51,7 +51,7 @@ class TurmaProfessorController extends Controller
 
         if (! $temPerfil) {
             return back()->withErrors([
-                'tup_fun_id' => 'Professor precisa ter cargo "Professor*" e função em sala de aula "Docente" em lotação ativa nesta escola.',
+                'tup_fun_id' => 'Docente precisa ter cargo "Professor*" e função em sala de aula "Docente" em lotação ativa nesta escola.',
             ]);
         }
 
@@ -61,7 +61,7 @@ class TurmaProfessorController extends Controller
             'tup_dis_id' => $data['tup_dis_id'],
         ]);
 
-        return back()->with('success', 'Professor alocado com sucesso.');
+        return back()->with('success', 'Docente alocado com sucesso.');
     }
 
     public function update(Request $request, Turma $turma, TurmaProfessor $turmaProfessor): RedirectResponse
@@ -89,7 +89,7 @@ class TurmaProfessorController extends Controller
             ->exists();
 
         if ($apoio) {
-            return back()->withErrors(['tup_fun_id' => 'Este professor já está alocado como apoio nesta turma. Remova da lista de apoio para alocá-lo como regente.']);
+            return back()->withErrors(['tup_fun_id' => 'Este docente já está alocado como apoio nesta turma. Remova da lista de apoio para alocá-lo como regente.']);
         }
 
         $temPerfil = Funcionario::where('fun_id', $data['tup_fun_id'])
@@ -101,7 +101,7 @@ class TurmaProfessorController extends Controller
 
         if (! $temPerfil) {
             return back()->withErrors([
-                'tup_fun_id' => 'Professor precisa ter cargo "Professor*" e função em sala de aula "Docente" em lotação ativa nesta escola.',
+                'tup_fun_id' => 'Docente precisa ter cargo "Professor*" e função em sala de aula "Docente" em lotação ativa nesta escola.',
             ]);
         }
 

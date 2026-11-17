@@ -86,7 +86,7 @@ const submit = () => {
 };
 
 const remove = (tup: TurmaProfessor) => {
-    const label = `${tup.funcionario?.fun_nome ?? 'Professor'} / ${tup.disciplina?.dis_nome ?? 'Disciplina'}`;
+    const label = `${tup.funcionario?.fun_nome ?? 'Docente'} / ${tup.disciplina?.dis_nome ?? 'Disciplina'}`;
     if (!confirm(`Remover alocação "${label}"?`)) return;
 
     router.delete(`/turmas/${props.turma.tur_id}/professores/${tup.tup_id}`, {
@@ -220,7 +220,7 @@ const saveEditApoio = (apoio: TurmaProfessorApoio) => {
 };
 
 const removeApoio = (apoio: TurmaProfessorApoio) => {
-    const label = apoio.funcionario?.fun_nome ?? 'Professor de apoio';
+    const label = apoio.funcionario?.fun_nome ?? 'Docente de apoio';
     if (!confirm(`Remover "${label}" da lista de apoio?`)) return;
 
     router.delete(`/turmas/${props.turma.tur_id}/professores-apoio/${apoio.tpa_id}`, {
@@ -234,13 +234,13 @@ const removeApoio = (apoio: TurmaProfessorApoio) => {
     <div class="grid gap-6">
         <!-- Header -->
         <div class="flex items-center justify-between">
-            <h3 class="text-sm font-semibold">Professores Alocados</h3>
+            <h3 class="text-sm font-semibold">Docentes Alocados</h3>
             <div class="flex items-center gap-2">
                 <Button type="button" size="sm" variant="outline" :disabled="refreshing" title="Atualizar listas" @click="refresh">
                     <RefreshCw :class="['mr-1 size-4', refreshing && 'animate-spin']" /> Atualizar
                 </Button>
                 <Button v-if="!showForm" type="button" size="sm" variant="outline" @click="openForm">
-                    <Plus class="mr-1 size-4" /> Adicionar Professor
+                    <Plus class="mr-1 size-4" /> Adicionar Docente
                 </Button>
             </div>
         </div>
@@ -256,12 +256,12 @@ const removeApoio = (apoio: TurmaProfessorApoio) => {
 
             <div class="grid gap-4 sm:grid-cols-2">
                 <div class="grid gap-1.5">
-                    <FormLabel :required="true">Professor</FormLabel>
+                    <FormLabel :required="true">Docente</FormLabel>
                     <LocalCombobox
                         :model-value="form.tup_fun_id"
                         :items="professoresItems"
                         :invalid="!!errors.tup_fun_id"
-                        placeholder="Buscar professor..."
+                        placeholder="Buscar docente..."
                         @update:model-value="(v) => (form.tup_fun_id = v)"
                     />
                     <InputError :message="errors.tup_fun_id" />
@@ -303,7 +303,7 @@ const removeApoio = (apoio: TurmaProfessorApoio) => {
             v-if="list.length === 0 && !showForm"
             class="rounded-xl border-2 border-dashed bg-card py-12 text-center text-sm text-muted-foreground shadow-sm"
         >
-            Nenhum professor alocado. Clique em "Adicionar Professor" para começar.
+            Nenhum docente alocado. Clique em "Adicionar Docente" para começar.
         </div>
 
         <!-- Lista -->
@@ -311,7 +311,7 @@ const removeApoio = (apoio: TurmaProfessorApoio) => {
             <table class="w-full text-sm">
                 <thead>
                     <tr class="border-b bg-muted/30">
-                        <th class="px-4 py-3 text-left font-medium text-muted-foreground">Professor</th>
+                        <th class="px-4 py-3 text-left font-medium text-muted-foreground">Docente</th>
                         <th class="px-4 py-3 text-left font-medium text-muted-foreground">Disciplina</th>
                         <th class="w-12 px-4 py-3"></th>
                     </tr>
@@ -328,7 +328,7 @@ const removeApoio = (apoio: TurmaProfessorApoio) => {
                                     :model-value="editFunId"
                                     :items="professoresItems"
                                     :invalid="!!editErrors.tup_fun_id"
-                                    placeholder="Professor..."
+                                    placeholder="Docente..."
                                     @update:model-value="(v) => (editFunId = v)"
                                 />
                                 <InputError :message="editErrors.tup_fun_id" />
@@ -398,13 +398,13 @@ const removeApoio = (apoio: TurmaProfessorApoio) => {
         <!-- ──────────── Professores de Apoio ──────────── -->
         <div class="mt-4 border-t pt-6">
             <div class="flex items-center justify-between">
-                <h3 class="text-sm font-semibold">Professores de Apoio</h3>
+                <h3 class="text-sm font-semibold">Docentes de Apoio</h3>
                 <div class="flex items-center gap-2">
                     <Button type="button" size="sm" variant="outline" :disabled="refreshing" title="Atualizar listas" @click="refresh">
                         <RefreshCw :class="['mr-1 size-4', refreshing && 'animate-spin']" /> Atualizar
                     </Button>
                     <Button v-if="!showFormApoio" type="button" size="sm" variant="outline" @click="openFormApoio">
-                        <Plus class="mr-1 size-4" /> Adicionar Professor de Apoio
+                        <Plus class="mr-1 size-4" /> Adicionar Docente de Apoio
                     </Button>
                 </div>
             </div>
@@ -412,7 +412,7 @@ const removeApoio = (apoio: TurmaProfessorApoio) => {
             <!-- Formulário -->
             <div v-if="showFormApoio" class="mt-4 rounded-xl border border-fuchsia-200 bg-fuchsia-50/50 p-5 shadow-sm dark:border-fuchsia-800 dark:bg-fuchsia-900/20">
                 <div class="mb-4 flex items-center justify-between">
-                    <h4 class="text-sm font-medium">Novo Professor de Apoio</h4>
+                    <h4 class="text-sm font-medium">Novo Docente de Apoio</h4>
                     <button type="button" class="rounded p-1 hover:bg-muted" @click="resetFormApoio">
                         <X class="size-4" />
                     </button>
@@ -420,17 +420,17 @@ const removeApoio = (apoio: TurmaProfessorApoio) => {
 
                 <div class="grid gap-4">
                     <div class="grid gap-1.5">
-                        <FormLabel :required="true">Professor</FormLabel>
+                        <FormLabel :required="true">Docente</FormLabel>
                         <LocalCombobox
                             :model-value="formApoio.tpa_fun_id"
                             :items="professoresApoioItems"
                             :invalid="!!errorsApoio.tpa_fun_id"
-                            placeholder="Buscar professor..."
+                            placeholder="Buscar docente..."
                             @update:model-value="(v) => (formApoio.tpa_fun_id = v)"
                         />
                         <InputError :message="errorsApoio.tpa_fun_id" />
                         <p v-if="professoresApoioItems.length === 0" class="text-xs text-amber-600">
-                            Todos os professores disponíveis já estão alocados como apoio.
+                            Todos os docentes disponíveis já estão alocados como apoio.
                         </p>
                     </div>
 
@@ -475,7 +475,7 @@ const removeApoio = (apoio: TurmaProfessorApoio) => {
                 <table class="w-full text-sm">
                     <thead>
                         <tr class="border-b bg-muted/30">
-                            <th class="px-4 py-3 text-left font-medium text-muted-foreground">Professor</th>
+                            <th class="px-4 py-3 text-left font-medium text-muted-foreground">Docente</th>
                             <th class="px-4 py-3 text-left font-medium text-muted-foreground">Observação</th>
                             <th class="w-12 px-4 py-3"></th>
                         </tr>

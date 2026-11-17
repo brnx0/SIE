@@ -247,7 +247,7 @@ const selectClass = (hasError: boolean) =>
         <Tabs default-value="dados">
             <TabsList v-if="mode === 'edit'">
                 <TabsTrigger value="dados" :has-error="Object.keys(form.errors).length > 0">Dados Gerais</TabsTrigger>
-                <TabsTrigger value="professores">Professores</TabsTrigger>
+                <TabsTrigger value="professores">Docentes</TabsTrigger>
                 <TabsTrigger value="horarios">Horários</TabsTrigger>
                 <TabsTrigger value="alunos">Alunos</TabsTrigger>
             </TabsList>
