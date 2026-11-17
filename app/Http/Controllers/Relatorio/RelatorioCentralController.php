@@ -94,7 +94,8 @@ class RelatorioCentralController extends Controller
 
         return array_values(array_filter(
             config('relatorios'),
-            fn ($r) => ($r['grupo'] ?? 'central') === $grupo && $this->podeAbrir($user, $r['slug']),
+            // 'grupo' aceita string ou lista (relatório exibido em mais de um hub).
+            fn ($r) => in_array($grupo, (array) ($r['grupo'] ?? 'central'), true) && $this->podeAbrir($user, $r['slug']),
         ));
     }
 

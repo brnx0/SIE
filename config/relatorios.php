@@ -57,7 +57,8 @@ return [
         'titulo' => 'Mapa de Notas',
         'descricao' => 'Por turma e disciplina, no período: todas as notas dos instrumentos, a média do período, a recuperação (se houver) e a média final (M.F) por aluno. Professor vê apenas as suas turmas e disciplinas.',
         'categoria' => 'Diário',
-        'grupo' => 'diario',
+        // Exibido nos hubs do Diário e dos Relatórios Pedagógicos.
+        'grupo' => ['diario', 'pedagogico'],
         'icone' => 'ListChecks',
     ],
     [
