@@ -27,6 +27,21 @@ class StorePlanoAulaRequest extends FormRequest
         return !$plano || (int) $plano->dpa_user_id === (int) $user->id;
     }
 
+    /** Campos do cabeçalho travados na edição — só as datas podem mudar. */
+    public const CABECALHO_TRAVADO = ['dpa_tema', 'dpa_anl_id', 'dpa_esc_id', 'dpa_ser_id', 'dpa_tur_id', 'dpa_dis_id', 'dpa_uni_id'];
+
+    /**
+     * Edição: o cabeçalho (exceto datas) vem sempre do plano gravado, ignorando o
+     * que foi enviado. Assim a validação das datas usa a unidade original.
+     */
+    protected function prepareForValidation(): void
+    {
+        $plano = $this->route('plano');
+        if ($plano instanceof DiarioPlanoAula) {
+            $this->merge(collect(self::CABECALHO_TRAVADO)->mapWithKeys(fn ($c) => [$c => $plano->getAttribute($c)])->all());
+        }
+    }
+
     public function rules(): array
     {
         return [

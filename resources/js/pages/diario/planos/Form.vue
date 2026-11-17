@@ -364,6 +364,7 @@ const breadcrumbs: BreadcrumbItem[] = [
             <!-- Cabeçalho -->
             <section class="rounded-xl border bg-card p-4 shadow-sm">
                 <h2 class="mb-3 text-sm font-semibold text-muted-foreground">Cabeçalho</h2>
+                <p v-if="isEdit && !readonly" class="-mt-2 mb-3 text-xs text-muted-foreground">Na edição, apenas as datas do cabeçalho podem ser alteradas.</p>
                 <div class="grid grid-cols-1 gap-4 md:grid-cols-12">
                     <div class="md:col-span-12">
                         <Label>Professor</Label>
@@ -372,39 +373,39 @@ const breadcrumbs: BreadcrumbItem[] = [
 
                     <div class="md:col-span-12">
                         <Label>Tema <span class="text-rose-600">*</span></Label>
-                        <Input v-model="form.dpa_tema" :disabled="readonly" maxlength="50" />
+                        <Input v-model="form.dpa_tema" :disabled="readonly || isEdit" maxlength="50" />
                         <InputError :message="form.errors.dpa_tema" />
                     </div>
                     <!-- Identificação: segue a cascata Ano Letivo → Escola → Ano Escolar → Componente -->
                     <div class="md:col-span-3">
                         <Label>Ano Letivo <span class="text-rose-600">*</span></Label>
-                        <LocalCombobox v-model="form.dpa_anl_id" :items="itemsAno"
+                        <LocalCombobox v-model="form.dpa_anl_id" :disabled="readonly || isEdit" :items="itemsAno"
                             placeholder="Selecione o ano..." :invalid="!!form.errors.dpa_anl_id" />
                         <InputError :message="form.errors.dpa_anl_id" />
                     </div>
                     <div class="md:col-span-4">
                         <Label>Escola <span class="text-rose-600">*</span></Label>
-                        <LocalCombobox v-model="form.dpa_esc_id" :items="itemsEscola"
+                        <LocalCombobox v-model="form.dpa_esc_id" :disabled="readonly || isEdit" :items="itemsEscola"
                             placeholder="Selecione a escola..." :invalid="!!form.errors.dpa_esc_id" />
                         <InputError :message="form.errors.dpa_esc_id" />
                     </div>
                     <div class="md:col-span-2">
                         <Label>Ano Escolar <span class="text-rose-600">*</span></Label>
-                        <LocalCombobox v-model="form.dpa_ser_id" :items="itemsSerie"
+                        <LocalCombobox v-model="form.dpa_ser_id" :disabled="readonly || isEdit" :items="itemsSerie"
                             placeholder="Selecione..." :invalid="!!form.errors.dpa_ser_id" />
                         <InputError :message="form.errors.dpa_ser_id" />
                     </div>
                     <!-- Turma: opcional; em branco o plano vale para todas as turmas do ano escolar. -->
                     <div class="md:col-span-2">
                         <Label>Turma</Label>
-                        <LocalCombobox v-model="form.dpa_tur_id" :items="itemsTurma"
+                        <LocalCombobox v-model="form.dpa_tur_id" :disabled="readonly || isEdit" :items="itemsTurma"
                             placeholder="Todas as turmas" :invalid="!!form.errors.dpa_tur_id" />
                         <InputError :message="form.errors.dpa_tur_id" />
                         <p class="text-xs text-muted-foreground">Opcional — em branco vale para todas as turmas.</p>
                     </div>
                     <div class="md:col-span-3">
                         <Label>Componente Curricular <span class="text-rose-600">*</span></Label>
-                        <LocalCombobox v-model="form.dpa_dis_id" :items="itemsDisciplina"
+                        <LocalCombobox v-model="form.dpa_dis_id" :disabled="readonly || isEdit" :items="itemsDisciplina"
                             placeholder="Selecione..." :invalid="!!form.errors.dpa_dis_id" />
                         <InputError :message="form.errors.dpa_dis_id" />
                     </div>
@@ -412,7 +413,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                     <!-- Período: unidade define o intervalo permitido das datas -->
                     <div class="md:col-span-4">
                         <Label>{{ labelUnidade }} <span class="text-rose-600">*</span></Label>
-                        <LocalCombobox v-model="form.dpa_uni_id" :items="itemsUnidade"
+                        <LocalCombobox v-model="form.dpa_uni_id" :disabled="readonly || isEdit" :items="itemsUnidade"
                             placeholder="Selecione..." :invalid="!!form.errors.dpa_uni_id" />
                         <InputError :message="form.errors.dpa_uni_id" />
                     </div>
