@@ -125,7 +125,15 @@ const seriesD    = ref<{ ser_id: number; ser_nome: string; ser_fl_multi?: boolea
 // Séries REAIS do segmento (sem a pseudo-série MULTI) — usadas quando a turma de
 // destino é multi e é preciso informar o ano escolar do aluno.
 const seriesReaisD = ref<{ ser_id: number; ser_nome: string }[]>([]);
-const turmasD    = ref<{ tur_id: number; tur_nome: string }[]>([]);
+// Turmas abertas da série destino (como vieram da API).
+const turmasDRaw = ref<{ tur_id: number; tur_nome: string }[]>([]);
+// Destino nunca lista a turma atual do aluno. Reativo a oTur: no Remanejamento a série
+// destino é copiada da origem ANTES de escolher a turma de origem, então um filtro
+// feito só no load deixava a turma atual na lista.
+const turmasD = computed(() => turmasDRaw.value.filter((t) => Number(t.tur_id) !== Number(oTur.value)));
+watch(oTur, (v) => {
+    if (v && Number(form.tur_id_destino) === Number(v)) form.tur_id_destino = null;
+});
 
 const dSeg = ref<number | ''>('');
 const dSer = ref<number | ''>('');
@@ -154,12 +162,12 @@ watch([exigeDestino, oEsc, oAnl], async ([v]) => {
     if (v) {
         await loadSegmentosDestino();
     } else {
-        segmentosD.value = []; seriesD.value = []; turmasD.value = []; seriesReaisD.value = [];
+        segmentosD.value = []; seriesD.value = []; turmasDRaw.value = []; seriesReaisD.value = [];
         dSeg.value = ''; dSer.value = ''; dSerAluno.value = ''; form.tur_id_destino = null;
     }
 });
 watch(dSeg, async (v) => {
-    seriesD.value = []; turmasD.value = [];
+    seriesD.value = []; turmasDRaw.value = [];
     dSer.value = ''; dSerAluno.value = ''; form.tur_id_destino = null;
     loadSeriesReaisDestino();
     if (v && oEsc.value && oAnl.value) {
@@ -173,16 +181,12 @@ watch(dSeg, async (v) => {
     }
 });
 watch(dSer, async (v) => {
-    turmasD.value = []; form.tur_id_destino = null; dSerAluno.value = '';
+    turmasDRaw.value = []; form.tur_id_destino = null; dSerAluno.value = '';
     if (v && oEsc.value && oAnl.value && dSeg.value) {
         const p = new URLSearchParams({ esc_id: String(oEsc.value), anl_id: String(oAnl.value), seg_id: String(dSeg.value), ser_id: String(v) });
         const r = await fetch(`/api/matriculas/turmas?${p}`);
         if (r.ok) {
-            const lista = (await r.json()).filter((t: any) => t.tur_situacao === 'ABERTA');
-            // Remanejamento e Reclassificação: turma destino deve diferir da origem.
-            turmasD.value = (isRemanejamento.value || isReclassificacao.value)
-                ? lista.filter((t: any) => t.tur_id !== Number(oTur.value))
-                : lista;
+            turmasDRaw.value = (await r.json()).filter((t: any) => t.tur_situacao === 'ABERTA');
         }
     }
 });
