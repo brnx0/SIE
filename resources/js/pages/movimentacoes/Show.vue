@@ -41,12 +41,19 @@ const abrirDialog = () => {
     dialogOpen.value = true;
 };
 
+const motivoInformado = computed(() => motivo.value.trim().length >= 3);
+
 const confirmarDesfazer = () => {
+    if (!motivoInformado.value) {
+        erroDesfazer.value = 'Informe o motivo para desfazer a movimentação (mínimo 3 caracteres).';
+        document.getElementById('motivo')?.focus();
+        return;
+    }
     processing.value = true;
     erroDesfazer.value = '';
     router.post(
         `/movimentacoes/${props.movimentacao.mva_id}/desfazer`,
-        { motivo: motivo.value || null },
+        { motivo: motivo.value.trim() },
         {
             preserveScroll: true,
             onSuccess: () => {
@@ -163,8 +170,9 @@ const confirmarDesfazer = () => {
                 <p class="mb-4 text-sm text-muted-foreground">
                     A matrícula de origem será reativada e a matrícula de destino (se houver) será removida. Confirma?
                 </p>
-                <label class="mb-1 block text-sm font-medium">Motivo (opcional)</label>
+                <label for="motivo" class="mb-1 block text-sm font-medium">Motivo <span class="text-rose-600">*</span></label>
                 <textarea
+                    id="motivo"
                     v-model="motivo"
                     rows="3"
                     maxlength="500"
@@ -176,7 +184,7 @@ const confirmarDesfazer = () => {
                 </p>
                 <div class="mt-4 flex justify-end gap-2">
                     <Button variant="outline" :disabled="processing" @click="dialogOpen = false">Cancelar</Button>
-                    <Button class="bg-rose-600 text-white hover:bg-rose-700" :disabled="processing" @click="confirmarDesfazer">
+                    <Button class="bg-rose-600 text-white hover:bg-rose-700" :disabled="processing || !motivoInformado" @click="confirmarDesfazer">
                         <Loader2 v-if="processing" class="mr-1 size-4 animate-spin" />
                         Confirmar
                     </Button>

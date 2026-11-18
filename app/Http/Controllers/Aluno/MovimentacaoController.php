@@ -177,10 +177,12 @@ class MovimentacaoController extends Controller
     public function desfazer(Request $request, AlunoMovimentacao $movimentacao, DesfazerMovimentacao $service): RedirectResponse
     {
         $data = $request->validate([
-            'motivo' => ['nullable', 'string', 'max:500'],
-        ], [], ['motivo' => 'motivo']);
+            'motivo' => ['required', 'string', 'min:3', 'max:500'],
+        ], [
+            'motivo.required' => 'Informe o motivo para desfazer a movimentação.',
+        ], ['motivo' => 'motivo']);
 
-        $service->executar($movimentacao, $data['motivo'] ?? null);
+        $service->executar($movimentacao, trim($data['motivo']));
 
         return back()->with('success', 'Movimentação desfeita com sucesso.');
     }
