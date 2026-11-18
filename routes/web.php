@@ -362,6 +362,10 @@ Route::middleware(['auth', 'verified', 'tela'])->group(function () {
     Route::get('relatorios/formacao-classes', [FormacaoClassesController::class, 'form'])->name('relatorios.formacao-classes.form');
     Route::get('relatorios/formacao-classes/gerar', [FormacaoClassesController::class, 'gerar'])->name('relatorios.formacao-classes.gerar');
     Route::get('relatorios/formacao-classes/xlsx', [FormacaoClassesController::class, 'exportarXlsx'])->name('relatorios.formacao-classes.xlsx');
+    // Variante da Central: mesma montagem, escola obrigatória.
+    Route::get('relatorios/formacao-classes-escola', [FormacaoClassesController::class, 'formEscola'])->name('relatorios.formacao-classes-escola.form');
+    Route::get('relatorios/formacao-classes-escola/gerar', [FormacaoClassesController::class, 'gerarEscola'])->name('relatorios.formacao-classes-escola.gerar');
+    Route::get('relatorios/formacao-classes-escola/xlsx', [FormacaoClassesController::class, 'exportarXlsxEscola'])->name('relatorios.formacao-classes-escola.xlsx');
     Route::get('relatorios/formacao-classes-aee', [FormacaoClassesAeeController::class, 'form'])->name('relatorios.formacao-classes-aee.form');
     Route::get('relatorios/formacao-classes-aee/gerar', [FormacaoClassesAeeController::class, 'gerar'])->name('relatorios.formacao-classes-aee.gerar');
     Route::get('relatorios/alunos-deficiencia', [AlunosDeficienciaController::class, 'form'])->name('relatorios.alunos-deficiencia.form');

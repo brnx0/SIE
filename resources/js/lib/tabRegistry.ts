@@ -97,6 +97,7 @@ const PATH_LABELS: Record<string, string> = {
     '/relatorios/declaracao-conclusao': 'Declaração de Conclusão',
     '/relatorios/formacao-classes': 'Formação de Classes',
     '/relatorios/formacao-classes-aee': 'Formação de Classes — AEE',
+    '/relatorios/formacao-classes-escola': 'Formação de Classes por Escola',
     '/relatorios/alunos-deficiencia': 'Alunos com Deficiência',
     '/relatorios/alunos-transtorno': 'Alunos com Transtorno',
     '/relatorios/dados-alunos-turma': 'Dados de Alunos por Turma',

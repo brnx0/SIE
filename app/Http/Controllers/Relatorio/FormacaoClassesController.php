@@ -29,7 +29,37 @@ use Inertia\Response;
  */
 class FormacaoClassesController extends Controller
 {
+    /** Base das rotas de cada variante (Relatórios Gerais × Central por escola). */
+    private const BASE_REDE   = '/relatorios/formacao-classes';
+    private const BASE_ESCOLA = '/relatorios/formacao-classes-escola';
+
     public function form(): Response
+    {
+        return $this->renderForm(false);
+    }
+
+    /** Variante da Central: mesma tela, escola obrigatória. */
+    public function formEscola(): Response
+    {
+        return $this->renderForm(true);
+    }
+
+    public function gerar(Request $request): Response
+    {
+        return $this->renderResultado($request, false);
+    }
+
+    public function gerarEscola(Request $request): Response
+    {
+        return $this->renderResultado($request, true);
+    }
+
+    public function exportarXlsxEscola(Request $request): \Illuminate\Http\Response
+    {
+        return $this->exportarXlsx($request, true);
+    }
+
+    private function renderForm(bool $porEscola): Response
     {
         $user = auth()->user();
 
@@ -39,28 +69,32 @@ class FormacaoClassesController extends Controller
             'userEscola'  => UserAccess::escolaDefault($user),
             'isAdmin'     => $user->isAdmin(),
             'situacoes'   => Turma::SITUACOES,
+            'porEscola'   => $porEscola,
+            'baseUrl'     => $porEscola ? self::BASE_ESCOLA : self::BASE_REDE,
         ]);
     }
 
-    public function gerar(Request $request): Response
+    private function renderResultado(Request $request, bool $porEscola): Response
     {
         [
             'parametros' => $parametros,
             'filtros'    => $filtros,
             'linhas'     => $linhas,
-        ] = $this->montar($request);
+        ] = $this->montar($request, $porEscola);
 
         return Inertia::render('relatorios/FormacaoClasses/Resultado', [
             'parametros' => $parametros,
             'filtros'    => $filtros,
             'linhas'     => $linhas,
             'total'      => $linhas->count(),
+            'porEscola'  => $porEscola,
+            'baseUrl'    => $porEscola ? self::BASE_ESCOLA : self::BASE_REDE,
         ]);
     }
 
-    public function exportarXlsx(Request $request): \Illuminate\Http\Response
+    public function exportarXlsx(Request $request, bool $porEscola = false): \Illuminate\Http\Response
     {
-        ['linhas' => $linhas] = $this->montar($request);
+        ['linhas' => $linhas] = $this->montar($request, $porEscola);
 
         $headers = [
             'Escola', 'Código da Turma', 'Nome da Turma', 'Etapa', 'Série / Ano Escolar', 'Turno',
@@ -82,11 +116,11 @@ class FormacaoClassesController extends Controller
     /**
      * @return array{parametros: array|null, filtros: array, linhas: Collection}
      */
-    private function montar(Request $request): array
+    private function montar(Request $request, bool $exigeEscola = false): array
     {
         $data = $request->validate([
             'anl_id'   => ['required', 'integer', 'exists:cfg_ano_letivo,anl_id'],
-            'esc_id'   => ['nullable', 'integer', 'exists:edu_escola,esc_id'],
+            'esc_id'   => [$exigeEscola ? 'required' : 'nullable', 'integer', 'exists:edu_escola,esc_id'],
             'situacao' => ['nullable', 'in:todas,ABERTA,ENCERRADA'],
         ]);
 

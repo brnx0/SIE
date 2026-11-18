@@ -59,7 +59,14 @@ const props = defineProps<{
     };
     linhas: Linha[];
     total: number;
+    porEscola?: boolean;
+    baseUrl?: string;
 }>();
+
+const baseUrl = props.baseUrl ?? '/relatorios/formacao-classes';
+const titulo = props.porEscola ? 'Formação de Classes por Escola' : 'Formação de Classes';
+// Com escola fixa o total é o da escola; em modo rede, o da rede inteira.
+const rotuloTotal = computed(() => (props.filtros.rede ? 'TOTAL GERAL DA REDE' : `TOTAL DA ESCOLA — ${props.filtros.esc_nome}`));
 
 // A chave de agrupamento vem pronta do backend: "Escola — Segmento" em modo
 // rede, só o segmento quando há escola fixa.
@@ -84,7 +91,7 @@ const totaisGrupo = (lista: Linha[]) =>
     }), { capacidade: 0, expansao: 0, pcd: 0, rede: 0, novos: 0, vagas: 0 });
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Formação de Classes', href: '/relatorios/formacao-classes' },
+    { title: titulo, href: baseUrl },
 ];
 
 import { useIsActiveTab } from '@/composables/useIsActiveTab';
@@ -148,11 +155,11 @@ const exportarCsv = () => {
     URL.revokeObjectURL(url);
 };
 
-const exportarExcel = () => window.open(`/relatorios/formacao-classes/xlsx?${queryFiltros().toString()}`, '_blank');
+const exportarExcel = () => window.open(`${baseUrl}/xlsx?${queryFiltros().toString()}`, '_blank');
 </script>
 
 <template>
-    <Head title="Formação de Classes" />
+    <Head :title="titulo" />
 
     <!-- Bloco impressão -->
     <Teleport to="body" :disabled="!isActiveTab">
@@ -160,7 +167,7 @@ const exportarExcel = () => window.open(`/relatorios/formacao-classes/xlsx?${que
         <RelatorioCabecalho :parametros="parametros" />
 
         <div class="titulo-impressao">
-            <h1>Formação de Classes</h1>
+            <h1>{{ titulo }}</h1>
         </div>
 
         <div class="resumo-filtros">
@@ -232,7 +239,7 @@ const exportarExcel = () => window.open(`/relatorios/formacao-classes/xlsx?${que
             </colgroup>
             <tbody>
                 <tr class="linha-total-geral">
-                    <td colspan="6"><b>TOTAL GERAL</b></td>
+                    <td colspan="6"><b>{{ rotuloTotal }}</b></td>
                     <td class="centro"><b>{{ totais.pcd }}</b></td>
                     <td></td>
                     <td class="centro"><b>{{ totais.capacidade }}</b></td>
@@ -255,9 +262,9 @@ const exportarExcel = () => window.open(`/relatorios/formacao-classes/xlsx?${que
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="mx-auto w-[95%] py-6">
             <div class="flex items-center justify-between mb-4">
-                <h1 class="text-xl font-semibold">Resultado: Formação de Classes</h1>
+                <h1 class="text-xl font-semibold">Resultado: {{ titulo }}</h1>
                 <div class="flex gap-2">
-                    <Link href="/relatorios/formacao-classes">
+                    <Link :href="baseUrl">
                         <Button variant="outline"><ArrowLeft class="mr-1 size-4" /> Voltar</Button>
                     </Link>
                     <Button variant="outline" :disabled="!total" @click="exportarCsv">CSV</Button>
@@ -354,7 +361,7 @@ const exportarExcel = () => window.open(`/relatorios/formacao-classes/xlsx?${que
                 </div>
             </div>
             <div v-if="total" class="rounded-xl border bg-indigo-50 dark:bg-indigo-900/20 p-4 text-sm font-semibold grid gap-1 sm:grid-cols-7">
-                <div class="sm:col-span-2">TOTAL GERAL</div>
+                <div class="sm:col-span-2">{{ rotuloTotal }}</div>
                 <div class="text-center">PCD: {{ totais.pcd }}</div>
                 <div class="text-center">Cap: {{ totais.capacidade }}</div>
                 <div class="text-center">Exp: {{ totais.expansao }}</div>

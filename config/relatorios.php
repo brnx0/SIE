@@ -159,6 +159,16 @@ return [
         'icone' => 'LayoutGrid',
     ],
     [
+        // Mesmo quadro da Formação de Classes (Relatórios Gerais), mas por escola:
+        // a escola é obrigatória e o total é o da escola, não o da rede.
+        'slug' => 'formacao-classes-escola',
+        'titulo' => 'Formação de Classes por Escola',
+        'descricao' => 'Quadro de turmas de uma escola com capacidade, expansão, alunos da rede, novos, vagas, PCD, faixa etária e professores alocados, por etapa, com o total da escola. Exporta Excel.',
+        'categoria' => 'Turma',
+        'grupo' => 'central',
+        'icone' => 'LayoutGrid',
+    ],
+    [
         'slug' => 'formacao-classes-aee',
         'titulo' => 'Formação de Classes — AEE',
         'descricao' => 'Quadro de turmas AEE com capacidade, expansão, alunos da rede, novos e vagas.',
