@@ -79,16 +79,6 @@ class IndicesAprovacao
         })();
     }
 
-    /** Disciplinas da grade ativa da série no ano, memorizadas. */
-    private static function grade(int $serId, int $anlId): array
-    {
-        return self::$cache['grade']["$serId|$anlId"] ??= DB::table('edu_grade_disciplinar')
-            ->where('grd_ser_id', $serId)
-            ->where('grd_anl_id', $anlId)
-            ->where('grd_fl_ativo', true)
-            ->pluck('grd_dis_id')->map(fn ($v) => (int) $v)->unique()->values()->all();
-    }
-
     /**
      * Unidades do ano em ordem, com rótulo ("1º Trimestre").
      *
@@ -140,14 +130,15 @@ class IndicesAprovacao
 
         // Critério de aprovação (mesma precedência do encerramento: escola → ano).
         [$mediaRef, $pesoMin] = self::criterio((int) $turma->tur_anl_id, (int) $turma->tur_esc_id);
-        $disIds = self::grade((int) $turma->tur_ser_id, (int) $turma->tur_anl_id);
+        // Só as disciplinas da turma: grade × (professor ativo ou lançamento).
+        $disIds = DisciplinasTurma::ids($turId, (int) $turma->tur_ser_id, (int) $turma->tur_anl_id);
 
         // Sem critério ou sem disciplinas não dá para classificar: todos pendentes.
         $aviso = null;
         if ($mediaRef === null) {
             $aviso = 'Média mínima de aprovação não configurada (Parâmetros → Ano Letivo ou Média por Escola).';
         } elseif (! $disIds) {
-            $aviso = 'Série sem disciplinas na grade disciplinar do ano.';
+            $aviso = 'Turma sem disciplinas com professor (ou lançamento) dentro da grade disciplinar do ano.';
         }
         if ($aviso) {
             foreach ($chaves as $c) {

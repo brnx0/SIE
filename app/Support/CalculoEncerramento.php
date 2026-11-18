@@ -77,7 +77,8 @@ class CalculoEncerramento
             ];
         }
 
-        $disIds = DB::table('edu_grade_disciplinar')->where('grd_ser_id', $turma->tur_ser_id)->where('grd_anl_id', $turma->tur_anl_id)->where('grd_fl_ativo', true)->pluck('grd_dis_id')->map(fn ($v) => (int) $v)->unique()->values()->all();
+        // Grade da série × ano, só as disciplinas da turma (professor ou lançamento).
+        $disIds = DisciplinasTurma::ids($turId, (int) $turma->tur_ser_id, (int) $turma->tur_anl_id);
         $uniIds = DB::table('cfg_unidade')->where('uni_anl_id', $turma->tur_anl_id)->pluck('uni_id')->map(fn ($v) => (int) $v)->all();
 
         // Resultado por (disciplina, aluno, unidade).

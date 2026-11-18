@@ -87,6 +87,7 @@ class EncerramentoTurmaController extends Controller
                 ->where('gd.grd_ser_id', $t->tur_ser_id)
                 ->where('gd.grd_anl_id', $anlId)
                 ->where('gd.grd_fl_ativo', true)
+                ->tap(fn ($q) => \App\Support\DisciplinasTurma::restringir($q, (int) $t->tur_id))
                 ->orderBy('gd.grd_ordem')
                 ->orderBy('d.dis_nome')
                 ->get(['d.dis_id', 'd.dis_nome']);

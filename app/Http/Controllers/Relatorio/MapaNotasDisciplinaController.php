@@ -66,7 +66,8 @@ class MapaNotasDisciplinaController extends Controller
         $query = DB::table('edu_grade_disciplinar as gd')
             ->join('edu_disciplina as d', 'd.dis_id', '=', 'gd.grd_dis_id')
             ->where('gd.grd_ser_id', $serId)
-            ->where('gd.grd_fl_ativo', true);
+            ->where('gd.grd_fl_ativo', true)
+            ->tap(fn ($q) => \App\Support\DisciplinasTurma::restringir($q, (int) $turId));
 
         // Professor: só as disciplinas que leciona nesta turma.
         if (! $user->isAdmin() && ! UserAccess::acessoPorEscola($user)) {

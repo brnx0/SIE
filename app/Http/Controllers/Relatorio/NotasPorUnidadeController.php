@@ -66,6 +66,7 @@ class NotasPorUnidadeController extends Controller
             ->where('gd.grd_ser_id', $turma->tur_ser_id)
             ->where('gd.grd_anl_id', $data['anl_id'])
             ->where('gd.grd_fl_ativo', true)
+            ->tap(fn ($q) => \App\Support\DisciplinasTurma::restringir($q, (int) $turma->tur_id))
             ->distinct()
             ->orderBy('d.dis_nome')
             ->get(['d.dis_id', 'd.dis_nome']);

@@ -94,7 +94,9 @@ class AtaFinalController extends Controller
         $disciplinas = DB::table('edu_grade_disciplinar as gd')
             ->join('edu_disciplina as d', 'd.dis_id', '=', 'gd.grd_dis_id')
             ->where('gd.grd_ser_id', $turma->tur_ser_id)
+            ->where('gd.grd_anl_id', $turma->tur_anl_id)
             ->where('gd.grd_fl_ativo', true)
+            ->tap(fn ($q) => \App\Support\DisciplinasTurma::restringir($q, (int) $turma->tur_id))
             ->distinct()
             ->orderBy('gd.grd_ordem')->orderBy('d.dis_nome')
             ->get(['d.dis_id', 'd.dis_nome', 'gd.grd_ordem']);

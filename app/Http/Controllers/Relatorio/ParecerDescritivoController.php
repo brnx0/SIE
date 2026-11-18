@@ -121,6 +121,7 @@ class ParecerDescritivoController extends Controller
                 ->join('edu_disciplina as d', 'd.dis_id', '=', 'gd.grd_dis_id')
                 ->where('gd.grd_ser_id', $turma->tur_ser_id)
                 ->where('gd.grd_fl_ativo', true)
+                ->tap(fn ($q) => \App\Support\DisciplinasTurma::restringir($q, (int) $turId))
                 ->select('d.dis_id', 'd.dis_nome')
                 ->distinct()
                 ->orderBy('d.dis_nome')
