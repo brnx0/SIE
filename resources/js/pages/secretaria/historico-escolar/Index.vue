@@ -12,6 +12,8 @@ import { ref } from 'vue';
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Histórico Escolar', href: '/secretaria/historico-escolar' }];
 
 const aluno = ref<{ aln_id: number; aln_nome: string } | null>(null);
+// Anos do histórico (rede + lançados) informados pelo painel; sem nenhum, não há o que imprimir.
+const totalAnos = ref(0);
 
 // Impressão rápida: abre o PDF do histórico direto no gesto do usuário.
 const imprimir = () => {
@@ -55,11 +57,16 @@ const onAluno = (item: { id: number; label: string } | null) => {
             <div v-if="aluno" class="mt-4 overflow-hidden rounded-xl border bg-card shadow-sm">
                 <div class="flex items-center justify-between gap-3 border-b bg-muted/40 px-4 py-2">
                     <span class="text-sm font-semibold">{{ aluno.aln_nome }}</span>
-                    <Button size="sm" variant="outline" class="gap-1.5" title="Gerar o PDF do histórico escolar" @click="imprimir">
+                    <Button
+                        size="sm" variant="outline" class="gap-1.5"
+                        :disabled="!totalAnos"
+                        :title="totalAnos ? 'Gerar o PDF do histórico escolar' : 'Sem anos no histórico: lance a escolaridade anterior para imprimir.'"
+                        @click="imprimir"
+                    >
                         <Printer class="size-4" /> Imprimir histórico
                     </Button>
                 </div>
-                <HistoricoManualPanel :aluno="aluno" />
+                <HistoricoManualPanel :aluno="aluno" @anos="totalAnos = $event" />
             </div>
 
             <div v-else class="mt-4 rounded-xl border bg-card px-6 py-10 text-center text-sm text-muted-foreground shadow-sm">

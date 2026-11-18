@@ -49,6 +49,14 @@ const conceitos = ref<Conceito[]>([]);
 const situacoes = ref<Situacao[]>([]);
 const lancamentos = ref<Lancamento[]>([]);
 
+// Total de anos (rede + lançados) — a tela usa para habilitar a impressão.
+const emit = defineEmits<{ (e: 'anos', total: number): void }>();
+watch(
+    () => anosSistema.value.length + lancamentos.value.length,
+    (total) => emit('anos', total),
+    { immediate: true },
+);
+
 const showForm = ref(false);
 const escolaMode = ref<'rede' | 'livre'>('rede');
 

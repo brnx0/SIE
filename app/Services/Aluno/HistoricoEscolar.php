@@ -9,6 +9,8 @@ use App\Models\Matricula\Matricula;
 use App\Models\Turma\Turma;
 use App\Support\CalculoEncerramento;
 use App\Support\CalculoNota;
+use App\Support\UserAccess;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -22,6 +24,9 @@ use Illuminate\Support\Facades\DB;
  *   média mínima, igual à Ata Final. Só apresentação — a nota real fica no banco.
  * - A escola emissora não é escolhida: é a do último ano escolar do aluno (maior
  *   ano letivo aprovado). Anos manuais posteriores a esse ano não entram.
+ * - Sem ano aprovado na rede (só escolaridade anterior lançada à mão): o histórico
+ *   sai só com os anos manuais; emissora = escola da matrícula mais recente na rede,
+ *   senão a escola (da rede) do último ano manual, senão a escola do usuário.
  */
 class HistoricoEscolar
 {
@@ -54,25 +59,50 @@ class HistoricoEscolar
             // Série efetiva: matrícula (tma_ser_id) ou, quando nula, a da turma.
             ->filter(fn (Matricula $m) => $m->turma && $m->serieEfetiva && $m->turma->anoLetivo);
 
+        // Anos MANUAIS (escolaridade anterior / fora da rede).
+        $manuais = HistoricoManual::where('hmn_aln_id', $alnId)
+            ->with([
+                'disciplinas.disciplina:dis_id,dis_nome',
+                'disciplinas.conceito:cnc_id,cnc_sigla',
+                'serie:ser_id,ser_nome,ser_ordem_no_segmento,ser_carga_horaria,seg_id',
+                'serie.segmento:seg_id,seg_nome_completo,seg_nome_reduzido',
+                'escola:esc_id,esc_nome,esc_mun_id',
+                'situacao:tas_cod,tas_descricao',
+            ])->get()
+            ->filter(fn (HistoricoManual $h) => $h->serie && $h->hmn_ano);
+
         abort_if(
-            $matriculas->isEmpty(),
+            $matriculas->isEmpty() && $manuais->isEmpty(),
             422,
-            'O aluno não possui ano escolar aprovado — não há histórico a emitir.'
+            'O aluno não possui ano escolar aprovado nem escolaridade anterior lançada — não há histórico a emitir.'
         );
 
-        // A emissora é a escola do último ano escolar do aluno: maior ano letivo e,
-        // no mesmo ano, a série mais adiantada (desempate final pela matrícula mais nova).
-        $ultimoAno = $matriculas
-            ->sortBy(fn (Matricula $m) => [
-                (int) $m->turma->anoLetivo->anl_ano,
-                (int) ($m->serieEfetiva->ser_ordem_no_segmento ?? 0),
-                (int) $m->tma_id,
-            ])
-            ->last();
+        if ($matriculas->isNotEmpty()) {
+            // A emissora é a escola do último ano escolar do aluno: maior ano letivo e,
+            // no mesmo ano, a série mais adiantada (desempate final pela matrícula mais nova).
+            $ultimoAno = $matriculas
+                ->sortBy(fn (Matricula $m) => [
+                    (int) $m->turma->anoLetivo->anl_ano,
+                    (int) ($m->serieEfetiva->ser_ordem_no_segmento ?? 0),
+                    (int) $m->tma_id,
+                ])
+                ->last();
 
-        $anoCorte = (int) $ultimoAno->turma->anoLetivo->anl_ano;
+            $anoCorte = (int) $ultimoAno->turma->anoLetivo->anl_ano;
+            $escEmissoraId = (int) $ultimoAno->turma->tur_esc_id;
+        } else {
+            // Só anos manuais: todos entram; emissora pela ordem de fallback.
+            $anoCorte = PHP_INT_MAX;
+            $escEmissoraId = $this->escolaEmissoraSemAprovacao($alnId, $manuais);
+            abort_unless(
+                $escEmissoraId,
+                422,
+                'Não foi possível definir a escola emissora: o aluno não tem matrícula na rede e os anos lançados não são de escola da rede.'
+            );
+        }
+
         $emissora = Escola::with('municipio:mun_id,mun_nome,mun_uf', 'bairro:bai_id,bai_nome')
-            ->findOrFail((int) $ultimoAno->turma->tur_esc_id);
+            ->findOrFail($escEmissoraId);
 
         // Ordena por ordem da série no segmento, depois ano letivo.
         $matriculas = $matriculas
@@ -98,21 +128,8 @@ class HistoricoEscolar
             ];
         })->all();
 
-        // Anos MANUAIS (escolaridade anterior / fora da rede) — até o ano de corte.
-        $manuais = HistoricoManual::where('hmn_aln_id', $alnId)
-            ->with([
-                'disciplinas.disciplina:dis_id,dis_nome',
-                'disciplinas.conceito:cnc_id,cnc_sigla',
-                'serie:ser_id,ser_nome,ser_ordem_no_segmento,ser_carga_horaria,seg_id',
-                'serie.segmento:seg_id,seg_nome_completo,seg_nome_reduzido',
-                'escola:esc_id,esc_nome,esc_mun_id',
-                'situacao:tas_cod,tas_descricao',
-            ])->get();
-
+        // Anos MANUAIS — até o ano de corte.
         foreach ($manuais as $h) {
-            if (! $h->serie || ! $h->hmn_ano) {
-                continue;
-            }
             $ano = (int) $h->hmn_ano;
             if ($ano > $anoCorte) {
                 continue;
@@ -191,8 +208,9 @@ class HistoricoEscolar
             $linhasMatriz[] = ['componente' => $c['nome'], 'celulas' => $celulas];
         }
 
-        // Último ano na escola emissora (texto da certificação).
+        // Último ano (texto da certificação): o da rede ou, sem ele, o último manual.
         $ultima = $matriculas->last();
+        $ultimoItem = $itens ? $itens[array_key_last($itens)] : null;
 
         return [
             'escola' => $this->dadosEscola($emissora),
@@ -203,9 +221,12 @@ class HistoricoEscolar
                 'filiacao_1' => $aluno->aln_filiacao_1,
                 'filiacao_2' => $aluno->aln_filiacao_2,
             ],
-            'conclusao' => [
-                'ano_escolar' => $ultima?->serieEfetiva->ser_nome,
-                'segmento' => $ultima?->turma->segmento?->seg_nome_completo,
+            'conclusao' => $ultima ? [
+                'ano_escolar' => $ultima->serieEfetiva->ser_nome,
+                'segmento' => $ultima->turma->segmento?->seg_nome_completo,
+            ] : [
+                'ano_escolar' => $ultimoItem['ano_escolar'] ?? null,
+                'segmento' => $ultimoItem['curso'] ?? null,
             ],
             'colunas' => $colunas,
             'componentes' => $linhasMatriz,
@@ -218,6 +239,36 @@ class HistoricoEscolar
                 'data' => now()->format('d/m/Y'),
             ],
         ];
+    }
+
+    /**
+     * Escola emissora quando o aluno não tem ano aprovado na rede: escola da matrícula
+     * REGULAR mais recente (qualquer situação), senão a escola da rede do último ano
+     * manual, senão a escola padrão do usuário logado.
+     */
+    private function escolaEmissoraSemAprovacao(int $alnId, Collection $manuais): ?int
+    {
+        $escMatricula = DB::table('edu_turma_aluno as tma')
+            ->join('edu_turma as t', 't.tur_id', '=', 'tma.tma_tur_id')
+            ->join('cfg_ano_letivo as a', 'a.anl_id', '=', 't.tur_anl_id')
+            ->where('tma.tma_aln_id', $alnId)
+            ->where('tma.tma_modalidade', Turma::MODALIDADE_REGULAR)
+            ->whereNull('tma.tma_deleted_at')
+            ->orderByDesc('a.anl_ano')
+            ->orderByDesc('tma.tma_id')
+            ->value('t.tur_esc_id');
+        if ($escMatricula) {
+            return (int) $escMatricula;
+        }
+
+        $escManual = $manuais->filter(fn ($h) => $h->hmn_esc_id)
+            ->sortBy(fn ($h) => (int) $h->hmn_ano)
+            ->last()?->hmn_esc_id;
+        if ($escManual) {
+            return (int) $escManual;
+        }
+
+        return UserAccess::escolaDefault(auth()->user())['esc_id'] ?? null;
     }
 
     /**
