@@ -8,7 +8,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem, type Paginated } from '@/types';
 import type { Escola } from '@/types/escola';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { Building2, Pencil, Plus, Search, Trash2 } from 'lucide-vue-next';
+import { Building2, Eye, Pencil, Plus, Search, Trash2 } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
 import { usePermissao } from '@/composables/usePermissao';
 
@@ -127,9 +127,12 @@ const situacaoClass = (s: number) => {
                             <td class="px-4 py-3">
                                 <div class="flex items-center justify-end gap-1">
                                     <Link :href="`/escolas/${esc.esc_id}/edit`">
-                                        <Button variant="ghost" size="sm"><Pencil class="size-4" /></Button>
+                                        <Button variant="ghost" size="sm" :title="isReadOnly ? 'Visualizar' : 'Editar'">
+                                            <Eye v-if="isReadOnly" class="size-4 text-indigo-600" />
+                                            <Pencil v-else class="size-4" />
+                                        </Button>
                                     </Link>
-                                    <Button v-if="!isReadOnly" variant="ghost" size="sm" class="text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:hover:bg-rose-900/30" @click="remove(esc)">
+                                    <Button v-if="!isReadOnly" variant="ghost" size="sm" title="Remover" class="text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:hover:bg-rose-900/30" @click="remove(esc)">
                                         <Trash2 class="size-4" />
                                     </Button>
                                 </div>
