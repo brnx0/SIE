@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Parametro\ParametroEntidade;
+use App\Models\Turma\Turma;
 use App\Models\User;
 use App\Support\UserAccess;
 use Illuminate\Http\Request;
@@ -250,12 +251,12 @@ class DashboardController extends Controller
         });
     }
 
-    /** Agregado de turmas abertas: total, vagas livres, lotadas, sem professor. */
+    /** Agregado de turmas abertas: total, vagas livres (só REGULAR), lotadas, sem professor. */
     private function turmaAgregado(?int $anlId, ?array $escolaIds): array
     {
         $rows = DB::table('edu_turma as t')
             ->selectRaw(
-                't.tur_capacidade as cap, coalesce(t.tur_qt_expansao, 0) as expansao,
+                't.tur_capacidade as cap, coalesce(t.tur_qt_expansao, 0) as expansao, t.tur_modalidade as modalidade,
                  (select count(*) from edu_turma_aluno tma
                     where tma.tma_tur_id = t.tur_id and tma.tma_situacao = ? and tma.tma_deleted_at is null) as ativos,
                  exists(select 1 from edu_turma_professor tp
@@ -273,7 +274,10 @@ class DashboardController extends Controller
             if (! $r->tem_prof) $semProf++;
             if ($r->cap === null) continue;
             $limite = (int) $r->cap + (int) $r->expansao;
-            $vagas += max(0, $limite - (int) $r->ativos);
+            // Vagas livres contabilizam apenas turmas REGULAR (AEE/Atividade não ofertam vaga).
+            if ($r->modalidade === Turma::MODALIDADE_REGULAR) {
+                $vagas += max(0, $limite - (int) $r->ativos);
+            }
             if ((int) $r->ativos > $limite) $lotadas++;
         }
 
