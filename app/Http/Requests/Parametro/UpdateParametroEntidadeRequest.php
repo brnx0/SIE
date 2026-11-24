@@ -30,6 +30,8 @@ class UpdateParametroEntidadeRequest extends FormRequest
             'par_fl_gerar_matricula_auto' => ['boolean'],
             'par_fl_cpf_obrigatorio' => ['boolean'],
             'par_fl_replicar_conteudo_diario' => ['boolean'],
+
+            'par_texto_ata_final' => ['nullable', 'string', 'max:10000'],
         ];
     }
 
@@ -43,6 +45,7 @@ class UpdateParametroEntidadeRequest extends FormRequest
             'par_mun_id' => 'cidade / UF',
             'par_logomarca' => 'logomarca',
             'par_brasao' => 'brasão',
+            'par_texto_ata_final' => 'texto da Ata de Resultados Finais',
         ];
     }
 }

@@ -34,6 +34,7 @@ class ParametroEntidade extends Model
         'par_fl_gerar_matricula_auto',
         'par_fl_cpf_obrigatorio',
         'par_fl_replicar_conteudo_diario',
+        'par_texto_ata_final',
     ];
 
     protected $casts = [

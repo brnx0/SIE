@@ -19,6 +19,7 @@ export interface ParametroEntidade {
     par_fl_gerar_matricula_auto: boolean;
     par_fl_cpf_obrigatorio: boolean;
     par_fl_replicar_conteudo_diario: boolean;
+    par_texto_ata_final: string | null;
     municipio?: Municipio | null;
 }
 
@@ -262,6 +263,7 @@ export interface ParametroEntidadeFormData {
     par_fl_gerar_matricula_auto: boolean;
     par_fl_cpf_obrigatorio: boolean;
     par_fl_replicar_conteudo_diario: boolean;
+    par_texto_ata_final: string | null;
     _method?: 'put' | 'post';
     [key: string]: any;
 }

@@ -177,6 +177,7 @@ class AtaFinalController extends Controller
                 'municipio'          => $p->municipio_label,
                 'logomarca_url'      => $p->par_logomarca_url,
                 'brasao_url'         => $p->par_brasao_url,
+                'texto_ata_final'    => $p->par_texto_ata_final,
             ] : null,
             'filtros' => [
                 'anl_ano'  => $ano->anl_ano,

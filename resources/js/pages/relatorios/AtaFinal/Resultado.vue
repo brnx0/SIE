@@ -10,7 +10,7 @@ import { computed, inject } from 'vue';
 
 interface Cell { texto: string; tipo: string | null }
 interface Aluno { aln_id: number; aln_nome: string; aln_nr_matricula: string | null; celulas: Cell[]; resultado: string | null; aprovado: boolean; saiu: boolean; encerrado: boolean }
-interface Parametros { nome_entidade: string; msg_cab_secretaria: string | null; msg_cab_estado: string | null; logomarca_url: string | null; brasao_url: string | null }
+interface Parametros { nome_entidade: string; msg_cab_secretaria: string | null; msg_cab_estado: string | null; logomarca_url: string | null; brasao_url: string | null; texto_ata_final: string | null }
 
 defineProps<{
     parametros: Parametros | null;
@@ -67,6 +67,9 @@ const imprimir = () => window.print();
                         </tr>
                     </tbody>
                 </table>
+
+                <div v-if="parametros?.texto_ata_final" class="af-texto">{{ parametros.texto_ata_final }}</div>
+
                 <p class="af-leg">Nota final consolidada por disciplina. Alunos que saíram aparecem com a situação de saída ao lado do nome e sem resultado final.</p>
             </div>
         </div>
@@ -144,6 +147,7 @@ const imprimir = () => window.print();
     .af-tbl th.af-dis { height: 120px; padding: 2px 0; }
     .af-tbl th.af-dis span { writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; font-size: 7.5pt; font-weight: 700; line-height: 1; margin: 0 auto; }
     .af-vazio { padding: 12px; font-style: italic; }
+    .af-texto { margin-top: 12px; font-size: 9pt; text-align: justify; white-space: pre-line; line-height: 1.45; }
     .af-leg { margin-top: 6px; font-size: 7.5pt; font-style: italic; }
 
     thead { display: table-header-group; }

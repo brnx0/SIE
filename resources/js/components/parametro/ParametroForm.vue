@@ -49,6 +49,7 @@ const TAB_FIELDS: Record<TabId, string[]> = {
     entidade: [
         'par_nome_entidade', 'par_msg_cab_secretaria', 'par_msg_cab_estado',
         'par_endereco', 'par_mun_id', 'par_logomarca', 'par_brasao',
+        'par_texto_ata_final',
     ],
     ano_letivo: [],
     unidade: [],
@@ -81,6 +82,7 @@ const form = useForm<ParametroEntidadeFormData>({
     par_fl_gerar_matricula_auto: props.initial.par_fl_gerar_matricula_auto ?? true,
     par_fl_cpf_obrigatorio: props.initial.par_fl_cpf_obrigatorio ?? false,
     par_fl_replicar_conteudo_diario: props.initial.par_fl_replicar_conteudo_diario ?? false,
+    par_texto_ata_final: props.initial.par_texto_ata_final ?? '',
     _method: 'put',
 });
 
@@ -312,6 +314,28 @@ const fmtDateTime = (s?: string | null) => {
                                 @update:model-value="onMunicipioChange"
                             />
                             <InputError :message="form.errors.par_mun_id" />
+                        </div>
+                    </div>
+
+                    <!-- Textos das atas (redação parametrizável por entidade/município) -->
+                    <div class="grid gap-4 rounded-xl border bg-card p-6 shadow-sm">
+                        <div>
+                            <h3 class="text-sm font-semibold">Textos das Atas</h3>
+                            <p class="text-xs text-muted-foreground">Redações que a entidade pode personalizar nos documentos oficiais. Em branco, o documento é emitido sem o bloco de texto.</p>
+                        </div>
+
+                        <div class="grid gap-2">
+                            <FormLabel :for="'par_texto_ata_final'">Ata de Resultados Finais</FormLabel>
+                            <textarea
+                                id="par_texto_ata_final"
+                                v-model="form.par_texto_ata_final"
+                                rows="5"
+                                maxlength="10000"
+                                placeholder="Texto fixo que sai na Ata Final do Encerramento (ex.: parágrafo de encerramento / observação). Quebras de linha são preservadas."
+                                class="min-h-32 w-full resize-y rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            ></textarea>
+                            <p class="text-xs text-muted-foreground">Bloco fixo, sem dados do aluno — aparece na impressão da Ata Final, abaixo do quadro de notas.</p>
+                            <InputError :message="form.errors.par_texto_ata_final" />
                         </div>
                     </div>
 
