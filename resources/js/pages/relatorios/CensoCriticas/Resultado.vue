@@ -6,6 +6,8 @@ import { Head, Link } from '@inertiajs/vue3';
 import { ArrowLeft, Printer, AlertTriangle, XCircle, CheckCircle2, ExternalLink, ChevronDown, ChevronsUpDown } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import { useIsActiveTab } from '@/composables/useIsActiveTab';
+import { usePermissao } from '@/composables/usePermissao';
+import { NIVEL_EDITAR } from '@/lib/permissoes';
 
 type Severidade = 'erro' | 'alerta';
 type Tipo = 'escola' | 'turma' | 'aluno' | 'funcionario';
@@ -104,10 +106,18 @@ const alternarTodos = () => {
     abertos.value = todosAbertos.value ? new Set() : new Set(grupos.value.map((g) => g.registro));
 };
 
+// Só mostra "Abrir" da turma a quem PODE EDITAR turmas (nível 1 = ver+editar).
+// Nível 2 (só visualizar) e 0 (sem acesso) não veem o atalho — o atalho existe
+// para corrigir a pendência, e só o editor corrige. O backend (middleware 'tela')
+// também barra o acesso direto. Fail-open quando a matriz de permissão está inativa.
+const { ativo, nivelDe } = usePermissao();
+const podeEditarTurma = computed(() => !ativo.value || nivelDe('/turmas') === NIVEL_EDITAR);
+
 const linkEdicao = (e: { tipo: Tipo; entidade_id: number }): string | null => {
     if (e.tipo === 'aluno') return `/alunos/${e.entidade_id}/edit`;
     if (e.tipo === 'funcionario') return `/funcionarios/${e.entidade_id}/edit`;
     if (e.tipo === 'escola') return `/escolas/${e.entidade_id}/edit`;
+    if (e.tipo === 'turma') return podeEditarTurma.value ? `/turmas/${e.entidade_id}/edit` : null;
     return null;
 };
 
