@@ -1,2 +1,4 @@
 *.sqlite*
 /migracao_candeal
+/migracao_maracas
+/migracao_serrinha
