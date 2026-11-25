@@ -18,6 +18,7 @@ import { Label } from '@/components/ui/label';
 import { useViaCep } from '@/composables/useViaCep';
 import { useMunicipios } from '@/composables/useMunicipios';
 import { usePermissao } from '@/composables/usePermissao';
+import { useViewMode } from '@/composables/useViewMode';
 import { useErrorFocus } from '@/composables/useErrorFocus';
 import { useToast } from '@/composables/useToast';
 import { COR_RACA } from '@/lib/corRaca';
@@ -458,6 +459,7 @@ const handleErrors = (errors: Record<string, string>) => {
 };
 
 const { isReadOnly, hasRole } = usePermissao();
+const { viewMode, readonly } = useViewMode();
 
 // ── Histórico Escolar / Certificado ─────────────────────────────────────────
 const podeEmitirHistorico = computed(() =>
@@ -472,7 +474,7 @@ const alunoHistorico = computed(() =>
 );
 
 const submit = () => {
-    if (isReadOnly.value) return;
+    if (readonly.value) return;
     const opts = {
         onError: (errors: Record<string, string>) => handleErrors(errors),
         preserveScroll: true,
@@ -582,8 +584,16 @@ const initials = computed(() => {
                     <ScrollText class="mr-2 size-4" />
                     Histórico Escolar
                 </Button>
+                <span v-if="viewMode && !isReadOnly" class="text-xs font-medium text-muted-foreground">
+                    Modo consulta
+                </span>
+                <Link v-if="viewMode && !isReadOnly" :href="`/alunos/${initial?.aln_id}/edit`">
+                    <Button type="button" class="bg-sky-600 text-white hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-400">
+                        Editar
+                    </Button>
+                </Link>
                 <Button
-                    v-if="!isReadOnly"
+                    v-if="!readonly"
                     type="submit"
                     :disabled="form.processing"
                     class="bg-sky-600 text-white hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-400"
@@ -617,7 +627,7 @@ const initials = computed(() => {
                 </TabsTrigger>
             </TabsList>
 
-            <fieldset :disabled="isReadOnly" class="contents">
+            <fieldset :disabled="readonly" class="contents">
             <!-- Aba 1 -->
             <TabsContent value="dados-pessoais" class="grid gap-6">
                 <div class="flex flex-col items-center gap-4 rounded-xl border bg-card p-6 shadow-sm sm:flex-row sm:items-start sm:gap-6">

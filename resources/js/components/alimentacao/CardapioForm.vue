@@ -6,6 +6,7 @@ import Switch from '@/components/common/Switch.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { usePermissao } from '@/composables/usePermissao';
+import { useViewMode } from '@/composables/useViewMode';
 import { useErrorFocus } from '@/composables/useErrorFocus';
 import type { Cardapio } from '@/types/alimentacao';
 import { Link, useForm } from '@inertiajs/vue3';
@@ -19,6 +20,7 @@ const props = defineProps<{
 }>();
 
 const { isReadOnly } = usePermissao();
+const { viewMode, readonly } = useViewMode();
 const { focusFirstError } = useErrorFocus();
 
 const form = useForm<{
@@ -58,7 +60,7 @@ const clampAno = (e: Event) => {
 };
 
 const submit = () => {
-    if (isReadOnly.value) return;
+    if (readonly.value) return;
     const opts = {
         preserveScroll: true,
         onError: (errors: Record<string, string>) => focusFirstError(Object.keys(errors)),
@@ -81,19 +83,29 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar cardápio' : 'Salvar al
                     <ChevronLeft class="mr-1 size-4" /> Voltar para listagem
                 </Button>
             </Link>
-            <Button
-                v-if="!isReadOnly"
-                type="submit"
-                :disabled="form.processing"
-                class="bg-brand-600 text-white hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400"
-            >
-                <LoaderCircle v-if="form.processing" class="mr-2 size-4 animate-spin" />
-                <Save v-else class="mr-2 size-4" />
-                {{ submitLabel }}
-            </Button>
+            <div class="flex items-center gap-2">
+                <span v-if="viewMode && !isReadOnly" class="text-xs font-medium text-muted-foreground">
+                    Modo consulta
+                </span>
+                <Link v-if="viewMode && !isReadOnly" :href="`/alimentacao/cardapios/${initial?.crd_id}/edit`">
+                    <Button type="button" class="bg-sky-600 text-white hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-400">
+                        Editar
+                    </Button>
+                </Link>
+                <Button
+                    v-if="!readonly"
+                    type="submit"
+                    :disabled="form.processing"
+                    class="bg-brand-600 text-white hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400"
+                >
+                    <LoaderCircle v-if="form.processing" class="mr-2 size-4 animate-spin" />
+                    <Save v-else class="mr-2 size-4" />
+                    {{ submitLabel }}
+                </Button>
+            </div>
         </div>
 
-        <fieldset :disabled="isReadOnly" class="contents">
+        <fieldset :disabled="readonly" class="contents">
             <div class="grid gap-5 rounded-xl border bg-card p-6 shadow-sm sm:grid-cols-6 sm:items-start">
                 <div class="flex items-center gap-3 rounded-lg border bg-muted/40 px-4 py-3 sm:col-span-6">
                     <Switch id="crd_fl_ativo" v-model="form.crd_fl_ativo" />

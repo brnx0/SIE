@@ -38,9 +38,11 @@ import { Link, useForm } from '@inertiajs/vue3';
 import { ChevronLeft, Lock, LoaderCircle, Save } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 import { usePermissao } from '@/composables/usePermissao';
+import { useViewMode } from '@/composables/useViewMode';
 import { useErrorFocus } from '@/composables/useErrorFocus';
 
 const { isReadOnly, hasRole } = usePermissao();
+const { viewMode, readonly } = useViewMode();
 const { focusFirstError } = useErrorFocus();
 // Secretaria e Diretor/Vice editam abas de composição (professores/horários/
 // alunos); só Dados Gerais fica bloqueado. Demais perfis nível 2 = read-only.
@@ -193,7 +195,7 @@ const toggleDia = (dia: string) => {
 };
 
 const submit = () => {
-    if (isReadOnly.value || encerrada.value) return;
+    if (readonly.value || encerrada.value) return;
     form.transform((data) => ({
         ...data,
         tur_tipo_atendimento: data.tur_tipo_atendimento === '' ? null : data.tur_tipo_atendimento,
@@ -227,11 +229,21 @@ const selectClass = (hasError: boolean) =>
                     <ChevronLeft class="mr-1 size-4" /> Voltar à lista
                 </Button>
             </Link>
-            <Button v-if="!isReadOnly && !encerrada" type="button" :disabled="form.processing" class="bg-brand-600 hover:bg-brand-700" @click="submit">
-                <LoaderCircle v-if="form.processing" class="mr-2 size-4 animate-spin" />
-                <Save v-else class="mr-2 size-4" />
-                {{ submitLabel }}
-            </Button>
+            <div class="flex items-center gap-2">
+                <span v-if="viewMode && !isReadOnly" class="text-xs font-medium text-muted-foreground">
+                    Modo consulta
+                </span>
+                <Link v-if="viewMode && !isReadOnly" :href="`/turmas/${initial?.tur_id}/edit`">
+                    <Button type="button" class="bg-sky-600 text-white hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-400">
+                        Editar
+                    </Button>
+                </Link>
+                <Button v-if="!readonly && !encerrada" type="button" :disabled="form.processing" class="bg-brand-600 hover:bg-brand-700" @click="submit">
+                    <LoaderCircle v-if="form.processing" class="mr-2 size-4 animate-spin" />
+                    <Save v-else class="mr-2 size-4" />
+                    {{ submitLabel }}
+                </Button>
+            </div>
         </div>
 
         <!-- Aviso: turma encerrada é somente leitura -->
@@ -252,7 +264,7 @@ const selectClass = (hasError: boolean) =>
                 <TabsTrigger value="alunos">Alunos</TabsTrigger>
             </TabsList>
 
-            <fieldset :disabled="isReadOnly || encerrada" class="contents">
+            <fieldset :disabled="readonly || encerrada" class="contents">
             <TabsContent value="dados">
                 <div class="grid gap-6">
                     <!-- Aviso de bloqueio quando turma já está ABERTA -->
@@ -497,7 +509,7 @@ const selectClass = (hasError: boolean) =>
             </TabsContent>
             </fieldset>
 
-            <fieldset :disabled="bloqueiaComposicao || encerrada" class="contents">
+            <fieldset :disabled="bloqueiaComposicao || viewMode || encerrada" class="contents">
             <TabsContent v-if="mode === 'edit'" value="professores">
                 <TurmaProfessoresTab
                     :turma="initial!"
