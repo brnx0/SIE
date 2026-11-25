@@ -32,7 +32,7 @@ import { UFS } from '@/lib/ufs';
 import type { SharedData, SystemParams } from '@/types';
 import type { Aluno, AlunoFormData, Municipio, PovoIndigena } from '@/types/aluno';
 import { Link, router, useForm, usePage } from '@inertiajs/vue3';
-import { Camera, ChevronLeft, ChevronRight, Loader2, LoaderCircle, Save, ScrollText, Trash2, Upload } from 'lucide-vue-next';
+import { Camera, ChevronLeft, ChevronRight, Loader2, LoaderCircle, Maximize2, Save, ScrollText, Trash2, Upload, X } from 'lucide-vue-next';
 import { computed, nextTick, onBeforeUnmount, reactive, ref, watch } from 'vue';
 
 interface MatriculaResumo {
@@ -513,6 +513,16 @@ const fileInput = ref<HTMLInputElement | null>(null);
 const previewUrl = ref<string | null>(props.initial?.aln_foto_url ?? null);
 let objectUrl: string | null = null;
 
+// Ampliar a foto do aluno em um lightbox (clique na foto).
+const fotoAmpliada = ref(false);
+const abrirFoto = () => { if (previewUrl.value) fotoAmpliada.value = true; };
+const fecharFoto = () => { fotoAmpliada.value = false; };
+const onFotoEsc = (e: KeyboardEvent) => { if (e.key === 'Escape') fecharFoto(); };
+watch(fotoAmpliada, (aberta) => {
+    if (aberta) document.addEventListener('keydown', onFotoEsc);
+    else document.removeEventListener('keydown', onFotoEsc);
+});
+
 const onFotoChange = (e: Event) => {
     const target = e.target as HTMLInputElement;
     const file = target.files?.[0] ?? null;
@@ -553,6 +563,7 @@ const clearFoto = () => {
 
 onBeforeUnmount(() => {
     if (objectUrl) URL.revokeObjectURL(objectUrl);
+    document.removeEventListener('keydown', onFotoEsc);
 });
 
 const initials = computed(() => {
@@ -621,16 +632,25 @@ const initials = computed(() => {
             <TabsContent value="dados-pessoais" class="grid gap-6">
                 <div class="flex flex-col items-center gap-4 rounded-xl border bg-card p-6 shadow-sm sm:flex-row sm:items-start sm:gap-6">
                     <div class="relative">
-                        <div class="grid size-32 place-items-center overflow-hidden rounded-full border-4 border-sky-100 bg-sky-50 dark:border-sky-900/40 dark:bg-sky-900/20">
+                        <div class="group relative grid size-32 place-items-center overflow-hidden rounded-full border-4 border-sky-100 bg-sky-50 dark:border-sky-900/40 dark:bg-sky-900/20">
                             <img
                                 v-if="previewUrl"
                                 :src="previewUrl"
                                 alt="Foto do aluno"
-                                class="size-full object-cover"
+                                class="size-full cursor-zoom-in object-cover"
+                                title="Clique para ampliar"
+                                @click="abrirFoto"
                             />
                             <span v-else class="text-3xl font-semibold text-sky-700 dark:text-sky-300">
                                 {{ initials }}
                             </span>
+                            <div
+                                v-if="previewUrl"
+                                class="pointer-events-none absolute inset-0 grid place-items-center bg-black/35 text-white opacity-0 transition group-hover:opacity-100"
+                                aria-hidden="true"
+                            >
+                                <Maximize2 class="size-6" />
+                            </div>
                         </div>
                         <button
                             type="button"
@@ -1632,4 +1652,28 @@ const initials = computed(() => {
         @confirm="confirmHomonimo"
         @cancel="cancelHomonimo"
     />
+
+    <!-- Lightbox da foto do aluno -->
+    <Teleport to="body">
+        <div
+            v-if="fotoAmpliada"
+            class="fixed inset-0 z-[100] grid place-items-center bg-black/80 p-4 backdrop-blur-sm"
+            @click.self="fecharFoto"
+        >
+            <button
+                type="button"
+                class="absolute right-4 top-4 grid size-10 place-items-center rounded-full bg-white/10 text-white transition hover:bg-white/20"
+                aria-label="Fechar"
+                @click="fecharFoto"
+            >
+                <X class="size-6" />
+            </button>
+            <img
+                v-if="previewUrl"
+                :src="previewUrl"
+                alt="Foto do aluno ampliada"
+                class="max-h-[90vh] max-w-[90vw] rounded-lg object-contain shadow-2xl"
+            />
+        </div>
+    </Teleport>
 </template>
