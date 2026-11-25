@@ -6,10 +6,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import type { InstrumentoAvaliativo, InstrumentoAvaliativoFormData } from '@/types/instrumento-avaliativo';
 import { useErrorFocus } from '@/composables/useErrorFocus';
+import { useViewMode } from '@/composables/useViewMode';
 import { Link, useForm } from '@inertiajs/vue3';
 import { ChevronLeft, LoaderCircle, PlusCircle, Save } from 'lucide-vue-next';
 
 const { focusFirstError } = useErrorFocus();
+const { viewMode, readonly, isReadOnly } = useViewMode();
 
 const props = defineProps<{
     mode: 'create' | 'edit';
@@ -24,6 +26,7 @@ const form = useForm<InstrumentoAvaliativoFormData & { continue_new?: boolean }>
 });
 
 const submit = (continueNew = false) => {
+    if (readonly.value) return;
     form.continue_new = continueNew;
     const opts = {
         preserveScroll: true,
@@ -55,30 +58,41 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar instrumento' : 'Salvar 
                 </Button>
             </Link>
             <div class="flex items-center gap-2">
-                <Button
-                    v-if="mode === 'create'"
-                    type="button"
-                    variant="outline"
-                    :disabled="form.processing"
-                    class="border-brand-600 text-brand-700 hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-900/30"
-                    @click="submit(true)"
-                >
-                    <LoaderCircle v-if="form.processing && form.continue_new" class="mr-2 size-4 animate-spin" />
-                    <PlusCircle v-else class="mr-2 size-4" />
-                    Salvar e novo
-                </Button>
-                <Button
-                    type="submit"
-                    :disabled="form.processing"
-                    class="bg-brand-600 text-white hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400"
-                >
-                    <LoaderCircle v-if="form.processing && !form.continue_new" class="mr-2 size-4 animate-spin" />
-                    <Save v-else class="mr-2 size-4" />
-                    {{ submitLabel }}
-                </Button>
+                <span v-if="viewMode && !isReadOnly" class="text-xs font-medium text-muted-foreground">
+                    Modo consulta
+                </span>
+                <Link v-if="viewMode && !isReadOnly" :href="`/diario/instrumentos-avaliativos/${initial?.iav_id}/edit`">
+                    <Button type="button" class="bg-sky-600 text-white hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-400">
+                        Editar
+                    </Button>
+                </Link>
+                <template v-if="!readonly">
+                    <Button
+                        v-if="mode === 'create'"
+                        type="button"
+                        variant="outline"
+                        :disabled="form.processing"
+                        class="border-brand-600 text-brand-700 hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-900/30"
+                        @click="submit(true)"
+                    >
+                        <LoaderCircle v-if="form.processing && form.continue_new" class="mr-2 size-4 animate-spin" />
+                        <PlusCircle v-else class="mr-2 size-4" />
+                        Salvar e novo
+                    </Button>
+                    <Button
+                        type="submit"
+                        :disabled="form.processing"
+                        class="bg-brand-600 text-white hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400"
+                    >
+                        <LoaderCircle v-if="form.processing && !form.continue_new" class="mr-2 size-4 animate-spin" />
+                        <Save v-else class="mr-2 size-4" />
+                        {{ submitLabel }}
+                    </Button>
+                </template>
             </div>
         </div>
 
+        <fieldset :disabled="readonly" class="contents">
         <div class="grid gap-5 rounded-xl border bg-card p-6 shadow-sm">
             <div class="flex items-center gap-3 rounded-lg border bg-muted/40 px-4 py-3">
                 <Switch id="iav_fl_ativo" v-model="form.iav_fl_ativo" />
@@ -113,5 +127,6 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar instrumento' : 'Salvar 
                 <InputError :message="form.errors.iav_nome" />
             </div>
         </div>
+        </fieldset>
     </form>
 </template>

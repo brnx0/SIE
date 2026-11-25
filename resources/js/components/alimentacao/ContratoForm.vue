@@ -5,6 +5,7 @@ import InputError from '@/components/common/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { usePermissao } from '@/composables/usePermissao';
+import { useViewMode } from '@/composables/useViewMode';
 import { useErrorFocus } from '@/composables/useErrorFocus';
 import type { Contrato } from '@/types/alimentacao';
 import { Link, useForm } from '@inertiajs/vue3';
@@ -20,6 +21,7 @@ const props = defineProps<{
 }>();
 
 const { isReadOnly } = usePermissao();
+const { viewMode, readonly } = useViewMode();
 const { focusFirstError } = useErrorFocus();
 
 const form = useForm<Record<string, any>>({
@@ -45,7 +47,7 @@ const clampAno = (e: Event) => {
 };
 
 const submit = () => {
-    if (isReadOnly.value) return;
+    if (readonly.value) return;
     const opts = {
         preserveScroll: true,
         onError: (errors: Record<string, string>) => focusFirstError(Object.keys(errors)),
@@ -68,16 +70,26 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar contrato' : 'Salvar alt
                     <ChevronLeft class="mr-1 size-4" /> Voltar para listagem
                 </Button>
             </Link>
-            <Button
-                v-if="!isReadOnly"
-                type="submit"
-                :disabled="form.processing"
-                class="bg-brand-600 text-white hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400"
-            >
-                <LoaderCircle v-if="form.processing" class="mr-2 size-4 animate-spin" />
-                <Save v-else class="mr-2 size-4" />
-                {{ submitLabel }}
-            </Button>
+            <div class="flex items-center gap-2">
+                <span v-if="viewMode && !isReadOnly" class="text-xs font-medium text-muted-foreground">
+                    Modo consulta
+                </span>
+                <Link v-if="viewMode && !isReadOnly" :href="`/alimentacao/contratos/${initial?.ctr_id}/edit`">
+                    <Button type="button" class="bg-sky-600 text-white hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-400">
+                        Editar
+                    </Button>
+                </Link>
+                <Button
+                    v-if="!readonly"
+                    type="submit"
+                    :disabled="form.processing"
+                    class="bg-brand-600 text-white hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400"
+                >
+                    <LoaderCircle v-if="form.processing" class="mr-2 size-4 animate-spin" />
+                    <Save v-else class="mr-2 size-4" />
+                    {{ submitLabel }}
+                </Button>
+            </div>
         </div>
 
         <div
@@ -91,7 +103,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar contrato' : 'Salvar alt
             </p>
         </div>
 
-        <fieldset :disabled="isReadOnly" class="contents">
+        <fieldset :disabled="readonly" class="contents">
             <div class="grid gap-5 rounded-xl border bg-card p-6 shadow-sm sm:grid-cols-6 sm:items-start">
                 <div class="grid gap-2 sm:col-span-4">
                     <FormLabel :required="true">Fornecedor</FormLabel>
@@ -140,7 +152,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar contrato' : 'Salvar alt
                         id="ctr_objeto"
                         v-model="form.ctr_objeto"
                         rows="3"
-                        :disabled="isReadOnly || temMovimento"
+                        :disabled="readonly || temMovimento"
                         class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-background dark:text-foreground"
                     ></textarea>
                     <InputError :message="form.errors.ctr_objeto" />
@@ -164,7 +176,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar contrato' : 'Salvar alt
                         id="ctr_dt_fim"
                         type="date"
                         v-model="form.ctr_dt_fim"
-                        :disabled="isReadOnly || temMovimento"
+                        :disabled="readonly || temMovimento"
                         min="2000-01-01"
                         max="2099-12-31"
                         @input="clampAno"
@@ -181,7 +193,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar contrato' : 'Salvar alt
                         min="0"
                         inputmode="decimal"
                         v-model="form.ctr_vl_total"
-                        :disabled="isReadOnly || temMovimento"
+                        :disabled="readonly || temMovimento"
                     />
                     <InputError :message="form.errors.ctr_vl_total" />
                 </div>

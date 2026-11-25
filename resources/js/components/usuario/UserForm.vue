@@ -6,11 +6,13 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useErrorFocus } from '@/composables/useErrorFocus';
+import { useViewMode } from '@/composables/useViewMode';
 import { Link, useForm } from '@inertiajs/vue3';
 import { LoaderCircle, Save, X } from 'lucide-vue-next';
 import { computed, watch } from 'vue';
 
 const { focusFirstError } = useErrorFocus();
+const { isReadOnly, viewMode, readonly } = useViewMode();
 
 interface UserFormData {
     name: string;
@@ -69,6 +71,7 @@ const removeRole = (key: string) => {
 const submitLabel = computed(() => (props.mode === 'create' ? 'Cadastrar usuário' : 'Salvar alterações'));
 
 const submit = () => {
+    if (readonly.value) return;
     const opts = {
         onError: (errors: Record<string, string>) => focusFirstError(Object.keys(errors)),
     };
@@ -87,17 +90,29 @@ const submit = () => {
             <Link href="/users">
                 <Button type="button" variant="outline">Voltar para listagem</Button>
             </Link>
-            <Button
-                type="submit"
-                :disabled="form.processing"
-                class="bg-sky-600 text-white hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-400"
-            >
-                <LoaderCircle v-if="form.processing" class="mr-2 size-4 animate-spin" />
-                <Save v-else class="mr-2 size-4" />
-                {{ submitLabel }}
-            </Button>
+            <div class="flex items-center gap-2">
+                <span v-if="viewMode && !isReadOnly" class="text-xs font-medium text-muted-foreground">
+                    Modo consulta
+                </span>
+                <Link v-if="viewMode && !isReadOnly" :href="`/users/${initial?.id}/edit`">
+                    <Button type="button" class="bg-sky-600 text-white hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-400">
+                        Editar
+                    </Button>
+                </Link>
+                <Button
+                    v-if="!readonly"
+                    type="submit"
+                    :disabled="form.processing"
+                    class="bg-sky-600 text-white hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-400"
+                >
+                    <LoaderCircle v-if="form.processing" class="mr-2 size-4 animate-spin" />
+                    <Save v-else class="mr-2 size-4" />
+                    {{ submitLabel }}
+                </Button>
+            </div>
         </div>
 
+        <fieldset :disabled="readonly" class="contents">
         <div class="grid gap-4 rounded-xl border bg-card p-6 shadow-sm sm:grid-cols-2">
             <div class="grid gap-2 sm:col-span-2">
                 <Label for="name">Nome completo</Label>
@@ -188,6 +203,7 @@ const submit = () => {
                 <Input id="password_confirmation" type="password" v-model="form.password_confirmation" :required="mode === 'create'" autocomplete="new-password" />
             </div>
         </div>
+        </fieldset>
 
     </form>
 </template>

@@ -5,6 +5,7 @@ import Switch from '@/components/common/Switch.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { usePermissao } from '@/composables/usePermissao';
+import { useViewMode } from '@/composables/useViewMode';
 import { useErrorFocus } from '@/composables/useErrorFocus';
 import type { AreaConhecimento, Disciplina, DisciplinaFormData } from '@/types/disciplina';
 import { Link, useForm } from '@inertiajs/vue3';
@@ -17,6 +18,7 @@ const props = defineProps<{
 }>();
 
 const { isReadOnly } = usePermissao();
+const { viewMode, readonly } = useViewMode();
 const { focusFirstError } = useErrorFocus();
 
 const form = useForm<DisciplinaFormData & { continue_new?: boolean }>({
@@ -31,7 +33,7 @@ const form = useForm<DisciplinaFormData & { continue_new?: boolean }>({
 });
 
 const submit = (continueNew = false) => {
-    if (isReadOnly.value) return;
+    if (readonly.value) return;
     form.continue_new = continueNew;
     const opts = {
         preserveScroll: true,
@@ -63,33 +65,43 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar disciplina' : 'Salvar a
                     <ChevronLeft class="mr-1 size-4" /> Voltar para listagem
                 </Button>
             </Link>
-            <div v-if="!isReadOnly" class="flex items-center gap-2">
-                <Button
-                    v-if="mode === 'create'"
-                    type="button"
-                    variant="outline"
-                    :disabled="form.processing"
-                    class="border-brand-600 text-brand-700 hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-900/30"
-                    @click="submit(true)"
-                >
-                    <LoaderCircle v-if="form.processing && form.continue_new" class="mr-2 size-4 animate-spin" />
-                    <PlusCircle v-else class="mr-2 size-4" />
-                    Salvar e novo
-                </Button>
-                <Button
-                    type="submit"
-                    :disabled="form.processing"
-                    class="bg-brand-600 text-white hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400"
-                >
-                    <LoaderCircle v-if="form.processing && !form.continue_new" class="mr-2 size-4 animate-spin" />
-                    <Save v-else class="mr-2 size-4" />
-                    {{ submitLabel }}
-                </Button>
+            <div class="flex items-center gap-2">
+                <span v-if="viewMode && !isReadOnly" class="text-xs font-medium text-muted-foreground">
+                    Modo consulta
+                </span>
+                <Link v-if="viewMode && !isReadOnly" :href="`/disciplinas/${initial?.dis_id}/edit`">
+                    <Button type="button" class="bg-sky-600 text-white hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-400">
+                        Editar
+                    </Button>
+                </Link>
+                <template v-if="!readonly">
+                    <Button
+                        v-if="mode === 'create'"
+                        type="button"
+                        variant="outline"
+                        :disabled="form.processing"
+                        class="border-brand-600 text-brand-700 hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-900/30"
+                        @click="submit(true)"
+                    >
+                        <LoaderCircle v-if="form.processing && form.continue_new" class="mr-2 size-4 animate-spin" />
+                        <PlusCircle v-else class="mr-2 size-4" />
+                        Salvar e novo
+                    </Button>
+                    <Button
+                        type="submit"
+                        :disabled="form.processing"
+                        class="bg-brand-600 text-white hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400"
+                    >
+                        <LoaderCircle v-if="form.processing && !form.continue_new" class="mr-2 size-4 animate-spin" />
+                        <Save v-else class="mr-2 size-4" />
+                        {{ submitLabel }}
+                    </Button>
+                </template>
             </div>
         </div>
 
         <!-- Card dados gerais -->
-        <fieldset :disabled="isReadOnly" class="contents">
+        <fieldset :disabled="readonly" class="contents">
         <div class="grid gap-5 rounded-xl border bg-card p-6 shadow-sm sm:grid-cols-4 sm:items-start">
 
             <!-- Situação — destaque no topo -->

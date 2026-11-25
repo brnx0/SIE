@@ -14,6 +14,7 @@ import MapaRota from '@/components/transporte/MapaRota.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { usePermissao } from '@/composables/usePermissao';
+import { useViewMode } from '@/composables/useViewMode';
 import { useErrorFocus } from '@/composables/useErrorFocus';
 import type { AnoLetivo } from '@/types/parametro';
 import type { PassageiroRota, PontoRota, Rota, VeiculoResumo } from '@/types/transporte';
@@ -32,6 +33,7 @@ const props = defineProps<{
 }>();
 
 const { isReadOnly } = usePermissao();
+const { viewMode, readonly } = useViewMode();
 const { focusFirstError } = useErrorFocus();
 
 const activeTab = ref('dados');
@@ -67,7 +69,7 @@ const onVeiculoSelected = (v: VeiculoResumo | null) => {
 };
 
 const submit = () => {
-    if (isReadOnly.value) return;
+    if (readonly.value) return;
     form.transform((data) => ({
         ...data,
         rot_zona: data.rot_zona === '' ? null : data.rot_zona,
@@ -102,11 +104,21 @@ const selectClass = (hasError: boolean) =>
                     <ChevronLeft class="mr-1 size-4" /> Voltar para listagem
                 </Button>
             </Link>
-            <Button v-if="!isReadOnly" type="button" :disabled="form.processing" class="bg-brand-600 text-white hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400" @click="submit">
-                <LoaderCircle v-if="form.processing" class="mr-2 size-4 animate-spin" />
-                <Save v-else class="mr-2 size-4" />
-                {{ submitLabel }}
-            </Button>
+            <div class="flex items-center gap-2">
+                <span v-if="viewMode && !isReadOnly" class="text-xs font-medium text-muted-foreground">
+                    Modo consulta
+                </span>
+                <Link v-if="viewMode && !isReadOnly" :href="`/transporte/rotas/${initial?.rot_id}/edit`">
+                    <Button type="button" class="bg-sky-600 text-white hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-400">
+                        Editar
+                    </Button>
+                </Link>
+                <Button v-if="!readonly" type="button" :disabled="form.processing" class="bg-brand-600 text-white hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400" @click="submit">
+                    <LoaderCircle v-if="form.processing" class="mr-2 size-4 animate-spin" />
+                    <Save v-else class="mr-2 size-4" />
+                    {{ submitLabel }}
+                </Button>
+            </div>
         </div>
 
         <Tabs v-model="activeTab">
@@ -117,7 +129,7 @@ const selectClass = (hasError: boolean) =>
                 <TabsTrigger value="trajeto">Trajeto</TabsTrigger>
             </TabsList>
 
-            <fieldset :disabled="isReadOnly" class="contents">
+            <fieldset :disabled="readonly" class="contents">
             <TabsContent value="dados">
                 <div class="grid gap-6">
                     <!-- Situação -->
@@ -262,16 +274,20 @@ const selectClass = (hasError: boolean) =>
             </fieldset>
 
             <TabsContent v-if="mode === 'edit'" value="pontos">
+                <fieldset :disabled="readonly" class="contents">
                 <RotaPontosTab :rota="initial!" :pontos="pontos ?? []" />
+                </fieldset>
             </TabsContent>
 
             <TabsContent v-if="mode === 'edit'" value="passageiros">
+                <fieldset :disabled="readonly" class="contents">
                 <RotaPassageirosTab
                     :rota="initial!"
                     :pontos="pontos ?? []"
                     :passageiros="passageiros ?? []"
                     :capacidade="capacidade"
                 />
+                </fieldset>
             </TabsContent>
 
             <TabsContent v-if="mode === 'edit'" value="trajeto">

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useErrorFocus } from '@/composables/useErrorFocus';
 import { usePermissao } from '@/composables/usePermissao';
+import { useViewMode } from '@/composables/useViewMode';
 import type { AreaInep, CursoFormacaoSuperiorCadastro, NivelGraduacao } from '@/types/formacao';
 import { Link, useForm } from '@inertiajs/vue3';
 import { ChevronLeft, LoaderCircle, PlusCircle, Save } from 'lucide-vue-next';
@@ -19,6 +20,7 @@ const props = defineProps<{
 }>();
 
 const { isReadOnly } = usePermissao();
+const { viewMode, readonly } = useViewMode();
 const { focusFirstError } = useErrorFocus();
 
 const form = useForm({
@@ -65,7 +67,7 @@ function validarLocal(): Record<string, string> {
 }
 
 const submit = (continueNew = false) => {
-    if (isReadOnly.value) return;
+    if (readonly.value) return;
     form.clearErrors();
     const erros = validarLocal();
     if (Object.keys(erros).length) {
@@ -101,28 +103,38 @@ const selectClass = 'h-10 w-full rounded-md border border-input bg-background px
                     <ChevronLeft class="mr-1 size-4" /> Voltar para listagem
                 </Button>
             </Link>
-            <div v-if="!isReadOnly" class="flex items-center gap-2">
-                <Button
-                    v-if="mode === 'create'"
-                    type="button"
-                    variant="outline"
-                    :disabled="form.processing"
-                    class="border-brand-600 text-brand-700 hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-900/30"
-                    @click="submit(true)"
-                >
-                    <LoaderCircle v-if="form.processing && form.continue_new" class="mr-2 size-4 animate-spin" />
-                    <PlusCircle v-else class="mr-2 size-4" />
-                    Salvar e novo
-                </Button>
-                <Button type="submit" :disabled="form.processing" class="bg-brand-600 text-white hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400">
-                    <LoaderCircle v-if="form.processing && !form.continue_new" class="mr-2 size-4 animate-spin" />
-                    <Save v-else class="mr-2 size-4" />
-                    {{ submitLabel }}
-                </Button>
+            <div class="flex items-center gap-2">
+                <span v-if="viewMode && !isReadOnly" class="text-xs font-medium text-muted-foreground">
+                    Modo consulta
+                </span>
+                <Link v-if="viewMode && !isReadOnly" :href="`/cursos-formacao-superior/${initial?.cfs_id}/edit`">
+                    <Button type="button" class="bg-sky-600 text-white hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-400">
+                        Editar
+                    </Button>
+                </Link>
+                <template v-if="!readonly">
+                    <Button
+                        v-if="mode === 'create'"
+                        type="button"
+                        variant="outline"
+                        :disabled="form.processing"
+                        class="border-brand-600 text-brand-700 hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-900/30"
+                        @click="submit(true)"
+                    >
+                        <LoaderCircle v-if="form.processing && form.continue_new" class="mr-2 size-4 animate-spin" />
+                        <PlusCircle v-else class="mr-2 size-4" />
+                        Salvar e novo
+                    </Button>
+                    <Button type="submit" :disabled="form.processing" class="bg-brand-600 text-white hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400">
+                        <LoaderCircle v-if="form.processing && !form.continue_new" class="mr-2 size-4 animate-spin" />
+                        <Save v-else class="mr-2 size-4" />
+                        {{ submitLabel }}
+                    </Button>
+                </template>
             </div>
         </div>
 
-        <fieldset :disabled="isReadOnly" class="contents">
+        <fieldset :disabled="readonly" class="contents">
             <div class="grid gap-5 rounded-xl border bg-card p-6 shadow-sm sm:grid-cols-4 sm:items-start">
                 <div class="flex items-center gap-3 rounded-lg border bg-muted/40 px-4 py-3 sm:col-span-4">
                     <Switch id="cfs_fl_ativo" v-model="form.cfs_fl_ativo" />

@@ -5,6 +5,7 @@ import Switch from '@/components/common/Switch.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { usePermissao } from '@/composables/usePermissao';
+import { useViewMode } from '@/composables/useViewMode';
 import { useErrorFocus } from '@/composables/useErrorFocus';
 import type { UnidadeMedida } from '@/types/alimentacao';
 import { Link, useForm } from '@inertiajs/vue3';
@@ -16,6 +17,7 @@ const props = defineProps<{
 }>();
 
 const { isReadOnly } = usePermissao();
+const { viewMode, readonly } = useViewMode();
 const { focusFirstError } = useErrorFocus();
 
 const form = useForm<{
@@ -35,7 +37,7 @@ const form = useForm<{
 });
 
 const submit = (continueNew = false) => {
-    if (isReadOnly.value) return;
+    if (readonly.value) return;
     form.continue_new = continueNew;
     const opts = {
         preserveScroll: true,
@@ -68,8 +70,16 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar unidade' : 'Salvar alte
                 </Button>
             </Link>
             <div v-if="!isReadOnly" class="flex items-center gap-2">
+                <span v-if="viewMode && !isReadOnly" class="text-xs font-medium text-muted-foreground">
+                    Modo consulta
+                </span>
+                <Link v-if="viewMode && !isReadOnly" :href="`/alimentacao/unidades-medida/${initial?.umd_id}/edit`">
+                    <Button type="button" class="bg-sky-600 text-white hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-400">
+                        Editar
+                    </Button>
+                </Link>
                 <Button
-                    v-if="mode === 'create'"
+                    v-if="mode === 'create' && !readonly"
                     type="button"
                     variant="outline"
                     :disabled="form.processing"
@@ -81,6 +91,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar unidade' : 'Salvar alte
                     Salvar e novo
                 </Button>
                 <Button
+                    v-if="!readonly"
                     type="submit"
                     :disabled="form.processing"
                     class="bg-brand-600 text-white hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400"
@@ -92,7 +103,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar unidade' : 'Salvar alte
             </div>
         </div>
 
-        <fieldset :disabled="isReadOnly" class="contents">
+        <fieldset :disabled="readonly" class="contents">
             <div class="grid gap-5 rounded-xl border bg-card p-6 shadow-sm sm:grid-cols-4 sm:items-start">
                 <div class="flex items-center gap-3 rounded-lg border bg-muted/40 px-4 py-3 sm:col-span-4">
                     <Switch id="umd_fl_ativo" v-model="form.umd_fl_ativo" />

@@ -6,6 +6,7 @@ import EscolaCombobox from '@/components/funcionario/EscolaCombobox.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { usePermissao } from '@/composables/usePermissao';
+import { useViewMode } from '@/composables/useViewMode';
 import { useErrorFocus } from '@/composables/useErrorFocus';
 import type { UsuarioTransporte } from '@/types/transporte';
 import { Link, useForm, usePage } from '@inertiajs/vue3';
@@ -18,6 +19,7 @@ const props = defineProps<{
 }>();
 
 const { isReadOnly } = usePermissao();
+const { viewMode, readonly } = useViewMode();
 const { focusFirstError } = useErrorFocus();
 
 const page = usePage();
@@ -43,7 +45,7 @@ watch(() => form.tue_nome, (v) => {
 });
 
 const submit = (continueNew = false) => {
-    if (isReadOnly.value) return;
+    if (readonly.value) return;
     form.continue_new = continueNew;
     const opts = {
         preserveScroll: true,
@@ -75,8 +77,16 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar usuário' : 'Salvar alt
                 </Button>
             </Link>
             <div v-if="!isReadOnly" class="flex items-center gap-2">
+                <span v-if="viewMode && !isReadOnly" class="text-xs font-medium text-muted-foreground">
+                    Modo consulta
+                </span>
+                <Link v-if="viewMode && !isReadOnly" :href="`/transporte/usuarios/${initial?.tue_id}/edit`">
+                    <Button type="button" class="bg-sky-600 text-white hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-400">
+                        Editar
+                    </Button>
+                </Link>
                 <Button
-                    v-if="mode === 'create'"
+                    v-if="mode === 'create' && !readonly"
                     type="button"
                     variant="outline"
                     :disabled="form.processing"
@@ -88,6 +98,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar usuário' : 'Salvar alt
                     Salvar e novo
                 </Button>
                 <Button
+                    v-if="!readonly"
                     type="submit"
                     :disabled="form.processing"
                     class="bg-brand-600 text-white hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400"
@@ -99,7 +110,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar usuário' : 'Salvar alt
             </div>
         </div>
 
-        <fieldset :disabled="isReadOnly" class="contents">
+        <fieldset :disabled="readonly" class="contents">
         <div class="grid gap-5 rounded-xl border bg-card p-6 shadow-sm sm:grid-cols-4 sm:items-start">
             <div class="flex items-center gap-3 rounded-lg border bg-muted/40 px-4 py-3 sm:col-span-4">
                 <Switch id="tue_fl_ativo" v-model="form.tue_fl_ativo" />
