@@ -11,6 +11,7 @@ node_modules
 # Build local (refeito no stage de assets)
 public/build
 public/hot
+public/public
 
 # Segredos / ambiente
 .env
