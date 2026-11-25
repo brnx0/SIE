@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { usePermissao } from '@/composables/usePermissao';
+import { useViewMode } from '@/composables/useViewMode';
 import { useErrorFocus } from '@/composables/useErrorFocus';
 import { useToast } from '@/composables/useToast';
 import { useViaCep } from '@/composables/useViaCep';
@@ -66,6 +67,7 @@ const props = defineProps<{
 }>();
 
 const { isReadOnly } = usePermissao();
+const { viewMode, readonly } = useViewMode();
 const page = usePage<SharedData>();
 const DEFAULT_PARAMS: SystemParams = {
     nome_pessoa_caixa_alta: true,
@@ -460,7 +462,7 @@ const admissaoEditing = ref(false);
 const subFormAberto = computed(() => escolaridadeEditing.value || admissaoEditing.value);
 
 const submit = () => {
-    if (isReadOnly.value) return;
+    if (readonly.value) return;
     if (subFormAberto.value) {
         // Leva o usuário ao sub-registro pendente para finalizar ou cancelar.
         activeTab.value = escolaridadeEditing.value ? 'escolaridade' : 'admissao-lotacao';
@@ -562,19 +564,29 @@ const initials = computed(() => {
             <Link href="/funcionarios">
                 <Button type="button" variant="outline">Voltar para listagem</Button>
             </Link>
-            <div v-if="!isReadOnly" class="flex items-center gap-3">
-                <span v-if="subFormAberto" class="max-w-xs text-right text-xs text-amber-600 dark:text-amber-400">
-                    Finalize ou cancele o registro em edição para salvar.
+            <div class="flex items-center gap-3">
+                <span v-if="viewMode && !isReadOnly" class="text-xs font-medium text-muted-foreground">
+                    Modo consulta
                 </span>
-                <Button
-                    type="submit"
-                    :disabled="form.processing || subFormAberto"
-                    class="bg-sky-600 text-white hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-400"
-                >
-                    <LoaderCircle v-if="form.processing" class="mr-2 size-4 animate-spin" />
-                    <Save v-else class="mr-2 size-4" />
-                    {{ submitLabel }}
-                </Button>
+                <Link v-if="viewMode && !isReadOnly" :href="`/funcionarios/${initial?.fun_id}/edit`">
+                    <Button type="button" class="bg-sky-600 text-white hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-400">
+                        Editar
+                    </Button>
+                </Link>
+                <template v-if="!readonly">
+                    <span v-if="subFormAberto" class="max-w-xs text-right text-xs text-amber-600 dark:text-amber-400">
+                        Finalize ou cancele o registro em edição para salvar.
+                    </span>
+                    <Button
+                        type="submit"
+                        :disabled="form.processing || subFormAberto"
+                        class="bg-sky-600 text-white hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-400"
+                    >
+                        <LoaderCircle v-if="form.processing" class="mr-2 size-4 animate-spin" />
+                        <Save v-else class="mr-2 size-4" />
+                        {{ submitLabel }}
+                    </Button>
+                </template>
             </div>
         </div>
 
@@ -603,7 +615,7 @@ const initials = computed(() => {
                 </TabsTrigger>
             </TabsList>
 
-            <fieldset :disabled="isReadOnly" class="contents">
+            <fieldset :disabled="readonly" class="contents">
             <!-- Aba 1: Dados Pessoais -->
             <TabsContent value="dados-pessoais" class="grid gap-6">
                 <!-- Foto + Status ativo -->

@@ -9,7 +9,7 @@ import { usePermissao } from '@/composables/usePermissao';
 import { type BreadcrumbItem, type Paginated } from '@/types';
 import type { UnidadeMedida } from '@/types/alimentacao';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { Pencil, Plus, Ruler, Search, Trash2 } from 'lucide-vue-next';
+import { Eye, Pencil, Plus, Ruler, Search, Trash2 } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
 
 const props = defineProps<{
@@ -109,12 +109,17 @@ const remove = (u: UnidadeMedida) => {
                             </td>
                             <td class="px-4 py-3">
                                 <div class="flex items-center justify-end gap-1">
-                                    <Link :href="`/alimentacao/unidades-medida/${u.umd_id}/edit`">
-                                        <Button variant="ghost" size="sm"><Pencil class="size-4" /></Button>
+                                    <Link :href="`/alimentacao/unidades-medida/${u.umd_id}/edit?view=1`">
+                                        <Button variant="ghost" size="sm" title="Visualizar"><Eye class="size-4 text-brand-600" /></Button>
                                     </Link>
-                                    <Button v-if="!isReadOnly" variant="ghost" size="sm" class="text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:hover:bg-rose-900/30" @click="remove(u)">
-                                        <Trash2 class="size-4" />
-                                    </Button>
+                                    <template v-if="!isReadOnly">
+                                        <Link :href="`/alimentacao/unidades-medida/${u.umd_id}/edit`">
+                                            <Button variant="ghost" size="sm" title="Editar"><Pencil class="size-4" /></Button>
+                                        </Link>
+                                        <Button variant="ghost" size="sm" title="Remover" class="text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:hover:bg-rose-900/30" @click="remove(u)">
+                                            <Trash2 class="size-4" />
+                                        </Button>
+                                    </template>
                                 </div>
                             </td>
                         </tr>
