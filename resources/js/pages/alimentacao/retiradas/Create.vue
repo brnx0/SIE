@@ -153,14 +153,14 @@ const submit = () => {
                         <div v-if="podeVerCentral" class="flex items-center gap-1 rounded-lg border bg-muted/40 p-1">
                             <button
                                 type="button"
-                                :class="['flex-1 rounded-md px-3 py-1.5 text-xs font-medium transition-colors', modo === 'central' ? 'bg-indigo-600 text-white' : 'text-muted-foreground hover:bg-muted']"
+                                :class="['flex-1 rounded-md px-3 py-1.5 text-xs font-medium transition-colors', modo === 'central' ? 'bg-brand-600 text-white' : 'text-muted-foreground hover:bg-muted']"
                                 @click="modo = 'central'"
                             >
                                 Central
                             </button>
                             <button
                                 type="button"
-                                :class="['flex-1 rounded-md px-3 py-1.5 text-xs font-medium transition-colors', modo === 'escola' ? 'bg-indigo-600 text-white' : 'text-muted-foreground hover:bg-muted']"
+                                :class="['flex-1 rounded-md px-3 py-1.5 text-xs font-medium transition-colors', modo === 'escola' ? 'bg-brand-600 text-white' : 'text-muted-foreground hover:bg-muted']"
                                 @click="modo = 'escola'"
                             >
                                 Escola
@@ -178,7 +178,7 @@ const submit = () => {
 
                     <div class="grid gap-2 sm:col-span-2">
                         <FormLabel for="tpr_id" :required="true">Tipo de retirada</FormLabel>
-                        <select id="tpr_id" v-model="form.tpr_id" class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground">
+                        <select id="tpr_id" v-model="form.tpr_id" class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-background dark:text-foreground">
                             <option :value="null" disabled>Selecione o motivo...</option>
                             <option v-for="t in tiposRetirada" :key="t.tpr_id" :value="t.tpr_id">{{ t.tpr_nome }}</option>
                         </select>
@@ -269,7 +269,7 @@ const submit = () => {
                     <div class="grid gap-4 rounded-lg border bg-muted/30 p-4 sm:grid-cols-6 sm:items-start">
                         <div class="grid gap-2 sm:col-span-4">
                             <FormLabel for="itm_id">Item</FormLabel>
-                            <select id="itm_id" v-model="itmId" class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground">
+                            <select id="itm_id" v-model="itmId" class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-background dark:text-foreground">
                                 <option :value="null" disabled>Selecione o item...</option>
                                 <option v-for="i in itens" :key="i.itm_id" :value="i.itm_id">
                                     {{ i.itm_nome }} — saldo: {{ fmt(i.saldo) }} {{ i.umd_sigla }}
@@ -286,7 +286,7 @@ const submit = () => {
                         </div>
 
                         <div class="flex sm:col-span-1 sm:pt-7">
-                            <Button type="button" class="w-full bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400" @click="adicionar">
+                            <Button type="button" class="w-full bg-brand-600 text-white hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400" @click="adicionar">
                                 <Plus class="mr-2 size-4" /> Incluir
                             </Button>
                         </div>
@@ -299,7 +299,7 @@ const submit = () => {
                     <Button
                         type="button"
                         :disabled="form.processing || form.itens.length === 0 || !form.tpr_id"
-                        class="bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
+                        class="bg-brand-600 text-white hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400"
                         @click="submit"
                     >
                         <LoaderCircle v-if="form.processing" class="mr-2 size-4 animate-spin" />

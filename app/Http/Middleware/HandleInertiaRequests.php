@@ -57,9 +57,32 @@ class HandleInertiaRequests extends Middleware
                 'error' => fn () => $request->session()->get('error'),
             ],
             'params' => fn () => $this->parametrosFlags(),
+            // Identidade da entidade nas telas de autenticação (logo do município). Só p/ visitante.
+            'entidade' => fn () => $request->user() ? null : $this->entidadeLogin(),
             'permissoes' => fn () => PermissaoTela::mapaParaUsuario($request->user()),
             'permissoesAtivas' => fn () => PermissaoTela::ativo(),
         ]);
+    }
+
+    /**
+     * Dados institucionais p/ o login (só visitante). Null se não houver parâmetros.
+     *
+     * @return array<string, string|null>|null
+     */
+    protected function entidadeLogin(): ?array
+    {
+        try {
+            $c = ParametroEntidade::current()->cabecalhoRelatorio();
+        } catch (\Throwable) {
+            return null;
+        }
+
+        return [
+            'nome_entidade' => $c['nome_entidade'] ?: null,
+            'prefeitura'    => $c['msg_cab_secretaria'] ?: null,
+            'municipio'     => $c['municipio'] ?: null,
+            'logo_url'      => $c['logomarca_url'] ?: $c['brasao_url'] ?: null,
+        ];
     }
 
     /**

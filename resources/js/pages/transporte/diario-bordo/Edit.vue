@@ -98,7 +98,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: `${props.diario.rota?.rot_nome ?? 'Registro'} · ${fmtData(props.diario.tdb_dt_viagem)}`, href: `/transporte/diario-bordo/${props.diario.tdb_id}/edit` },
 ];
 
-const selectClass = 'flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground';
+const selectClass = 'flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-background dark:text-foreground';
 </script>
 
 <template>
@@ -128,7 +128,7 @@ const selectClass = 'flex h-10 w-full rounded-md border border-input bg-backgrou
                             <Lock v-else class="mr-2 size-4" />
                             Fechar registro
                         </Button>
-                        <Button v-if="!isReadOnly" type="button" :disabled="form.processing" class="bg-indigo-600 text-white hover:bg-indigo-700" @click="salvar">
+                        <Button v-if="!isReadOnly" type="button" :disabled="form.processing" class="bg-brand-600 text-white hover:bg-brand-700" @click="salvar">
                             <LoaderCircle v-if="form.processing" class="mr-2 size-4 animate-spin" />
                             <Save v-else class="mr-2 size-4" />
                             Salvar registro

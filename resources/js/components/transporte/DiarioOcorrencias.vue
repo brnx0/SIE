@@ -70,7 +70,7 @@ const remove = (o: OcorrenciaItem) => {
     });
 };
 
-const selectClass = 'flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground';
+const selectClass = 'flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-background dark:text-foreground';
 </script>
 
 <template>

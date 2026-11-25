@@ -99,11 +99,11 @@ const submit = () => {
             <!-- Sugestão do cardápio do dia -->
             <div
                 v-if="sugestoes.length"
-                class="grid gap-3 rounded-xl border border-indigo-200 bg-indigo-50/50 p-4 dark:border-indigo-900/50 dark:bg-indigo-900/10"
+                class="grid gap-3 rounded-xl border border-brand-200 bg-brand-50/50 p-4 dark:border-brand-900/50 dark:bg-brand-900/10"
             >
                 <div class="flex items-center gap-2">
-                    <CalendarCheck class="size-4 text-indigo-600 dark:text-indigo-400" />
-                    <p class="text-sm font-medium text-indigo-900 dark:text-indigo-200">
+                    <CalendarCheck class="size-4 text-brand-600 dark:text-brand-400" />
+                    <p class="text-sm font-medium text-brand-900 dark:text-brand-200">
                         O cardápio deste dia prevê:
                     </p>
                 </div>
@@ -112,14 +112,14 @@ const submit = () => {
                         v-for="(s, i) in sugestoes"
                         :key="i"
                         type="button"
-                        class="rounded-lg border border-indigo-300 bg-background px-3 py-2 text-left text-sm transition-colors hover:bg-indigo-100 dark:border-indigo-800 dark:hover:bg-indigo-900/30"
+                        class="rounded-lg border border-brand-300 bg-background px-3 py-2 text-left text-sm transition-colors hover:bg-brand-100 dark:border-brand-800 dark:hover:bg-brand-900/30"
                         @click="usarSugestao(s)"
                     >
                         <span class="font-medium">{{ s.prato }}</span>
                         <span class="block text-xs text-muted-foreground">{{ s.turno }} · {{ s.refeicao }}</span>
                     </button>
                 </div>
-                <p class="text-xs text-indigo-800/70 dark:text-indigo-300/70">
+                <p class="text-xs text-brand-800/70 dark:text-brand-300/70">
                     Clique para preencher. Você pode registrar um prato diferente do cardápio se foi o que a escola serviu.
                 </p>
             </div>
@@ -146,7 +146,7 @@ const submit = () => {
 
                         <div class="grid gap-2 sm:col-span-2">
                             <FormLabel for="prd_turno" :required="true">Turno</FormLabel>
-                            <select id="prd_turno" v-model="form.prd_turno" class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground">
+                            <select id="prd_turno" v-model="form.prd_turno" class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-background dark:text-foreground">
                                 <option v-for="t in turnos" :key="t" :value="t">{{ t }}</option>
                             </select>
                             <InputError :message="form.errors.prd_turno" />
@@ -154,7 +154,7 @@ const submit = () => {
 
                         <div class="grid gap-2 sm:col-span-2">
                             <FormLabel for="prd_refeicao" :required="true">Refeição</FormLabel>
-                            <select id="prd_refeicao" v-model="form.prd_refeicao" class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground">
+                            <select id="prd_refeicao" v-model="form.prd_refeicao" class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-background dark:text-foreground">
                                 <option v-for="r in refeicoes" :key="r" :value="r">{{ r }}</option>
                             </select>
                             <InputError :message="form.errors.prd_refeicao" />
@@ -211,7 +211,7 @@ const submit = () => {
                         <Button
                             type="submit"
                             :disabled="form.processing || !form.prd_prt_id || !form.prd_qtd_servida"
-                            class="bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
+                            class="bg-brand-600 text-white hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400"
                         >
                             <LoaderCircle v-if="form.processing" class="mr-2 size-4 animate-spin" />
                             <Save v-else class="mr-2 size-4" />

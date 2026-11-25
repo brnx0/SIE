@@ -76,13 +76,13 @@ onBeforeUnmount(() => document.removeEventListener('mousedown', handleOutside));
         <button
             type="button"
             :class="[
-                'flex h-10 w-full items-center justify-between rounded-md border bg-background px-3 py-2 text-sm shadow-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500',
+                'flex h-10 w-full items-center justify-between rounded-md border bg-background px-3 py-2 text-sm shadow-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500',
                 invalid ? 'border-rose-500' : 'border-input',
             ]"
             @click="openPanel"
         >
             <span v-if="selected" class="flex items-center gap-2 truncate">
-                <Bus class="size-4 text-indigo-600 dark:text-indigo-400" />
+                <Bus class="size-4 text-brand-600 dark:text-brand-400" />
                 <span class="truncate">{{ selected.vei_placa }}</span>
             </span>
             <span v-else class="text-muted-foreground">{{ placeholder ?? 'Buscar veículo...' }}</span>

@@ -103,9 +103,8 @@ use App\Http\Controllers\Secretaria\RenovacaoMatriculaController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::get('/', function () {
-    return Inertia::render('Welcome');
-})->name('home');
+// Sem tela de apresentação: o ponto de partida é sempre o login (ou o painel, se já logado).
+Route::get('/', fn () => redirect()->route(auth()->check() ? 'dashboard' : 'login'))->name('home');
 
 // Fallback público p/ arquivos do disco "public" (logos, fotos) quando o symlink
 // public/storage não alcança os uploads no deploy (nginx no host + storage/app em

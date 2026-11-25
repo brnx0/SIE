@@ -76,7 +76,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar etapa de ensino' : 'Sal
                 v-if="!isReadOnly"
                 type="submit"
                 :disabled="form.processing"
-                class="bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
+                class="bg-brand-600 text-white hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400"
             >
                 <LoaderCircle v-if="form.processing" class="mr-2 size-4 animate-spin" />
                 <Save v-else class="mr-2 size-4" />
@@ -122,7 +122,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar etapa de ensino' : 'Sal
                     id="seg_dt_abertura"
                     type="date"
                     v-model="form.seg_dt_abertura"
-                    class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground"
+                    class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-background dark:text-foreground"
                 />
                 <InputError :message="form.errors.seg_dt_abertura" />
             </div>
@@ -179,7 +179,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar etapa de ensino' : 'Sal
                     type="date"
                     v-model="form.seg_dt_encerramento"
                     :min="minEncerramento"
-                    class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground"
+                    class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-background dark:text-foreground"
                 />
                 <InputError :message="form.errors.seg_dt_encerramento" />
             </div>
@@ -209,7 +209,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar etapa de ensino' : 'Sal
                     v-model="form.seg_ds_prereq"
                     :disabled="!form.seg_fl_prereq"
                     rows="4"
-                    class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
+                    class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:cursor-not-allowed disabled:opacity-50"
                     placeholder="Descreva o pré-requisito..."
                 />
                 <InputError :message="form.errors.seg_ds_prereq" />
@@ -221,7 +221,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar etapa de ensino' : 'Sal
                     id="seg_observacoes"
                     v-model="form.seg_observacoes"
                     rows="4"
-                    class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                     placeholder="Observações gerais..."
                 />
                 <InputError :message="form.errors.seg_observacoes" />

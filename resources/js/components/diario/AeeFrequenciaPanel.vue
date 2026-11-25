@@ -326,7 +326,7 @@ const toggleExecutado = (val: boolean) => {
                             </span>
                         </div>
                     </div>
-                    <div v-if="infoDia().executado" class="mb-2 inline-flex items-center gap-1 rounded bg-indigo-50 px-2 py-0.5 text-[11px] font-medium text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300">
+                    <div v-if="infoDia().executado" class="mb-2 inline-flex items-center gap-1 rounded bg-brand-50 px-2 py-0.5 text-[11px] font-medium text-brand-700 dark:bg-brand-950/40 dark:text-brand-300">
                         Conteúdo do plano AEE (somente leitura)
                     </div>
                     <div class="grid gap-3 sm:grid-cols-2">
@@ -338,7 +338,7 @@ const toggleExecutado = (val: boolean) => {
                                 :disabled="!editavel"
                                 rows="2"
                                 placeholder="O que foi trabalhado no atendimento..."
-                                class="mt-1 w-full resize-y rounded-md border bg-background px-2.5 py-1.5 text-sm leading-relaxed outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 read-only:cursor-default read-only:bg-muted/40 disabled:cursor-not-allowed disabled:opacity-60 dark:focus:ring-indigo-950"
+                                class="mt-1 w-full resize-y rounded-md border bg-background px-2.5 py-1.5 text-sm leading-relaxed outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100 read-only:cursor-default read-only:bg-muted/40 disabled:cursor-not-allowed disabled:opacity-60 dark:focus:ring-brand-950"
                                 @input="setConteudo('conteudo', ($event.target as HTMLTextAreaElement).value)"
                             ></textarea>
                         </div>
@@ -350,7 +350,7 @@ const toggleExecutado = (val: boolean) => {
                                 :disabled="!editavel"
                                 rows="2"
                                 placeholder="Como foi trabalhado..."
-                                class="mt-1 w-full resize-y rounded-md border bg-background px-2.5 py-1.5 text-sm leading-relaxed outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 read-only:cursor-default read-only:bg-muted/40 disabled:cursor-not-allowed disabled:opacity-60 dark:focus:ring-indigo-950"
+                                class="mt-1 w-full resize-y rounded-md border bg-background px-2.5 py-1.5 text-sm leading-relaxed outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100 read-only:cursor-default read-only:bg-muted/40 disabled:cursor-not-allowed disabled:opacity-60 dark:focus:ring-brand-950"
                                 @input="setConteudo('metodologia', ($event.target as HTMLTextAreaElement).value)"
                             ></textarea>
                         </div>
@@ -380,7 +380,7 @@ const toggleExecutado = (val: boolean) => {
                                 <td colspan="3" class="px-4 py-8 text-center text-sm text-muted-foreground">Nenhum aluno encontrado.</td>
                             </tr>
                             <tr v-for="(a, i) in alunosFiltrados" :key="a.aln_id" class="group">
-                                <td :class="['sticky left-0 z-10 border-b px-3 py-2 transition-colors', i % 2 ? 'bg-muted/30' : 'bg-card', 'group-hover:bg-indigo-50/70 dark:group-hover:bg-indigo-950/40']">
+                                <td :class="['sticky left-0 z-10 border-b px-3 py-2 transition-colors', i % 2 ? 'bg-muted/30' : 'bg-card', 'group-hover:bg-brand-50/70 dark:group-hover:bg-brand-950/40']">
                                     <div class="flex items-center gap-2">
                                         <span class="w-5 shrink-0 text-right text-[11px] tabular-nums text-muted-foreground">{{ i + 1 }}</span>
                                         <div class="min-w-0">
@@ -390,7 +390,7 @@ const toggleExecutado = (val: boolean) => {
                                         </div>
                                     </div>
                                 </td>
-                                <td :class="['border-b border-l px-2 py-2 text-center transition-colors', i % 2 ? 'bg-muted/20' : '', 'group-hover:bg-indigo-50/40 dark:group-hover:bg-indigo-950/20']">
+                                <td :class="['border-b border-l px-2 py-2 text-center transition-colors', i % 2 ? 'bg-muted/20' : '', 'group-hover:bg-brand-50/40 dark:group-hover:bg-brand-950/20']">
                                     <span v-if="saiuNoDia(a)" :title="`${motivoSaida(a)} em ${fmtData(a.dt_saida)}`" class="inline-flex size-8 items-center justify-center rounded-md text-xs text-muted-foreground/40">—</span>
                                     <button
                                         v-else
@@ -410,7 +410,7 @@ const toggleExecutado = (val: boolean) => {
                                         <template v-else>{{ presente(a.aln_id) ? 'P' : 'F' }}</template>
                                     </button>
                                 </td>
-                                <td :class="['border-b border-l px-2 py-2 text-center transition-colors', i % 2 ? 'bg-muted/20' : '', 'group-hover:bg-indigo-50/40 dark:group-hover:bg-indigo-950/20']">
+                                <td :class="['border-b border-l px-2 py-2 text-center transition-colors', i % 2 ? 'bg-muted/20' : '', 'group-hover:bg-brand-50/40 dark:group-hover:bg-brand-950/20']">
                                     <span v-if="saiuNoDia(a)" :title="`${motivoSaida(a)} em ${fmtData(a.dt_saida)}`" class="inline-flex items-center rounded-full bg-slate-200 px-2 py-0.5 text-[11px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">{{ motivoSaida(a) }}</span>
                                     <span
                                         v-else

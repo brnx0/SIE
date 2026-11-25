@@ -232,7 +232,7 @@ const refresh = () => {
         </div>
 
         <!-- Form add/edit -->
-        <div v-if="showForm" class="rounded-xl border border-indigo-200 bg-indigo-50/50 p-5 shadow-sm dark:border-indigo-800 dark:bg-indigo-900/20">
+        <div v-if="showForm" class="rounded-xl border border-brand-200 bg-brand-50/50 p-5 shadow-sm dark:border-brand-800 dark:bg-brand-900/20">
             <div class="mb-4 flex items-center justify-between">
                 <h4 class="text-sm font-medium">{{ editingId ? 'Editar ponto' : 'Novo ponto' }}</h4>
                 <button type="button" class="rounded p-1 hover:bg-muted" @click="resetForm"><X class="size-4" /></button>
@@ -292,7 +292,7 @@ const refresh = () => {
 
             <div class="mt-4 flex justify-end gap-2">
                 <Button type="button" variant="outline" size="sm" @click="resetForm">Cancelar</Button>
-                <Button type="button" size="sm" :disabled="processing" class="bg-indigo-600 text-white hover:bg-indigo-700" @click="submit">
+                <Button type="button" size="sm" :disabled="processing" class="bg-brand-600 text-white hover:bg-brand-700" @click="submit">
                     <Loader2 v-if="processing" class="mr-1 size-4 animate-spin" />
                     {{ editingId ? 'Salvar' : 'Adicionar' }}
                 </Button>
@@ -321,7 +321,7 @@ const refresh = () => {
                     <tr v-for="(p, i) in list" :key="p.pto_id" class="border-b last:border-0 hover:bg-muted/20">
                         <td class="px-4 py-3">
                             <div class="flex items-center justify-center gap-1">
-                                <span class="grid size-6 place-items-center rounded-full bg-indigo-100 text-xs font-semibold text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300">{{ i + 1 }}</span>
+                                <span class="grid size-6 place-items-center rounded-full bg-brand-100 text-xs font-semibold text-brand-700 dark:bg-brand-900/50 dark:text-brand-300">{{ i + 1 }}</span>
                                 <div class="flex flex-col">
                                     <button type="button" class="rounded p-0.5 hover:bg-muted disabled:opacity-30" :disabled="i === 0" title="Subir" @click="mover(i, -1)"><ArrowUp class="size-3.5" /></button>
                                     <button type="button" class="rounded p-0.5 hover:bg-muted disabled:opacity-30" :disabled="i === list.length - 1" title="Descer" @click="mover(i, 1)"><ArrowDown class="size-3.5" /></button>
@@ -350,7 +350,7 @@ const refresh = () => {
                         <td class="px-4 py-3 text-center text-muted-foreground">{{ p.total_passageiros ?? 0 }}</td>
                         <td class="px-4 py-3">
                             <div class="flex items-center justify-end gap-1">
-                                <button type="button" class="rounded p-1.5 hover:bg-muted" title="Editar" @click="openEdit(p)"><Pencil class="size-4 text-indigo-600" /></button>
+                                <button type="button" class="rounded p-1.5 hover:bg-muted" title="Editar" @click="openEdit(p)"><Pencil class="size-4 text-brand-600" /></button>
                                 <button type="button" class="rounded p-1.5 hover:bg-muted" title="Remover" @click="remove(p)"><Trash2 class="size-4 text-rose-500" /></button>
                             </div>
                         </td>

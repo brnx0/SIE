@@ -109,7 +109,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar ordem' : 'Salvar altera
                 v-if="!isReadOnly"
                 type="submit"
                 :disabled="form.processing"
-                class="bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
+                class="bg-brand-600 text-white hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400"
             >
                 <LoaderCircle v-if="form.processing" class="mr-2 size-4 animate-spin" />
                 <Save v-else class="mr-2 size-4" />
@@ -209,7 +209,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar ordem' : 'Salvar altera
                         v-model="form.ofn_obs"
                         rows="2"
                         placeholder="Opcional"
-                        class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground"
+                        class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-background dark:text-foreground"
                     ></textarea>
                     <InputError :message="form.errors.ofn_obs" />
                 </div>

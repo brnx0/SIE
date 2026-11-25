@@ -52,7 +52,7 @@ const remove = (tue: UsuarioTransporte) => {
                     <p class="text-sm text-slate-500 dark:text-slate-400">Usuários não vinculados à matrícula regular, com justificativa de utilização.</p>
                 </div>
                 <Link v-if="!isReadOnly" href="/transporte/usuarios/create">
-                    <Button class="bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400">
+                    <Button class="bg-brand-600 text-white hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400">
                         <Plus class="mr-2 size-4" /> Novo usuário
                     </Button>
                 </Link>
@@ -88,7 +88,7 @@ const remove = (tue: UsuarioTransporte) => {
                         <tr v-for="tue in usuarios.data" :key="tue.tue_id" class="transition-colors hover:bg-muted/30">
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-3">
-                                    <div class="grid size-9 place-items-center rounded-lg bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300">
+                                    <div class="grid size-9 place-items-center rounded-lg bg-brand-100 text-brand-700 dark:bg-brand-900/50 dark:text-brand-300">
                                         <Users class="size-4" />
                                     </div>
                                     <div class="flex flex-col">
@@ -123,7 +123,7 @@ const remove = (tue: UsuarioTransporte) => {
                         <template v-else>Nenhum registro</template>
                     </span>
                     <div v-if="usuarios.last_page > 1" class="flex flex-wrap gap-1">
-                        <Link v-for="(link, i) in usuarios.links" :key="i" :href="link.url ?? '#'" v-html="link.label" :class="['rounded-md px-3 py-1 text-xs', link.active ? 'bg-indigo-600 text-white' : 'border bg-background hover:bg-muted', !link.url && 'pointer-events-none opacity-40']" preserve-scroll />
+                        <Link v-for="(link, i) in usuarios.links" :key="i" :href="link.url ?? '#'" v-html="link.label" :class="['rounded-md px-3 py-1 text-xs', link.active ? 'bg-brand-600 text-white' : 'border bg-background hover:bg-muted', !link.url && 'pointer-events-none opacity-40']" preserve-scroll />
                     </div>
                 </div>
             </div>

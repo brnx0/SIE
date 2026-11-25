@@ -17,7 +17,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: '2ª Via Comprovante', href: '/matriculas/segunda-via' },
 ];
 
-const selectClass = 'flex h-10 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus:outline-none focus:ring-1 focus:ring-indigo-500';
+const selectClass = 'flex h-10 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus:outline-none focus:ring-1 focus:ring-brand-500';
 
 // ── Filtros ───────────────────────────────────────────────────────────────────
 const fAnlId = ref<number | ''>(props.anosLetivos[0]?.anl_id ?? '');
@@ -141,12 +141,12 @@ const formatarNomeAluno = (a: AlunoResumo) => {
                     <FormLabel :required="true">Aluno</FormLabel>
 
                     <!-- Aluno selecionado -->
-                    <div v-if="alunoSelecionado" class="flex items-center gap-2 rounded-md border border-indigo-300 bg-indigo-50 px-3 py-2 text-sm dark:border-indigo-700 dark:bg-indigo-900/20">
-                        <CheckCircle2 class="size-4 shrink-0 text-indigo-600" />
-                        <span class="flex-1 font-medium text-indigo-800 dark:text-indigo-200">
+                    <div v-if="alunoSelecionado" class="flex items-center gap-2 rounded-md border border-brand-300 bg-brand-50 px-3 py-2 text-sm dark:border-brand-700 dark:bg-brand-900/20">
+                        <CheckCircle2 class="size-4 shrink-0 text-brand-600" />
+                        <span class="flex-1 font-medium text-brand-800 dark:text-brand-200">
                             {{ formatarNomeAluno(alunoSelecionado) }}
                         </span>
-                        <button type="button" @click="limparAluno" class="text-indigo-400 hover:text-indigo-700">
+                        <button type="button" @click="limparAluno" class="text-brand-400 hover:text-brand-700">
                             <X class="size-4" />
                         </button>
                     </div>
@@ -158,7 +158,7 @@ const formatarNomeAluno = (a: AlunoResumo) => {
                             v-model="alunoQuery"
                             type="text"
                             placeholder="Buscar por nome, matrícula ou CPF..."
-                            class="flex h-10 w-full rounded-md border border-input bg-background pl-9 pr-3 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                            class="flex h-10 w-full rounded-md border border-input bg-background pl-9 pr-3 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-brand-500"
                             @blur="ocultarDropDepoisBlur"
                             @focus="showAlunoDrop = alunoResultados.length > 0"
                         />
@@ -191,7 +191,7 @@ const formatarNomeAluno = (a: AlunoResumo) => {
                 <Button
                     type="button"
                     :disabled="!fAnlId || !alunoSelecionado || buscando"
-                    class="bg-indigo-600 hover:bg-indigo-700 w-full"
+                    class="bg-brand-600 hover:bg-brand-700 w-full"
                     @click="buscar"
                 >
                     <Loader2 v-if="buscando" class="mr-2 size-4 animate-spin" />

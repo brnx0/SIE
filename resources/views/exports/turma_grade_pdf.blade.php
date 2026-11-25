@@ -5,12 +5,12 @@
 <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: DejaVu Sans, sans-serif; font-size: 11px; color: #1e293b; }
-    .header { padding: 0 0 12px; border-bottom: 2px solid #6366f1; margin-bottom: 16px; }
-    .header h1 { font-size: 18px; font-weight: 700; color: #4f46e5; }
+    .header { padding: 0 0 12px; border-bottom: 2px solid #2f6fb8; margin-bottom: 16px; }
+    .header h1 { font-size: 18px; font-weight: 700; color: #1e4e8c; }
     .header .sub { font-size: 11px; color: #334155; margin-top: 3px; }
     .header .meta { font-size: 9px; color: #94a3b8; margin-top: 4px; }
     table { width: 100%; border-collapse: collapse; }
-    thead th { background: #4f46e5; color: #fff; padding: 8px 10px; text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: 0.04em; border: 1px solid #4338ca; }
+    thead th { background: #1e4e8c; color: #fff; padding: 8px 10px; text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: 0.04em; border: 1px solid #173f73; }
     th.tempo, th.hora { width: 52px; text-align: center; }
     tbody td { padding: 7px 10px; border: 1px solid #e2e8f0; vertical-align: top; }
     tbody tr:nth-child(even) { background: #fafafa; }

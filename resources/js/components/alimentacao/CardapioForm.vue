@@ -85,7 +85,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar cardápio' : 'Salvar al
                 v-if="!isReadOnly"
                 type="submit"
                 :disabled="form.processing"
-                class="bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
+                class="bg-brand-600 text-white hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400"
             >
                 <LoaderCircle v-if="form.processing" class="mr-2 size-4 animate-spin" />
                 <Save v-else class="mr-2 size-4" />
@@ -125,7 +125,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar cardápio' : 'Salvar al
 
                 <div class="grid gap-2 sm:col-span-2">
                     <FormLabel for="crd_anl_id" :required="true">Ano letivo</FormLabel>
-                    <select id="crd_anl_id" v-model="form.crd_anl_id" class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground">
+                    <select id="crd_anl_id" v-model="form.crd_anl_id" class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-background dark:text-foreground">
                         <option :value="null" disabled>Selecione...</option>
                         <option v-for="a in anosLetivos" :key="a.anl_id" :value="a.anl_id">{{ a.anl_ano }}</option>
                     </select>
@@ -138,14 +138,14 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar cardápio' : 'Salvar al
                         <div class="flex items-center gap-1 rounded-lg border bg-muted/40 p-1">
                             <button
                                 type="button"
-                                :class="['rounded-md px-3 py-1.5 text-xs font-medium transition-colors', escopo === 'rede' ? 'bg-indigo-600 text-white' : 'text-muted-foreground hover:bg-muted']"
+                                :class="['rounded-md px-3 py-1.5 text-xs font-medium transition-colors', escopo === 'rede' ? 'bg-brand-600 text-white' : 'text-muted-foreground hover:bg-muted']"
                                 @click="escopo = 'rede'"
                             >
                                 Padrão da rede
                             </button>
                             <button
                                 type="button"
-                                :class="['rounded-md px-3 py-1.5 text-xs font-medium transition-colors', escopo === 'escola' ? 'bg-indigo-600 text-white' : 'text-muted-foreground hover:bg-muted']"
+                                :class="['rounded-md px-3 py-1.5 text-xs font-medium transition-colors', escopo === 'escola' ? 'bg-brand-600 text-white' : 'text-muted-foreground hover:bg-muted']"
                                 @click="escopo = 'escola'"
                             >
                                 Escola específica

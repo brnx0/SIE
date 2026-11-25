@@ -611,7 +611,7 @@ const cancelarDuplicata = () => {
     confirmDuplicata = false;
 };
 
-const selectClass = 'flex h-10 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus:outline-none focus:ring-1 focus:ring-indigo-500';
+const selectClass = 'flex h-10 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus:outline-none focus:ring-1 focus:ring-brand-500';
 </script>
 
 <template>
@@ -627,9 +627,9 @@ const selectClass = 'flex h-10 w-full rounded-md border border-input bg-backgrou
             </DialogHeader>
 
             <!-- Aluno selecionado (existente) -->
-            <div v-if="aluno && !alunoNaoCadastrado" class="shrink-0 border-b bg-indigo-50 px-6 py-3 text-sm dark:bg-indigo-900/20">
-                <span class="font-medium text-indigo-800 dark:text-indigo-200">{{ aluno.aln_nome }}</span>
-                <span v-if="aluno.aln_nr_matricula" class="ml-2 text-indigo-600 dark:text-indigo-400">Mat. {{ aluno.aln_nr_matricula }}</span>
+            <div v-if="aluno && !alunoNaoCadastrado" class="shrink-0 border-b bg-brand-50 px-6 py-3 text-sm dark:bg-brand-900/20">
+                <span class="font-medium text-brand-800 dark:text-brand-200">{{ aluno.aln_nome }}</span>
+                <span v-if="aluno.aln_nr_matricula" class="ml-2 text-brand-600 dark:text-brand-400">Mat. {{ aluno.aln_nr_matricula }}</span>
                 <span v-if="aluno.aln_dt_nascimento" class="ml-2 text-muted-foreground">
                     Nasc. {{ new Date(aluno.aln_dt_nascimento + 'T00:00:00').toLocaleDateString('pt-BR') }}
                 </span>
@@ -644,7 +644,7 @@ const selectClass = 'flex h-10 w-full rounded-md border border-input bg-backgrou
                     <select
                         id="tma_ser_id"
                         v-model="serieSelecionadaId""
-                        class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground"
+                        class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-background dark:text-foreground"
                     >
                         <option :value="null" disabled>Selecione a série...</option>
                         <option v-for="s in seriesMulti" :key="s.ser_id" :value="s.ser_id">
@@ -661,7 +661,7 @@ const selectClass = 'flex h-10 w-full rounded-md border border-input bg-backgrou
                     type="button"
                     class="px-5 py-2.5 text-sm font-medium transition-colors"
                     :class="activeTab === 'dados'
-                        ? 'border-b-2 border-indigo-600 text-indigo-700 dark:text-indigo-400'
+                        ? 'border-b-2 border-brand-600 text-brand-700 dark:text-brand-400'
                         : 'text-muted-foreground hover:text-foreground'"
                     @click="activeTab = 'dados'"
                 >
@@ -673,7 +673,7 @@ const selectClass = 'flex h-10 w-full rounded-md border border-input bg-backgrou
                     :class="[
                         !tabSaudeDisponivel ? 'cursor-not-allowed opacity-40' : '',
                         activeTab === 'saude'
-                            ? 'border-b-2 border-indigo-600 text-indigo-700 dark:text-indigo-400'
+                            ? 'border-b-2 border-brand-600 text-brand-700 dark:text-brand-400'
                             : 'text-muted-foreground hover:text-foreground',
                     ]"
                     :disabled="!tabSaudeDisponivel"
@@ -699,7 +699,7 @@ const selectClass = 'flex h-10 w-full rounded-md border border-input bg-backgrou
                     <div class="flex items-center gap-3 rounded-lg border bg-muted/30 px-4 py-3">
                         <Switch id="possui_deficiencia" v-model="possuiDeficiencia" />
                         <Label for="possui_deficiencia" class="cursor-pointer text-sm font-medium">Possui alguma deficiência</Label>
-                        <span v-if="possuiDeficiencia" class="ml-auto text-xs text-indigo-600">Preencha a aba "Quadro de Saúde"</span>
+                        <span v-if="possuiDeficiencia" class="ml-auto text-xs text-brand-600">Preencha a aba "Quadro de Saúde"</span>
                     </div>
 
                     <!-- Aviso acentuação -->
@@ -734,11 +734,11 @@ const selectClass = 'flex h-10 w-full rounded-md border border-input bg-backgrou
                                     <FormLabel for="aln_filiacao_1" :required="true">Filiação 1</FormLabel>
                                     <div class="flex items-center gap-4 text-sm">
                                         <label class="flex cursor-pointer items-center gap-1.5">
-                                            <input type="radio" v-model="formAluno.aln_filiacao_1_tipo" value="MAE" class="accent-indigo-600" />
+                                            <input type="radio" v-model="formAluno.aln_filiacao_1_tipo" value="MAE" class="accent-brand-600" />
                                             Mãe
                                         </label>
                                         <label class="flex cursor-pointer items-center gap-1.5">
-                                            <input type="radio" v-model="formAluno.aln_filiacao_1_tipo" value="PAI" class="accent-indigo-600" />
+                                            <input type="radio" v-model="formAluno.aln_filiacao_1_tipo" value="PAI" class="accent-brand-600" />
                                             Pai
                                         </label>
                                     </div>
@@ -753,11 +753,11 @@ const selectClass = 'flex h-10 w-full rounded-md border border-input bg-backgrou
                                     <FormLabel for="aln_filiacao_2">Filiação 2</FormLabel>
                                     <div class="flex items-center gap-4 text-sm">
                                         <label class="flex cursor-pointer items-center gap-1.5">
-                                            <input type="radio" v-model="formAluno.aln_filiacao_2_tipo" value="MAE" class="accent-indigo-600" />
+                                            <input type="radio" v-model="formAluno.aln_filiacao_2_tipo" value="MAE" class="accent-brand-600" />
                                             Mãe
                                         </label>
                                         <label class="flex cursor-pointer items-center gap-1.5">
-                                            <input type="radio" v-model="formAluno.aln_filiacao_2_tipo" value="PAI" class="accent-indigo-600" />
+                                            <input type="radio" v-model="formAluno.aln_filiacao_2_tipo" value="PAI" class="accent-brand-600" />
                                             Pai
                                         </label>
                                     </div>
@@ -917,7 +917,7 @@ const selectClass = 'flex h-10 w-full rounded-md border border-input bg-backgrou
                             v-model="formMatricula.tma_obs"
                             rows="2"
                             maxlength="500"
-                            class="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+                            class="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
                             placeholder="Observações sobre a matrícula..."
                         />
                     </div>
@@ -1026,7 +1026,7 @@ const selectClass = 'flex h-10 w-full rounded-md border border-input bg-backgrou
                         <div id="als_deficiencias" tabindex="-1" class="scroll-mt-20 rounded-lg outline-none focus:ring-2 focus:ring-rose-400" :class="[{ 'pointer-events-none opacity-40': !possuiDeficiencia }, pcdSemItem ? 'ring-2 ring-rose-400' : '']">
                             <InputError :message="err('saude.als_deficiencias')" />
                             <!-- Necessita de ADI em destaque, no topo -->
-                            <div class="mb-5 flex items-center gap-3 rounded-lg border border-fuchsia-300 bg-fuchsia-50 px-4 py-3 dark:border-fuchsia-800 dark:bg-fuchsia-950/30">
+                            <div class="mb-5 flex items-center gap-3 rounded-lg border border-sky-300 bg-sky-50 px-4 py-3 dark:border-sky-800 dark:bg-sky-950/30">
                                 <Switch id="als_fl_necessita_adi" v-model="formSaude.als_fl_necessita_adi" />
                                 <Label for="als_fl_necessita_adi" class="text-sm font-semibold">Necessita de ADI (Auxiliar de Desenvolvimento Infantil)</Label>
                             </div>
@@ -1130,7 +1130,7 @@ const selectClass = 'flex h-10 w-full rounded-md border border-input bg-backgrou
                 <Button
                     type="button"
                     :disabled="processing"
-                    class="bg-indigo-600 hover:bg-indigo-700"
+                    class="bg-brand-600 hover:bg-brand-700"
                     @click="submit"
                 >
                     <LoaderCircle v-if="processing" class="mr-2 size-4 animate-spin" />

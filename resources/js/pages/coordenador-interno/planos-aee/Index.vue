@@ -156,7 +156,7 @@ const breadcrumbs: BreadcrumbItem[] = [
             <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                     <h1 class="flex items-center gap-2 text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
-                        <ClipboardCheck class="size-6 text-fuchsia-600" />
+                        <ClipboardCheck class="size-6 text-sky-700" />
                         Validação de Planos de Aula — AEE
                     </h1>
                     <p class="text-sm text-slate-500 dark:text-slate-400">
@@ -258,7 +258,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                     </span>
                     <div v-if="planos.last_page > 1" class="flex flex-wrap gap-1">
                         <Link v-for="(link, i) in planos.links" :key="i" :href="link.url ?? '#'" v-html="link.label"
-                            :class="['rounded-md px-3 py-1 text-xs', link.active ? 'bg-fuchsia-600 text-white' : 'border bg-background hover:bg-muted', !link.url && 'pointer-events-none opacity-40']"
+                            :class="['rounded-md px-3 py-1 text-xs', link.active ? 'bg-sky-700 text-white' : 'border bg-background hover:bg-muted', !link.url && 'pointer-events-none opacity-40']"
                             preserve-scroll />
                     </div>
                 </div>

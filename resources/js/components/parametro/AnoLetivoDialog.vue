@@ -191,7 +191,7 @@ const normalizaData = (field: keyof AnoLetivoFormData) => (e: Event) => {
                     <select
                         id="anl_cnc_id_geral"
                         v-model="form.anl_cnc_id_geral"
-                        class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                     >
                         <option :value="null">— Sem conceito —</option>
                         <option v-for="c in conceitosOrdenados" :key="c.cnc_id" :value="c.cnc_id">{{ c.cnc_sigla }} — {{ c.cnc_descricao }}</option>
@@ -205,7 +205,7 @@ const normalizaData = (field: keyof AnoLetivoFormData) => (e: Event) => {
                     <select
                         id="anl_conceito_modo"
                         v-model="form.anl_conceito_modo"
-                        class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                     >
                         <option value="faixa">Por nota numérica (converte pela faixa)</option>
                         <option value="conceito">Por conceito direto (I/S/H)</option>
@@ -246,7 +246,7 @@ const normalizaData = (field: keyof AnoLetivoFormData) => (e: Event) => {
 
                 <DialogFooter class="sm:col-span-2">
                     <Button type="button" variant="outline" @click="close">Cancelar</Button>
-                    <Button type="submit" :disabled="form.processing" class="bg-indigo-600 hover:bg-indigo-700">
+                    <Button type="submit" :disabled="form.processing" class="bg-brand-600 hover:bg-brand-700">
                         <LoaderCircle v-if="form.processing" class="mr-2 size-4 animate-spin" />
                         <Save v-else class="mr-2 size-4" />
                         {{ isEdit ? 'Salvar' : 'Cadastrar' }}

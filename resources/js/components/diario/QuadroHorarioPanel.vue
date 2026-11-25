@@ -135,7 +135,7 @@ const vazio = computed(() => !carregando.value && !erro.value && horarios.value.
         <!-- Cabeçalho -->
         <div class="flex items-center justify-between gap-3 border-b px-4 py-3">
             <div class="flex items-center gap-2.5">
-                <span class="grid size-9 place-items-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950">
+                <span class="grid size-9 place-items-center rounded-lg bg-brand-50 text-brand-600 dark:bg-brand-950">
                     <CalendarClock class="size-5" />
                 </span>
                 <div>
@@ -202,7 +202,7 @@ const vazio = computed(() => !carregando.value && !erro.value && horarios.value.
                             <!-- Coluna tempo -->
                             <td class="sticky left-0 z-10 border-b border-r bg-card px-3 py-2 align-top">
                                 <div class="font-semibold text-slate-700 dark:text-slate-200">{{ tempo }}º</div>
-                                <div v-if="horaDoTempo(tempo)" class="text-xs tabular-nums text-indigo-600 dark:text-indigo-400">
+                                <div v-if="horaDoTempo(tempo)" class="text-xs tabular-nums text-brand-600 dark:text-brand-400">
                                     {{ horaDoTempo(tempo) }}
                                 </div>
                             </td>

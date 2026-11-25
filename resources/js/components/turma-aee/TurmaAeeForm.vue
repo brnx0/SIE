@@ -121,7 +121,7 @@ const matriculados = computed(() => props.initial?.total_matriculados ?? 0);
                     <ChevronLeft class="mr-1 size-4" /> Voltar à lista
                 </Button>
             </Link>
-            <Button v-if="!isReadOnly && !encerrada" type="button" :disabled="form.processing" class="bg-indigo-600 hover:bg-indigo-700" @click="submit">
+            <Button v-if="!isReadOnly && !encerrada" type="button" :disabled="form.processing" class="bg-brand-600 hover:bg-brand-700" @click="submit">
                 <LoaderCircle v-if="form.processing" class="mr-2 size-4 animate-spin" />
                 <Save v-else class="mr-2 size-4" />
                 {{ submitLabel }}
@@ -295,7 +295,7 @@ const matriculados = computed(() => props.initial?.total_matriculados ?? 0);
                                             type="checkbox"
                                             :value="dia.value"
                                             :checked="form.tur_dias_funcionamento.includes(dia.value as any)"
-                                            class="size-4 accent-indigo-600"
+                                            class="size-4 accent-brand-600"
                                             @change="toggleDia(dia.value)"
                                         />
                                         {{ dia.label }}

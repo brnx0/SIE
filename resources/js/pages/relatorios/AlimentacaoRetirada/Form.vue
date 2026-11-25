@@ -72,7 +72,7 @@ function gerar() {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="mx-auto w-[95%] py-6">
             <h1 class="mb-1 flex items-center gap-2 text-xl font-semibold">
-                <PackageMinus class="size-5 text-indigo-600" /> Retirada de Alimentos
+                <PackageMinus class="size-5 text-brand-600" /> Retirada de Alimentos
             </h1>
             <p class="mb-6 text-sm text-muted-foreground">
                 Retiradas do estoque no período, com gráfico comparativo entre as unidades. Deixe a unidade em branco para comparar todas.
@@ -100,7 +100,7 @@ function gerar() {
                         A data inicial não pode ser maior que a final.
                     </p>
                     <span v-else />
-                    <Button :disabled="!periodoValido || gerando" class="bg-indigo-600 text-white hover:bg-indigo-700" @click="gerar">
+                    <Button :disabled="!periodoValido || gerando" class="bg-brand-600 text-white hover:bg-brand-700" @click="gerar">
                         <Loader2 v-if="gerando" class="mr-1 size-4 animate-spin" /> Gerar Relatório
                     </Button>
                 </div>

@@ -98,12 +98,12 @@ function gerar(funIds: number[]) {
 const roleLabel = (r: string) => (r === 'professor_aee' ? 'Professor AEE' : 'Professor');
 const roleClass = (r: string) =>
     r === 'professor_aee'
-        ? 'bg-fuchsia-50 text-fuchsia-700 dark:bg-fuchsia-900/30 dark:text-fuchsia-300'
-        : 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300';
+        ? 'bg-sky-50 text-sky-800 dark:bg-sky-900/30 dark:text-sky-300'
+        : 'bg-brand-50 text-brand-700 dark:bg-brand-900/30 dark:text-brand-300';
 
 const motivoClass = (m: string) => {
     if (m === 'ok') return 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300';
-    if (m === 'com_login') return 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300';
+    if (m === 'com_login') return 'bg-brand-50 text-brand-700 dark:bg-brand-900/30 dark:text-brand-300';
     return 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300';
 };
 </script>
@@ -125,7 +125,7 @@ const motivoClass = (m: string) => {
                 </div>
                 <Button
                     type="button"
-                    class="bg-indigo-600 hover:bg-indigo-700"
+                    class="bg-brand-600 hover:bg-brand-700"
                     :disabled="selecionados.size === 0 || enviando"
                     @click="gerar([...selecionados])"
                 >
@@ -220,7 +220,7 @@ const motivoClass = (m: string) => {
                                         variant="outline"
                                         size="sm"
                                         :disabled="enviando"
-                                        class="border-indigo-200 text-indigo-700 hover:bg-indigo-50 dark:border-indigo-800 dark:text-indigo-300"
+                                        class="border-brand-200 text-brand-700 hover:bg-brand-50 dark:border-brand-800 dark:text-brand-300"
                                         @click="gerar([p.fun_id])"
                                     >
                                         <UserPlus class="mr-1.5 size-4" /> Criar
@@ -242,7 +242,7 @@ const motivoClass = (m: string) => {
                                 :key="i"
                                 :href="link.url ?? '#'"
                                 v-html="link.label"
-                                :class="['rounded-md px-3 py-1 text-xs', link.active ? 'bg-indigo-600 text-white' : 'border bg-background hover:bg-muted', !link.url && 'pointer-events-none opacity-40']"
+                                :class="['rounded-md px-3 py-1 text-xs', link.active ? 'bg-brand-600 text-white' : 'border bg-background hover:bg-muted', !link.url && 'pointer-events-none opacity-40']"
                                 @click.prevent="link.url && router.visit(link.url, { preserveState: true, preserveScroll: true })"
                             />
                         </div>

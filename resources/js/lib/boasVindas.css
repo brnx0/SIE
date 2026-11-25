@@ -1,0 +1,217 @@
+/* Animação de boas-vindas pós-login (ver boasVindas.ts). */
+
+#sie-boas-vindas {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 750ms cubic-bezier(0.76, 0, 0.24, 1);
+    will-change: transform;
+}
+
+/* Base: mesmo fundo do login → a troca de página não "pisca". */
+#sie-boas-vindas .bv-base {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, #5d9bd8 0%, #a9cbec 38%, #e3eefa 72%, #f5f9fd 100%);
+}
+.dark #sie-boas-vindas .bv-base {
+    background: linear-gradient(to bottom, #143b6e 0%, #0d2647 45%, #081627 100%);
+}
+
+#sie-boas-vindas .bv-doodles {
+    position: absolute;
+    inset: 0;
+    background: #0c2a52;
+    opacity: 0.11;
+    -webkit-mask: url('/img/login/fundo-icones.png') 0 0 / 640px repeat;
+    mask: url('/img/login/fundo-icones.png') 0 0 / 640px repeat;
+}
+.dark #sie-boas-vindas .bv-base .bv-doodles {
+    background: #fff;
+    opacity: 0.06;
+}
+
+/* Onda azul que toma a tela a partir do centro. */
+#sie-boas-vindas .bv-onda {
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(60% 55% at 50% 42%, #2a6fbd 0%, transparent 70%),
+        linear-gradient(160deg, #0f3566 0%, #0c2a52 55%, #081d3a 100%);
+    clip-path: circle(0% at 50% 50%);
+    animation: bv-onda 850ms cubic-bezier(0.76, 0, 0.24, 1) forwards;
+}
+#sie-boas-vindas .bv-onda .bv-doodles {
+    background: #fff;
+    opacity: 0.08;
+    animation: bv-deriva 30s linear infinite;
+}
+#sie-boas-vindas .bv-brilho {
+    position: absolute;
+    left: 50%;
+    top: 42%;
+    width: 70vmax;
+    height: 70vmax;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(125, 190, 255, 0.28) 0%, transparent 60%);
+    transform: translate(-50%, -50%) scale(0.6);
+    animation: bv-respira 2.6s ease-in-out 600ms infinite alternate;
+}
+
+#sie-boas-vindas .bv-conteudo {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 24px;
+    text-align: center;
+    color: #fff;
+    transition: opacity 300ms ease, transform 500ms ease;
+}
+
+/* Logo do município com anéis pulsando atrás. */
+#sie-boas-vindas .bv-selo {
+    position: relative;
+    display: grid;
+    place-items: center;
+    margin-bottom: 36px;
+}
+#sie-boas-vindas .bv-logo {
+    position: relative;
+    display: grid;
+    place-items: center;
+    min-width: 112px;
+    height: 112px;
+    padding: 0 24px;
+    border-radius: 24px;
+    background: #fff;
+    box-shadow: 0 24px 60px -12px rgba(0, 0, 0, 0.45);
+    opacity: 0;
+    animation: bv-pop 700ms cubic-bezier(0.34, 1.56, 0.64, 1) 450ms forwards;
+}
+#sie-boas-vindas .bv-logo img {
+    display: block;
+    max-width: 240px;
+    max-height: 76px;
+    object-fit: contain;
+}
+#sie-boas-vindas .bv-anel {
+    position: absolute;
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(160, 210, 255, 0.55);
+    opacity: 0;
+    animation: bv-anel 1.9s cubic-bezier(0.2, 0.6, 0.3, 1) 700ms infinite;
+}
+#sie-boas-vindas .bv-anel--2 {
+    animation-delay: 1300ms;
+}
+
+#sie-boas-vindas .bv-ola {
+    margin: 0;
+    font-size: clamp(2.1rem, 5.2vw, 3.75rem);
+    font-weight: 600;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    overflow: hidden;
+    padding-bottom: 0.12em;
+}
+#sie-boas-vindas .bv-saudacao,
+#sie-boas-vindas .bv-nome {
+    display: inline-block;
+    transform: translateY(110%);
+    animation: bv-sobe 750ms cubic-bezier(0.2, 0.8, 0.2, 1) 800ms forwards;
+}
+#sie-boas-vindas .bv-nome {
+    margin-left: 0.28em;
+    color: #9fd0ff;
+    animation-delay: 930ms;
+}
+#sie-boas-vindas .bv-nome:empty {
+    display: none;
+}
+#sie-boas-vindas .bv-sub {
+    margin: 14px 0 0;
+    font-size: clamp(0.95rem, 1.6vw, 1.15rem);
+    color: rgba(214, 233, 255, 0.82);
+    opacity: 0;
+    animation: bv-aparece 600ms ease 1250ms forwards;
+}
+#sie-boas-vindas .bv-barra {
+    width: 180px;
+    height: 3px;
+    margin-top: 34px;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.14);
+    overflow: hidden;
+    opacity: 0;
+    animation: bv-aparece 400ms ease 1250ms forwards;
+}
+#sie-boas-vindas .bv-barra span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #7cc0ff, #fff);
+    transform: scaleX(0);
+    transform-origin: left;
+    animation: bv-enche 1300ms cubic-bezier(0.4, 0, 0.2, 1) 1250ms forwards;
+}
+
+/* Saída: cortina sobe e revela o sistema. */
+#sie-boas-vindas.bv-saindo {
+    transform: translateY(-100%);
+    pointer-events: none;
+}
+#sie-boas-vindas.bv-saindo .bv-conteudo {
+    opacity: 0;
+    transform: translateY(40px);
+}
+
+@keyframes bv-onda {
+    to { clip-path: circle(150% at 50% 50%); }
+}
+@keyframes bv-deriva {
+    to { -webkit-mask-position: 640px 640px; mask-position: 640px 640px; }
+}
+@keyframes bv-respira {
+    to { transform: translate(-50%, -50%) scale(1); }
+}
+@keyframes bv-pop {
+    from { opacity: 0; transform: scale(0.5) translateY(20px); }
+    to { opacity: 1; transform: none; }
+}
+@keyframes bv-anel {
+    0% { opacity: 0.9; transform: scale(0.8); }
+    100% { opacity: 0; transform: scale(2.6); }
+}
+@keyframes bv-sobe {
+    to { transform: none; }
+}
+@keyframes bv-aparece {
+    to { opacity: 1; }
+}
+@keyframes bv-enche {
+    to { transform: scaleX(1); }
+}
+
+/* Movimento reduzido: só um fade curto, sem onda/cortina. */
+#sie-boas-vindas.bv-reduzido,
+#sie-boas-vindas.bv-reduzido * {
+    animation: none !important;
+}
+#sie-boas-vindas.bv-reduzido {
+    transition: opacity 250ms ease;
+}
+#sie-boas-vindas.bv-reduzido .bv-onda { clip-path: none; }
+#sie-boas-vindas.bv-reduzido .bv-logo,
+#sie-boas-vindas.bv-reduzido .bv-sub { opacity: 1; }
+#sie-boas-vindas.bv-reduzido .bv-saudacao,
+#sie-boas-vindas.bv-reduzido .bv-nome { transform: none; }
+#sie-boas-vindas.bv-reduzido .bv-barra,
+#sie-boas-vindas.bv-reduzido .bv-anel { display: none; }
+#sie-boas-vindas.bv-reduzido.bv-saindo { transform: none; opacity: 0; }

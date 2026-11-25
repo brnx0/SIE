@@ -47,7 +47,7 @@ function gerar() {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="mx-auto w-[95%] py-6">
             <h1 class="text-xl font-semibold mb-1 flex items-center gap-2">
-                <Table class="size-5 text-indigo-600" /> Sumário de Matrículas
+                <Table class="size-5 text-brand-600" /> Sumário de Matrículas
             </h1>
             <p class="text-sm text-muted-foreground mb-6">
                 Total de matrículas regulares por escola e série.
@@ -65,7 +65,7 @@ function gerar() {
                 </div>
 
                 <div class="flex justify-end">
-                    <Button :disabled="!anlId || gerando" class="bg-indigo-600 text-white hover:bg-indigo-700" @click="gerar">
+                    <Button :disabled="!anlId || gerando" class="bg-brand-600 text-white hover:bg-brand-700" @click="gerar">
                         <Loader2 v-if="gerando" class="mr-1 size-4 animate-spin" />
                         Gerar Relatório
                     </Button>

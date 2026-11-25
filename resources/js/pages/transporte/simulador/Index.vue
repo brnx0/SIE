@@ -235,7 +235,7 @@ const breadcrumbs: BreadcrumbItem[] = [{ title: 'Simulador de Rotas', href: '/tr
                         <Button type="button" variant="outline" size="sm" :disabled="roteando" class="flex-1" @click="recalcular">
                             <Loader2 v-if="roteando" class="mr-1 size-4 animate-spin" /><Navigation v-else class="mr-1 size-4" /> Recalcular
                         </Button>
-                        <Button v-if="!isReadOnly" type="button" size="sm" :disabled="efetivando || !alterado" class="flex-1 bg-indigo-600 text-white hover:bg-indigo-700" @click="efetivar">
+                        <Button v-if="!isReadOnly" type="button" size="sm" :disabled="efetivando || !alterado" class="flex-1 bg-brand-600 text-white hover:bg-brand-700" @click="efetivar">
                             <Loader2 v-if="efetivando" class="mr-1 size-4 animate-spin" /><Save v-else class="mr-1 size-4" /> Efetivar
                         </Button>
                     </div>
@@ -287,7 +287,7 @@ const breadcrumbs: BreadcrumbItem[] = [{ title: 'Simulador de Rotas', href: '/tr
                         <ul class="max-h-[22rem] divide-y overflow-y-auto">
                             <li v-if="pontos.length === 0" class="px-4 py-6 text-center text-sm text-muted-foreground">Nenhum ponto. Clique no mapa ou busque um endereço.</li>
                             <li v-for="(p, i) in pontos" :key="p.pto_id ?? `novo-${i}`" class="flex items-center gap-2 px-3 py-2 text-sm">
-                                <span class="grid size-6 shrink-0 place-items-center rounded-full bg-indigo-100 text-xs font-semibold text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300">{{ i + 1 }}</span>
+                                <span class="grid size-6 shrink-0 place-items-center rounded-full bg-brand-100 text-xs font-semibold text-brand-700 dark:bg-brand-900/50 dark:text-brand-300">{{ i + 1 }}</span>
                                 <div class="min-w-0 flex-1">
                                     <div class="truncate font-medium">{{ p.pto_nome }}</div>
                                     <div class="flex items-center gap-1 text-xs" :class="p.pto_latitude != null ? 'text-emerald-600' : 'text-amber-600'">

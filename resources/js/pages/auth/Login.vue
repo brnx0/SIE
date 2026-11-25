@@ -6,6 +6,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AuthBase from '@/layouts/AuthLayout.vue';
+import { tocarBoasVindas } from '@/lib/boasVindas';
 import { Head, useForm, usePage } from '@inertiajs/vue3';
 import { Eye, EyeOff, LoaderCircle, ShieldAlert } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
@@ -34,14 +35,22 @@ watch(() => form.login, (v) => {
 });
 
 const submit = () => {
+    // A logo só vem p/ visitante: guarda antes do post (depois do login a prop some).
+    const logoUrl = (page.props as any).entidade?.logo_url as string | null | undefined;
+
     form.post(route('login'), {
+        // Só toca com login confirmado (usuário já na página seguinte) — senha errada não anima.
+        onSuccess: (pagina) => {
+            const user = (pagina.props as any).auth?.user;
+            if (user) tocarBoasVindas({ nome: user.name, logoUrl });
+        },
         onFinish: () => form.reset('password'),
     });
 };
 </script>
 
 <template>
-    <AuthBase title="Acesso ao sistema" description="Informe suas credenciais institucionais para continuar.">
+    <AuthBase title="Acesse sua conta" description="Informe seu login e sua senha.">
         <Head title="Entrar" />
 
         <div v-if="status" class="mb-4 rounded-md bg-emerald-50 px-4 py-3 text-center text-sm font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
@@ -65,6 +74,7 @@ const submit = () => {
                     autocomplete="username"
                     v-model="form.login"
                     placeholder="seu.login"
+                    class="h-12"
                 />
                 <InputError :message="form.errors.login" />
             </div>
@@ -85,7 +95,7 @@ const submit = () => {
                         autocomplete="current-password"
                         v-model="form.password"
                         placeholder="••••••••"
-                        class="pr-10"
+                        class="h-12 pr-10"
                     />
                     <button
                         type="button"
@@ -111,7 +121,7 @@ const submit = () => {
                 type="submit"
                 tabindex="3"
                 :disabled="form.processing"
-                class="h-11 w-full bg-indigo-700 text-white shadow-sm transition hover:bg-indigo-800 dark:bg-indigo-600 dark:hover:bg-indigo-500"
+                class="h-12 w-full bg-[#1e4e8c] text-base text-white shadow-sm transition hover:bg-[#173f73] dark:bg-sky-600 dark:hover:bg-sky-500"
             >
                 <LoaderCircle v-if="form.processing" class="mr-2 h-4 w-4 animate-spin" />
                 Entrar

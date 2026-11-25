@@ -107,13 +107,13 @@ const toggleAtivo = (m: MotivoBaixaFrequencia) => {
                 </div>
                 <div class="flex items-center gap-2">
                     <RefreshButton />
-                    <Button v-if="!showForm" type="button" class="bg-indigo-600 hover:bg-indigo-700" @click="openForm">
+                    <Button v-if="!showForm" type="button" class="bg-brand-600 hover:bg-brand-700" @click="openForm">
                         <Plus class="mr-2 size-4" /> Novo Motivo
                     </Button>
                 </div>
             </div>
 
-            <div v-if="showForm" class="rounded-lg border border-indigo-200 bg-indigo-50/50 p-4 dark:border-indigo-800 dark:bg-indigo-900/20">
+            <div v-if="showForm" class="rounded-lg border border-brand-200 bg-brand-50/50 p-4 dark:border-brand-800 dark:bg-brand-900/20">
                 <div class="mb-3 flex items-center justify-between">
                     <h4 class="text-sm font-semibold">Novo Motivo</h4>
                     <button type="button" class="rounded p-1 hover:bg-muted" @click="cancelForm">
@@ -147,7 +147,7 @@ const toggleAtivo = (m: MotivoBaixaFrequencia) => {
 
                 <div class="mt-4 flex justify-end gap-2">
                     <Button type="button" variant="outline" size="sm" @click="cancelForm">Cancelar</Button>
-                    <Button type="button" size="sm" class="bg-indigo-600 hover:bg-indigo-700" :disabled="processing" @click="submit">
+                    <Button type="button" size="sm" class="bg-brand-600 hover:bg-brand-700" :disabled="processing" @click="submit">
                         <Loader2 v-if="processing" class="mr-2 size-4 animate-spin" />
                         Cadastrar
                     </Button>
@@ -156,7 +156,7 @@ const toggleAtivo = (m: MotivoBaixaFrequencia) => {
 
             <div class="overflow-x-auto rounded-xl border bg-card shadow-sm">
                 <table class="w-full text-left text-sm">
-                    <thead class="bg-indigo-600 text-white">
+                    <thead class="bg-brand-600 text-white">
                         <tr>
                             <th class="w-20 px-3 py-2 text-center font-semibold">Código</th>
                             <th class="px-3 py-2 font-semibold">Descrição</th>
@@ -173,7 +173,7 @@ const toggleAtivo = (m: MotivoBaixaFrequencia) => {
                         </tr>
 
                         <template v-for="(m, idx) in lista" :key="m.mbf_id">
-                            <tr v-if="editingId === m.mbf_id" class="bg-indigo-50/60 dark:bg-indigo-900/20">
+                            <tr v-if="editingId === m.mbf_id" class="bg-brand-50/60 dark:bg-brand-900/20">
                                 <td class="px-3 py-2 text-center font-medium tabular-nums text-muted-foreground">{{ m.mbf_id }}</td>
                                 <td class="px-3 py-2">
                                     <Input v-model="editForm.mbf_descricao" maxlength="255" class="h-8 text-sm" :class="{ 'border-red-500': editErrors.mbf_descricao }" />

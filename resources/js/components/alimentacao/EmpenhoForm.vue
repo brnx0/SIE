@@ -75,7 +75,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar empenho' : 'Salvar alte
                 v-if="!isReadOnly"
                 type="submit"
                 :disabled="form.processing"
-                class="bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
+                class="bg-brand-600 text-white hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400"
             >
                 <LoaderCircle v-if="form.processing" class="mr-2 size-4 animate-spin" />
                 <Save v-else class="mr-2 size-4" />
@@ -105,7 +105,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar empenho' : 'Salvar alte
 
                 <div class="grid gap-2 sm:col-span-2">
                     <FormLabel for="emp_situacao" :required="true">Situação</FormLabel>
-                    <select id="emp_situacao" v-model="form.emp_situacao" class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground">
+                    <select id="emp_situacao" v-model="form.emp_situacao" class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-background dark:text-foreground">
                         <option v-for="s in situacoes" :key="s" :value="s">{{ s }}</option>
                     </select>
                     <InputError :message="form.errors.emp_situacao" />
@@ -136,7 +136,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar empenho' : 'Salvar alte
                         v-model="form.emp_obs"
                         rows="2"
                         placeholder="Opcional — dotação orçamentária, elemento de despesa, etc."
-                        class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground"
+                        class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-background dark:text-foreground"
                     ></textarea>
                     <InputError :message="form.errors.emp_obs" />
                 </div>

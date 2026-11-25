@@ -227,11 +227,11 @@ const fmtDateTime = (s?: string | null) => {
                     <div class="grid gap-4 rounded-xl border bg-card p-6 shadow-sm sm:grid-cols-2">
                         <div class="flex flex-col items-center gap-4 sm:flex-row sm:items-start sm:gap-6">
                             <div class="relative">
-                                <div class="grid size-32 place-items-center overflow-hidden rounded-xl border-4 border-indigo-100 bg-indigo-50 dark:border-indigo-900/40 dark:bg-indigo-900/20">
+                                <div class="grid size-32 place-items-center overflow-hidden rounded-xl border-4 border-brand-100 bg-brand-50 dark:border-brand-900/40 dark:bg-brand-900/20">
                                     <img v-if="logoPreview" :src="logoPreview" alt="Logomarca" class="size-full object-contain" />
-                                    <Building2 v-else class="size-12 text-indigo-700 dark:text-indigo-300" />
+                                    <Building2 v-else class="size-12 text-brand-700 dark:text-brand-300" />
                                 </div>
-                                <button type="button" class="absolute bottom-0 right-0 grid size-9 place-items-center rounded-full bg-indigo-600 text-white shadow-md transition hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400" @click="logoInput?.click()" aria-label="Selecionar logomarca">
+                                <button type="button" class="absolute bottom-0 right-0 grid size-9 place-items-center rounded-full bg-brand-600 text-white shadow-md transition hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400" @click="logoInput?.click()" aria-label="Selecionar logomarca">
                                     <Camera class="size-4" />
                                 </button>
                             </div>
@@ -254,11 +254,11 @@ const fmtDateTime = (s?: string | null) => {
 
                         <div class="flex flex-col items-center gap-4 sm:flex-row sm:items-start sm:gap-6">
                             <div class="relative">
-                                <div class="grid size-32 place-items-center overflow-hidden rounded-xl border-4 border-fuchsia-100 bg-fuchsia-50 dark:border-fuchsia-900/40 dark:bg-fuchsia-900/20">
+                                <div class="grid size-32 place-items-center overflow-hidden rounded-xl border-4 border-sky-100 bg-sky-50 dark:border-sky-900/40 dark:bg-sky-900/20">
                                     <img v-if="brasaoPreview" :src="brasaoPreview" alt="Brasão" class="size-full object-contain" />
-                                    <Shield v-else class="size-12 text-fuchsia-700 dark:text-fuchsia-300" />
+                                    <Shield v-else class="size-12 text-sky-800 dark:text-sky-300" />
                                 </div>
-                                <button type="button" class="absolute bottom-0 right-0 grid size-9 place-items-center rounded-full bg-fuchsia-600 text-white shadow-md transition hover:bg-fuchsia-700 dark:bg-fuchsia-500 dark:hover:bg-fuchsia-400" @click="brasaoInput?.click()" aria-label="Selecionar brasão">
+                                <button type="button" class="absolute bottom-0 right-0 grid size-9 place-items-center rounded-full bg-sky-700 text-white shadow-md transition hover:bg-sky-800 dark:bg-sky-600 dark:hover:bg-sky-400" @click="brasaoInput?.click()" aria-label="Selecionar brasão">
                                     <Camera class="size-4" />
                                 </button>
                             </div>
@@ -332,7 +332,7 @@ const fmtDateTime = (s?: string | null) => {
                                 rows="5"
                                 maxlength="10000"
                                 placeholder="Texto fixo que sai na Ata Final do Encerramento (ex.: parágrafo de encerramento / observação). Quebras de linha são preservadas."
-                                class="min-h-32 w-full resize-y rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                class="min-h-32 w-full resize-y rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                             ></textarea>
                             <p class="text-xs text-muted-foreground">Bloco fixo, sem dados do aluno — aparece na impressão da Ata Final, abaixo do quadro de notas.</p>
                             <InputError :message="form.errors.par_texto_ata_final" />
@@ -340,7 +340,7 @@ const fmtDateTime = (s?: string | null) => {
                     </div>
 
                     <div class="flex justify-end gap-2">
-                        <Button type="submit" :disabled="form.processing" class="bg-indigo-600 hover:bg-indigo-700">
+                        <Button type="submit" :disabled="form.processing" class="bg-brand-600 hover:bg-brand-700">
                             <LoaderCircle v-if="form.processing" class="mr-2 size-4 animate-spin" />
                             <Save v-else class="mr-2 size-4" />
                             {{ submitLabel }}
@@ -356,7 +356,7 @@ const fmtDateTime = (s?: string | null) => {
                         <h3 class="text-sm font-semibold">Anos Letivos cadastrados</h3>
                         <div class="flex items-center gap-2">
                             <RefreshButton />
-                            <Button type="button" size="sm" class="bg-indigo-600 hover:bg-indigo-700" @click="openCreate">
+                            <Button type="button" size="sm" class="bg-brand-600 hover:bg-brand-700" @click="openCreate">
                                 <Plus class="mr-2 size-4" /> Novo Ano Letivo
                             </Button>
                         </div>
@@ -364,7 +364,7 @@ const fmtDateTime = (s?: string | null) => {
 
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-sm">
-                            <thead class="bg-indigo-600 text-white">
+                            <thead class="bg-brand-600 text-white">
                                 <tr>
                                     <th class="px-3 py-2 font-semibold">Ano</th>
                                     <th class="px-3 py-2 font-semibold">Atualizado</th>
@@ -491,7 +491,7 @@ const fmtDateTime = (s?: string | null) => {
                     </div>
 
                     <div class="flex justify-end gap-2">
-                        <Button type="submit" :disabled="form.processing" class="bg-indigo-600 hover:bg-indigo-700">
+                        <Button type="submit" :disabled="form.processing" class="bg-brand-600 hover:bg-brand-700">
                             <LoaderCircle v-if="form.processing" class="mr-2 size-4 animate-spin" />
                             <Save v-else class="mr-2 size-4" />
                             {{ submitLabel }}

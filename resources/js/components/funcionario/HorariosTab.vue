@@ -40,7 +40,7 @@ const grupos = computed(() =>
 <template>
     <div class="grid gap-6">
         <div class="flex items-center gap-2">
-            <Calendar class="size-5 text-indigo-600" />
+            <Calendar class="size-5 text-brand-600" />
             <h3 class="text-sm font-semibold">Horários do Professor — Ano Letivo em Exercício</h3>
         </div>
 
@@ -59,7 +59,7 @@ const grupos = computed(() =>
                     :class="{
                         'border-l-amber-500  bg-amber-50/60  dark:bg-amber-900/10':  g.turno === 'MATUTINO',
                         'border-l-orange-500 bg-orange-50/60 dark:bg-orange-900/10': g.turno === 'VESPERTINO',
-                        'border-l-indigo-500 bg-indigo-50/60 dark:bg-indigo-900/10': g.turno === 'NOTURNO',
+                        'border-l-brand-500 bg-brand-50/60 dark:bg-brand-900/10': g.turno === 'NOTURNO',
                         'border-l-emerald-500 bg-emerald-50/60 dark:bg-emerald-900/10': g.turno === 'INTEGRAL',
                     }"
                 >

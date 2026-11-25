@@ -51,7 +51,7 @@ const limpar = () => { dtInicio.value = ''; dtFim.value = ''; rotId.value = null
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Ocorrências do Transporte', href: '/transporte/relatorios/ocorrencias' }];
 
 const fmt = (d: string | null) => (d ? new Date(d + 'T00:00:00').toLocaleDateString('pt-BR') : '—');
-const selectClass = 'h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground';
+const selectClass = 'h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-background dark:text-foreground';
 </script>
 
 <template>
@@ -127,7 +127,7 @@ const selectClass = 'h-10 w-full rounded-md border border-input bg-background px
                             <td class="px-4 py-3 text-muted-foreground">{{ o.veiculo ?? '—' }}</td>
                             <td class="px-4 py-3 max-w-md whitespace-pre-wrap text-muted-foreground">{{ o.toc_descricao }}</td>
                             <td class="px-4 py-3 text-right">
-                                <Link :href="`/transporte/diario-bordo/${o.tdb_id}/edit`" class="text-xs text-indigo-600 hover:underline">ver diário</Link>
+                                <Link :href="`/transporte/diario-bordo/${o.tdb_id}/edit`" class="text-xs text-brand-600 hover:underline">ver diário</Link>
                             </td>
                         </tr>
                     </tbody>

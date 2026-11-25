@@ -106,7 +106,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar série' : 'Salvar alter
                 v-if="!isReadOnly"
                 type="submit"
                 :disabled="form.processing"
-                class="bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
+                class="bg-brand-600 text-white hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400"
             >
                 <LoaderCircle v-if="form.processing" class="mr-2 size-4 animate-spin" />
                 <Save v-else class="mr-2 size-4" />
@@ -124,7 +124,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar série' : 'Salvar alter
                 <select
                     id="seg_id"
                     v-model="form.seg_id"
-                    class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground"
+                    class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-background dark:text-foreground"
                 >
                     <option :value="null" disabled>Selecione uma etapa de ensino...</option>
                     <option v-for="seg in segmentos" :key="seg.seg_id" :value="seg.seg_id">
@@ -239,7 +239,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar série' : 'Salvar alter
                             type="checkbox"
                             :checked="form.ser_tipo_avaliacao.includes(opt.value)"
                             @change="toggleAvaliacao(opt.value)"
-                            class="size-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                            class="size-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
                         />
                         {{ opt.label }}
                     </label>
@@ -254,7 +254,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar série' : 'Salvar alter
                     id="ser_tipo_avaliacao_descritiva"
                     v-model="form.ser_tipo_avaliacao_descritiva"
                     :disabled="!hasDescritiva()"
-                    class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
+                    class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-background dark:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
                 >
                     <option value="">Selecione...</option>
                     <option value="por_aluno">Por Aluno</option>

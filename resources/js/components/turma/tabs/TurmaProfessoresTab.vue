@@ -246,7 +246,7 @@ const removeApoio = (apoio: TurmaProfessorApoio) => {
         </div>
 
         <!-- Formulário de adição -->
-        <div v-if="showForm" class="rounded-xl border border-indigo-200 bg-indigo-50/50 p-5 shadow-sm dark:border-indigo-800 dark:bg-indigo-900/20">
+        <div v-if="showForm" class="rounded-xl border border-brand-200 bg-brand-50/50 p-5 shadow-sm dark:border-brand-800 dark:bg-brand-900/20">
             <div class="mb-4 flex items-center justify-between">
                 <h4 class="text-sm font-medium">Nova Alocação</h4>
                 <button type="button" class="rounded p-1 hover:bg-muted" @click="resetForm">
@@ -289,7 +289,7 @@ const removeApoio = (apoio: TurmaProfessorApoio) => {
                     type="button"
                     size="sm"
                     :disabled="processing"
-                    class="bg-indigo-600 text-white hover:bg-indigo-700"
+                    class="bg-brand-600 text-white hover:bg-brand-700"
                     @click="submit"
                 >
                     <Loader2 v-if="processing" class="mr-1 size-4 animate-spin" />
@@ -358,7 +358,7 @@ const removeApoio = (apoio: TurmaProfessorApoio) => {
                                         :disabled="editProcessing === tup.tup_id"
                                         @click="saveEdit(tup)"
                                     >
-                                        <Loader2 v-if="editProcessing === tup.tup_id" class="size-4 animate-spin text-indigo-600" />
+                                        <Loader2 v-if="editProcessing === tup.tup_id" class="size-4 animate-spin text-brand-600" />
                                         <Check v-else class="size-4 text-emerald-600" />
                                     </button>
                                     <button
@@ -377,7 +377,7 @@ const removeApoio = (apoio: TurmaProfessorApoio) => {
                                         title="Editar alocação"
                                         @click="startEdit(tup)"
                                     >
-                                        <Pencil class="size-4 text-indigo-600" />
+                                        <Pencil class="size-4 text-brand-600" />
                                     </button>
                                     <button
                                         type="button"
@@ -410,7 +410,7 @@ const removeApoio = (apoio: TurmaProfessorApoio) => {
             </div>
 
             <!-- Formulário -->
-            <div v-if="showFormApoio" class="mt-4 rounded-xl border border-fuchsia-200 bg-fuchsia-50/50 p-5 shadow-sm dark:border-fuchsia-800 dark:bg-fuchsia-900/20">
+            <div v-if="showFormApoio" class="mt-4 rounded-xl border border-sky-200 bg-sky-50/50 p-5 shadow-sm dark:border-sky-800 dark:bg-sky-900/20">
                 <div class="mb-4 flex items-center justify-between">
                     <h4 class="text-sm font-medium">Novo Docente de Apoio</h4>
                     <button type="button" class="rounded p-1 hover:bg-muted" @click="resetFormApoio">
@@ -440,7 +440,7 @@ const removeApoio = (apoio: TurmaProfessorApoio) => {
                             v-model="formApoio.tpa_obs"
                             rows="3"
                             maxlength="500"
-                            class="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-fuchsia-500 resize-none"
+                            class="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-600 resize-none"
                             placeholder="Observações sobre o apoio (opcional)..."
                         />
                         <InputError :message="errorsApoio.tpa_obs" />
@@ -453,7 +453,7 @@ const removeApoio = (apoio: TurmaProfessorApoio) => {
                         type="button"
                         size="sm"
                         :disabled="processingApoio"
-                        class="bg-fuchsia-600 text-white hover:bg-fuchsia-700"
+                        class="bg-sky-700 text-white hover:bg-sky-800"
                         @click="submitApoio"
                     >
                         <Loader2 v-if="processingApoio" class="mr-1 size-4 animate-spin" />
@@ -493,7 +493,7 @@ const removeApoio = (apoio: TurmaProfessorApoio) => {
                                     v-model="editApoioObs"
                                     rows="2"
                                     maxlength="500"
-                                    class="w-full rounded-md border border-input bg-background px-2 py-1 text-xs shadow-sm focus:outline-none focus:ring-2 focus:ring-fuchsia-500 resize-none"
+                                    class="w-full rounded-md border border-input bg-background px-2 py-1 text-xs shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-600 resize-none"
                                 />
                                 <span v-else class="whitespace-pre-wrap">{{ apoio.tpa_obs || '—' }}</span>
                             </td>
@@ -507,7 +507,7 @@ const removeApoio = (apoio: TurmaProfessorApoio) => {
                                             :disabled="savingEdit === apoio.tpa_id"
                                             @click="saveEditApoio(apoio)"
                                         >
-                                            <Loader2 v-if="savingEdit === apoio.tpa_id" class="size-4 animate-spin text-fuchsia-600" />
+                                            <Loader2 v-if="savingEdit === apoio.tpa_id" class="size-4 animate-spin text-sky-700" />
                                             <Check v-else class="size-4 text-emerald-600" />
                                         </button>
                                         <button
@@ -526,7 +526,7 @@ const removeApoio = (apoio: TurmaProfessorApoio) => {
                                             title="Editar observação"
                                             @click="startEditApoio(apoio)"
                                         >
-                                            <Pencil class="size-4 text-fuchsia-600" />
+                                            <Pencil class="size-4 text-sky-700" />
                                         </button>
                                         <button
                                             type="button"

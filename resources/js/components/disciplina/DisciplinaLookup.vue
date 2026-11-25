@@ -79,13 +79,13 @@ onBeforeUnmount(() => document.removeEventListener('mousedown', handleOutside));
         <button
             type="button"
             :class="[
-                'flex h-10 w-full items-center justify-between rounded-md border bg-background px-3 py-2 text-sm shadow-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500',
+                'flex h-10 w-full items-center justify-between rounded-md border bg-background px-3 py-2 text-sm shadow-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500',
                 invalid ? 'border-rose-500' : 'border-input',
             ]"
             @click="openPanel"
         >
             <span v-if="selected" class="flex items-center gap-2 truncate">
-                <BookOpen class="size-4 shrink-0 text-indigo-500 dark:text-indigo-400" />
+                <BookOpen class="size-4 shrink-0 text-brand-500 dark:text-brand-400" />
                 <span class="truncate">{{ selected.dis_nome }}<template v-if="selected.dis_sigla"> ({{ selected.dis_sigla }})</template></span>
             </span>
             <span v-else class="text-muted-foreground">{{ placeholder ?? 'Selecionar disciplina...' }}</span>
@@ -136,7 +136,7 @@ onBeforeUnmount(() => document.removeEventListener('mousedown', handleOutside));
                     :class="[
                         'flex cursor-pointer items-center justify-between gap-2 px-3 py-2',
                         isDisabled(d.dis_id) ? 'cursor-not-allowed opacity-50' : 'hover:bg-muted',
-                        selected?.dis_id === d.dis_id && 'bg-indigo-50 dark:bg-indigo-900/30',
+                        selected?.dis_id === d.dis_id && 'bg-brand-50 dark:bg-brand-900/30',
                     ]"
                     @mousedown.prevent="choose(d)"
                 >

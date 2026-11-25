@@ -146,7 +146,7 @@ const imprimir = () => window.print();
                             <td v-for="(n, j) in a.notas" :key="j" class="px-2 py-1.5 text-center tabular-nums">{{ n }}</td>
                             <td class="px-2 py-1.5 text-center font-medium tabular-nums">{{ a.media }}</td>
                             <td v-if="tem_recuperacao" class="px-2 py-1.5 text-center tabular-nums">{{ a.recuperacao }}</td>
-                            <td class="px-2 py-1.5 text-center font-semibold tabular-nums text-indigo-700">{{ a.mf }}</td>
+                            <td class="px-2 py-1.5 text-center font-semibold tabular-nums text-brand-700">{{ a.mf }}</td>
                         </tr>
                     </tbody>
                 </table>

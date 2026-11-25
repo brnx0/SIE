@@ -99,7 +99,7 @@ const submit = () => {
 
                         <div class="grid gap-2 sm:col-span-4">
                             <FormLabel for="rcb_ofn_id" :required="true">Ordem de fornecimento</FormLabel>
-                            <select id="rcb_ofn_id" v-model="form.rcb_ofn_id" class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground">
+                            <select id="rcb_ofn_id" v-model="form.rcb_ofn_id" class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-background dark:text-foreground">
                                 <option :value="null" disabled>Selecione a ordem entregue...</option>
                                 <option v-for="o in ordens" :key="o.ofn_id" :value="o.ofn_id">
                                     {{ o.rotulo }}{{ o.situacao === 'PARCIAL' ? ' (entrega parcial)' : '' }}
@@ -113,7 +113,7 @@ const submit = () => {
 
                         <div class="grid gap-2 sm:col-span-2">
                             <FormLabel for="rcb_tipo" :required="true">Tipo</FormLabel>
-                            <select id="rcb_tipo" v-model="form.rcb_tipo" class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground">
+                            <select id="rcb_tipo" v-model="form.rcb_tipo" class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-background dark:text-foreground">
                                 <option v-for="t in tipos" :key="t" :value="t">{{ t === 'AGRICULTURA_FAMILIAR' ? 'Agricultura familiar' : 'Ordinário' }}</option>
                             </select>
                             <p class="text-xs text-muted-foreground">Agricultura familiar entra na apuração do PNAE.</p>
@@ -158,7 +158,7 @@ const submit = () => {
                         <Button
                             type="submit"
                             :disabled="form.processing || !form.rcb_ofn_id"
-                            class="bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
+                            class="bg-brand-600 text-white hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400"
                         >
                             <LoaderCircle v-if="form.processing" class="mr-2 size-4 animate-spin" />
                             <Save v-else class="mr-2 size-4" />

@@ -87,7 +87,7 @@ const aposMatricular = async () => {
             <div class="mb-4 flex items-center justify-between">
                 <div>
                     <h1 class="text-xl font-semibold flex items-center gap-2">
-                        <Users class="size-5 text-indigo-600" /> Matrículas AEE
+                        <Users class="size-5 text-brand-600" /> Matrículas AEE
                     </h1>
                     <p class="text-xs text-muted-foreground">
                         Selecione a turma AEE e matricule alunos com PCD/TGD/Altas Habilidades.
@@ -138,14 +138,14 @@ const aposMatricular = async () => {
                 <div
                     v-for="t in turmasFiltradas"
                     :key="t.tur_id"
-                    class="flex flex-col gap-3 rounded-xl border bg-card p-4 shadow-sm transition hover:border-indigo-300 hover:shadow"
+                    class="flex flex-col gap-3 rounded-xl border bg-card p-4 shadow-sm transition hover:border-brand-300 hover:shadow"
                 >
                     <div class="flex items-start justify-between">
                         <div class="min-w-0">
                             <p class="truncate text-xs text-muted-foreground">{{ t.escola?.esc_nome ?? '—' }}</p>
                             <h3 class="truncate text-base font-semibold">Turma {{ t.tur_nome }}</h3>
                         </div>
-                        <span class="inline-flex rounded-full bg-fuchsia-100 px-2 py-0.5 text-xs font-semibold text-fuchsia-700 dark:bg-fuchsia-900/30 dark:text-fuchsia-300">
+                        <span class="inline-flex rounded-full bg-sky-100 px-2 py-0.5 text-xs font-semibold text-sky-800 dark:bg-sky-900/30 dark:text-sky-300">
                             AEE
                         </span>
                     </div>
@@ -165,7 +165,7 @@ const aposMatricular = async () => {
                     </div>
                     <Button
                         size="sm"
-                        class="bg-indigo-600 text-white hover:bg-indigo-700"
+                        class="bg-brand-600 text-white hover:bg-brand-700"
                         :disabled="t.tur_situacao !== 'ABERTA'"
                         @click="abrirModal(t)"
                     >

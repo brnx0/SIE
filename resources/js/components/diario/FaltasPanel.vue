@@ -540,7 +540,7 @@ const statusInfo = (aln: number): { label: string; cls: string } => {
         case 'presente':
             return { label: 'Presente', cls: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300' };
         case 'justificada':
-            return { label: 'Justificada', cls: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300' };
+            return { label: 'Justificada', cls: 'bg-brand-100 text-brand-700 dark:bg-brand-950/40 dark:text-brand-300' };
         case 'parcial':
             return { label: 'Parcial', cls: 'bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300' };
         default:
@@ -651,7 +651,7 @@ const statusInfo = (aln: number): { label: string; cls: string } => {
                                     </Button>
                                 </div>
                             </div>
-                            <div v-if="infoOf(d.dis_id).executado" class="mb-2 inline-flex items-center gap-1 rounded bg-indigo-50 px-2 py-0.5 text-[11px] font-medium text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300">
+                            <div v-if="infoOf(d.dis_id).executado" class="mb-2 inline-flex items-center gap-1 rounded bg-brand-50 px-2 py-0.5 text-[11px] font-medium text-brand-700 dark:bg-brand-950/40 dark:text-brand-300">
                                 Conteúdo do plano de aula (somente leitura)
                             </div>
                             <div class="grid gap-3 sm:grid-cols-2">
@@ -663,7 +663,7 @@ const statusInfo = (aln: number): { label: string; cls: string } => {
                                         :disabled="!editavel"
                                         rows="2"
                                         placeholder="O que foi dado em aula..."
-                                        class="mt-1 w-full resize-y rounded-md border bg-background px-2.5 py-1.5 text-sm leading-relaxed outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 read-only:cursor-default read-only:bg-muted/40 disabled:cursor-not-allowed disabled:opacity-60 dark:focus:ring-indigo-950"
+                                        class="mt-1 w-full resize-y rounded-md border bg-background px-2.5 py-1.5 text-sm leading-relaxed outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100 read-only:cursor-default read-only:bg-muted/40 disabled:cursor-not-allowed disabled:opacity-60 dark:focus:ring-brand-950"
                                         @input="setConteudo(d.dis_id, 'conteudo', ($event.target as HTMLTextAreaElement).value)"
                                     ></textarea>
                                 </div>
@@ -675,7 +675,7 @@ const statusInfo = (aln: number): { label: string; cls: string } => {
                                         :disabled="!editavel"
                                         rows="2"
                                         placeholder="Como foi trabalhado..."
-                                        class="mt-1 w-full resize-y rounded-md border bg-background px-2.5 py-1.5 text-sm leading-relaxed outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 read-only:cursor-default read-only:bg-muted/40 disabled:cursor-not-allowed disabled:opacity-60 dark:focus:ring-indigo-950"
+                                        class="mt-1 w-full resize-y rounded-md border bg-background px-2.5 py-1.5 text-sm leading-relaxed outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100 read-only:cursor-default read-only:bg-muted/40 disabled:cursor-not-allowed disabled:opacity-60 dark:focus:ring-brand-950"
                                         @input="setConteudo(d.dis_id, 'metodologia', ($event.target as HTMLTextAreaElement).value)"
                                     ></textarea>
                                 </div>
@@ -726,7 +726,7 @@ const statusInfo = (aln: number): { label: string; cls: string } => {
                                     <td :colspan="temposDoDia.length + 2" class="px-4 py-8 text-center text-sm text-muted-foreground">Nenhum aluno encontrado.</td>
                                 </tr>
                                 <tr v-for="(a, i) in alunosFiltrados" :key="a.aln_id" class="group">
-                                    <td :class="['sticky left-0 z-10 border-b px-3 py-2 transition-colors', i % 2 ? 'bg-muted/30' : 'bg-card', 'group-hover:bg-indigo-50/70 dark:group-hover:bg-indigo-950/40']">
+                                    <td :class="['sticky left-0 z-10 border-b px-3 py-2 transition-colors', i % 2 ? 'bg-muted/30' : 'bg-card', 'group-hover:bg-brand-50/70 dark:group-hover:bg-brand-950/40']">
                                         <div class="flex items-center gap-2">
                                             <span class="w-5 shrink-0 text-right text-[11px] tabular-nums text-muted-foreground">{{ i + 1 }}</span>
                                             <div class="min-w-0">
@@ -736,7 +736,7 @@ const statusInfo = (aln: number): { label: string; cls: string } => {
                                             </div>
                                         </div>
                                     </td>
-                                    <td v-for="t in temposDoDia" :key="t.trh_id" :class="['border-b border-l px-2 py-2 text-center transition-colors', i % 2 ? 'bg-muted/20' : '', 'group-hover:bg-indigo-50/40 dark:group-hover:bg-indigo-950/20']">
+                                    <td v-for="t in temposDoDia" :key="t.trh_id" :class="['border-b border-l px-2 py-2 text-center transition-colors', i % 2 ? 'bg-muted/20' : '', 'group-hover:bg-brand-50/40 dark:group-hover:bg-brand-950/20']">
                                         <span v-if="aulaNaoExec(t.trh_id)" title="Aula não executada — não conta falta nem presença" class="inline-flex size-8 items-center justify-center rounded-md bg-amber-100 text-[10px] font-semibold text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">NE</span>
                                         <span v-else-if="saiuNoDia(a)" :title="`${motivoSaida(a)} em ${fmtData(a.dt_saida)} — bloqueado`" class="inline-flex size-8 items-center justify-center rounded-md text-xs text-muted-foreground/40">·</span>
                                         <template v-else>
@@ -757,7 +757,7 @@ const statusInfo = (aln: number): { label: string; cls: string } => {
                                                 presente(t.trh_id, a.aln_id)
                                                     ? 'bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-200 hover:bg-emerald-100 dark:bg-emerald-950/30 dark:text-emerald-300 dark:ring-emerald-900'
                                                     : cellJustificada(t, a.aln_id)
-                                                      ? 'bg-indigo-100 text-indigo-700 ring-1 ring-inset ring-indigo-300 hover:bg-indigo-200 dark:bg-indigo-950/40 dark:text-indigo-300 dark:ring-indigo-900'
+                                                      ? 'bg-brand-100 text-brand-700 ring-1 ring-inset ring-brand-300 hover:bg-brand-200 dark:bg-brand-950/40 dark:text-brand-300 dark:ring-brand-900'
                                                       : 'bg-rose-600 text-white shadow-sm hover:bg-rose-700',
                                             ]"
                                             @click="toggle(t.trh_id, a.aln_id)"
@@ -776,7 +776,7 @@ const statusInfo = (aln: number): { label: string; cls: string } => {
                                                 'inline-flex size-8 items-center justify-center rounded-md text-xs font-semibold',
                                                 reg(t.trh_id, a.aln_id) === false
                                                     ? cellJustificada(t, a.aln_id)
-                                                        ? 'bg-indigo-100 text-indigo-700 ring-1 ring-inset ring-indigo-300 dark:bg-indigo-950/40 dark:text-indigo-300'
+                                                        ? 'bg-brand-100 text-brand-700 ring-1 ring-inset ring-brand-300 dark:bg-brand-950/40 dark:text-brand-300'
                                                         : 'bg-rose-100 text-rose-700 ring-1 ring-inset ring-rose-200 dark:bg-rose-950/30 dark:text-rose-300'
                                                     : reg(t.trh_id, a.aln_id) === true
                                                       ? 'bg-emerald-50 text-emerald-600 ring-1 ring-inset ring-emerald-200 dark:bg-emerald-950/20'
@@ -787,7 +787,7 @@ const statusInfo = (aln: number): { label: string; cls: string } => {
                                         </span>
                                         </template>
                                     </td>
-                                    <td :class="['border-b border-l px-2 py-2 text-center transition-colors', i % 2 ? 'bg-muted/20' : '', 'group-hover:bg-indigo-50/40 dark:group-hover:bg-indigo-950/20']">
+                                    <td :class="['border-b border-l px-2 py-2 text-center transition-colors', i % 2 ? 'bg-muted/20' : '', 'group-hover:bg-brand-50/40 dark:group-hover:bg-brand-950/20']">
                                         <span v-if="saiuNoDia(a)" :title="`${motivoSaida(a)} em ${fmtData(a.dt_saida)}`" class="inline-flex items-center gap-1 rounded-full bg-slate-200 px-2 py-0.5 text-[11px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">{{ motivoSaida(a) }}</span>
                                         <span v-else :class="['inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold', statusInfo(a.aln_id).cls]">
                                             {{ statusInfo(a.aln_id).label }}
@@ -803,7 +803,7 @@ const statusInfo = (aln: number): { label: string; cls: string } => {
                         <span>·</span>
                         <span class="inline-flex items-center gap-1"><span class="inline-block size-3 rounded bg-rose-600"></span> Falta</span>
                         <span>·</span>
-                        <span class="inline-flex items-center gap-1"><span class="inline-flex size-3.5 items-center justify-center rounded bg-indigo-100 text-[7px] font-bold leading-none text-indigo-700 ring-1 ring-inset ring-indigo-300 dark:bg-indigo-950/40 dark:text-indigo-300">FJ</span> Falta justificada</span>
+                        <span class="inline-flex items-center gap-1"><span class="inline-flex size-3.5 items-center justify-center rounded bg-brand-100 text-[7px] font-bold leading-none text-brand-700 ring-1 ring-inset ring-brand-300 dark:bg-brand-950/40 dark:text-brand-300">FJ</span> Falta justificada</span>
                         <span>· clique alterna · ✓/✕ no topo marca a coluna inteira · <b>NE</b> = aula não executada.</span>
                     </p>
                 </template>
@@ -861,7 +861,7 @@ const statusInfo = (aln: number): { label: string; cls: string } => {
                                     >
                                         <input
                                             type="checkbox"
-                                            class="mt-1 size-4 accent-indigo-600"
+                                            class="mt-1 size-4 accent-brand-600"
                                             :disabled="t.sem_aula"
                                             :checked="!!repSelecionados[t.tur_id]"
                                             @change="repSelecionados[t.tur_id] = ($event.target as HTMLInputElement).checked"
@@ -897,7 +897,7 @@ const statusInfo = (aln: number): { label: string; cls: string } => {
                         v-if="!repResultado"
                         type="button"
                         size="sm"
-                        class="bg-indigo-600 text-white hover:bg-indigo-700"
+                        class="bg-brand-600 text-white hover:bg-brand-700"
                         :disabled="!repEscolhidas.length || repEnviando"
                         @click="confirmarReplicacao"
                     >

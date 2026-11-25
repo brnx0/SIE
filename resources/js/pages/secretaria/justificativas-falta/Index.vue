@@ -240,7 +240,7 @@ const remover = (a: Aluno, j: Justificativa) => {
             <!-- Lista de alunos -->
             <div v-else class="overflow-x-auto rounded-xl border bg-card shadow-sm">
                 <table class="w-full text-left text-sm">
-                    <thead class="bg-indigo-600 text-white">
+                    <thead class="bg-brand-600 text-white">
                         <tr>
                             <th class="w-12 px-3 py-2 text-center font-semibold">#</th>
                             <th class="px-3 py-2 font-semibold">Aluno</th>
@@ -264,12 +264,12 @@ const remover = (a: Aluno, j: Justificativa) => {
                                     <span
                                         v-for="j in a.justificativas"
                                         :key="j.jfa_id"
-                                        class="group inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-indigo-50 py-1 pl-2.5 pr-1 text-xs text-indigo-800 dark:border-indigo-900 dark:bg-indigo-950/40 dark:text-indigo-200"
+                                        class="group inline-flex items-center gap-1.5 rounded-full border border-brand-200 bg-brand-50 py-1 pl-2.5 pr-1 text-xs text-brand-800 dark:border-brand-900 dark:bg-brand-950/40 dark:text-brand-200"
                                         :title="j.observacao || ''"
                                     >
                                         <span class="tabular-nums">{{ fmt(j.dt_inicio) }}–{{ fmt(j.dt_fim) }}</span>
                                         <span class="opacity-70">· {{ j.motivo }}</span>
-                                        <button type="button" class="rounded p-0.5 hover:bg-indigo-200/70 dark:hover:bg-indigo-800/60" title="Editar" @click="abrirEdit(a, j)"><Pencil class="size-3" /></button>
+                                        <button type="button" class="rounded p-0.5 hover:bg-brand-200/70 dark:hover:bg-brand-800/60" title="Editar" @click="abrirEdit(a, j)"><Pencil class="size-3" /></button>
                                         <button type="button" class="rounded p-0.5 text-rose-600 hover:bg-rose-100 dark:hover:bg-rose-900/40" title="Remover" @click="remover(a, j)"><Trash2 class="size-3" /></button>
                                     </span>
                                 </div>
@@ -278,7 +278,7 @@ const remover = (a: Aluno, j: Justificativa) => {
                                 <Button
                                     type="button"
                                     size="sm"
-                                    class="bg-indigo-600 hover:bg-indigo-700"
+                                    class="bg-brand-600 hover:bg-brand-700"
                                     :disabled="!podeJustificar"
                                     :title="podeJustificar ? 'Adicionar justificativa' : 'Nenhum trimestre vigente'"
                                     @click="abrirNovo(a)"
@@ -346,14 +346,14 @@ const remover = (a: Aluno, j: Justificativa) => {
                             rows="2"
                             maxlength="500"
                             placeholder="Detalhe a justificativa (opcional)..."
-                            class="w-full resize-y rounded-md border bg-background p-2.5 text-sm outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-950"
+                            class="w-full resize-y rounded-md border bg-background p-2.5 text-sm outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-950"
                         ></textarea>
                         <InputError :message="errors.jfa_observacao" />
                     </div>
                 </div>
                 <div class="flex justify-end gap-2 border-t px-5 py-3">
                     <Button type="button" variant="outline" @click="fechar">Cancelar</Button>
-                    <Button type="button" class="bg-indigo-600 hover:bg-indigo-700" :disabled="processing" @click="salvar">
+                    <Button type="button" class="bg-brand-600 hover:bg-brand-700" :disabled="processing" @click="salvar">
                         <Loader2 v-if="processing" class="mr-2 size-4 animate-spin" />
                         Salvar
                     </Button>

@@ -141,7 +141,7 @@ const marcarRenovar = async (a: AlunoLinha, val: boolean) => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="mx-auto w-[95%] py-6">
             <h1 class="mb-1 flex items-center gap-2 text-xl font-semibold">
-                <RefreshCw class="size-5 text-indigo-600" /> Renovação de Matrícula
+                <RefreshCw class="size-5 text-brand-600" /> Renovação de Matrícula
             </h1>
             <p class="mb-6 text-sm text-muted-foreground">
                 Marque, por aluno, o interesse em <strong>renovar a matrícula</strong> para o ano seguinte. Escolha o ano e a escola, selecione a turma e marque cada aluno.
@@ -163,7 +163,7 @@ const marcarRenovar = async (a: AlunoLinha, val: boolean) => {
                     <LocalCombobox v-model="escId" :items="itemsEscola" :disabled="!isAdmin && !!userEscola" placeholder="Selecione a escola..." />
                 </div>
                 <div class="flex items-end">
-                    <Button :disabled="!anlId || !escId || carregando" class="bg-indigo-600 text-white hover:bg-indigo-700" @click="listar">
+                    <Button :disabled="!anlId || !escId || carregando" class="bg-brand-600 text-white hover:bg-brand-700" @click="listar">
                         <Loader2 v-if="carregando" class="mr-1 size-4 animate-spin" />
                         Listar Turmas
                     </Button>
@@ -194,14 +194,14 @@ const marcarRenovar = async (a: AlunoLinha, val: boolean) => {
                             v-for="t in turmasFiltradas"
                             :key="t.tur_id"
                             type="button"
-                            class="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-card p-4 text-left shadow-sm transition hover:border-indigo-300 hover:shadow-md dark:border-slate-800"
+                            class="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-card p-4 text-left shadow-sm transition hover:border-brand-300 hover:shadow-md dark:border-slate-800"
                             @click="abrirTurma(t)"
                         >
                             <div class="min-w-0">
                                 <div class="truncate font-semibold">{{ t.serie ? `${t.serie} — ` : '' }}Turma {{ t.turma }}</div>
                                 <div v-if="t.segmento" class="mt-0.5 text-xs text-muted-foreground">{{ t.segmento }}</div>
                             </div>
-                            <span class="grid size-9 shrink-0 place-items-center rounded-full bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-300">
+                            <span class="grid size-9 shrink-0 place-items-center rounded-full bg-brand-50 text-brand-600 dark:bg-brand-950/40 dark:text-brand-300">
                                 <Users class="size-4" />
                             </span>
                         </button>

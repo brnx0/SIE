@@ -85,7 +85,7 @@ const exportFilters = () => ({
                     <p class="text-sm text-slate-500 dark:text-slate-400">Atendimento Educacional Especializado.</p>
                 </div>
                 <Link v-if="!isReadOnly" href="/turmas-aee/create">
-                    <Button class="bg-indigo-600 text-white hover:bg-indigo-700">
+                    <Button class="bg-brand-600 text-white hover:bg-brand-700">
                         <Plus class="mr-2 size-4" /> Nova Turma AEE
                     </Button>
                 </Link>
@@ -148,7 +148,7 @@ const exportFilters = () => ({
                         <tr v-for="t in turmas.data" :key="t.tur_id" class="transition-colors hover:bg-muted/30">
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-3">
-                                    <div class="grid size-9 place-items-center rounded-lg bg-fuchsia-100 text-fuchsia-700 dark:bg-fuchsia-900/50 dark:text-fuchsia-300">
+                                    <div class="grid size-9 place-items-center rounded-lg bg-sky-100 text-sky-800 dark:bg-sky-900/50 dark:text-sky-300">
                                         <Accessibility class="size-4" />
                                     </div>
                                     <span class="font-semibold">{{ t.tur_nome }}</span>
@@ -183,7 +183,7 @@ const exportFilters = () => ({
                         <template v-else>Nenhum registro</template>
                     </span>
                     <div v-if="turmas.last_page > 1" class="flex flex-wrap gap-1">
-                        <Link v-for="(link, i) in turmas.links" :key="i" :href="link.url ?? '#'" v-html="link.label" :class="['rounded-md px-3 py-1 text-xs', link.active ? 'bg-indigo-600 text-white' : 'border bg-background hover:bg-muted', !link.url && 'pointer-events-none opacity-40']" preserve-scroll />
+                        <Link v-for="(link, i) in turmas.links" :key="i" :href="link.url ?? '#'" v-html="link.label" :class="['rounded-md px-3 py-1 text-xs', link.active ? 'bg-brand-600 text-white' : 'border bg-background hover:bg-muted', !link.url && 'pointer-events-none opacity-40']" preserve-scroll />
                     </div>
                 </div>
             </div>

@@ -37,7 +37,7 @@ function baixar() {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="mx-auto w-[95%] py-6">
             <h1 class="text-xl font-semibold mb-1 flex items-center gap-2">
-                <FileDown class="size-5 text-indigo-600" /> Exportação do Censo Escolar
+                <FileDown class="size-5 text-brand-600" /> Exportação do Censo Escolar
             </h1>
             <p class="text-sm text-muted-foreground mb-6">
                 Gera o arquivo de Matrícula Inicial (Educacenso 2026) da escola selecionada, no formato
@@ -58,7 +58,7 @@ function baixar() {
                 </div>
 
                 <div class="sm:col-span-2 flex justify-end">
-                    <Button :disabled="!escId || !anoExercicio" class="bg-indigo-600 text-white hover:bg-indigo-700" @click="baixar">
+                    <Button :disabled="!escId || !anoExercicio" class="bg-brand-600 text-white hover:bg-brand-700" @click="baixar">
                         <Download class="mr-1 size-4" />
                         Gerar Arquivo
                     </Button>

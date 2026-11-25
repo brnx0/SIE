@@ -193,7 +193,7 @@ const comDesvio = computed(() => linhas.value.filter((l) => Math.abs(l.desvio) >
                                             <Button
                                                 type="button"
                                                 :disabled="formItem.processing"
-                                                class="bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
+                                                class="bg-brand-600 text-white hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400"
                                                 @click="salvarItem(l)"
                                             >
                                                 <LoaderCircle v-if="formItem.processing" class="mr-2 size-4 animate-spin" />

@@ -128,7 +128,7 @@ const TIPO_OPTIONS = Object.entries(UNIDADE_TIPO_LABELS) as [UnidadeTipo, string
         <!-- Cabeçalho: seletor de ano -->
         <div class="flex flex-wrap items-center justify-between gap-3">
             <div class="flex items-center gap-2">
-                <Calendar class="size-4 text-indigo-600" />
+                <Calendar class="size-4 text-brand-600" />
                 <h3 class="text-sm font-semibold">Períodos por Ano Letivo</h3>
             </div>
             <div class="flex items-center gap-3">
@@ -146,7 +146,7 @@ const TIPO_OPTIONS = Object.entries(UNIDADE_TIPO_LABELS) as [UnidadeTipo, string
                     v-if="!showForm && !limiteAtingido && selectedAnlId"
                     type="button"
                     size="sm"
-                    class="bg-indigo-600 hover:bg-indigo-700"
+                    class="bg-brand-600 hover:bg-brand-700"
                     @click="openCreate"
                 >
                     <Plus class="mr-2 size-4" />
@@ -160,7 +160,7 @@ const TIPO_OPTIONS = Object.entries(UNIDADE_TIPO_LABELS) as [UnidadeTipo, string
 
         <!-- Tipo vigente no ano -->
         <div v-if="tipoDoAno" class="flex items-center gap-2 text-xs text-muted-foreground">
-            <span class="rounded bg-indigo-100 px-2 py-0.5 font-medium text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300">
+            <span class="rounded bg-brand-100 px-2 py-0.5 font-medium text-brand-700 dark:bg-brand-900/40 dark:text-brand-300">
                 {{ UNIDADE_TIPO_LABELS[tipoDoAno] }}
             </span>
             <span>— {{ UNIDADE_LIMITES[tipoDoAno] }} períodos no total</span>
@@ -169,7 +169,7 @@ const TIPO_OPTIONS = Object.entries(UNIDADE_TIPO_LABELS) as [UnidadeTipo, string
         <!-- Tabela de períodos -->
         <div class="overflow-x-auto">
             <table class="w-full text-left text-sm">
-                <thead class="bg-indigo-600 text-white">
+                <thead class="bg-brand-600 text-white">
                     <tr>
                         <th class="px-3 py-2 font-semibold">Período</th>
                         <th class="px-3 py-2 font-semibold">Início</th>
@@ -292,7 +292,7 @@ const TIPO_OPTIONS = Object.entries(UNIDADE_TIPO_LABELS) as [UnidadeTipo, string
                 <Button type="button" variant="outline" size="sm" @click="cancel">
                     <X class="mr-2 size-4" /> Cancelar
                 </Button>
-                <Button type="button" size="sm" class="bg-indigo-600 hover:bg-indigo-700" :disabled="processing" @click="save">
+                <Button type="button" size="sm" class="bg-brand-600 hover:bg-brand-700" :disabled="processing" @click="save">
                     <LoaderCircle v-if="processing" class="mr-2 size-4 animate-spin" />
                     <Save v-else class="mr-2 size-4" />
                     Salvar

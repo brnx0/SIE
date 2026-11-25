@@ -123,7 +123,7 @@ function gerar() {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="mx-auto w-[95%] py-6">
             <h1 class="text-xl font-semibold mb-1 flex items-center gap-2">
-                <FileText class="size-5 text-indigo-600" /> Declaração de Matrícula
+                <FileText class="size-5 text-brand-600" /> Declaração de Matrícula
             </h1>
             <p class="text-sm text-muted-foreground mb-6">
                 Emite declaração para alunos com matrícula regular ativa no ano letivo em exercício.
@@ -168,7 +168,7 @@ function gerar() {
                 </div>
 
                 <div class="sm:col-span-2 flex justify-end">
-                    <Button :disabled="!escId || gerando" class="bg-indigo-600 text-white hover:bg-indigo-700" @click="gerar">
+                    <Button :disabled="!escId || gerando" class="bg-brand-600 text-white hover:bg-brand-700" @click="gerar">
                         <Loader2 v-if="gerando" class="mr-1 size-4 animate-spin" />
                         Gerar Declaração
                     </Button>

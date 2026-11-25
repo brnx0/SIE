@@ -269,7 +269,7 @@ const exportarExcel = () => window.open(`${baseUrl}/xlsx?${queryFiltros().toStri
                     </Link>
                     <Button variant="outline" :disabled="!total" @click="exportarCsv">CSV</Button>
                     <Button variant="outline" :disabled="!total" @click="exportarExcel">Excel</Button>
-                    <Button :disabled="!total" class="bg-indigo-600 text-white hover:bg-indigo-700" @click="imprimir">
+                    <Button :disabled="!total" class="bg-brand-600 text-white hover:bg-brand-700" @click="imprimir">
                         <Printer class="mr-1 size-4" /> Imprimir / PDF
                     </Button>
                 </div>
@@ -289,7 +289,7 @@ const exportarExcel = () => window.open(`${baseUrl}/xlsx?${queryFiltros().toStri
                 Nenhuma turma encontrada.
             </div>
             <div v-for="[grupo, lista] in grupos" :key="grupo" class="mb-6 rounded-xl border bg-card shadow-sm overflow-hidden">
-                <div class="border-b bg-indigo-50 px-4 py-2 font-semibold text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-200">
+                <div class="border-b bg-brand-50 px-4 py-2 font-semibold text-brand-800 dark:bg-brand-900/30 dark:text-brand-200">
                     {{ filtros.rede ? grupo : `Etapa de Ensino: ${grupo}` }}
                     <span class="text-xs font-normal text-muted-foreground">({{ lista.length }} turma{{ lista.length !== 1 ? 's' : '' }})</span>
                 </div>
@@ -335,7 +335,7 @@ const exportarExcel = () => window.open(`${baseUrl}/xlsx?${queryFiltros().toStri
                                 <td class="px-2 py-1.5 align-top text-center">{{ l.expansao }}</td>
                                 <td class="px-2 py-1.5 align-top text-center">{{ l.rede }}</td>
                                 <td class="px-2 py-1.5 align-top text-center">{{ l.novos }}</td>
-                                <td class="px-2 py-1.5 align-top text-center font-semibold text-indigo-700">{{ l.vagas }}</td>
+                                <td class="px-2 py-1.5 align-top text-center font-semibold text-brand-700">{{ l.vagas }}</td>
                                 <td class="px-2 py-1.5 align-top break-words">
                                     <span v-if="!l.professores.length" class="text-amber-600">Sem professor</span>
                                     <div v-for="(p, k) in l.professores" :key="`${l.tur_id}-p-${k}`">
@@ -360,7 +360,7 @@ const exportarExcel = () => window.open(`${baseUrl}/xlsx?${queryFiltros().toStri
                     </table>
                 </div>
             </div>
-            <div v-if="total" class="rounded-xl border bg-indigo-50 dark:bg-indigo-900/20 p-4 text-sm font-semibold grid gap-1 sm:grid-cols-7">
+            <div v-if="total" class="rounded-xl border bg-brand-50 dark:bg-brand-900/20 p-4 text-sm font-semibold grid gap-1 sm:grid-cols-7">
                 <div class="sm:col-span-2">{{ rotuloTotal }}</div>
                 <div class="text-center">PCD: {{ totais.pcd }}</div>
                 <div class="text-center">Cap: {{ totais.capacidade }}</div>

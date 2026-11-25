@@ -132,13 +132,13 @@ const toggleAtivo = (a: AtendimentoAee) => {
                 </div>
                 <div class="flex items-center gap-2">
                     <RefreshButton />
-                    <Button v-if="!showForm" type="button" class="bg-indigo-600 hover:bg-indigo-700" @click="openForm">
+                    <Button v-if="!showForm" type="button" class="bg-brand-600 hover:bg-brand-700" @click="openForm">
                         <Plus class="mr-2 size-4" /> Novo Atendimento
                     </Button>
                 </div>
             </div>
 
-            <div v-if="showForm" class="rounded-lg border border-indigo-200 bg-indigo-50/50 p-4 dark:border-indigo-800 dark:bg-indigo-900/20">
+            <div v-if="showForm" class="rounded-lg border border-brand-200 bg-brand-50/50 p-4 dark:border-brand-800 dark:bg-brand-900/20">
                 <div class="mb-3 flex items-center justify-between">
                     <h4 class="text-sm font-semibold">Novo Atendimento</h4>
                     <button type="button" class="rounded p-1 hover:bg-muted" @click="cancelForm">
@@ -166,7 +166,7 @@ const toggleAtivo = (a: AtendimentoAee) => {
 
                 <div class="mt-4 flex justify-end gap-2">
                     <Button type="button" variant="outline" size="sm" @click="cancelForm">Cancelar</Button>
-                    <Button type="button" size="sm" class="bg-indigo-600 hover:bg-indigo-700" :disabled="processing" @click="submit">
+                    <Button type="button" size="sm" class="bg-brand-600 hover:bg-brand-700" :disabled="processing" @click="submit">
                         <Loader2 v-if="processing" class="mr-2 size-4 animate-spin" />
                         Cadastrar
                     </Button>
@@ -175,7 +175,7 @@ const toggleAtivo = (a: AtendimentoAee) => {
 
             <div class="overflow-x-auto rounded-xl border bg-card shadow-sm">
                 <table class="w-full text-left text-sm">
-                    <thead class="bg-indigo-600 text-white">
+                    <thead class="bg-brand-600 text-white">
                         <tr>
                             <th class="px-3 py-2 font-semibold">Descrição</th>
                             <th class="w-24 px-3 py-2 text-center font-semibold">Ativo</th>
@@ -192,7 +192,7 @@ const toggleAtivo = (a: AtendimentoAee) => {
                         <template v-for="(a, idx) in lista" :key="a.ate_id">
                             <tr
                                 v-if="editingId === a.ate_id"
-                                class="bg-indigo-50/60 dark:bg-indigo-900/20"
+                                class="bg-brand-50/60 dark:bg-brand-900/20"
                             >
                                 <td class="px-3 py-2">
                                     <Input

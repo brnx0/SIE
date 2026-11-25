@@ -446,7 +446,7 @@ const limitarValor1Casa = (e: Event) => {
                 <button type="button" class="inline-flex items-center gap-1.5 rounded-md border border-input px-2.5 py-1.5 text-xs font-medium text-muted-foreground transition hover:bg-muted" :disabled="carregando" @click="carregar">
                     <RefreshCw :class="['size-3.5', carregando && 'animate-spin']" /> Atualizar
                 </button>
-                <Button type="button" size="sm" class="bg-fuchsia-600 hover:bg-fuchsia-700" :disabled="!podeLancar || !turmaAberta" @click="abrirNovo">
+                <Button type="button" size="sm" class="bg-sky-700 hover:bg-sky-800" :disabled="!podeLancar || !turmaAberta" @click="abrirNovo">
                     <Plus class="mr-1.5 size-4" /> Nova avaliação
                 </Button>
             </div>
@@ -499,7 +499,7 @@ const limitarValor1Casa = (e: Event) => {
                                         <button type="button" class="rounded p-0.5 hover:bg-muted" title="Excluir" :disabled="!podeLancar" @click="excluirAvaliacao(a)"><X class="size-3 text-rose-500" /></button>
                                     </div>
                                 </th>
-                                <th class="border-b border-l-2 border-fuchsia-200 bg-fuchsia-50/70 px-3 py-2 text-center text-xs font-semibold uppercase tracking-wide text-fuchsia-700 dark:border-fuchsia-900 dark:bg-fuchsia-950/40 dark:text-fuchsia-300">
+                                <th class="border-b border-l-2 border-sky-200 bg-sky-50/70 px-3 py-2 text-center text-xs font-semibold uppercase tracking-wide text-sky-800 dark:border-sky-900 dark:bg-sky-950/40 dark:text-sky-300">
                                     {{ modo === 'faixa' ? 'Média / Conceito' : 'Conceito' }}
                                 </th>
                             </tr>
@@ -520,7 +520,7 @@ const limitarValor1Casa = (e: Event) => {
                                             type="number" step="0.01" min="0" :max="a.ava_valor ?? undefined"
                                             :disabled="!podeLancar || !turmaAberta || isFutura(a) || row.bloqueado || semValor(a)"
                                             :title="!turmaAberta ? 'Turma não está aberta.' : (semValor(a) ? 'Defina o valor da avaliação antes de lançar notas.' : '')"
-                                            :class="['h-8 w-16 rounded-md border bg-background px-1.5 text-center text-sm tabular-nums shadow-sm focus:outline-none focus:ring-1 focus:ring-fuchsia-500 disabled:opacity-60', statusDe(row.aln_id, a.ava_id) === 'invalid' || statusDe(row.aln_id, a.ava_id) === 'error' ? 'border-rose-400' : 'border-input']"
+                                            :class="['h-8 w-16 rounded-md border bg-background px-1.5 text-center text-sm tabular-nums shadow-sm focus:outline-none focus:ring-1 focus:ring-sky-600 disabled:opacity-60', statusDe(row.aln_id, a.ava_id) === 'invalid' || statusDe(row.aln_id, a.ava_id) === 'error' ? 'border-rose-400' : 'border-input']"
                                             @input="aoDigitarNota(row, a, $event)"
                                             @blur="salvarNota(row, a)"
                                         />
@@ -529,7 +529,7 @@ const limitarValor1Casa = (e: Event) => {
                                             v-else
                                             v-model.number="row.notas[a.ava_id].cnc_id"
                                             :disabled="!podeLancar || !turmaAberta || isFutura(a) || row.bloqueado"
-                                            class="h-8 w-16 rounded-md border border-input bg-background px-1 text-center text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-fuchsia-500 disabled:opacity-60"
+                                            class="h-8 w-16 rounded-md border border-input bg-background px-1 text-center text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-sky-600 disabled:opacity-60"
                                             @change="salvarNota(row, a)"
                                         >
                                             <option :value="null">—</option>
@@ -542,10 +542,10 @@ const limitarValor1Casa = (e: Event) => {
                                         </span>
                                     </div>
                                 </td>
-                                <td class="border-b border-l-2 border-fuchsia-200 bg-fuchsia-50/40 px-3 py-1.5 text-center dark:border-fuchsia-900 dark:bg-fuchsia-950/20">
+                                <td class="border-b border-l-2 border-sky-200 bg-sky-50/40 px-3 py-1.5 text-center dark:border-sky-900 dark:bg-sky-950/20">
                                     <template v-if="resultado(row)">
                                         <div v-if="modo === 'faixa' && valorFaixa(row) !== null" class="text-sm font-bold tabular-nums text-slate-700 dark:text-slate-200">{{ valorFaixa(row)!.toFixed(2) }}</div>
-                                        <div class="font-bold text-fuchsia-700 dark:text-fuchsia-300">{{ resultado(row)!.cnc_sigla }}</div>
+                                        <div class="font-bold text-sky-800 dark:text-sky-300">{{ resultado(row)!.cnc_sigla }}</div>
                                         <div class="text-[10px] text-muted-foreground">{{ resultado(row)!.cnc_descricao }}</div>
                                     </template>
                                     <span v-else class="text-muted-foreground">—</span>
@@ -575,7 +575,7 @@ const limitarValor1Casa = (e: Event) => {
                 <div class="flex flex-col gap-3 p-5">
                     <div>
                         <Label>Instrumento <span class="text-rose-600">*</span></Label>
-                        <select v-model.number="form.iavId" class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-fuchsia-500" @change="aplicarValorParam">
+                        <select v-model.number="form.iavId" class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-600" @change="aplicarValorParam">
                             <option :value="null" disabled>Selecione o instrumento...</option>
                             <option v-for="i in opcoesInstrumento" :key="i.iav_id" :value="i.iav_id">{{ i.iav_nome }}</option>
                         </select>
@@ -607,7 +607,7 @@ const limitarValor1Casa = (e: Event) => {
                 </div>
                 <div class="flex justify-end gap-2 border-t px-5 py-3">
                     <Button type="button" variant="outline" @click="showModal = false">Cancelar</Button>
-                    <Button type="button" class="bg-fuchsia-600 hover:bg-fuchsia-700" :disabled="!podeSalvarAval" @click="salvarAvaliacao">
+                    <Button type="button" class="bg-sky-700 hover:bg-sky-800" :disabled="!podeSalvarAval" @click="salvarAvaliacao">
                         <Loader2 v-if="enviandoAval" class="mr-2 size-4 animate-spin" /> Salvar
                     </Button>
                 </div>

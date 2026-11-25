@@ -92,7 +92,7 @@ const imprimir = () => window.print();
                     <Link href="/relatorios/desempenho-aee">
                         <Button variant="outline"><ArrowLeft class="mr-1 size-4" /> Voltar</Button>
                     </Link>
-                    <Button :disabled="!total_turmas" class="bg-indigo-600 text-white hover:bg-indigo-700" @click="imprimir">
+                    <Button :disabled="!total_turmas" class="bg-brand-600 text-white hover:bg-brand-700" @click="imprimir">
                         <Printer class="mr-1 size-4" /> Imprimir / PDF
                     </Button>
                 </div>
@@ -105,7 +105,7 @@ const imprimir = () => window.print();
                 </div>
                 <div class="rounded-xl border bg-card p-3 text-center shadow-sm">
                     <div class="text-xs text-muted-foreground">Total alunos</div>
-                    <div class="text-2xl font-bold text-indigo-600">{{ total_alunos }}</div>
+                    <div class="text-2xl font-bold text-brand-600">{{ total_alunos }}</div>
                 </div>
                 <div v-if="escola" class="rounded-xl border bg-card p-3 text-center shadow-sm">
                     <div class="text-xs text-muted-foreground">Escola</div>
@@ -119,7 +119,7 @@ const imprimir = () => window.print();
 
             <div v-else class="grid gap-6">
                 <section v-for="t in linhas" :key="t.tur_id" class="overflow-hidden rounded-xl border bg-card shadow-sm">
-                    <header class="bg-fuchsia-600 px-4 py-2.5 text-white">
+                    <header class="bg-sky-700 px-4 py-2.5 text-white">
                         <h2 class="text-sm font-semibold">{{ t.escola }} — Turma {{ t.turma }}</h2>
                     </header>
                     <div class="divide-y">

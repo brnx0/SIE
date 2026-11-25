@@ -138,7 +138,7 @@ const grupos = computed(() => {
                     <Link href="/relatorios/dados-alunos-turma">
                         <Button variant="outline"><ArrowLeft class="mr-1 size-4" /> Voltar</Button>
                     </Link>
-                    <Button :disabled="!total" class="bg-indigo-600 text-white hover:bg-indigo-700" @click="imprimir">
+                    <Button :disabled="!total" class="bg-brand-600 text-white hover:bg-brand-700" @click="imprimir">
                         <Printer class="mr-1 size-4" /> Imprimir / PDF
                     </Button>
                 </div>
@@ -155,19 +155,19 @@ const grupos = computed(() => {
 
             <div v-else class="space-y-6">
                 <div v-for="g in grupos" :key="g.escola + g.turma" class="overflow-hidden rounded-xl border bg-card shadow-sm">
-                    <div class="flex items-center justify-between gap-2 border-b border-l-4 border-l-indigo-600 bg-indigo-50/60 px-4 py-2.5 dark:bg-indigo-900/20">
+                    <div class="flex items-center justify-between gap-2 border-b border-l-4 border-l-brand-600 bg-brand-50/60 px-4 py-2.5 dark:bg-brand-900/20">
                         <div class="flex items-center gap-2">
-                            <span class="text-sm font-semibold text-indigo-900 dark:text-indigo-200">
+                            <span class="text-sm font-semibold text-brand-900 dark:text-brand-200">
                                 {{ g.escola }} — Turma {{ g.turma }}
                             </span>
-                            <span class="rounded-full bg-indigo-600 px-2 py-0.5 text-xs font-medium text-white">
+                            <span class="rounded-full bg-brand-600 px-2 py-0.5 text-xs font-medium text-white">
                                 {{ g.linhas.length }}
                             </span>
                         </div>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm">
-                            <thead class="bg-indigo-600 text-white">
+                            <thead class="bg-brand-600 text-white">
                                 <tr>
                                     <th class="px-3 py-2 text-left font-semibold whitespace-nowrap">Mat.</th>
                                     <th class="px-3 py-2 text-left font-semibold whitespace-nowrap">Aluno</th>

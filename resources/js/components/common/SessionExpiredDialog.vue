@@ -40,7 +40,7 @@ const sair = () => {
                     <div class="mt-6 flex justify-end">
                         <Button
                             :disabled="saindo"
-                            class="bg-indigo-600 text-white hover:bg-indigo-700"
+                            class="bg-brand-600 text-white hover:bg-brand-700"
                             @click="sair"
                         >
                             <LogOut class="mr-2 size-4" />

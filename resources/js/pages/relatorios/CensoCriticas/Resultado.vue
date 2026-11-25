@@ -239,7 +239,7 @@ const exportarCsv = () => {
                     v-for="opt in (['todos', 'erro', 'alerta'] as const)"
                     :key="opt"
                     class="rounded-full border px-3 py-1 text-sm capitalize transition"
-                    :class="filtro === opt ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-background hover:bg-muted'"
+                    :class="filtro === opt ? 'bg-brand-600 text-white border-brand-600' : 'bg-background hover:bg-muted'"
                     @click="filtro = opt"
                 >
                     {{ opt === 'todos' ? 'Todos' : opt === 'erro' ? 'Erros' : 'Alertas' }}
@@ -301,7 +301,7 @@ const exportarCsv = () => {
                                     <Link
                                         v-if="linkEdicao(e)"
                                         :href="linkEdicao(e)!"
-                                        class="text-indigo-600 hover:text-indigo-800 print:hidden inline-flex items-center gap-1 text-xs"
+                                        class="text-brand-600 hover:text-brand-800 print:hidden inline-flex items-center gap-1 text-xs"
                                         title="Abrir cadastro"
                                     >
                                         <ExternalLink class="size-3.5" /> abrir

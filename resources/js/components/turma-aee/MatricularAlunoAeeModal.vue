@@ -162,10 +162,10 @@ const confirmar = async () => {
                             v-for="a in lista"
                             :key="a.aln_id"
                             class="flex cursor-pointer items-center gap-3 px-3 py-2.5 hover:bg-muted"
-                            :class="{ 'bg-indigo-50/60 dark:bg-indigo-900/20': selecionado?.aln_id === a.aln_id }"
+                            :class="{ 'bg-brand-50/60 dark:bg-brand-900/20': selecionado?.aln_id === a.aln_id }"
                             @click="selecionado = a"
                         >
-                            <div class="grid size-9 shrink-0 place-items-center overflow-hidden rounded-full bg-indigo-100 text-xs font-semibold text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300">
+                            <div class="grid size-9 shrink-0 place-items-center overflow-hidden rounded-full bg-brand-100 text-xs font-semibold text-brand-700 dark:bg-brand-900/40 dark:text-brand-300">
                                 <img v-if="a.aln_foto_url" :src="a.aln_foto_url" class="size-full object-cover" />
                                 <span v-else>{{ initials(a.aln_nome) }}</span>
                             </div>
@@ -187,7 +187,7 @@ const confirmar = async () => {
                     </p>
                     <div v-else class="grid min-w-0 gap-4">
                         <div class="flex min-w-0 items-center gap-3">
-                            <div class="grid size-12 shrink-0 place-items-center overflow-hidden rounded-full bg-indigo-100 font-semibold text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300">
+                            <div class="grid size-12 shrink-0 place-items-center overflow-hidden rounded-full bg-brand-100 font-semibold text-brand-700 dark:bg-brand-900/40 dark:text-brand-300">
                                 <img v-if="selecionado.aln_foto_url" :src="selecionado.aln_foto_url" class="size-full object-cover" />
                                 <span v-else>{{ initials(selecionado.aln_nome) }}</span>
                             </div>
@@ -260,7 +260,7 @@ const confirmar = async () => {
             <div class="flex justify-end gap-2 border-t pt-4">
                 <Button variant="outline" :disabled="processing" @click="fechar">Cancelar</Button>
                 <Button
-                    class="bg-indigo-600 text-white hover:bg-indigo-700"
+                    class="bg-brand-600 text-white hover:bg-brand-700"
                     :disabled="!selecionado || processing"
                     @click="confirmar"
                 >

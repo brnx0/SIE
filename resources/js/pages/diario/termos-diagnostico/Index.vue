@@ -96,7 +96,7 @@ const algumErro = computed(() => Object.keys(form.errors).length > 0);
                     <Button
                         v-if="!isReadOnly"
                         type="button"
-                        class="bg-indigo-600 hover:bg-indigo-700"
+                        class="bg-brand-600 hover:bg-brand-700"
                         :disabled="form.processing || !form.isDirty"
                         @click="salvar"
                     >
@@ -107,7 +107,7 @@ const algumErro = computed(() => Object.keys(form.errors).length > 0);
                 </div>
             </div>
 
-            <div class="flex items-start gap-2 rounded-lg border border-indigo-200 bg-indigo-50 p-3 text-sm text-indigo-900 dark:border-indigo-900 dark:bg-indigo-950/40 dark:text-indigo-200">
+            <div class="flex items-start gap-2 rounded-lg border border-brand-200 bg-brand-50 p-3 text-sm text-brand-900 dark:border-brand-900 dark:bg-brand-950/40 dark:text-brand-200">
                 <Tags class="mt-0.5 size-4 shrink-0" />
                 <span>
                     Alterar um termo muda apenas <b>como</b> o resultado é exibido (lançamento, relatórios e app).

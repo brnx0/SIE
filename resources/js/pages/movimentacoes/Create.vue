@@ -277,7 +277,7 @@ function submit() {
                 <h1 class="text-xl font-semibold">Nova Movimentação</h1>
                 <div class="flex gap-2">
                     <Button variant="outline" @click="router.visit('/movimentacoes')">Cancelar</Button>
-                    <Button :disabled="form.processing" class="bg-indigo-600 text-white hover:bg-indigo-700" @click="submit">
+                    <Button :disabled="form.processing" class="bg-brand-600 text-white hover:bg-brand-700" @click="submit">
                         <Loader2 v-if="form.processing" class="mr-1 size-4 animate-spin" /> Salvar
                     </Button>
                 </div>
@@ -342,8 +342,8 @@ function submit() {
                 </div>
 
                 <!-- Origem -->
-                <div class="grid gap-3 rounded-lg border border-indigo-200 bg-indigo-50/40 p-4">
-                    <h3 class="text-sm font-semibold text-indigo-800">Origem</h3>
+                <div class="grid gap-3 rounded-lg border border-brand-200 bg-brand-50/40 p-4">
+                    <h3 class="text-sm font-semibold text-brand-800">Origem</h3>
                     <div class="grid items-start gap-4 sm:grid-cols-3">
                         <div class="grid gap-1.5">
                             <FormLabel :required="true">Ano Letivo</FormLabel>
@@ -414,8 +414,8 @@ function submit() {
                 </div>
 
                 <!-- Destino -->
-                <div v-if="exigeDestino" class="grid gap-3 rounded-lg border border-fuchsia-200 bg-fuchsia-50/40 p-4">
-                    <h3 class="text-sm font-semibold text-fuchsia-800">{{ destinoLabel }}</h3>
+                <div v-if="exigeDestino" class="grid gap-3 rounded-lg border border-sky-200 bg-sky-50/40 p-4">
+                    <h3 class="text-sm font-semibold text-sky-800">{{ destinoLabel }}</h3>
                     <div class="grid items-start gap-4 sm:grid-cols-3">
                         <div class="grid gap-1.5">
                             <FormLabel :required="true">Etapa de Ensino</FormLabel>

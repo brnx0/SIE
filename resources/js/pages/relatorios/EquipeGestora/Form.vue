@@ -72,7 +72,7 @@ function gerar() {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="mx-auto w-[95%] py-6">
             <h1 class="text-xl font-semibold mb-1 flex items-center gap-2">
-                <UsersRound class="size-5 text-indigo-600" /> Equipe Gestora das Escolas
+                <UsersRound class="size-5 text-brand-600" /> Equipe Gestora das Escolas
             </h1>
             <p class="text-sm text-muted-foreground mb-6">
                 Relação das escolas com a equipe gestora atual — direção, coordenação e secretaria —
@@ -97,14 +97,14 @@ function gerar() {
                     <FormLabel>Formato</FormLabel>
                     <div class="flex flex-col gap-2 pt-1">
                         <label class="flex items-start gap-2 text-sm cursor-pointer">
-                            <input v-model="formato" type="radio" value="consolidado" class="mt-1 accent-indigo-600" />
+                            <input v-model="formato" type="radio" value="consolidado" class="mt-1 accent-brand-600" />
                             <span>
                                 <span class="font-medium">Consolidado</span>
                                 <span class="block text-xs text-muted-foreground">Uma linha por escola, uma coluna por função.</span>
                             </span>
                         </label>
                         <label class="flex items-start gap-2 text-sm cursor-pointer">
-                            <input v-model="formato" type="radio" value="detalhado" class="mt-1 accent-indigo-600" />
+                            <input v-model="formato" type="radio" value="detalhado" class="mt-1 accent-brand-600" />
                             <span>
                                 <span class="font-medium">Detalhado</span>
                                 <span class="block text-xs text-muted-foreground">Uma linha por gestor, com cargo, contato e vínculo.</span>
@@ -137,7 +137,7 @@ function gerar() {
                 </div>
 
                 <div class="sm:col-span-2 flex justify-end">
-                    <Button :disabled="!tiposSel.length || gerando" class="bg-indigo-600 text-white hover:bg-indigo-700" @click="gerar">
+                    <Button :disabled="!tiposSel.length || gerando" class="bg-brand-600 text-white hover:bg-brand-700" @click="gerar">
                         <Loader2 v-if="gerando" class="mr-1 size-4 animate-spin" />
                         Gerar Relatório
                     </Button>

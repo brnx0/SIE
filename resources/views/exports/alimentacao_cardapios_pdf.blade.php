@@ -8,8 +8,8 @@
 <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: DejaVu Sans, sans-serif; font-size: 11px; color: #1e293b; }
-    .header { padding: 18px 24px 12px; border-bottom: 2px solid #6366f1; }
-    .header h1 { font-size: 18px; font-weight: 700; color: #4f46e5; }
+    .header { padding: 18px 24px 12px; border-bottom: 2px solid #2f6fb8; }
+    .header h1 { font-size: 18px; font-weight: 700; color: #1e4e8c; }
     .header p { font-size: 10px; color: #64748b; margin-top: 2px; }
     .cardapio { padding: 12px 24px; border-bottom: 1px solid #e2e8f0; }
     .cardapio-nome { font-size: 13px; font-weight: 700; }
@@ -17,7 +17,7 @@
     .badge { display: inline-block; padding: 2px 8px; border-radius: 9999px; font-size: 9px; font-weight: 600; }
     .badge-active { background: #d1fae5; color: #065f46; }
     .badge-inactive { background: #f1f5f9; color: #475569; }
-    .badge-rede { background: #e0e7ff; color: #3730a3; }
+    .badge-rede { background: #e0ecf8; color: #12335e; }
     table.grade { width: 100%; border-collapse: collapse; margin-top: 8px; }
     table.grade thead th { background: #f1f5f9; padding: 5px 8px; text-align: left; font-size: 9px; text-transform: uppercase; color: #475569; }
     table.grade td { padding: 5px 8px; border-bottom: 1px solid #f8fafc; }

@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Parametro\ParametroEntidade;
 use App\Models\Turma\Turma;
 use App\Models\User;
 use App\Support\UserAccess;
@@ -58,8 +57,6 @@ class DashboardController extends Controller
                 $this->short('Criar turma', 'Disciplinas, horários e professores', '/turmas/create', 'book-marked'),
                 $this->short('Realizar matrícula', 'Matricule alunos nas turmas', '/matriculas', 'clipboard-list'),
             ]);
-
-            $panels['config'] = $this->panelConfig();
         }
 
         // ── Escola (diretor / secretaria_escola) ─────────────────────────────
@@ -144,7 +141,14 @@ class DashboardController extends Controller
             ]);
         }
 
+        // Visão de matrículas (gráficos): só p/ quem enxerga rede ou escola(s).
+        $visao = ($has('admin') || $has('gestor_secretaria') || $has('diretor') || $has('secretaria_escola') || $has('matricula_censo'))
+            ? $this->visaoMatriculas($anlId, $has('admin') || $has('gestor_secretaria') ? null : $escolaIds)
+            : null;
+
         return Inertia::render('Dashboard', [
+            'anoLetivo' => $anlId ? DB::table('cfg_ano_letivo')->where('anl_id', $anlId)->value('anl_ano') : null,
+            'visao'     => $visao,
             'perfil'    => $this->perfilPrincipal($roles),
             'contexto'  => $this->contexto($user, $escolaIds),
             'kpis'      => array_values($kpis),
@@ -247,6 +251,81 @@ class DashboardController extends Controller
                 'vagas'    => $turmas['vagas'],
                 'lotadas'  => $turmas['lotadas'],
                 'sem_prof' => $turmas['sem_prof'],
+            ];
+        });
+    }
+
+    /**
+     * Distribuição de matrículas ativas (por segmento, escola e turno) + ocupação das
+     * vagas das turmas REGULAR abertas. Alimenta os gráficos do painel. Cache 300s.
+     */
+    private function visaoMatriculas(?int $anlId, ?array $escolaIds): array
+    {
+        $key = $this->escKey($escolaIds);
+
+        return Cache::remember("dash:visao:$anlId:$key", 300, function () use ($anlId, $escolaIds) {
+            $base = fn () => DB::table('edu_turma_aluno as tma')
+                ->join('edu_turma as t', 't.tur_id', '=', 'tma.tma_tur_id')
+                ->where('tma.tma_situacao', 'ATIVA')
+                ->whereNull('tma.tma_deleted_at')
+                ->whereNull('t.tur_deleted_at')
+                ->when($anlId, fn ($q) => $q->where('tma.tma_anl_id', $anlId))
+                ->when($escolaIds !== null, fn ($q) => $q->whereIn('t.tur_esc_id', $escolaIds ?? []));
+
+            $linhas = fn ($rows) => $rows->map(fn ($r) => [
+                'nome'  => (string) ($r->nome ?: 'Não informado'),
+                'valor' => (int) $r->valor,
+            ])->values()->all();
+
+            $porSegmento = $base()
+                ->leftJoin('edu_segmento as s', 's.seg_id', '=', 't.tur_seg_id')
+                ->selectRaw('s.seg_nome_reduzido as nome, min(s.seg_ordem) as ordem, count(distinct tma.tma_aln_id) as valor')
+                ->groupBy('s.seg_nome_reduzido')
+                ->orderBy('ordem')
+                ->get();
+
+            $porEscola = $base()
+                ->join('edu_escola as e', 'e.esc_id', '=', 't.tur_esc_id')
+                ->selectRaw('e.esc_nome as nome, count(distinct tma.tma_aln_id) as valor')
+                ->groupBy('e.esc_id', 'e.esc_nome')
+                ->orderByDesc('valor')
+                ->limit(8)
+                ->get();
+
+            $porTurno = $base()
+                ->selectRaw('t.tur_turno as nome, count(distinct tma.tma_aln_id) as valor')
+                ->groupBy('t.tur_turno')
+                ->orderByDesc('valor')
+                ->get()
+                ->map(function ($r) {
+                    $r->nome = $r->nome ? mb_convert_case(mb_strtolower($r->nome, 'UTF-8'), MB_CASE_TITLE, 'UTF-8') : null;
+                    return $r;
+                });
+
+            // Ocupação: só turmas REGULAR abertas com capacidade definida.
+            $ocup = DB::table('edu_turma as t')
+                ->selectRaw(
+                    'coalesce(sum(t.tur_capacidade + coalesce(t.tur_qt_expansao, 0)), 0) as capacidade,
+                     coalesce(sum((select count(*) from edu_turma_aluno tma
+                        where tma.tma_tur_id = t.tur_id and tma.tma_situacao = ? and tma.tma_deleted_at is null)), 0) as ocupadas',
+                    ['ATIVA']
+                )
+                ->where('t.tur_situacao', 'ABERTA')
+                ->where('t.tur_modalidade', Turma::MODALIDADE_REGULAR)
+                ->whereNotNull('t.tur_capacidade')
+                ->whereNull('t.tur_deleted_at')
+                ->when($anlId, fn ($q) => $q->where('t.tur_anl_id', $anlId))
+                ->when($escolaIds !== null, fn ($q) => $q->whereIn('t.tur_esc_id', $escolaIds ?? []))
+                ->first();
+
+            return [
+                'por_segmento' => $linhas($porSegmento),
+                'por_escola'   => $linhas($porEscola),
+                'por_turno'    => $linhas($porTurno),
+                'ocupacao'     => [
+                    'capacidade' => (int) ($ocup->capacidade ?? 0),
+                    'ocupadas'   => (int) ($ocup->ocupadas ?? 0),
+                ],
             ];
         });
     }
@@ -458,36 +537,6 @@ class DashboardController extends Controller
             'subtitle' => 'Aguardando sua aprovação',
             'items'    => $items,
             'empty'    => 'Nenhum plano AEE pendente. 🎉',
-        ];
-    }
-
-    // ── Config (cache 600s) — visão de suporte/gestão ────────────────────────
-
-    private function panelConfig(): ?array
-    {
-        $data = Cache::remember('dash:config', 600, function () {
-            $p   = ParametroEntidade::current();
-            $anl = DB::table('cfg_ano_letivo')->where('anl_fl_em_exercicio', true)
-                ->first(['anl_ano', 'anl_dt_corte']);
-
-            $flag = fn (bool $v) => $v ? 'Sim' : 'Não';
-
-            return [
-                ['title' => 'Ano letivo em exercício', 'meta' => $anl->anl_ano ?? '— não definido'],
-                ['title' => 'Data de corte (idade × série)', 'meta' => $anl && $anl->anl_dt_corte ? date('d/m/Y', strtotime($anl->anl_dt_corte)) : '—'],
-                ['title' => 'CPF obrigatório', 'meta' => $flag((bool) $p->par_fl_cpf_obrigatorio)],
-                ['title' => 'Validar idade × série', 'meta' => $flag((bool) $p->par_fl_validar_idade_serie)],
-                ['title' => 'Gerar matrícula automática', 'meta' => $flag((bool) $p->par_fl_gerar_matricula_auto)],
-                ['title' => 'Alertar homônimos', 'meta' => $flag((bool) $p->par_fl_alertar_homonimos)],
-            ];
-        });
-
-        return [
-            'key'      => 'config',
-            'title'    => 'Configuração da entidade',
-            'subtitle' => 'Parâmetros que regem matrículas e validações',
-            'items'    => $data,
-            'empty'    => '',
         ];
     }
 }

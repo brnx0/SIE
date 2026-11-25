@@ -117,7 +117,7 @@ const remove = (esg: EscolaSegmento) => {
                 <Button
                     type="button"
                     @click="openCreate"
-                    class="bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
+                    class="bg-brand-600 text-white hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400"
                 >
                     <Plus class="mr-2 size-4" /> Adicionar etapa de ensino
                 </Button>
@@ -149,11 +149,11 @@ const remove = (esg: EscolaSegmento) => {
                         v-for="esg in escolaSegmentos"
                         :key="esg.esg_id"
                         class="transition-colors hover:bg-muted/30"
-                        :class="{ 'bg-indigo-50/40 dark:bg-indigo-900/10': editingId === esg.esg_id }"
+                        :class="{ 'bg-brand-50/40 dark:bg-brand-900/10': editingId === esg.esg_id }"
                     >
                         <td class="px-4 py-3">
                             <div class="flex items-center gap-2">
-                                <div class="grid size-8 place-items-center rounded-lg bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300">
+                                <div class="grid size-8 place-items-center rounded-lg bg-brand-100 text-brand-700 dark:bg-brand-900/50 dark:text-brand-300">
                                     <BookOpen class="size-3.5" />
                                 </div>
                                 <div class="flex flex-col">
@@ -198,11 +198,11 @@ const remove = (esg: EscolaSegmento) => {
             </table>
         </div>
 
-        <!-- Formulário inline (sub-registro) — borda indigo p/ diferenciar do form principal -->
-        <div v-if="showForm" class="rounded-xl border-2 border-indigo-200 bg-indigo-50/30 p-6 shadow-sm dark:border-indigo-900/50 dark:bg-indigo-950/20">
+        <!-- Formulário inline (sub-registro) — borda azul p/ diferenciar do form principal -->
+        <div v-if="showForm" class="rounded-xl border-2 border-brand-200 bg-brand-50/30 p-6 shadow-sm dark:border-brand-900/50 dark:bg-brand-950/20">
             <!-- Cabeçalho do sub-form COM as ações (visível no topo) -->
-            <div class="mb-4 flex flex-col gap-3 border-b border-indigo-100 pb-4 dark:border-indigo-900/40 sm:flex-row sm:items-center sm:justify-between">
-                <h3 class="flex items-center gap-2 text-sm font-semibold text-indigo-800 dark:text-indigo-200">
+            <div class="mb-4 flex flex-col gap-3 border-b border-brand-100 pb-4 dark:border-brand-900/40 sm:flex-row sm:items-center sm:justify-between">
+                <h3 class="flex items-center gap-2 text-sm font-semibold text-brand-800 dark:text-brand-200">
                     <BookOpen class="size-4" />
                     {{ editingId ? 'Editar etapa de ensino da escola' : 'Nova etapa de ensino da escola' }}
                 </h3>
@@ -214,7 +214,7 @@ const remove = (esg: EscolaSegmento) => {
                         type="button"
                         @click="submit"
                         :disabled="form.processing"
-                        class="bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
+                        class="bg-brand-600 text-white hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400"
                     >
                         <Check class="mr-1.5 size-4" />
                         {{ editingId ? 'Salvar etapa de ensino' : 'Adicionar etapa de ensino' }}
@@ -229,7 +229,7 @@ const remove = (esg: EscolaSegmento) => {
                     <select
                         id="esg_seg_id"
                         v-model="form.seg_id"
-                        class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground"
+                        class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-background dark:text-foreground"
                     >
                         <option :value="null" disabled>Selecione...</option>
                         <option v-for="seg in segmentos" :key="seg.seg_id" :value="seg.seg_id">
@@ -251,7 +251,7 @@ const remove = (esg: EscolaSegmento) => {
                     <select
                         id="esg_anl_inicio"
                         v-model="form.anl_id_inicio"
-                        class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground"
+                        class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-background dark:text-foreground"
                     >
                         <option :value="null" disabled>Selecione...</option>
                         <option v-for="anl in anosLetivos" :key="anl.anl_id" :value="anl.anl_id">
@@ -267,7 +267,7 @@ const remove = (esg: EscolaSegmento) => {
                     <select
                         id="esg_anl_fim"
                         v-model="form.anl_id_fim"
-                        class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground"
+                        class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-background dark:text-foreground"
                     >
                         <option :value="null">Sem encerramento</option>
                         <option v-for="anl in anosLetivos" :key="anl.anl_id" :value="anl.anl_id">
@@ -284,7 +284,7 @@ const remove = (esg: EscolaSegmento) => {
                         id="esg_ser_inicio"
                         v-model="form.ser_id_inicio"
                         :disabled="!form.seg_id || loadingSeries"
-                        class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-background dark:text-foreground"
+                        class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-background dark:text-foreground"
                     >
                         <option :value="null" disabled>
                             {{ !form.seg_id ? 'Selecione a etapa de ensino...' : loadingSeries ? 'Carregando...' : 'Selecione...' }}
@@ -303,7 +303,7 @@ const remove = (esg: EscolaSegmento) => {
                         id="esg_ser_fim"
                         v-model="form.ser_id_fim"
                         :disabled="!form.seg_id || loadingSeries"
-                        class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-background dark:text-foreground"
+                        class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-background dark:text-foreground"
                     >
                         <option :value="null" disabled>
                             {{ !form.seg_id ? 'Selecione a etapa de ensino...' : loadingSeries ? 'Carregando...' : 'Selecione...' }}
@@ -323,7 +323,7 @@ const remove = (esg: EscolaSegmento) => {
                         v-model="form.esg_motivo"
                         rows="2"
                         placeholder="Opcional — justificativa para inclusão ou encerramento da etapa de ensino..."
-                        class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                     />
                     <InputError :message="form.errors.esg_motivo" />
                 </div>

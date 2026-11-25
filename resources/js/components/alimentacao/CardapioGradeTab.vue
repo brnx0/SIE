@@ -168,7 +168,7 @@ const labelDia = (n: number) => DIAS.find((d) => d.n === n)?.label ?? '';
                     :class="[
                         'rounded-md px-3 py-1.5 text-xs font-medium transition-colors',
                         turnoAtivo === t
-                            ? 'bg-indigo-600 text-white'
+                            ? 'bg-brand-600 text-white'
                             : 'text-muted-foreground hover:bg-muted',
                     ]"
                     @click="turnoAtivo = t"
@@ -186,7 +186,7 @@ const labelDia = (n: number) => DIAS.find((d) => d.n === n)?.label ?? '';
                         type="button"
                         :class="[
                             'flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors',
-                            semanaAtiva === s ? 'bg-indigo-600 text-white' : 'text-muted-foreground hover:bg-muted',
+                            semanaAtiva === s ? 'bg-brand-600 text-white' : 'text-muted-foreground hover:bg-muted',
                         ]"
                         @click="semanaAtiva = s"
                     >
@@ -228,9 +228,9 @@ const labelDia = (n: number) => DIAS.find((d) => d.n === n)?.label ?? '';
                         <td v-for="d in DIAS" :key="d.n" class="px-2 py-2 text-center align-middle">
                             <div
                                 v-if="pratoNoSlot(d.n, r)"
-                                class="group flex items-center justify-between gap-1 rounded-md bg-indigo-50 px-2 py-1.5 text-left text-xs dark:bg-indigo-900/30"
+                                class="group flex items-center justify-between gap-1 rounded-md bg-brand-50 px-2 py-1.5 text-left text-xs dark:bg-brand-900/30"
                             >
-                                <span class="truncate font-medium text-indigo-900 dark:text-indigo-200">
+                                <span class="truncate font-medium text-brand-900 dark:text-brand-200">
                                     {{ pratoNoSlot(d.n, r)!.prato_nome }}
                                 </span>
                                 <button
@@ -248,8 +248,8 @@ const labelDia = (n: number) => DIAS.find((d) => d.n === n)?.label ?? '';
                                 :class="[
                                     'w-full rounded-md border border-dashed py-1.5 text-xs transition-colors',
                                     form.cdi_dia_semana === d.n && form.cdi_refeicao === r
-                                        ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300'
-                                        : 'border-muted-foreground/30 text-muted-foreground hover:border-indigo-400 hover:text-indigo-600',
+                                        ? 'border-brand-500 bg-brand-50 text-brand-700 dark:bg-brand-900/30 dark:text-brand-300'
+                                        : 'border-muted-foreground/30 text-muted-foreground hover:border-brand-400 hover:text-brand-600',
                                 ]"
                                 @click="prepararSlot(d.n, r)"
                             >
@@ -294,7 +294,7 @@ const labelDia = (n: number) => DIAS.find((d) => d.n === n)?.label ?? '';
             <div class="flex gap-2 sm:col-span-2 sm:pt-7">
                 <Button
                     type="button"
-                    class="flex-1 bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
+                    class="flex-1 bg-brand-600 text-white hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400"
                     @click="adicionar"
                 >
                     <LoaderCircle v-if="form.processing" class="mr-2 size-4 animate-spin" />

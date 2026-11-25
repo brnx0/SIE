@@ -74,7 +74,7 @@ const salvar = () => {
     <div class="grid gap-4 rounded-xl border bg-card p-6 shadow-sm">
         <div class="flex flex-wrap items-center justify-between gap-3">
             <div class="flex items-center gap-2">
-                <CalendarRange class="size-4 text-indigo-600" />
+                <CalendarRange class="size-4 text-brand-600" />
                 <h3 class="text-sm font-semibold">Dias Letivos</h3>
             </div>
             <select v-model="selectedAnlId" class="flex h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring">
@@ -122,7 +122,7 @@ const salvar = () => {
         </p>
 
         <div class="flex justify-end">
-            <Button type="button" size="sm" class="bg-indigo-600 hover:bg-indigo-700" :disabled="processing || !selectedAnlId" @click="salvar">
+            <Button type="button" size="sm" class="bg-brand-600 hover:bg-brand-700" :disabled="processing || !selectedAnlId" @click="salvar">
                 <LoaderCircle v-if="processing" class="mr-2 size-4 animate-spin" />
                 <Save v-else class="mr-2 size-4" />
                 Salvar

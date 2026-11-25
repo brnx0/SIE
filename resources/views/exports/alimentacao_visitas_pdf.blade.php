@@ -5,8 +5,8 @@
 <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: DejaVu Sans, sans-serif; font-size: 11px; color: #1e293b; }
-    .header { padding: 18px 24px 12px; border-bottom: 2px solid #6366f1; }
-    .header h1 { font-size: 18px; font-weight: 700; color: #4f46e5; }
+    .header { padding: 18px 24px 12px; border-bottom: 2px solid #2f6fb8; }
+    .header h1 { font-size: 18px; font-weight: 700; color: #1e4e8c; }
     .header p { font-size: 10px; color: #64748b; margin-top: 2px; }
     .visita { padding: 12px 24px; border-bottom: 1px solid #e2e8f0; }
     .visita-nome { font-size: 12px; font-weight: 700; }
@@ -19,7 +19,7 @@
     table.q { width: 100%; border-collapse: collapse; margin-top: 6px; }
     table.q thead th { background: #f1f5f9; padding: 5px 8px; text-align: left; font-size: 9px; text-transform: uppercase; color: #475569; }
     table.q td { padding: 5px 8px; border-bottom: 1px solid #f8fafc; vertical-align: top; }
-    .parecer { margin-top: 6px; padding: 6px 8px; background: #f8fafc; border-left: 3px solid #6366f1; font-size: 10px; }
+    .parecer { margin-top: 6px; padding: 6px 8px; background: #f8fafc; border-left: 3px solid #2f6fb8; font-size: 10px; }
     .vazio { font-size: 10px; color: #94a3b8; font-style: italic; margin-top: 4px; }
     .footer { padding: 10px 24px 14px; border-top: 1px solid #e2e8f0; background: #f8fafc; }
     .footer-grid { display: flex; gap: 32px; }

@@ -83,7 +83,7 @@ const fmtData = (d: string) => new Date(d + 'T00:00:00').toLocaleDateString('pt-
 
             <!-- Registrar viagem -->
             <div v-if="!isReadOnly" class="rounded-xl border bg-card p-5 shadow-sm">
-                <h2 class="mb-3 flex items-center gap-2 text-sm font-semibold"><CalendarPlus class="size-4 text-indigo-600" /> Registrar viagem</h2>
+                <h2 class="mb-3 flex items-center gap-2 text-sm font-semibold"><CalendarPlus class="size-4 text-brand-600" /> Registrar viagem</h2>
                 <div class="flex flex-wrap items-end gap-3">
                     <div class="grid min-w-[16rem] flex-1 gap-1.5">
                         <FormLabel :required="true">Rota</FormLabel>
@@ -95,7 +95,7 @@ const fmtData = (d: string) => new Date(d + 'T00:00:00').toLocaleDateString('pt-
                         <Input v-model="registrar.tdb_dt_viagem" type="date" class="w-44" />
                         <InputError :message="registrar.errors.tdb_dt_viagem" />
                     </div>
-                    <Button type="button" :disabled="registrar.processing || !registrar.tdb_rot_id" class="bg-indigo-600 text-white hover:bg-indigo-700" @click="submitRegistrar">
+                    <Button type="button" :disabled="registrar.processing || !registrar.tdb_rot_id" class="bg-brand-600 text-white hover:bg-brand-700" @click="submitRegistrar">
                         Abrir registro
                     </Button>
                 </div>
@@ -160,7 +160,7 @@ const fmtData = (d: string) => new Date(d + 'T00:00:00').toLocaleDateString('pt-
                             </td>
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-2">
-                                    <RouteIcon class="size-4 text-indigo-500" />
+                                    <RouteIcon class="size-4 text-brand-500" />
                                     <div class="flex flex-col">
                                         <span>{{ d.rota?.rot_nome ?? '—' }}</span>
                                         <span class="text-xs text-muted-foreground">{{ d.rota ? (ROTA_TURNOS[d.rota.rot_turno] ?? d.rota.rot_turno) : '' }}</span>
@@ -203,7 +203,7 @@ const fmtData = (d: string) => new Date(d + 'T00:00:00').toLocaleDateString('pt-
                         <template v-else>Nenhum registro</template>
                     </span>
                     <div v-if="diarios.last_page > 1" class="flex flex-wrap gap-1">
-                        <Link v-for="(link, i) in diarios.links" :key="i" :href="link.url ?? '#'" v-html="link.label" :class="['rounded-md px-3 py-1 text-xs', link.active ? 'bg-indigo-600 text-white' : 'border bg-background hover:bg-muted', !link.url && 'pointer-events-none opacity-40']" preserve-scroll />
+                        <Link v-for="(link, i) in diarios.links" :key="i" :href="link.url ?? '#'" v-html="link.label" :class="['rounded-md px-3 py-1 text-xs', link.active ? 'bg-brand-600 text-white' : 'border bg-background hover:bg-muted', !link.url && 'pointer-events-none opacity-40']" preserve-scroll />
                     </div>
                 </div>
             </div>

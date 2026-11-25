@@ -113,7 +113,7 @@ function gerar() {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="mx-auto w-[95%] py-6">
             <h1 class="mb-1 flex items-center gap-2 text-xl font-semibold">
-                <ListChecks class="size-5 text-indigo-600" /> Mapa de Notas
+                <ListChecks class="size-5 text-brand-600" /> Mapa de Notas
             </h1>
             <p class="mb-6 text-sm text-muted-foreground">Todas as notas de uma disciplina no período: média, recuperação e média final (M.F) por aluno.</p>
 
@@ -139,7 +139,7 @@ function gerar() {
                     <LocalCombobox v-model="uniId" :items="itemsPeriodo" placeholder="Selecione a unidade..." />
                 </div>
                 <div class="flex items-end justify-end sm:col-span-2 lg:col-span-1">
-                    <Button :disabled="!podeGerar || gerando" class="bg-indigo-600 text-white hover:bg-indigo-700" @click="gerar">
+                    <Button :disabled="!podeGerar || gerando" class="bg-brand-600 text-white hover:bg-brand-700" @click="gerar">
                         <Loader2 v-if="gerando" class="mr-1 size-4 animate-spin" /> Gerar Relatório
                     </Button>
                 </div>

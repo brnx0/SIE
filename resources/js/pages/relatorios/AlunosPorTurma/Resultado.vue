@@ -215,7 +215,7 @@ const exportarExcel = () => {
             </div>
 
             <div v-for="[turma, alunos] in grupos" :key="turma" class="mb-6 rounded-xl border bg-card shadow-sm overflow-hidden">
-                <div class="border-b bg-indigo-50 px-4 py-2 font-semibold text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-200">
+                <div class="border-b bg-brand-50 px-4 py-2 font-semibold text-brand-800 dark:bg-brand-900/30 dark:text-brand-200">
                     Turma {{ turma }} <span class="text-xs font-normal text-muted-foreground">({{ alunos.length }} aluno{{ alunos.length !== 1 ? 's' : '' }})</span>
                 </div>
                 <div class="overflow-x-auto">

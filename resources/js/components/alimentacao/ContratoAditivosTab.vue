@@ -233,7 +233,7 @@ const dePara = (a: AditivoLinha): { de: string; para: string } => {
 
             <div class="grid gap-2 sm:col-span-2">
                 <FormLabel for="adt_tipo" :required="true">Tipo</FormLabel>
-                <select id="adt_tipo" v-model="form.adt_tipo" class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground">
+                <select id="adt_tipo" v-model="form.adt_tipo" class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-background dark:text-foreground">
                     <option v-for="t in tipos" :key="t" :value="t">{{ t }}</option>
                 </select>
                 <InputError :message="form.errors.adt_tipo" />
@@ -266,7 +266,7 @@ const dePara = (a: AditivoLinha): { de: string; para: string } => {
                     id="adt_objeto_novo"
                     v-model="form.adt_objeto_novo"
                     rows="3"
-                    class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground"
+                    class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-background dark:text-foreground"
                 ></textarea>
                 <InputError :message="form.errors.adt_objeto_novo" />
             </div>
@@ -274,7 +274,7 @@ const dePara = (a: AditivoLinha): { de: string; para: string } => {
             <template v-if="form.adt_tipo === 'QTD'">
                 <div class="grid gap-2 sm:col-span-3">
                     <FormLabel for="adt_cti_id" :required="true">Item do contrato</FormLabel>
-                    <select id="adt_cti_id" v-model="form.adt_cti_id" class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground">
+                    <select id="adt_cti_id" v-model="form.adt_cti_id" class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-background dark:text-foreground">
                         <option :value="null" disabled>Selecione o item...</option>
                         <option v-for="i in itens" :key="i.cti_id" :value="i.cti_id">
                             {{ i.item_nome }} — atual: {{ qtd(i.cti_qtd) }} {{ i.umd_sigla }}
@@ -297,7 +297,7 @@ const dePara = (a: AditivoLinha): { de: string; para: string } => {
             </div>
 
             <div class="flex sm:col-span-1 sm:pt-7">
-                <Button type="button" class="w-full bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400" @click="lancar">
+                <Button type="button" class="w-full bg-brand-600 text-white hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400" @click="lancar">
                     <LoaderCircle v-if="form.processing" class="mr-2 size-4 animate-spin" />
                     <Plus v-else class="mr-2 size-4" />
                     Lançar

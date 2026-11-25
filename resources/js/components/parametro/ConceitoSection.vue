@@ -97,12 +97,12 @@ const fmtNum = (n: number | string) => Number(n).toFixed(2);
     <div class="grid gap-4 rounded-xl border bg-card p-6 shadow-sm">
         <div class="flex flex-wrap items-center justify-between gap-3">
             <div class="flex items-center gap-2">
-                <Award class="size-4 text-indigo-600" />
+                <Award class="size-4 text-brand-600" />
                 <h3 class="text-sm font-semibold">Cadastro de Conceito</h3>
             </div>
             <div class="flex items-center gap-3">
                 <RefreshButton />
-                <Button v-if="!showForm" type="button" size="sm" class="bg-indigo-600 hover:bg-indigo-700" @click="openCreate">
+                <Button v-if="!showForm" type="button" size="sm" class="bg-brand-600 hover:bg-brand-700" @click="openCreate">
                     <Plus class="mr-2 size-4" /> Adicionar Conceito
                 </Button>
             </div>
@@ -148,7 +148,7 @@ const fmtNum = (n: number | string) => Number(n).toFixed(2);
                 <Button type="button" variant="outline" size="sm" @click="cancel">
                     <X class="mr-2 size-4" /> Cancelar
                 </Button>
-                <Button type="button" size="sm" class="bg-indigo-600 hover:bg-indigo-700" :disabled="processing" @click="save">
+                <Button type="button" size="sm" class="bg-brand-600 hover:bg-brand-700" :disabled="processing" @click="save">
                     <LoaderCircle v-if="processing" class="mr-2 size-4 animate-spin" />
                     <Save v-else class="mr-2 size-4" />
                     Salvar
@@ -159,7 +159,7 @@ const fmtNum = (n: number | string) => Number(n).toFixed(2);
         <!-- Tabela -->
         <div class="overflow-x-auto">
             <table class="w-full text-left text-sm">
-                <thead class="bg-indigo-600 text-white">
+                <thead class="bg-brand-600 text-white">
                     <tr>
                         <th class="px-3 py-2 font-semibold">Sigla</th>
                         <th class="px-3 py-2 font-semibold">Descrição</th>

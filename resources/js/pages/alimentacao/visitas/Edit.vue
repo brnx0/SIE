@@ -239,7 +239,7 @@ const cancelar = () => {
                                         :key="o.pro_id"
                                         type="button"
                                         :variant="formResposta.vre_pro_id === o.pro_id ? 'default' : 'outline'"
-                                        :class="formResposta.vre_pro_id === o.pro_id ? 'bg-indigo-600 text-white hover:bg-indigo-700' : ''"
+                                        :class="formResposta.vre_pro_id === o.pro_id ? 'bg-brand-600 text-white hover:bg-brand-700' : ''"
                                         @click="formResposta.vre_pro_id = o.pro_id"
                                     >
                                         {{ o.pro_texto }}
@@ -254,7 +254,7 @@ const cancelar = () => {
                                     :id="`texto_${r.vre_id}`"
                                     v-model="formResposta.vre_resposta"
                                     rows="2"
-                                    class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground"
+                                    class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-background dark:text-foreground"
                                 ></textarea>
                             </div>
 
@@ -269,7 +269,7 @@ const cancelar = () => {
                                 <Button
                                     type="button"
                                     :disabled="formResposta.processing"
-                                    class="bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
+                                    class="bg-brand-600 text-white hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400"
                                     @click="salvarResposta(r)"
                                 >
                                     <LoaderCircle v-if="formResposta.processing" class="mr-2 size-4 animate-spin" />
@@ -369,7 +369,7 @@ const cancelar = () => {
                             v-model="formAtestar.vis_parecer"
                             rows="3"
                             placeholder="Opcional — conclusão da conferência"
-                            class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground"
+                            class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-background dark:text-foreground"
                         ></textarea>
                         <InputError :message="formAtestar.errors.vis_parecer" />
                     </div>

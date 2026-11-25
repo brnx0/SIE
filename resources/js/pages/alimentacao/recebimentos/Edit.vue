@@ -301,7 +301,7 @@ const semLote = computed(() => linhas.value.some((l) => l.qtd_recebida > 0 && !l
 
                                             <div class="grid gap-2 sm:col-span-2">
                                                 <FormLabel for="lote_mrc_id">Marca</FormLabel>
-                                                <select id="lote_mrc_id" v-model="formItem.lote_mrc_id" class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground">
+                                                <select id="lote_mrc_id" v-model="formItem.lote_mrc_id" class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-background dark:text-foreground">
                                                     <option :value="null">—</option>
                                                     <option v-for="m in marcas" :key="m.mrc_id" :value="m.mrc_id">{{ m.mrc_nome }}</option>
                                                 </select>
@@ -312,7 +312,7 @@ const semLote = computed(() => linhas.value.some((l) => l.qtd_recebida > 0 && !l
                                                 <Button
                                                     type="button"
                                                     :disabled="formItem.processing"
-                                                    class="bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
+                                                    class="bg-brand-600 text-white hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400"
                                                     @click="salvarItem(l)"
                                                 >
                                                     <LoaderCircle v-if="formItem.processing" class="mr-2 size-4 animate-spin" />

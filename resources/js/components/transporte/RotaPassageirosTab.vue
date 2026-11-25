@@ -212,7 +212,7 @@ const podeSalvar = computed(() =>
         </div>
 
         <!-- Form -->
-        <div v-if="showForm" class="rounded-xl border border-indigo-200 bg-indigo-50/50 p-5 shadow-sm dark:border-indigo-800 dark:bg-indigo-900/20">
+        <div v-if="showForm" class="rounded-xl border border-brand-200 bg-brand-50/50 p-5 shadow-sm dark:border-brand-800 dark:bg-brand-900/20">
             <div class="mb-4 flex items-center justify-between">
                 <h4 class="text-sm font-medium">Novo passageiro</h4>
                 <button type="button" class="rounded p-1 hover:bg-muted" @click="resetForm"><X class="size-4" /></button>
@@ -220,10 +220,10 @@ const podeSalvar = computed(() =>
 
             <!-- Origem -->
             <div class="mb-4 inline-flex rounded-lg border bg-background p-1 text-sm">
-                <button type="button" :class="['flex items-center gap-1.5 rounded-md px-3 py-1.5', origem === 'aluno' ? 'bg-indigo-600 text-white' : 'text-muted-foreground']" @click="trocarOrigem('aluno')">
+                <button type="button" :class="['flex items-center gap-1.5 rounded-md px-3 py-1.5', origem === 'aluno' ? 'bg-brand-600 text-white' : 'text-muted-foreground']" @click="trocarOrigem('aluno')">
                     <GraduationCap class="size-4" /> Aluno da rede
                 </button>
-                <button type="button" :class="['flex items-center gap-1.5 rounded-md px-3 py-1.5', origem === 'externo' ? 'bg-indigo-600 text-white' : 'text-muted-foreground']" @click="trocarOrigem('externo')">
+                <button type="button" :class="['flex items-center gap-1.5 rounded-md px-3 py-1.5', origem === 'externo' ? 'bg-brand-600 text-white' : 'text-muted-foreground']" @click="trocarOrigem('externo')">
                     <UserPlus class="size-4" /> Usuário externo
                 </button>
             </div>
@@ -254,7 +254,7 @@ const podeSalvar = computed(() =>
                 <!-- Ponto de embarque -->
                 <div class="grid gap-1.5 sm:col-span-6">
                     <FormLabel :required="true">Ponto de embarque</FormLabel>
-                    <select v-model.number="form.pas_pto_id" class="flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground" :class="{ 'border-rose-500': errors.pas_pto_id }">
+                    <select v-model.number="form.pas_pto_id" class="flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-background dark:text-foreground" :class="{ 'border-rose-500': errors.pas_pto_id }">
                         <option :value="null" disabled>Selecione o ponto...</option>
                         <option v-for="(p, i) in pontosList" :key="p.pto_id" :value="p.pto_id">{{ i + 1 }}. {{ p.pto_nome }}</option>
                     </select>
@@ -298,7 +298,7 @@ const podeSalvar = computed(() =>
 
             <div v-if="!avisoOutraRota" class="mt-4 flex justify-end gap-2">
                 <Button type="button" variant="outline" size="sm" @click="resetForm">Cancelar</Button>
-                <Button type="button" size="sm" :disabled="processing || !podeSalvar" class="bg-indigo-600 text-white hover:bg-indigo-700" @click="submit(false)">
+                <Button type="button" size="sm" :disabled="processing || !podeSalvar" class="bg-brand-600 text-white hover:bg-brand-700" @click="submit(false)">
                     <Loader2 v-if="processing" class="mr-1 size-4 animate-spin" /> Vincular
                 </Button>
             </div>
@@ -324,7 +324,7 @@ const podeSalvar = computed(() =>
                     <tr v-for="p in list" :key="p.pas_id" class="border-b last:border-0 hover:bg-muted/20">
                         <td class="px-4 py-3">
                             <div class="font-medium">{{ p.aluno?.aln_nome ?? p.usuario_externo?.tue_nome ?? '—' }}</div>
-                            <span :class="['mt-0.5 inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase', p.aluno ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300' : 'bg-fuchsia-100 text-fuchsia-700 dark:bg-fuchsia-900/40 dark:text-fuchsia-300']">
+                            <span :class="['mt-0.5 inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase', p.aluno ? 'bg-brand-100 text-brand-700 dark:bg-brand-900/40 dark:text-brand-300' : 'bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-300']">
                                 {{ p.aluno ? 'Aluno da rede' : 'Externo' }}
                             </span>
                         </td>

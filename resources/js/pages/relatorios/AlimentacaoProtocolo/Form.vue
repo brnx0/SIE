@@ -69,7 +69,7 @@ function gerar() {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="mx-auto w-[95%] py-6">
             <h1 class="mb-1 flex items-center gap-2 text-xl font-semibold">
-                <Truck class="size-5 text-indigo-600" /> Protocolo da Central de Distribuição
+                <Truck class="size-5 text-brand-600" /> Protocolo da Central de Distribuição
             </h1>
             <p class="mb-6 text-sm text-muted-foreground">
                 Itens entregues pela central a cada unidade no período, com campo de assinatura. Deixe a unidade em branco para gerar o protocolo de todas.
@@ -93,7 +93,7 @@ function gerar() {
                         A data inicial não pode ser maior que a final.
                     </p>
                     <span v-else />
-                    <Button :disabled="!periodoValido || gerando" class="bg-indigo-600 text-white hover:bg-indigo-700" @click="gerar">
+                    <Button :disabled="!periodoValido || gerando" class="bg-brand-600 text-white hover:bg-brand-700" @click="gerar">
                         <Loader2 v-if="gerando" class="mr-1 size-4 animate-spin" /> Gerar Relatório
                     </Button>
                 </div>
