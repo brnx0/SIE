@@ -90,7 +90,7 @@ class AlunoController extends Controller
                 'turma.segmento:seg_id,seg_nome_reduzido',
                 'turma.serie:ser_id,ser_nome',
                 'turma.anoLetivo:anl_id,anl_ano',
-                'situacaoSaida:tas_cod,tas_descricao',
+                'situacaoSaida:tas_cod,tas_descricao,tas_ctrl_cod',
             ])
             ->orderByDesc('tma_dt_matricula')
             ->get([
@@ -105,6 +105,7 @@ class AlunoController extends Controller
                 'tma_situacao'     => $m->tma_situacao,
                 'tma_dt_matricula' => $m->tma_dt_matricula?->format('Y-m-d'),
                 'situacao_saida'   => $m->situacaoSaida?->tas_descricao,
+                'tas_ctrl_cod'     => $m->situacaoSaida?->tas_ctrl_cod,
                 'anl_ano'          => $m->turma?->anoLetivo?->anl_ano,
                 'esc_nome'         => $m->turma?->escola?->esc_nome,
                 'ser_nome'         => $m->turma?->serie?->ser_nome,

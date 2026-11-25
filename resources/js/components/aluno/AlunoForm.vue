@@ -40,6 +40,7 @@ interface MatriculaResumo {
     tma_situacao: string;
     tma_dt_matricula: string | null;
     situacao_saida: string | null;
+    tas_ctrl_cod: number | null;
     anl_ano: number | null;
     esc_nome: string | null;
     ser_nome: string | null;
@@ -85,6 +86,22 @@ const matriculasAee = computed(() =>
 const matriculasAtividade = computed(() =>
     (props.matriculas ?? []).filter((m) => m.tur_modalidade === 'ATIVIDADE'),
 );
+
+// Resultado final na turma = situação de saída categorizada por tas_ctrl_cod:
+// 1 = aprovação, 2 = reprovação. Saídas (3: transferido/remanejado/evadido/...) vão
+// para a coluna "Situação de Saída". Matrícula em curso (sem saída) → "Em andamento".
+const resultadoFinalTexto = (m: MatriculaResumo): string => {
+    if ((m.tas_ctrl_cod === 1 || m.tas_ctrl_cod === 2) && m.situacao_saida) return m.situacao_saida;
+    if (!m.situacao_saida && m.tma_situacao === 'ATIVA') return 'Em andamento';
+    return '—';
+};
+const resultadoFinalClasse = (m: MatriculaResumo): string => {
+    if (m.tas_ctrl_cod === 1) return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300';
+    if (m.tas_ctrl_cod === 2) return 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300';
+    if (!m.situacao_saida && m.tma_situacao === 'ATIVA') return 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300';
+    return 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400';
+};
+const situacaoSaidaTexto = (m: MatriculaResumo): string | null => (m.tas_ctrl_cod === 3 ? m.situacao_saida : null);
 
 // Matrícula: número imutável, lido direto dos props (não é campo editável do form).
 const matriculaAtual = computed(() => props.initial?.aln_nr_matricula ?? null);
@@ -1449,21 +1466,13 @@ const initials = computed(() => {
                                         <td class="px-3 py-2.5 capitalize text-muted-foreground">{{ m.tur_turno?.toLowerCase() ?? '—' }}</td>
                                         <td class="px-3 py-2.5 text-muted-foreground">{{ m.seg_nome ?? '—' }}</td>
                                         <td class="px-3 py-2.5 text-center">
-                                            <span :class="[
-                                                'inline-flex rounded-full px-2 py-0.5 text-xs font-medium',
-                                                m.tma_situacao === 'ATIVA'        ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' :
-                                                m.tma_situacao === 'CANCELADA'    ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300' :
-                                                m.tma_situacao === 'TRANSFERIDA'  ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300' :
-                                                m.tma_situacao === 'EVADIDO'      ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300' :
-                                                m.tma_situacao === 'FALECIDO'     ? 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400' :
-                                                'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
-                                            ]">
-                                                {{ m.tma_situacao }}
+                                            <span :class="['inline-flex rounded-full px-2 py-0.5 text-xs font-medium', resultadoFinalClasse(m)]">
+                                                {{ resultadoFinalTexto(m) }}
                                             </span>
                                         </td>
                                         <td class="px-3 py-2.5 text-center">
-                                            <span v-if="m.situacao_saida" class="inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-                                                {{ m.situacao_saida }}
+                                            <span v-if="situacaoSaidaTexto(m)" class="inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                                                {{ situacaoSaidaTexto(m) }}
                                             </span>
                                             <span v-else class="text-muted-foreground">—</span>
                                         </td>
@@ -1516,21 +1525,13 @@ const initials = computed(() => {
                                         <td class="px-3 py-2.5 text-center font-semibold">{{ m.tur_nome ?? '—' }}</td>
                                         <td class="px-3 py-2.5 capitalize text-muted-foreground">{{ m.tur_turno?.toLowerCase() ?? '—' }}</td>
                                         <td class="px-3 py-2.5 text-center">
-                                            <span :class="[
-                                                'inline-flex rounded-full px-2 py-0.5 text-xs font-medium',
-                                                m.tma_situacao === 'ATIVA'        ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' :
-                                                m.tma_situacao === 'CANCELADA'    ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300' :
-                                                m.tma_situacao === 'TRANSFERIDA'  ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300' :
-                                                m.tma_situacao === 'EVADIDO'      ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300' :
-                                                m.tma_situacao === 'FALECIDO'     ? 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400' :
-                                                'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
-                                            ]">
-                                                {{ m.tma_situacao }}
+                                            <span :class="['inline-flex rounded-full px-2 py-0.5 text-xs font-medium', resultadoFinalClasse(m)]">
+                                                {{ resultadoFinalTexto(m) }}
                                             </span>
                                         </td>
                                         <td class="px-3 py-2.5 text-center">
-                                            <span v-if="m.situacao_saida" class="inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-                                                {{ m.situacao_saida }}
+                                            <span v-if="situacaoSaidaTexto(m)" class="inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                                                {{ situacaoSaidaTexto(m) }}
                                             </span>
                                             <span v-else class="text-muted-foreground">—</span>
                                         </td>
@@ -1583,21 +1584,13 @@ const initials = computed(() => {
                                         <td class="px-3 py-2.5 text-center font-semibold">{{ m.tur_nome ?? '—' }}</td>
                                         <td class="px-3 py-2.5 capitalize text-muted-foreground">{{ m.tur_turno?.toLowerCase() ?? '—' }}</td>
                                         <td class="px-3 py-2.5 text-center">
-                                            <span :class="[
-                                                'inline-flex rounded-full px-2 py-0.5 text-xs font-medium',
-                                                m.tma_situacao === 'ATIVA'        ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' :
-                                                m.tma_situacao === 'CANCELADA'    ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300' :
-                                                m.tma_situacao === 'TRANSFERIDA'  ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300' :
-                                                m.tma_situacao === 'EVADIDO'      ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300' :
-                                                m.tma_situacao === 'FALECIDO'     ? 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400' :
-                                                'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
-                                            ]">
-                                                {{ m.tma_situacao }}
+                                            <span :class="['inline-flex rounded-full px-2 py-0.5 text-xs font-medium', resultadoFinalClasse(m)]">
+                                                {{ resultadoFinalTexto(m) }}
                                             </span>
                                         </td>
                                         <td class="px-3 py-2.5 text-center">
-                                            <span v-if="m.situacao_saida" class="inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-                                                {{ m.situacao_saida }}
+                                            <span v-if="situacaoSaidaTexto(m)" class="inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                                                {{ situacaoSaidaTexto(m) }}
                                             </span>
                                             <span v-else class="text-muted-foreground">—</span>
                                         </td>
