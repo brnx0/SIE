@@ -284,7 +284,7 @@ const err = (k: string) => errors.value[k];
         <div>
             <div class="mb-1 flex items-center justify-between">
                 <h3 class="text-sm font-semibold">Lançamentos manuais</h3>
-                <Button v-if="!showForm" size="sm" class="bg-indigo-600 text-white hover:bg-indigo-700" @click="novo">
+                <Button v-if="!showForm" size="sm" class="bg-brand-600 text-white hover:bg-brand-700" @click="novo">
                     <Plus class="mr-1 size-4" /> Novo lançamento
                 </Button>
             </div>
@@ -448,7 +448,7 @@ const err = (k: string) => errors.value[k];
 
             <div class="flex justify-end gap-2 border-t pt-3">
                 <Button variant="outline" size="sm" @click="showForm = false">Cancelar</Button>
-                <Button size="sm" class="bg-indigo-600 text-white hover:bg-indigo-700" :disabled="processing" @click="salvar">
+                <Button size="sm" class="bg-brand-600 text-white hover:bg-brand-700" :disabled="processing" @click="salvar">
                     <LoaderCircle v-if="processing" class="mr-1 size-4 animate-spin" />
                     <Save v-else class="mr-1 size-4" /> Salvar
                 </Button>

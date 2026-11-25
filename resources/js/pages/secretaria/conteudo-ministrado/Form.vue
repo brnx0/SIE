@@ -69,7 +69,7 @@ function gerar() {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="mx-auto w-[95%] py-6">
             <h1 class="mb-1 flex items-center gap-2 text-xl font-semibold">
-                <BookOpenText class="size-5 text-indigo-600" /> Conteúdo Ministrado
+                <BookOpenText class="size-5 text-brand-600" /> Conteúdo Ministrado
             </h1>
             <p class="mb-6 text-sm text-muted-foreground">Por disciplina, lista os dias com aula registrada na frequência, o planejamento executado e o conteúdo/metodologia do dia — para qualquer turma da escola. Período em branco = todos.</p>
 
@@ -91,7 +91,7 @@ function gerar() {
                     <LocalCombobox v-model="uniId" :items="itemsPeriodo" placeholder="Todos os períodos" />
                 </div>
                 <div class="flex items-end justify-end sm:col-span-2 lg:col-span-4">
-                    <Button :disabled="!escId || !anlId || !turId || gerando" class="bg-indigo-600 text-white hover:bg-indigo-700" @click="gerar">
+                    <Button :disabled="!escId || !anlId || !turId || gerando" class="bg-brand-600 text-white hover:bg-brand-700" @click="gerar">
                         <Loader2 v-if="gerando" class="mr-1 size-4 animate-spin" /> Gerar Relatório
                     </Button>
                 </div>

@@ -443,7 +443,7 @@ const searching = computed(() => search.value.trim().length > 0);
     height: 0;
     width: 3px;
     border-radius: 0 4px 4px 0;
-    background: linear-gradient(180deg, #4f46e5, #818cf8);
+    background: linear-gradient(180deg, #1e4e8c, #5d9bd8);
     transform: translateY(-50%);
     transition: height 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
@@ -506,26 +506,26 @@ const searching = computed(() => search.value.trim().length > 0);
 
 /* Hover */
 .menu-moderno [data-sidebar="menu-button"]:hover {
-    background: rgba(79, 70, 229, 0.08);
+    background: rgba(30, 78, 140, 0.08);
     transform: translateX(3px);
 }
 .menu-moderno [data-sidebar="menu-button"]:hover > svg:first-child {
     transform: scale(1.08) rotate(-3deg);
-    background: rgba(79, 70, 229, 0.16);
-    color: #4f46e5;
+    background: rgba(30, 78, 140, 0.16);
+    color: #1e4e8c;
 }
 .dark .menu-moderno [data-sidebar="menu-button"]:hover > svg:first-child {
-    color: #a5b4fc;
+    color: #9fd0ff;
 }
 
-/* Item ATIVO — pílula azul (indigo principal) com shimmer + glow */
+/* Item ATIVO — pílula azul com shimmer + glow */
 .menu-moderno [data-sidebar="menu-button"][data-active="true"],
 .menu-moderno [data-sidebar="menu-button"][data-active="true"]:hover {
     color: #fff;
     transform: none;
-    background-image: linear-gradient(110deg, #4f46e5 0%, #4338ca 55%, #3730a3 100%);
+    background-image: linear-gradient(110deg, #1e4e8c 0%, #173f73 55%, #0c2a52 100%);
     background-size: 200% 100%;
-    box-shadow: 0 12px 26px -10px rgba(79, 70, 229, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+    box-shadow: 0 12px 26px -10px rgba(30, 78, 140, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.18);
     animation: auroraShift 6s ease infinite;
 }
 .menu-moderno [data-sidebar="menu-button"][data-active="true"]::before {
@@ -564,7 +564,7 @@ const searching = computed(() => search.value.trim().length > 0);
     margin-left: 0.95rem;
     padding-left: 0.8rem;
     background:
-        linear-gradient(180deg, #4f46e5, #818cf8) left / 2px 100% no-repeat;
+        linear-gradient(180deg, #1e4e8c, #5d9bd8) left / 2px 100% no-repeat;
     border-radius: 2px;
 }
 
@@ -575,12 +575,12 @@ const searching = computed(() => search.value.trim().length > 0);
     transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease;
 }
 .menu-moderno [data-sidebar="menu-sub-button"]:hover {
-    background: rgba(79, 70, 229, 0.08);
+    background: rgba(30, 78, 140, 0.08);
     transform: translateX(2px);
 }
 .menu-moderno [data-sidebar="menu-sub-button"][data-active="true"] {
-    background-image: linear-gradient(90deg, rgba(79, 70, 229, 0.16), transparent);
-    color: #4338ca;
+    background-image: linear-gradient(90deg, rgba(30, 78, 140, 0.16), transparent);
+    color: #173f73;
     font-weight: 600;
 }
 .menu-moderno [data-sidebar="menu-sub-button"][data-active="true"]::before {
@@ -592,16 +592,16 @@ const searching = computed(() => search.value.trim().length > 0);
     width: 7px;
     height: 7px;
     border-radius: 9999px;
-    background: linear-gradient(135deg, #4f46e5, #818cf8);
-    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.16);
+    background: linear-gradient(135deg, #1e4e8c, #5d9bd8);
+    box-shadow: 0 0 0 3px rgba(30, 78, 140, 0.16);
     animation: dotPulse 2.6s ease-in-out infinite;
 }
 .dark .menu-moderno [data-sidebar="menu-sub-button"][data-active="true"] {
-    color: #c7d2fe;
+    color: #9fd0ff;
 }
 @keyframes dotPulse {
-    0%, 100% { box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.16); }
-    50% { box-shadow: 0 0 0 5px rgba(79, 70, 229, 0.06); }
+    0%, 100% { box-shadow: 0 0 0 3px rgba(30, 78, 140, 0.16); }
+    50% { box-shadow: 0 0 0 5px rgba(30, 78, 140, 0.06); }
 }
 
 @media (prefers-reduced-motion: reduce) {

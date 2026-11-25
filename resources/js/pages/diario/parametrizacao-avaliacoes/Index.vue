@@ -125,7 +125,7 @@ const fmtDateTime = (d: string | null) =>
                     <Button
                         v-if="!isReadOnly && uniId"
                         type="button"
-                        class="bg-indigo-600 hover:bg-indigo-700"
+                        class="bg-brand-600 hover:bg-brand-700"
                         :disabled="form.processing || !form.isDirty"
                         @click="salvar"
                     >
@@ -139,12 +139,12 @@ const fmtDateTime = (d: string | null) =>
             <!-- Ano letivo + unidades -->
             <div class="flex flex-col gap-3 rounded-lg border bg-card px-4 py-3 shadow-sm">
                 <div class="flex flex-wrap items-center gap-3">
-                    <CalendarDays class="size-5 shrink-0 text-indigo-600" />
+                    <CalendarDays class="size-5 shrink-0 text-brand-600" />
                     <label for="sel_ano" class="text-sm font-medium whitespace-nowrap">Ano Letivo:</label>
                     <select
                         id="sel_ano"
                         :value="anlId ?? ''"
-                        class="rounded-md border border-input bg-background px-3 py-1.5 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        class="rounded-md border border-input bg-background px-3 py-1.5 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                         @change="trocarAno"
                     >
                         <option v-for="a in anosLetivos" :key="a.anl_id" :value="a.anl_id">
@@ -160,8 +160,8 @@ const fmtDateTime = (d: string | null) =>
                         :class="[
                             'inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm transition',
                             u.uni_id === uniId
-                                ? 'border-indigo-600 bg-indigo-600 text-white'
-                                : 'border-input bg-background hover:border-indigo-300',
+                                ? 'border-brand-600 bg-brand-600 text-white'
+                                : 'border-input bg-background hover:border-brand-300',
                         ]"
                         @click="trocarUnidade(u)"
                     >
@@ -176,7 +176,7 @@ const fmtDateTime = (d: string | null) =>
             </div>
 
             <template v-if="uniId">
-                <div class="flex items-start gap-2 rounded-lg border border-indigo-200 bg-indigo-50 p-3 text-sm text-indigo-900 dark:border-indigo-900 dark:bg-indigo-950/40 dark:text-indigo-200">
+                <div class="flex items-start gap-2 rounded-lg border border-brand-200 bg-brand-50 p-3 text-sm text-brand-900 dark:border-brand-900 dark:bg-brand-950/40 dark:text-brand-200">
                     <ClipboardCheck class="mt-0.5 size-4 shrink-0" />
                     <span>
                         Com instrumentos marcados, o professor só cria avaliações com eles nesta unidade, e o valor já vem preenchido.
@@ -220,13 +220,13 @@ const fmtDateTime = (d: string | null) =>
                             <tr
                                 v-for="i in instrumentos"
                                 :key="i.iav_id"
-                                :class="selecionado(i.iav_id) ? 'bg-indigo-50/40 dark:bg-indigo-950/20' : ''"
+                                :class="selecionado(i.iav_id) ? 'bg-brand-50/40 dark:bg-brand-950/20' : ''"
                             >
                                 <td class="px-4 py-2 align-top">
                                     <input
                                         :id="`sel_${i.iav_id}`"
                                         type="checkbox"
-                                        class="mt-1 size-4 accent-indigo-600"
+                                        class="mt-1 size-4 accent-brand-600"
                                         :checked="selecionado(i.iav_id)"
                                         :disabled="isReadOnly"
                                         @change="alternar(i)"

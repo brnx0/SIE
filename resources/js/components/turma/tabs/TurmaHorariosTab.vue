@@ -168,7 +168,7 @@ const remove = (trh: TurmaHorario) => {
             class="rounded-xl border bg-card shadow-sm"
         >
             <!-- Header do dia -->
-            <div class="border-b bg-indigo-600 px-4 py-2">
+            <div class="border-b bg-brand-600 px-4 py-2">
                 <span class="text-sm font-semibold uppercase tracking-wide text-white">{{ dia.label }}</span>
             </div>
 
@@ -191,7 +191,7 @@ const remove = (trh: TurmaHorario) => {
                                 <td class="px-3 py-2">
                                     <div class="text-xs font-medium">{{ horarioMap.get(`${dia.value}:${tempo}`)?.funcionario?.fun_nome ?? '—' }}</div>
                                     <div class="text-xs text-muted-foreground">{{ horarioMap.get(`${dia.value}:${tempo}`)?.disciplina?.dis_nome ?? '—' }}</div>
-                                    <div v-if="horarioMap.get(`${dia.value}:${tempo}`)?.trh_hora" class="text-xs text-indigo-600 tabular-nums">
+                                    <div v-if="horarioMap.get(`${dia.value}:${tempo}`)?.trh_hora" class="text-xs text-brand-600 tabular-nums">
                                         {{ horarioMap.get(`${dia.value}:${tempo}`)?.trh_hora?.substring(0, 5) }}
                                     </div>
                                     <span
@@ -223,14 +223,14 @@ const remove = (trh: TurmaHorario) => {
                                         title="Atribuir docente"
                                         @click="openForm(dia.value, tempo)"
                                     >
-                                        <Plus class="size-3.5 text-indigo-600" />
+                                        <Plus class="size-3.5 text-brand-600" />
                                     </button>
                                 </td>
                             </template>
                         </tr>
 
                         <!-- Form inline expandido -->
-                        <tr v-if="showFormKey === `${dia.value}:${tempo}`" class="border-b bg-indigo-50/50 dark:bg-indigo-900/10">
+                        <tr v-if="showFormKey === `${dia.value}:${tempo}`" class="border-b bg-brand-50/50 dark:bg-brand-900/10">
                             <td colspan="3" class="px-3 py-3">
                                 <div class="grid gap-3">
                                     <div class="grid gap-3 sm:grid-cols-2">
@@ -268,7 +268,7 @@ const remove = (trh: TurmaHorario) => {
                                         <select
                                             v-model="form.trh_hora"
                                             :disabled="horasOpts.length === 0"
-                                            class="h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                                            class="h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-brand-500"
                                         >
                                             <option value="">{{ horasOpts.length === 0 ? 'Sem grade cadastrada' : '—' }}</option>
                                             <option v-for="h in horasDisponiveis" :key="h" :value="h">{{ h }}</option>
@@ -294,7 +294,7 @@ const remove = (trh: TurmaHorario) => {
                                         <Button
                                             type="button"
                                             size="sm"
-                                            class="h-7 bg-indigo-600 text-xs text-white hover:bg-indigo-700"
+                                            class="h-7 bg-brand-600 text-xs text-white hover:bg-brand-700"
                                             :disabled="processing"
                                             @click="submit"
                                         >

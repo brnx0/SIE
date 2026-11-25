@@ -36,11 +36,11 @@
             margin: 0 auto 20px;
             border-radius: 50%;
             display: grid; place-items: center;
-            background: linear-gradient(135deg, #6366f1, #d946ef);
+            background: linear-gradient(135deg, #1e4e8c, #2f6fb8);
             color: #fff;
         }
         .badge svg { width: 38px; height: 38px; }
-        .code { font-size: 13px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #d946ef; }
+        .code { font-size: 13px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #1e4e8c; }
         h1 { font-size: 22px; font-weight: 700; margin: 6px 0 10px; }
         .msg { font-size: 14.5px; line-height: 1.6; color: #64748b; }
         .actions { margin-top: 26px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
@@ -50,7 +50,7 @@
             font-size: 14px; font-weight: 600; text-decoration: none;
             border: 1px solid transparent; cursor: pointer;
         }
-        .btn-primary { background: linear-gradient(135deg, #6366f1, #d946ef); color: #fff; }
+        .btn-primary { background: linear-gradient(135deg, #1e4e8c, #2f6fb8); color: #fff; }
         .btn-primary:hover { filter: brightness(1.05); }
         .btn-ghost { background: transparent; color: #475569; border-color: #e2e8f0; }
         .btn-ghost:hover { background: rgba(100,116,139,.08); }

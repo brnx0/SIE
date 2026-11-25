@@ -364,12 +364,12 @@ watch(
                     <span class="text-muted-foreground">Lançar como:</span>
                     <button
                         type="button"
-                        :class="['rounded-md px-3 py-1 text-xs font-medium', tipoSel === 'numerica' ? 'bg-indigo-600 text-white' : 'border']"
+                        :class="['rounded-md px-3 py-1 text-xs font-medium', tipoSel === 'numerica' ? 'bg-brand-600 text-white' : 'border']"
                         @click="tipoSel = 'numerica'"
                     >Numérica</button>
                     <button
                         type="button"
-                        :class="['rounded-md px-3 py-1 text-xs font-medium', tipoSel === 'conceitual' ? 'bg-indigo-600 text-white' : 'border']"
+                        :class="['rounded-md px-3 py-1 text-xs font-medium', tipoSel === 'conceitual' ? 'bg-brand-600 text-white' : 'border']"
                         @click="tipoSel = 'conceitual'"
                     >Conceitual</button>
                 </div>
@@ -389,7 +389,7 @@ watch(
                                     <div class="mt-0.5 text-[10px] font-normal normal-case text-muted-foreground/70">nota · faltas</div>
                                 </th>
                                 <th v-if="entrada === 'numerica'" class="sticky top-0 z-10 border-b border-l bg-amber-500 px-3 py-3 text-center text-xs font-semibold uppercase text-white backdrop-blur">Rec.<br />Final</th>
-                                <th class="sticky right-0 top-0 z-20 border-b border-l bg-indigo-600 px-3 py-3 text-center text-xs font-semibold uppercase text-white backdrop-blur">Média<br />Final</th>
+                                <th class="sticky right-0 top-0 z-20 border-b border-l bg-brand-600 px-3 py-3 text-center text-xs font-semibold uppercase text-white backdrop-blur">Média<br />Final</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -448,7 +448,7 @@ watch(
                                     />
                                 </td>
                                 <td class="sticky right-0 z-10 border-b border-l px-3 py-2.5 text-center text-sm font-semibold tabular-nums" :class="i % 2 ? 'bg-muted/40' : 'bg-card'">
-                                    <span v-if="mediaFinal(d.dis_id) !== null" class="text-indigo-700 dark:text-indigo-300">{{ mediaFinal(d.dis_id) }}</span>
+                                    <span v-if="mediaFinal(d.dis_id) !== null" class="text-brand-700 dark:text-brand-300">{{ mediaFinal(d.dis_id) }}</span>
                                     <span v-else class="text-muted-foreground">—</span>
                                 </td>
                                 </template>

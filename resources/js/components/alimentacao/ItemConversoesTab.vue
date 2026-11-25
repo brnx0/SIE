@@ -136,7 +136,7 @@ const exemplo = computed(() => {
                 <select
                     id="cvu_umd_origem_id"
                     v-model="form.cvu_umd_origem_id"
-                    class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground"
+                    class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-background dark:text-foreground"
                 >
                     <option :value="null" disabled>Selecione a unidade...</option>
                     <option v-for="u in origensDisponiveis" :key="u.umd_id" :value="u.umd_id">
@@ -164,7 +164,7 @@ const exemplo = computed(() => {
             <div class="flex sm:col-span-1 sm:pt-7">
                 <Button
                     type="button"
-                    class="w-full bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
+                    class="w-full bg-brand-600 text-white hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400"
                     @click="adicionar"
                 >
                     <LoaderCircle v-if="form.processing" class="mr-2 size-4 animate-spin" />

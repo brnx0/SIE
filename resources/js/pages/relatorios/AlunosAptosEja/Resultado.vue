@@ -209,7 +209,7 @@ const exportarExcel = () => window.open(`/relatorios/alunos-aptos-eja/xlsx?${que
             <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 mb-4 print:hidden">
                 <div class="rounded-xl border bg-card p-4 shadow-sm">
                     <div class="text-xs text-muted-foreground">Alunos aptos</div>
-                    <div class="text-2xl font-semibold tabular-nums text-indigo-600">{{ resumo.total }}</div>
+                    <div class="text-2xl font-semibold tabular-nums text-brand-600">{{ resumo.total }}</div>
                 </div>
                 <div class="rounded-xl border bg-card p-4 shadow-sm">
                     <div class="text-xs text-muted-foreground">Escolas envolvidas</div>

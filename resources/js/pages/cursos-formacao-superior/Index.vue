@@ -49,7 +49,7 @@ const remove = (c: CursoFormacaoSuperiorCadastro) => {
                     <p class="text-sm text-slate-500 dark:text-slate-400">Cursos de graduação com os códigos oficiais do INEP, usados na formação de professores e funcionários.</p>
                 </div>
                 <Link v-if="!isReadOnly" href="/cursos-formacao-superior/create">
-                    <Button class="bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400">
+                    <Button class="bg-brand-600 text-white hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400">
                         <Plus class="mr-2 size-4" /> Novo curso
                     </Button>
                 </Link>
@@ -60,7 +60,7 @@ const remove = (c: CursoFormacaoSuperiorCadastro) => {
                     <Search class="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                     <Input v-model="search" placeholder="Buscar por curso, área ou código INEP..." class="pl-9" />
                 </div>
-                <select v-model="ngrId" class="h-10 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground">
+                <select v-model="ngrId" class="h-10 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-background dark:text-foreground">
                     <option value="">Todos os níveis</option>
                     <option v-for="n in niveis" :key="n.ngr_id" :value="String(n.ngr_id)">{{ n.ngr_nome }}</option>
                 </select>
@@ -89,7 +89,7 @@ const remove = (c: CursoFormacaoSuperiorCadastro) => {
                         <tr v-for="c in cursos.data" :key="c.cfs_id" class="transition-colors hover:bg-muted/30">
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-3">
-                                    <div class="grid size-9 shrink-0 place-items-center rounded-lg bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300">
+                                    <div class="grid size-9 shrink-0 place-items-center rounded-lg bg-brand-100 text-brand-700 dark:bg-brand-900/50 dark:text-brand-300">
                                         <GraduationCap class="size-4" />
                                     </div>
                                     <div class="flex flex-col">
@@ -127,7 +127,7 @@ const remove = (c: CursoFormacaoSuperiorCadastro) => {
                         <template v-else>Nenhum registro</template>
                     </span>
                     <div v-if="cursos.last_page > 1" class="flex flex-wrap gap-1">
-                        <Link v-for="(link, i) in cursos.links" :key="i" :href="link.url ?? '#'" v-html="link.label" :class="['rounded-md px-3 py-1 text-xs', link.active ? 'bg-indigo-600 text-white' : 'border bg-background hover:bg-muted', !link.url && 'pointer-events-none opacity-40']" preserve-scroll />
+                        <Link v-for="(link, i) in cursos.links" :key="i" :href="link.url ?? '#'" v-html="link.label" :class="['rounded-md px-3 py-1 text-xs', link.active ? 'bg-brand-600 text-white' : 'border bg-background hover:bg-muted', !link.url && 'pointer-events-none opacity-40']" preserve-scroll />
                     </div>
                 </div>
             </div>

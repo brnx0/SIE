@@ -98,7 +98,7 @@ function gerar() {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="mx-auto w-[95%] py-6">
             <h1 class="mb-1 flex items-center gap-2 text-xl font-semibold">
-                <FileBarChart class="size-5 text-indigo-600" /> Índices de Aprovação e Reprovação
+                <FileBarChart class="size-5 text-brand-600" /> Índices de Aprovação e Reprovação
             </h1>
             <p class="mb-6 text-sm text-muted-foreground">
                 Aprovados, reprovados e pendentes por <strong>trimestre</strong> e no <strong>ano</strong>, a partir das
@@ -136,7 +136,7 @@ function gerar() {
                 </div>
 
                 <div class="flex justify-end sm:col-span-2">
-                    <Button :disabled="!anlId || gerando" class="bg-indigo-600 text-white hover:bg-indigo-700" @click="gerar">
+                    <Button :disabled="!anlId || gerando" class="bg-brand-600 text-white hover:bg-brand-700" @click="gerar">
                         <Loader2 v-if="gerando" class="mr-1 size-4 animate-spin" />
                         Gerar Relatório
                     </Button>

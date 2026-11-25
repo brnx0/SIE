@@ -128,7 +128,7 @@ const situacaoClass = (s: number) => {
                                 <div class="flex items-center justify-end gap-1">
                                     <Link :href="`/escolas/${esc.esc_id}/edit`">
                                         <Button variant="ghost" size="sm" :title="isReadOnly ? 'Visualizar' : 'Editar'">
-                                            <Eye v-if="isReadOnly" class="size-4 text-indigo-600" />
+                                            <Eye v-if="isReadOnly" class="size-4 text-brand-600" />
                                             <Pencil v-else class="size-4" />
                                         </Button>
                                     </Link>

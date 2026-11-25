@@ -72,7 +72,7 @@ onBeforeUnmount(() => document.removeEventListener('mousedown', handleOutside));
         <button
             type="button"
             :disabled="disabled"
-            class="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 text-sm shadow-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
+            class="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 text-sm shadow-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 disabled:cursor-not-allowed disabled:opacity-50"
             @click="openPanel"
         >
             <span v-if="selected" class="truncate">{{ selected.aln_nome }}</span>

@@ -35,7 +35,7 @@ let resizeObs: ResizeObserver | null = null;
 const numberedIcon = (n: number) =>
     L.divIcon({
         className: 'mapa-rota-pin',
-        html: `<div style="background:#4f46e5;color:#fff;width:28px;height:28px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.4);border:2px solid #fff"><span style="transform:rotate(45deg);font-size:12px;font-weight:700">${n}</span></div>`,
+        html: `<div style="background:#1e4e8c;color:#fff;width:28px;height:28px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.4);border:2px solid #fff"><span style="transform:rotate(45deg);font-size:12px;font-weight:700">${n}</span></div>`,
         iconSize: [28, 28],
         iconAnchor: [14, 28],
     });
@@ -94,7 +94,7 @@ const desenharTrajeto = () => {
     if (coords && coords.length > 1) {
         // GeoJSON é [lon, lat]; Leaflet quer [lat, lon].
         const latlngs = coords.map(([lon, lat]) => [lat, lon] as [number, number]);
-        trajetoLayer = L.polyline(latlngs, { color: '#4f46e5', weight: 4, opacity: 0.8 }).addTo(map);
+        trajetoLayer = L.polyline(latlngs, { color: '#1e4e8c', weight: 4, opacity: 0.8 }).addTo(map);
     }
 };
 

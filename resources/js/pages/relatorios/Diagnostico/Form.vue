@@ -112,7 +112,7 @@ function gerar() {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="mx-auto w-[95%] py-6">
             <h1 class="mb-1 flex items-center gap-2 text-xl font-semibold">
-                <Stethoscope class="size-5 text-indigo-600" /> Avaliações por Diagnóstico
+                <Stethoscope class="size-5 text-brand-600" /> Avaliações por Diagnóstico
             </h1>
             <p class="mb-6 text-sm text-muted-foreground">
                 Por turma e disciplina, agrupado por aluno e ordenado por indicador — mostra a opção atribuída em <strong>cada período</strong>. Deixe o aluno em <strong>Todos</strong> para gerar a turma inteira.
@@ -140,7 +140,7 @@ function gerar() {
                     <LocalCombobox v-model="alnId" :items="itemsAluno" :placeholder="!turId ? 'Selecione a turma primeiro' : 'Todos os alunos'" />
                 </div>
                 <div class="flex items-end justify-end">
-                    <Button :disabled="!anlId || !escId || !turId || !disId || gerando" class="bg-indigo-600 text-white hover:bg-indigo-700" @click="gerar">
+                    <Button :disabled="!anlId || !escId || !turId || !disId || gerando" class="bg-brand-600 text-white hover:bg-brand-700" @click="gerar">
                         <Loader2 v-if="gerando" class="mr-1 size-4 animate-spin" /> Gerar Relatório
                     </Button>
                 </div>

@@ -5,10 +5,10 @@
 <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: DejaVu Sans, sans-serif; font-size: 11px; color: #1e293b; }
-    .header { padding-bottom: 12px; border-bottom: 2px solid #6366f1; margin-bottom: 14px; }
+    .header { padding-bottom: 12px; border-bottom: 2px solid #2f6fb8; margin-bottom: 14px; }
     .header .entidade { font-size: 13px; font-weight: 700; color: #1e293b; }
     .header .endereco { font-size: 9px; color: #64748b; margin-top: 1px; }
-    .header h1 { font-size: 17px; font-weight: 700; color: #4f46e5; margin-top: 8px; }
+    .header h1 { font-size: 17px; font-weight: 700; color: #1e4e8c; margin-top: 8px; }
     .meta { margin-bottom: 14px; }
     .meta table { width: 100%; }
     .meta td { padding: 3px 0; font-size: 11px; vertical-align: top; }

@@ -48,7 +48,7 @@ const close = (id: string) => {
             class="group flex shrink-0 cursor-pointer items-center gap-2 rounded-t-md border-b-2 px-3 py-1.5 text-sm transition-colors"
             :class="
                 tab.id === store.activeId
-                    ? 'border-fuchsia-500 bg-background font-medium text-foreground'
+                    ? 'border-[#1e4e8c] bg-background dark:border-sky-400 font-medium text-foreground'
                     : 'border-transparent text-muted-foreground hover:bg-background/60 hover:text-foreground'
             "
             @click="select(tab.id)"

@@ -98,14 +98,14 @@ onBeforeUnmount(() => document.removeEventListener('mousedown', handleOutside));
             type="button"
             :disabled="disabled"
             :class="[
-                'flex h-10 w-full items-center justify-between rounded-md border bg-background px-3 py-2 text-sm shadow-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500',
+                'flex h-10 w-full items-center justify-between rounded-md border bg-background px-3 py-2 text-sm shadow-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500',
                 invalid ? 'border-rose-500' : 'border-input',
                 disabled ? 'cursor-not-allowed opacity-50' : '',
             ]"
             @click="!disabled && openPanel()"
         >
             <span v-if="selected" class="flex min-w-0 items-center gap-2">
-                <BookOpen class="size-4 shrink-0 text-indigo-500 dark:text-indigo-400" />
+                <BookOpen class="size-4 shrink-0 text-brand-500 dark:text-brand-400" />
                 <span class="truncate">{{ selected.ser_nome }}</span>
             </span>
             <span v-else class="text-muted-foreground">{{ placeholder ?? 'Buscar série...' }}</span>

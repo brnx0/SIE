@@ -39,7 +39,7 @@ function abrirEdicao() {
         <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div class="flex flex-col gap-1">
                 <h3 class="flex items-center gap-2 text-base font-semibold text-slate-800 dark:text-slate-100">
-                    <ClipboardList class="size-5 text-indigo-500" />
+                    <ClipboardList class="size-5 text-brand-500" />
                     Censo Escolar
                 </h3>
                 <p class="text-sm text-slate-500 dark:text-slate-400">
@@ -55,7 +55,7 @@ function abrirEdicao() {
                     v-if="!censo"
                     type="button"
                     :disabled="storeForm.processing"
-                    class="bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
+                    class="bg-brand-600 text-white hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400"
                     @click="iniciarCenso"
                 >
                     <FilePlus class="mr-2 size-4" />
@@ -65,7 +65,7 @@ function abrirEdicao() {
                 <Button
                     v-else
                     type="button"
-                    class="bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
+                    class="bg-brand-600 text-white hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400"
                     @click="abrirEdicao"
                 >
                     <Pencil class="mr-2 size-4" />

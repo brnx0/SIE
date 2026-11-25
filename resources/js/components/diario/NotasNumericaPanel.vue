@@ -364,7 +364,7 @@ const limitarValor1Casa = (e: Event) => {
                 >
                     <RefreshCw :class="['size-3.5', carregando && 'animate-spin']" /> Atualizar
                 </button>
-                <Button type="button" size="sm" class="bg-indigo-600 hover:bg-indigo-700" :disabled="!podeLancar || !turmaAberta" @click="abrirNovo">
+                <Button type="button" size="sm" class="bg-brand-600 hover:bg-brand-700" :disabled="!podeLancar || !turmaAberta" @click="abrirNovo">
                     <Plus class="mr-1.5 size-4" /> Nova avaliação
                 </Button>
             </div>
@@ -431,7 +431,7 @@ const limitarValor1Casa = (e: Event) => {
                                         </button>
                                     </div>
                                 </th>
-                                <th class="border-b border-l-2 border-indigo-200 bg-indigo-50/70 px-3 py-2 text-center text-xs font-semibold uppercase tracking-wide text-indigo-700 dark:border-indigo-900 dark:bg-indigo-950/40 dark:text-indigo-300">
+                                <th class="border-b border-l-2 border-brand-200 bg-brand-50/70 px-3 py-2 text-center text-xs font-semibold uppercase tracking-wide text-brand-700 dark:border-brand-900 dark:bg-brand-950/40 dark:text-brand-300">
                                     Média
                                 </th>
                             </tr>
@@ -459,7 +459,7 @@ const limitarValor1Casa = (e: Event) => {
                                             :disabled="!podeLancar || !turmaAberta || isFutura(a) || row.bloqueado || saiuAntes(row, a)"
                                             :title="!turmaAberta ? 'Turma não está aberta.' : saiuAntes(row, a) ? `Aluno saiu em ${fmtSaida(row.dt_saida)} — bloqueado.` : (row.bloqueado ? 'Aluno já possui notas conceituais nesta matéria.' : (isFutura(a) ? 'Avaliação agendada — lançamento liberado a partir da data.' : ''))"
                                             :class="[
-                                                'h-8 w-16 rounded-md border bg-background px-1.5 text-center text-sm tabular-nums shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:opacity-60',
+                                                'h-8 w-16 rounded-md border bg-background px-1.5 text-center text-sm tabular-nums shadow-sm focus:outline-none focus:ring-1 focus:ring-brand-500 disabled:opacity-60',
                                                 statusDe(row.aln_id, a.ava_id) === 'invalid' || statusDe(row.aln_id, a.ava_id) === 'error' ? 'border-rose-400' : 'border-input',
                                             ]"
                                             @input="aoDigitarNota(row, a)"
@@ -472,7 +472,7 @@ const limitarValor1Casa = (e: Event) => {
                                         </span>
                                     </div>
                                 </td>
-                                <td class="border-b border-l-2 border-indigo-200 bg-indigo-50/40 px-3 py-1.5 text-center font-semibold tabular-nums text-indigo-700 dark:border-indigo-900 dark:bg-indigo-950/20 dark:text-indigo-300">
+                                <td class="border-b border-l-2 border-brand-200 bg-brand-50/40 px-3 py-1.5 text-center font-semibold tabular-nums text-brand-700 dark:border-brand-900 dark:bg-brand-950/20 dark:text-brand-300">
                                     {{ media(row) === null ? '—' : media(row)!.toFixed(2) }}
                                 </td>
                             </tr>
@@ -502,7 +502,7 @@ const limitarValor1Casa = (e: Event) => {
                         <Label>Instrumento <span class="text-rose-600">*</span></Label>
                         <select
                             v-model.number="form.iavId"
-                            class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                             @change="aplicarValorParam"
                         >
                             <option :value="null" disabled>Selecione o instrumento...</option>
@@ -535,7 +535,7 @@ const limitarValor1Casa = (e: Event) => {
                 </div>
                 <div class="flex justify-end gap-2 border-t px-5 py-3">
                     <Button type="button" variant="outline" @click="showModal = false">Cancelar</Button>
-                    <Button type="button" class="bg-indigo-600 hover:bg-indigo-700" :disabled="!podeSalvarAval" @click="salvarAvaliacao">
+                    <Button type="button" class="bg-brand-600 hover:bg-brand-700" :disabled="!podeSalvarAval" @click="salvarAvaliacao">
                         <Loader2 v-if="enviandoAval" class="mr-2 size-4 animate-spin" />
                         Salvar
                     </Button>

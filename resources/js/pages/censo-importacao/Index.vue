@@ -102,7 +102,7 @@ const breadcrumbs: BreadcrumbItem[] = [{ title: 'Importar Censo', href: '/censo/
                     <Button
                         :disabled="!form.arquivo || form.processing"
                         @click="enviar"
-                        class="bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
+                        class="bg-brand-600 text-white hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400"
                     >
                         <Upload class="mr-2 size-4" /> Enviar e processar
                     </Button>

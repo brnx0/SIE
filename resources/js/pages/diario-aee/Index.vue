@@ -187,7 +187,7 @@ const contextoChips = computed(() => {
             <div class="flex flex-wrap items-center justify-between gap-3">
                 <div>
                     <h1 class="flex items-center gap-2 text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
-                        <Accessibility class="size-6 text-indigo-600" /> Diário AEE
+                        <Accessibility class="size-6 text-brand-600" /> Diário AEE
                     </h1>
                     <p class="mt-1 text-sm text-muted-foreground">Selecione a escola e a turma de AEE para os lançamentos.</p>
                 </div>
@@ -204,7 +204,7 @@ const contextoChips = computed(() => {
                 <span v-for="chip in contextoChips" :key="chip.k" class="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-xs">
                     <span class="text-muted-foreground">{{ chip.k }}:</span><span class="font-medium">{{ chip.v }}</span>
                 </span>
-                <span v-if="diasAtendimento.length" class="inline-flex items-center gap-1 rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-medium text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300">
+                <span v-if="diasAtendimento.length" class="inline-flex items-center gap-1 rounded-full bg-brand-50 px-2.5 py-1 text-xs font-medium text-brand-700 dark:bg-brand-950/40 dark:text-brand-300">
                     <CalendarDays class="size-3.5" /> {{ diasAtendimento.join(', ') }}<template v-if="horarioAtendimento"> · {{ horarioAtendimento }}</template>
                 </span>
                 <button type="button" class="ml-auto inline-flex items-center gap-1.5 rounded-md border border-input px-2.5 py-1.5 text-xs font-medium text-foreground transition hover:bg-muted" @click="contextoExpandido = true">
@@ -216,7 +216,7 @@ const contextoChips = computed(() => {
             <section v-if="!semVinculo && contextoExpandido" class="rounded-xl border bg-card p-4 shadow-sm">
                 <div class="mb-3 flex items-center justify-between">
                     <h2 class="text-sm font-semibold text-muted-foreground">Contexto</h2>
-                    <button v-if="painelVisivel" type="button" class="text-xs font-medium text-indigo-600 hover:underline dark:text-indigo-400" @click="contextoExpandido = false">Recolher</button>
+                    <button v-if="painelVisivel" type="button" class="text-xs font-medium text-brand-600 hover:underline dark:text-brand-400" @click="contextoExpandido = false">Recolher</button>
                 </div>
                 <div class="grid grid-cols-1 gap-4 md:grid-cols-12">
                     <div class="md:col-span-12">
@@ -250,13 +250,13 @@ const contextoChips = computed(() => {
             <section v-if="!semVinculo && turId" class="space-y-4">
                 <div v-if="contextoExpandido" class="rounded-xl border bg-card p-4 shadow-sm">
                     <h2 class="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-200">
-                        <CalendarDays class="size-4 text-indigo-600" /> Dias de atendimento — {{ turmaSel?.tur_nome }}
+                        <CalendarDays class="size-4 text-brand-600" /> Dias de atendimento — {{ turmaSel?.tur_nome }}
                     </h2>
                     <div v-if="diasAtendimento.length" class="flex flex-wrap gap-2">
                         <span
                             v-for="d in diasAtendimento"
                             :key="d"
-                            class="inline-flex items-center rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300"
+                            class="inline-flex items-center rounded-full bg-brand-50 px-3 py-1 text-xs font-medium text-brand-700 dark:bg-brand-950/40 dark:text-brand-300"
                         >{{ d }}</span>
                     </div>
                     <p v-else class="text-sm text-muted-foreground">Nenhum dia de atendimento definido para esta turma.</p>
@@ -277,9 +277,9 @@ const contextoChips = computed(() => {
                             :class="[
                                 'flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition',
                                 moduloAtivo === 'frequencia'
-                                    ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300'
+                                    ? 'border-brand-500 bg-brand-50 text-brand-700 dark:bg-brand-950 dark:text-brand-300'
                                     : podeFrequencia
-                                        ? 'border-input text-foreground hover:border-indigo-300 hover:bg-muted/50'
+                                        ? 'border-input text-foreground hover:border-brand-300 hover:bg-muted/50'
                                         : 'cursor-not-allowed border-dashed border-input text-muted-foreground/50',
                             ]"
                             @click="selecionarFrequencia"
@@ -292,9 +292,9 @@ const contextoChips = computed(() => {
                             :class="[
                                 'flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition',
                                 moduloAtivo === 'atendimentos'
-                                    ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300'
+                                    ? 'border-brand-500 bg-brand-50 text-brand-700 dark:bg-brand-950 dark:text-brand-300'
                                     : podeAtendimentos
-                                        ? 'border-input text-foreground hover:border-indigo-300 hover:bg-muted/50'
+                                        ? 'border-input text-foreground hover:border-brand-300 hover:bg-muted/50'
                                         : 'cursor-not-allowed border-dashed border-input text-muted-foreground/50',
                             ]"
                             @click="selecionarAtendimentos"
@@ -308,9 +308,9 @@ const contextoChips = computed(() => {
                             :class="[
                                 'flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition',
                                 moduloAtivo === 'avaliacoes'
-                                    ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300'
+                                    ? 'border-brand-500 bg-brand-50 text-brand-700 dark:bg-brand-950 dark:text-brand-300'
                                     : podeAvaliacoes
-                                        ? 'border-input text-foreground hover:border-indigo-300 hover:bg-muted/50'
+                                        ? 'border-input text-foreground hover:border-brand-300 hover:bg-muted/50'
                                         : 'cursor-not-allowed border-dashed border-input text-muted-foreground/50',
                             ]"
                             @click="selecionarAvaliacoes"

@@ -106,14 +106,14 @@ const clampAno = (e: Event) => {
                 <div v-if="podeVerCentral" class="flex items-center gap-1 rounded-lg border bg-muted/40 p-1">
                     <button
                         type="button"
-                        :class="['rounded-md px-3 py-1.5 text-xs font-medium transition-colors', modo === 'central' ? 'bg-indigo-600 text-white' : 'text-muted-foreground hover:bg-muted']"
+                        :class="['rounded-md px-3 py-1.5 text-xs font-medium transition-colors', modo === 'central' ? 'bg-brand-600 text-white' : 'text-muted-foreground hover:bg-muted']"
                         @click="modo = 'central'"
                     >
                         Central
                     </button>
                     <button
                         type="button"
-                        :class="['rounded-md px-3 py-1.5 text-xs font-medium transition-colors', modo === 'escola' ? 'bg-indigo-600 text-white' : 'text-muted-foreground hover:bg-muted']"
+                        :class="['rounded-md px-3 py-1.5 text-xs font-medium transition-colors', modo === 'escola' ? 'bg-brand-600 text-white' : 'text-muted-foreground hover:bg-muted']"
                         @click="modo = 'escola'"
                     >
                         Escola
@@ -122,7 +122,7 @@ const clampAno = (e: Event) => {
                 <div v-if="!podeVerCentral || modo === 'escola'" class="w-56">
                     <EscolaCombobox v-model="escId" :initial="escolaFiltro" placeholder="Buscar escola..." />
                 </div>
-                <select v-model="tipo" class="h-10 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground">
+                <select v-model="tipo" class="h-10 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-background dark:text-foreground">
                     <option value="">Todos os tipos</option>
                     <option v-for="t in tipos" :key="t" :value="t">{{ rotulo(t) }}</option>
                 </select>
@@ -171,7 +171,7 @@ const clampAno = (e: Event) => {
                                         :href="`/alimentacao/transferencias/${m.transferencia_id}/pdf`"
                                         target="_blank"
                                         rel="noopener"
-                                        class="text-indigo-600 hover:text-indigo-700 dark:text-indigo-400"
+                                        class="text-brand-600 hover:text-brand-700 dark:text-brand-400"
                                         title="Guia de remessa (PDF)"
                                     >
                                         <FileText class="size-3.5" />
@@ -221,7 +221,7 @@ const clampAno = (e: Event) => {
                         <template v-else>Nenhum registro</template>
                     </span>
                     <div v-if="movimentos.last_page > 1" class="flex flex-wrap gap-1">
-                        <Link v-for="(link, i) in movimentos.links" :key="i" :href="link.url ?? '#'" v-html="link.label" :class="['rounded-md px-3 py-1 text-xs', link.active ? 'bg-indigo-600 text-white' : 'border bg-background hover:bg-muted', !link.url && 'pointer-events-none opacity-40']" preserve-scroll />
+                        <Link v-for="(link, i) in movimentos.links" :key="i" :href="link.url ?? '#'" v-html="link.label" :class="['rounded-md px-3 py-1 text-xs', link.active ? 'bg-brand-600 text-white' : 'border bg-background hover:bg-muted', !link.url && 'pointer-events-none opacity-40']" preserve-scroll />
                     </div>
                 </div>
             </div>

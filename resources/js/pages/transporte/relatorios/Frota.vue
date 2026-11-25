@@ -61,7 +61,7 @@ const fmt = (d: string | null) => (d ? new Date(d + 'T00:00:00').toLocaleDateStr
             <!-- Resumo -->
             <div class="grid gap-3 sm:grid-cols-4">
                 <div class="flex items-center gap-3 rounded-xl border bg-card p-4 shadow-sm">
-                    <Bus class="size-8 text-indigo-500" />
+                    <Bus class="size-8 text-brand-500" />
                     <div><div class="text-2xl font-bold tabular-nums">{{ resumo.total }}</div><div class="text-xs text-muted-foreground">Veículos</div></div>
                 </div>
                 <div class="flex items-center gap-3 rounded-xl border bg-card p-4 shadow-sm">
@@ -85,7 +85,7 @@ const fmt = (d: string | null) => (d ? new Date(d + 'T00:00:00').toLocaleDateStr
                     <Input v-model.number="dias" type="number" min="1" max="365" step="1" class="w-40" />
                 </div>
                 <label class="flex items-center gap-2 pb-2 text-sm">
-                    <input type="checkbox" v-model="incluirInativos" class="size-4 accent-indigo-600" />
+                    <input type="checkbox" v-model="incluirInativos" class="size-4 accent-brand-600" />
                     Incluir veículos inativos
                 </label>
                 <div class="ml-auto flex items-center gap-3">

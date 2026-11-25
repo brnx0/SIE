@@ -451,13 +451,13 @@ const toggleTodas = () => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="mx-auto w-[95%] py-6">
             <h1 class="mb-1 flex items-center gap-2 text-xl font-semibold">
-                <ClipboardList class="size-5 text-indigo-600" /> Notas e Faltas
+                <ClipboardList class="size-5 text-brand-600" /> Notas e Faltas
             </h1>
             <p class="mb-3 text-sm text-muted-foreground">Lance a média e as faltas por aluno em cada período. A média é arredondada ao 0,5 mais próximo. Onde o professor já lançou as notas no diário, a média dele prevalece e não pode ser sobreposta.</p>
 
             <!-- Legenda do destaque -->
-            <div class="mb-6 flex items-center gap-2 rounded-lg border border-indigo-200 bg-indigo-50/40 px-3 py-2 text-xs text-indigo-800 dark:border-indigo-800 dark:bg-indigo-950/30 dark:text-indigo-200">
-                <span class="grid h-7 w-12 place-items-center rounded-md border border-dashed border-indigo-300 italic text-indigo-500/80 dark:border-indigo-800">8,5</span>
+            <div class="mb-6 flex items-center gap-2 rounded-lg border border-brand-200 bg-brand-50/40 px-3 py-2 text-xs text-brand-800 dark:border-brand-800 dark:bg-brand-950/30 dark:text-brand-200">
+                <span class="grid h-7 w-12 place-items-center rounded-md border border-dashed border-brand-300 italic text-brand-500/80 dark:border-brand-800">8,5</span>
                 <span><strong>Nota lançada pelo professor</strong> — média calculada do diário (em itálico/tracejado). Fica bloqueada: só as faltas podem ser lançadas.</span>
             </div>
 
@@ -492,8 +492,8 @@ const toggleTodas = () => {
                         <div v-if="tipos.length > 1" class="inline-flex items-center gap-2">
                             <span class="text-xs font-medium text-muted-foreground">Lançar:</span>
                             <div class="inline-flex overflow-hidden rounded-md border border-input">
-                                <button type="button" class="px-3 py-1.5 text-xs font-medium transition-colors" :class="tipoSel === 'numerica' ? 'bg-indigo-600 text-white' : 'bg-background hover:bg-muted'" @click="tipoSel = 'numerica'">Numérica</button>
-                                <button type="button" class="border-l border-input px-3 py-1.5 text-xs font-medium transition-colors" :class="tipoSel === 'conceitual' ? 'bg-indigo-600 text-white' : 'bg-background hover:bg-muted'" @click="tipoSel = 'conceitual'">Conceitual</button>
+                                <button type="button" class="px-3 py-1.5 text-xs font-medium transition-colors" :class="tipoSel === 'numerica' ? 'bg-brand-600 text-white' : 'bg-background hover:bg-muted'" @click="tipoSel = 'numerica'">Numérica</button>
+                                <button type="button" class="border-l border-input px-3 py-1.5 text-xs font-medium transition-colors" :class="tipoSel === 'conceitual' ? 'bg-brand-600 text-white' : 'bg-background hover:bg-muted'" @click="tipoSel = 'conceitual'">Conceitual</button>
                             </div>
                         </div>
                     </div>
@@ -532,7 +532,7 @@ const toggleTodas = () => {
                                     <th rowspan="2" class="sticky left-0 top-0 z-30 min-w-[220px] border-b bg-muted/90 px-3 py-1.5 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground backdrop-blur">Aluno</th>
                                     <th v-for="u in unidades" :key="u.uni_id" colspan="2" class="border-b border-l bg-muted/90 px-2 py-1 text-center text-xs font-semibold backdrop-blur">{{ u.label }}</th>
                                     <th v-if="entrada === 'numerica'" rowspan="2" class="sticky top-0 z-20 border-b border-l bg-amber-500 px-2 py-1.5 text-center text-xs font-semibold uppercase tracking-wide text-white backdrop-blur">Rec.<br />Final</th>
-                                    <th rowspan="2" class="sticky right-0 top-0 z-30 border-b border-l bg-indigo-600 px-3 py-1.5 text-center text-xs font-semibold uppercase tracking-wide text-white backdrop-blur">Média<br />Final</th>
+                                    <th rowspan="2" class="sticky right-0 top-0 z-30 border-b border-l bg-brand-600 px-3 py-1.5 text-center text-xs font-semibold uppercase tracking-wide text-white backdrop-blur">Média<br />Final</th>
                                 </tr>
                                 <tr>
                                     <template v-for="u in unidades" :key="`s-${u.uni_id}`">
@@ -546,7 +546,7 @@ const toggleTodas = () => {
                                     <td :colspan="unidades.length * 2 + 2 + (entrada === 'numerica' ? 1 : 0)" class="px-4 py-8 text-center text-sm text-muted-foreground">Nenhum aluno encontrado.</td>
                                 </tr>
                                 <tr v-for="(a, i) in alunosFiltrados" :key="a.aln_id" class="group">
-                                    <td :class="['sticky left-0 z-10 border-b px-3 py-1.5', i % 2 ? 'bg-muted/30' : 'bg-card', 'group-hover:bg-indigo-50/70 dark:group-hover:bg-indigo-950/40']">
+                                    <td :class="['sticky left-0 z-10 border-b px-3 py-1.5', i % 2 ? 'bg-muted/30' : 'bg-card', 'group-hover:bg-brand-50/70 dark:group-hover:bg-brand-950/40']">
                                         <div class="flex items-center gap-2">
                                             <span class="w-5 shrink-0 text-right text-[11px] tabular-nums text-muted-foreground">{{ i + 1 }}</span>
                                             <div class="min-w-0">
@@ -571,8 +571,8 @@ const toggleTodas = () => {
                                                 v-model="cel(bloco.dis_id, a.aln_id, u.uni_id).cnc_id"
                                                 :disabled="bloqueado(bloco.dis_id, a.aln_id) || notaProfessor(bloco.dis_id, a.aln_id, u.uni_id)"
                                                 :title="tituloCel(bloco.dis_id, a.aln_id, u.uni_id, 'Aluno já tem lançamento numérico nesta disciplina.')"
-                                                class="h-8 w-20 rounded-md border bg-background px-1 text-center text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-80"
-                                                :class="cel(bloco.dis_id, a.aln_id, u.uni_id).auto ? 'border-dashed border-indigo-300 italic text-indigo-500/80 dark:border-indigo-800' : 'border-input'"
+                                                class="h-8 w-20 rounded-md border bg-background px-1 text-center text-sm focus:outline-none focus:ring-1 focus:ring-brand-500 disabled:cursor-not-allowed disabled:opacity-80"
+                                                :class="cel(bloco.dis_id, a.aln_id, u.uni_id).auto ? 'border-dashed border-brand-300 italic text-brand-500/80 dark:border-brand-800' : 'border-input'"
                                                 @change="onInputMedia(bloco.dis_id, a.aln_id, u.uni_id)"
                                             >
                                                 <option :value="null">—</option>
@@ -584,8 +584,8 @@ const toggleTodas = () => {
                                                 type="number" step="0.01" min="0" max="10"
                                                 :disabled="bloqueado(bloco.dis_id, a.aln_id) || notaProfessor(bloco.dis_id, a.aln_id, u.uni_id)"
                                                 :title="tituloCel(bloco.dis_id, a.aln_id, u.uni_id, 'Aluno já tem lançamento conceitual nesta disciplina.')"
-                                                class="h-8 w-16 rounded-md border bg-background px-1.5 text-center text-sm tabular-nums focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-80"
-                                                :class="cel(bloco.dis_id, a.aln_id, u.uni_id).auto ? 'border-dashed border-indigo-300 italic text-indigo-500/80 dark:border-indigo-800' : 'border-input'"
+                                                class="h-8 w-16 rounded-md border bg-background px-1.5 text-center text-sm tabular-nums focus:outline-none focus:ring-1 focus:ring-brand-500 disabled:cursor-not-allowed disabled:opacity-80"
+                                                :class="cel(bloco.dis_id, a.aln_id, u.uni_id).auto ? 'border-dashed border-brand-300 italic text-brand-500/80 dark:border-brand-800' : 'border-input'"
                                                 @input="onInputMedia(bloco.dis_id, a.aln_id, u.uni_id)"
                                             />
                                             <span v-if="status[stKey(bloco.dis_id, a.aln_id, u.uni_id)] === 'saving'" class="absolute right-0.5 top-0.5"><Loader2 class="size-3 animate-spin text-amber-500" /></span>
@@ -594,7 +594,7 @@ const toggleTodas = () => {
                                             <input
                                                 v-model="cel(bloco.dis_id, a.aln_id, u.uni_id).faltas"
                                                 type="number" min="0" max="999"
-                                                class="h-8 w-14 rounded-md border border-input bg-background px-1.5 text-center text-sm tabular-nums focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                                                class="h-8 w-14 rounded-md border border-input bg-background px-1.5 text-center text-sm tabular-nums focus:outline-none focus:ring-1 focus:ring-brand-500"
                                                 :class="status[stKey(bloco.dis_id, a.aln_id, u.uni_id)] === 'error' ? 'border-rose-400' : ''"
                                                 @input="onInput(bloco.dis_id, a.aln_id, u.uni_id)"
                                             />
@@ -611,8 +611,8 @@ const toggleTodas = () => {
                                         />
                                         <span v-if="status[`rec|${rck(bloco.dis_id, a.aln_id)}`] === 'saving'" class="absolute right-0.5 top-0.5"><Loader2 class="size-3 animate-spin text-amber-500" /></span>
                                     </td>
-                                    <td :class="['sticky right-0 z-10 border-b border-l px-3 py-1.5 text-center text-sm font-semibold tabular-nums', i % 2 ? 'bg-muted/30' : 'bg-card', 'group-hover:bg-indigo-50/70 dark:group-hover:bg-indigo-950/40']">
-                                        <span v-if="mediaFinal(bloco.dis_id, a.aln_id) !== null" class="text-indigo-700 dark:text-indigo-300">{{ mediaFinal(bloco.dis_id, a.aln_id) }}</span>
+                                    <td :class="['sticky right-0 z-10 border-b border-l px-3 py-1.5 text-center text-sm font-semibold tabular-nums', i % 2 ? 'bg-muted/30' : 'bg-card', 'group-hover:bg-brand-50/70 dark:group-hover:bg-brand-950/40']">
+                                        <span v-if="mediaFinal(bloco.dis_id, a.aln_id) !== null" class="text-brand-700 dark:text-brand-300">{{ mediaFinal(bloco.dis_id, a.aln_id) }}</span>
                                         <span v-else class="text-muted-foreground">—</span>
                                     </td>
                                     </template>

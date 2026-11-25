@@ -287,7 +287,7 @@ const selectClass = (hasError: boolean) =>
                     v-if="fAnlId && fSegId && fSerId && !showForm"
                     type="button"
                     size="sm"
-                    class="bg-indigo-600 hover:bg-indigo-700"
+                    class="bg-brand-600 hover:bg-brand-700"
                     @click="abrirCriar"
                 >
                     <Plus class="mr-2 size-4" /> Adicionar Disciplina
@@ -354,7 +354,7 @@ const selectClass = (hasError: boolean) =>
                 <Button
                     type="button"
                     size="sm"
-                    class="bg-indigo-600 hover:bg-indigo-700"
+                    class="bg-brand-600 hover:bg-brand-700"
                     :disabled="processing || !formData.grd_dis_id"
                     @click="salvar"
                 >
@@ -368,7 +368,7 @@ const selectClass = (hasError: boolean) =>
         <!-- Tabela -->
         <div class="overflow-x-auto">
             <table class="w-full text-left text-sm">
-                <thead class="bg-indigo-600 text-white">
+                <thead class="bg-brand-600 text-white">
                     <tr>
                         <th class="px-3 py-2 text-center font-semibold w-20">Ordem</th>
                         <th class="px-3 py-2 font-semibold">Disciplina</th>

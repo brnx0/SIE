@@ -9,7 +9,7 @@ defineEmits<{ 'update:modelValue': [value: number] }>();
         <select
             :value="modelValue"
             @change="$emit('update:modelValue', Number(($event.target as HTMLSelectElement).value))"
-            class="h-8 rounded-md border border-input bg-background px-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground"
+            class="h-8 rounded-md border border-input bg-background px-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-background dark:text-foreground"
         >
             <option :value="10">10</option>
             <option :value="25">25</option>

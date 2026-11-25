@@ -5,8 +5,8 @@
 <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: DejaVu Sans, sans-serif; font-size: 11px; color: #1e293b; }
-    .header { padding: 18px 24px 12px; border-bottom: 2px solid #6366f1; }
-    .header h1 { font-size: 18px; font-weight: 700; color: #4f46e5; }
+    .header { padding: 18px 24px 12px; border-bottom: 2px solid #2f6fb8; }
+    .header h1 { font-size: 18px; font-weight: 700; color: #1e4e8c; }
     .header p { font-size: 10px; color: #64748b; margin-top: 2px; }
     table { width: 100%; border-collapse: collapse; margin: 0; }
     thead th {

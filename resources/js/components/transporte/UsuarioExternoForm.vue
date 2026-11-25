@@ -80,7 +80,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar usuário' : 'Salvar alt
                     type="button"
                     variant="outline"
                     :disabled="form.processing"
-                    class="border-indigo-600 text-indigo-700 hover:bg-indigo-50 dark:text-indigo-300 dark:hover:bg-indigo-900/30"
+                    class="border-brand-600 text-brand-700 hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-900/30"
                     @click="submit(true)"
                 >
                     <LoaderCircle v-if="form.processing && form.continue_new" class="mr-2 size-4 animate-spin" />
@@ -90,7 +90,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar usuário' : 'Salvar alt
                 <Button
                     type="submit"
                     :disabled="form.processing"
-                    class="bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
+                    class="bg-brand-600 text-white hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400"
                 >
                     <LoaderCircle v-if="form.processing && !form.continue_new" class="mr-2 size-4 animate-spin" />
                     <Save v-else class="mr-2 size-4" />
@@ -162,7 +162,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar usuário' : 'Salvar alt
                     v-model="form.tue_justificativa"
                     rows="4"
                     maxlength="2000"
-                    class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground"
+                    class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-background dark:text-foreground"
                     placeholder="Por que este usuário, não vinculado à matrícula regular, utiliza o transporte escolar?"
                 ></textarea>
                 <InputError :message="form.errors.tue_justificativa" />

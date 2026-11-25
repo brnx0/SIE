@@ -110,7 +110,7 @@ function gerar() {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="mx-auto w-[95%] py-6">
             <h1 class="mb-1 flex items-center gap-2 text-xl font-semibold">
-                <GraduationCap class="size-5 text-indigo-600" /> Boletim do Aluno
+                <GraduationCap class="size-5 text-brand-600" /> Boletim do Aluno
             </h1>
             <p class="mb-6 text-sm text-muted-foreground">Notas e conceitos por disciplina e período. Deixe o período em branco para o consolidado do ano.</p>
 
@@ -136,7 +136,7 @@ function gerar() {
                     <LocalCombobox v-model="uniId" :items="itemsPeriodo" placeholder="Consolidado (ano)" />
                 </div>
                 <div class="flex items-end justify-end sm:col-span-2 lg:col-span-3">
-                    <Button :disabled="!escId || !anlId || !turId || gerando" class="bg-indigo-600 text-white hover:bg-indigo-700" @click="gerar">
+                    <Button :disabled="!escId || !anlId || !turId || gerando" class="bg-brand-600 text-white hover:bg-brand-700" @click="gerar">
                         <Loader2 v-if="gerando" class="mr-1 size-4 animate-spin" /> Gerar Relatório
                     </Button>
                 </div>

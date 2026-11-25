@@ -33,7 +33,7 @@ onMounted(fetchAtendimentos);
 <template>
     <div class="rounded-xl border bg-card p-4 shadow-sm">
         <h3 class="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-200">
-            <HandHeart class="size-4 text-indigo-600" /> Atendimentos ofertados pela turma
+            <HandHeart class="size-4 text-brand-600" /> Atendimentos ofertados pela turma
         </h3>
 
         <div v-if="carregando" class="flex items-center gap-2 text-sm text-muted-foreground">
@@ -44,7 +44,7 @@ onMounted(fetchAtendimentos);
             <span
                 v-for="a in atendimentos"
                 :key="a.tat_id"
-                class="inline-flex items-center rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300"
+                class="inline-flex items-center rounded-full bg-brand-50 px-3 py-1 text-xs font-medium text-brand-700 dark:bg-brand-950/40 dark:text-brand-300"
             >{{ a.ate_descricao }}</span>
         </div>
 

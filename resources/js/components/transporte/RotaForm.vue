@@ -90,7 +90,7 @@ const submit = () => {
 const submitLabel = props.mode === 'create' ? 'Cadastrar rota' : 'Salvar alterações';
 
 const selectClass = (hasError: boolean) =>
-    `flex h-10 w-full rounded-md border bg-background px-3 text-sm shadow-sm transition focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground ${hasError ? 'border-rose-500' : 'border-input'}`;
+    `flex h-10 w-full rounded-md border bg-background px-3 text-sm shadow-sm transition focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-background dark:text-foreground ${hasError ? 'border-rose-500' : 'border-input'}`;
 </script>
 
 <template>
@@ -102,7 +102,7 @@ const selectClass = (hasError: boolean) =>
                     <ChevronLeft class="mr-1 size-4" /> Voltar para listagem
                 </Button>
             </Link>
-            <Button v-if="!isReadOnly" type="button" :disabled="form.processing" class="bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400" @click="submit">
+            <Button v-if="!isReadOnly" type="button" :disabled="form.processing" class="bg-brand-600 text-white hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400" @click="submit">
                 <LoaderCircle v-if="form.processing" class="mr-2 size-4 animate-spin" />
                 <Save v-else class="mr-2 size-4" />
                 {{ submitLabel }}
@@ -247,7 +247,7 @@ const selectClass = (hasError: boolean) =>
                                 v-model="form.rot_obs"
                                 rows="3"
                                 maxlength="2000"
-                                class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground"
+                                class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-background dark:text-foreground"
                                 placeholder="Opcional"
                             ></textarea>
                             <InputError :message="form.errors.rot_obs" />

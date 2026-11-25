@@ -70,7 +70,7 @@ function gerar() {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="mx-auto w-[95%] py-6">
             <h1 class="text-xl font-semibold mb-1 flex items-center gap-2">
-                <AlarmClock class="size-5 text-indigo-600" /> Pendências de Encerramento e Renovação
+                <AlarmClock class="size-5 text-brand-600" /> Pendências de Encerramento e Renovação
             </h1>
             <p class="text-sm text-muted-foreground mb-6">
                 Escolas que ainda têm turmas sem encerramento ou sem renovação de matrículas no ano letivo.
@@ -105,14 +105,14 @@ function gerar() {
                     <FormLabel>Formato</FormLabel>
                     <div class="flex flex-col gap-2 pt-1">
                         <label class="flex items-start gap-2 text-sm cursor-pointer">
-                            <input v-model="formato" type="radio" value="consolidado" class="mt-1 accent-indigo-600" />
+                            <input v-model="formato" type="radio" value="consolidado" class="mt-1 accent-brand-600" />
                             <span>
                                 <span class="font-medium">Consolidado</span>
                                 <span class="block text-xs text-muted-foreground">Uma linha por escola, com as contagens.</span>
                             </span>
                         </label>
                         <label class="flex items-start gap-2 text-sm cursor-pointer">
-                            <input v-model="formato" type="radio" value="detalhado" class="mt-1 accent-indigo-600" />
+                            <input v-model="formato" type="radio" value="detalhado" class="mt-1 accent-brand-600" />
                             <span>
                                 <span class="font-medium">Detalhado</span>
                                 <span class="block text-xs text-muted-foreground">Uma linha por turma pendente.</span>
@@ -135,7 +135,7 @@ function gerar() {
                 </div>
 
                 <div class="sm:col-span-2 flex justify-end">
-                    <Button :disabled="!anlId || gerando" class="bg-indigo-600 text-white hover:bg-indigo-700" @click="gerar">
+                    <Button :disabled="!anlId || gerando" class="bg-brand-600 text-white hover:bg-brand-700" @click="gerar">
                         <Loader2 v-if="gerando" class="mr-1 size-4 animate-spin" />
                         Gerar Relatório
                     </Button>

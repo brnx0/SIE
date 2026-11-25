@@ -52,7 +52,7 @@ const remove = (vei: Veiculo) => {
                     <p class="text-sm text-slate-500 dark:text-slate-400">Frota do transporte escolar — dados e documentação.</p>
                 </div>
                 <Link v-if="!isReadOnly" href="/transporte/veiculos/create">
-                    <Button class="bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400">
+                    <Button class="bg-brand-600 text-white hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400">
                         <Plus class="mr-2 size-4" /> Novo veículo
                     </Button>
                 </Link>
@@ -63,7 +63,7 @@ const remove = (vei: Veiculo) => {
                     <Search class="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                     <Input v-model="search" placeholder="Buscar por placa, marca, modelo..." class="pl-9" />
                 </div>
-                <select v-model="tipo" class="h-10 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground">
+                <select v-model="tipo" class="h-10 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-background dark:text-foreground">
                     <option value="">Todos os tipos</option>
                     <option v-for="(label, key) in tipos" :key="key" :value="key">{{ label }}</option>
                 </select>
@@ -93,13 +93,13 @@ const remove = (vei: Veiculo) => {
                         <tr v-for="vei in veiculos.data" :key="vei.vei_id" class="transition-colors hover:bg-muted/30">
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-3">
-                                    <div class="grid size-9 place-items-center rounded-lg bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300">
+                                    <div class="grid size-9 place-items-center rounded-lg bg-brand-100 text-brand-700 dark:bg-brand-900/50 dark:text-brand-300">
                                         <Bus class="size-4" />
                                     </div>
                                     <div class="flex flex-col">
                                         <span class="flex items-center gap-1.5 font-medium">
                                             {{ vei.vei_placa }}
-                                            <Accessibility v-if="vei.vei_fl_acessivel" class="size-3.5 text-indigo-500" title="Veículo acessível" />
+                                            <Accessibility v-if="vei.vei_fl_acessivel" class="size-3.5 text-brand-500" title="Veículo acessível" />
                                         </span>
                                         <span class="text-xs text-muted-foreground">
                                             <template v-if="vei.vei_marca || vei.vei_modelo">{{ [vei.vei_marca, vei.vei_modelo].filter(Boolean).join(' ') }}</template>
@@ -142,7 +142,7 @@ const remove = (vei: Veiculo) => {
                         <template v-else>Nenhum registro</template>
                     </span>
                     <div v-if="veiculos.last_page > 1" class="flex flex-wrap gap-1">
-                        <Link v-for="(link, i) in veiculos.links" :key="i" :href="link.url ?? '#'" v-html="link.label" :class="['rounded-md px-3 py-1 text-xs', link.active ? 'bg-indigo-600 text-white' : 'border bg-background hover:bg-muted', !link.url && 'pointer-events-none opacity-40']" preserve-scroll />
+                        <Link v-for="(link, i) in veiculos.links" :key="i" :href="link.url ?? '#'" v-html="link.label" :class="['rounded-md px-3 py-1 text-xs', link.active ? 'bg-brand-600 text-white' : 'border bg-background hover:bg-muted', !link.url && 'pointer-events-none opacity-40']" preserve-scroll />
                     </div>
                 </div>
             </div>

@@ -52,7 +52,7 @@ const chars = () => editor.value?.storage.characterCount.characters() ?? 0;
 const btn = (active: boolean) =>
     [
         'inline-flex size-8 items-center justify-center rounded transition',
-        active ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300' : 'text-muted-foreground hover:bg-muted',
+        active ? 'bg-brand-100 text-brand-700 dark:bg-brand-900/50 dark:text-brand-300' : 'text-muted-foreground hover:bg-muted',
     ].join(' ');
 </script>
 

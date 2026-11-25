@@ -946,11 +946,11 @@ const initials = computed(() => {
                                 <FormLabel for="aln_filiacao_1" :required="true">Filiação 1</FormLabel>
                                 <div class="flex items-center gap-4 text-sm">
                                     <label class="flex cursor-pointer items-center gap-1.5">
-                                        <input type="radio" v-model="form.aln_filiacao_1_tipo" value="MAE" class="accent-indigo-600" />
+                                        <input type="radio" v-model="form.aln_filiacao_1_tipo" value="MAE" class="accent-brand-600" />
                                         Mãe
                                     </label>
                                     <label class="flex cursor-pointer items-center gap-1.5">
-                                        <input type="radio" v-model="form.aln_filiacao_1_tipo" value="PAI" class="accent-indigo-600" />
+                                        <input type="radio" v-model="form.aln_filiacao_1_tipo" value="PAI" class="accent-brand-600" />
                                         Pai
                                     </label>
                                 </div>
@@ -969,11 +969,11 @@ const initials = computed(() => {
                                 <Label for="aln_filiacao_2">Filiação 2</Label>
                                 <div class="flex items-center gap-4 text-sm">
                                     <label class="flex cursor-pointer items-center gap-1.5">
-                                        <input type="radio" v-model="form.aln_filiacao_2_tipo" value="MAE" class="accent-indigo-600" />
+                                        <input type="radio" v-model="form.aln_filiacao_2_tipo" value="MAE" class="accent-brand-600" />
                                         Mãe
                                     </label>
                                     <label class="flex cursor-pointer items-center gap-1.5">
-                                        <input type="radio" v-model="form.aln_filiacao_2_tipo" value="PAI" class="accent-indigo-600" />
+                                        <input type="radio" v-model="form.aln_filiacao_2_tipo" value="PAI" class="accent-brand-600" />
                                         Pai
                                     </label>
                                 </div>
@@ -1253,7 +1253,7 @@ const initials = computed(() => {
                         <!-- Conteúdo desabilitado quando flag inativa -->
                         <div :class="{ 'pointer-events-none opacity-40': !form.saude.als_fl_pcd }">
                             <!-- Necessita de ADI em destaque, no topo -->
-                            <div class="mb-5 flex items-center gap-3 rounded-lg border border-fuchsia-300 bg-fuchsia-50 px-4 py-3 dark:border-fuchsia-800 dark:bg-fuchsia-950/30">
+                            <div class="mb-5 flex items-center gap-3 rounded-lg border border-sky-300 bg-sky-50 px-4 py-3 dark:border-sky-800 dark:bg-sky-950/30">
                                 <Switch
                                     id="als_fl_necessita_adi"
                                     v-model="form.saude.als_fl_necessita_adi"
@@ -1441,10 +1441,10 @@ const initials = computed(() => {
                 <div v-else class="grid gap-6">
                     <!-- Matrículas Regulares -->
                     <div class="overflow-hidden rounded-xl border bg-card shadow-sm">
-                        <div class="flex items-center justify-between gap-2 border-b border-l-4 border-l-indigo-600 bg-indigo-50/60 px-4 py-2.5 dark:bg-indigo-900/20">
+                        <div class="flex items-center justify-between gap-2 border-b border-l-4 border-l-brand-600 bg-brand-50/60 px-4 py-2.5 dark:bg-brand-900/20">
                             <div class="flex items-center gap-2">
-                                <span class="text-sm font-semibold text-indigo-900 dark:text-indigo-200">Matrículas Regulares</span>
-                                <span class="rounded-full bg-indigo-600 px-2 py-0.5 text-xs font-medium text-white">
+                                <span class="text-sm font-semibold text-brand-900 dark:text-brand-200">Matrículas Regulares</span>
+                                <span class="rounded-full bg-brand-600 px-2 py-0.5 text-xs font-medium text-white">
                                     {{ matriculasRegulares.length }}
                                 </span>
                             </div>
@@ -1457,7 +1457,7 @@ const initials = computed(() => {
 
                         <div v-else class="overflow-x-auto">
                             <table class="w-full text-sm">
-                                <thead class="bg-indigo-600 text-white">
+                                <thead class="bg-brand-600 text-white">
                                     <tr>
                                         <th class="px-3 py-2.5 text-left font-semibold">Ano</th>
                                         <th class="px-3 py-2.5 text-left font-semibold">Dt. Matrícula</th>
@@ -1563,10 +1563,10 @@ const initials = computed(() => {
 
                     <!-- Matrículas AEE -->
                     <div class="overflow-hidden rounded-xl border bg-card shadow-sm">
-                        <div class="flex items-center justify-between gap-2 border-b border-l-4 border-l-fuchsia-600 bg-fuchsia-50/60 px-4 py-2.5 dark:bg-fuchsia-900/20">
+                        <div class="flex items-center justify-between gap-2 border-b border-l-4 border-l-sky-700 bg-sky-50/60 px-4 py-2.5 dark:bg-sky-900/20">
                             <div class="flex items-center gap-2">
-                                <span class="text-sm font-semibold text-fuchsia-900 dark:text-fuchsia-200">Matrículas AEE</span>
-                                <span class="rounded-full bg-fuchsia-600 px-2 py-0.5 text-xs font-medium text-white">
+                                <span class="text-sm font-semibold text-sky-900 dark:text-sky-200">Matrículas AEE</span>
+                                <span class="rounded-full bg-sky-700 px-2 py-0.5 text-xs font-medium text-white">
                                     {{ matriculasAee.length }}
                                 </span>
                             </div>
@@ -1579,7 +1579,7 @@ const initials = computed(() => {
 
                         <div v-else class="overflow-x-auto">
                             <table class="w-full text-sm">
-                                <thead class="bg-fuchsia-600 text-white">
+                                <thead class="bg-sky-700 text-white">
                                     <tr>
                                         <th class="px-3 py-2.5 text-left font-semibold">Ano</th>
                                         <th class="px-3 py-2.5 text-left font-semibold">Dt. Matrícula</th>

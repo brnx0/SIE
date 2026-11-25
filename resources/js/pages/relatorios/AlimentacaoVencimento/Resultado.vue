@@ -129,7 +129,7 @@ const dataEmissao = computed(() => {
                     <Link href="/relatorios/itens-vencimento">
                         <Button variant="outline"><ArrowLeft class="mr-1 size-4" /> Voltar</Button>
                     </Link>
-                    <Button :disabled="!linhas.length" class="bg-indigo-600 text-white hover:bg-indigo-700" @click="imprimir">
+                    <Button :disabled="!linhas.length" class="bg-brand-600 text-white hover:bg-brand-700" @click="imprimir">
                         <Printer class="mr-1 size-4" /> Imprimir / PDF
                     </Button>
                 </div>
@@ -152,7 +152,7 @@ const dataEmissao = computed(() => {
             </div>
             <div v-else class="overflow-x-auto rounded-xl border bg-card shadow-sm">
                 <table class="w-full text-xs">
-                    <thead class="bg-indigo-50 dark:bg-indigo-900/30">
+                    <thead class="bg-brand-50 dark:bg-brand-900/30">
                         <tr>
                             <th class="px-3 py-2 text-left">Estoque</th>
                             <th class="px-3 py-2 text-left">Item</th>

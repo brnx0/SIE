@@ -218,8 +218,8 @@ const imprimir = () => {
                     </section>
 
                     <!-- Bloco Revisão -->
-                    <section class="rounded-lg border-2 border-indigo-200 bg-indigo-50/40 p-4 dark:border-indigo-900 dark:bg-indigo-950/30">
-                        <h3 class="mb-3 text-sm font-semibold text-indigo-900 dark:text-indigo-200">Revisão</h3>
+                    <section class="rounded-lg border-2 border-brand-200 bg-brand-50/40 p-4 dark:border-brand-900 dark:bg-brand-950/30">
+                        <h3 class="mb-3 text-sm font-semibold text-brand-900 dark:text-brand-200">Revisão</h3>
 
                         <div v-if="ehMeuPlano" class="rounded-md bg-rose-100 p-3 text-sm text-rose-900">
                             Você não pode validar um plano que você mesmo criou.
@@ -256,7 +256,7 @@ const imprimir = () => {
             <div class="flex items-center justify-between border-t bg-muted/40 px-5 py-3">
                 <Button variant="outline" @click="emit('close')">Cancelar</Button>
                 <Button :disabled="!podeSalvar"
-                    class="bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
+                    class="bg-brand-600 text-white hover:bg-brand-700 disabled:opacity-50"
                     @click="salvar">
                     <Save class="mr-2 size-4" /> Salvar revisão
                 </Button>

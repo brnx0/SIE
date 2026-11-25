@@ -37,8 +37,8 @@ const chartData = computed(() => ({
     datasets: [{
         label: props.rotulo,
         data: props.itens.map((i) => i.valor),
-        backgroundColor: '#6366f1',
-        hoverBackgroundColor: '#4f46e5',
+        backgroundColor: '#2f6fb8',
+        hoverBackgroundColor: '#1e4e8c',
         borderRadius: 4,
         barThickness: 'flex' as const,
         maxBarThickness: 28,

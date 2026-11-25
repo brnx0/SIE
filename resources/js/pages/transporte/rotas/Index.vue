@@ -66,7 +66,7 @@ const ocupacaoClass = (rota: Rota) => {
                     <p class="text-sm text-slate-500 dark:text-slate-400">Rotas do transporte escolar — pontos de parada e passageiros.</p>
                 </div>
                 <Link v-if="!isReadOnly" href="/transporte/rotas/create">
-                    <Button class="bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400">
+                    <Button class="bg-brand-600 text-white hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400">
                         <Plus class="mr-2 size-4" /> Nova rota
                     </Button>
                 </Link>
@@ -77,11 +77,11 @@ const ocupacaoClass = (rota: Rota) => {
                     <Search class="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                     <Input v-model="search" placeholder="Buscar por nome da rota..." class="pl-9" />
                 </div>
-                <select v-model="anlId" class="h-10 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground">
+                <select v-model="anlId" class="h-10 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-background dark:text-foreground">
                     <option value="all">Todos os anos</option>
                     <option v-for="anl in anosLetivos" :key="anl.anl_id" :value="anl.anl_id">{{ anl.anl_ano }}</option>
                 </select>
-                <select v-model="turno" class="h-10 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground">
+                <select v-model="turno" class="h-10 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-background dark:text-foreground">
                     <option value="">Todos os turnos</option>
                     <option v-for="(label, key) in turnos" :key="key" :value="key">{{ label }}</option>
                 </select>
@@ -112,7 +112,7 @@ const ocupacaoClass = (rota: Rota) => {
                         <tr v-for="rota in rotas.data" :key="rota.rot_id" class="transition-colors hover:bg-muted/30">
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-3">
-                                    <div class="grid size-9 place-items-center rounded-lg bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300">
+                                    <div class="grid size-9 place-items-center rounded-lg bg-brand-100 text-brand-700 dark:bg-brand-900/50 dark:text-brand-300">
                                         <RouteIcon class="size-4" />
                                     </div>
                                     <div class="flex flex-col">
@@ -164,7 +164,7 @@ const ocupacaoClass = (rota: Rota) => {
                         <template v-else>Nenhum registro</template>
                     </span>
                     <div v-if="rotas.last_page > 1" class="flex flex-wrap gap-1">
-                        <Link v-for="(link, i) in rotas.links" :key="i" :href="link.url ?? '#'" v-html="link.label" :class="['rounded-md px-3 py-1 text-xs', link.active ? 'bg-indigo-600 text-white' : 'border bg-background hover:bg-muted', !link.url && 'pointer-events-none opacity-40']" preserve-scroll />
+                        <Link v-for="(link, i) in rotas.links" :key="i" :href="link.url ?? '#'" v-html="link.label" :class="['rounded-md px-3 py-1 text-xs', link.active ? 'bg-brand-600 text-white' : 'border bg-background hover:bg-muted', !link.url && 'pointer-events-none opacity-40']" preserve-scroll />
                     </div>
                 </div>
             </div>

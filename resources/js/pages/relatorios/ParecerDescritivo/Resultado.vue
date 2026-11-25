@@ -191,7 +191,7 @@ const exportarExcel = () => {
                         <div v-for="(p, j) in l.pareceres" :key="j">
                             <div
                                 class="mb-0.5 text-xs font-semibold uppercase tracking-wide"
-                                :class="p.inicial ? 'text-fuchsia-700 dark:text-fuchsia-300' : 'text-indigo-700 dark:text-indigo-300'"
+                                :class="p.inicial ? 'text-sky-800 dark:text-sky-300' : 'text-brand-700 dark:text-brand-300'"
                             >
                                 {{ p.periodo }}<template v-if="p.disciplina"> · {{ p.disciplina }}</template>
                             </div>

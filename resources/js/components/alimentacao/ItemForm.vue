@@ -103,7 +103,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar item' : 'Salvar altera√
                     type="button"
                     variant="outline"
                     :disabled="form.processing"
-                    class="border-indigo-600 text-indigo-700 hover:bg-indigo-50 dark:text-indigo-300 dark:hover:bg-indigo-900/30"
+                    class="border-brand-600 text-brand-700 hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-900/30"
                     @click="submit(true)"
                 >
                     <LoaderCircle v-if="form.processing && form.continue_new" class="mr-2 size-4 animate-spin" />
@@ -113,7 +113,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar item' : 'Salvar altera√
                 <Button
                     type="submit"
                     :disabled="form.processing"
-                    class="bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
+                    class="bg-brand-600 text-white hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400"
                 >
                     <LoaderCircle v-if="form.processing && !form.continue_new" class="mr-2 size-4 animate-spin" />
                     <Save v-else class="mr-2 size-4" />
@@ -173,7 +173,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar item' : 'Salvar altera√
 
                 <div class="grid gap-2 sm:col-span-2">
                     <FormLabel for="itm_tpi_id" :required="true">Tipo de item</FormLabel>
-                    <select id="itm_tpi_id" v-model="form.itm_tpi_id" class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground">
+                    <select id="itm_tpi_id" v-model="form.itm_tpi_id" class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-background dark:text-foreground">
                         <option :value="null" disabled>Selecione...</option>
                         <option v-for="t in tipos" :key="t.tpi_id" :value="t.tpi_id">{{ t.tpi_nome }}</option>
                     </select>
@@ -185,7 +185,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar item' : 'Salvar altera√
 
                 <div class="grid gap-2 sm:col-span-2">
                     <FormLabel for="itm_cat_id" :required="true">Categoria</FormLabel>
-                    <select id="itm_cat_id" v-model="form.itm_cat_id" class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground">
+                    <select id="itm_cat_id" v-model="form.itm_cat_id" class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-background dark:text-foreground">
                         <option :value="null" disabled>Selecione...</option>
                         <option v-for="c in categorias" :key="c.cat_id" :value="c.cat_id">{{ c.cat_nome }}</option>
                     </select>
@@ -201,7 +201,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar item' : 'Salvar altera√
                         id="itm_umd_id"
                         v-model="form.itm_umd_id"
                         :disabled="isReadOnly || temConversoes"
-                        class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-background dark:text-foreground"
+                        class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-background dark:text-foreground"
                     >
                         <option :value="null" disabled>Selecione...</option>
                         <option v-for="u in unidades" :key="u.umd_id" :value="u.umd_id">{{ u.umd_sigla }} ‚Äî {{ u.umd_nome }}</option>
@@ -222,7 +222,7 @@ const submitLabel = props.mode === 'create' ? 'Cadastrar item' : 'Salvar altera√
                         v-model="form.itm_especificacao"
                         rows="3"
                         placeholder="Descri√ß√£o usada em contrato e confer√™ncia de recebimento (marca de refer√™ncia, embalagem, teor, etc.)"
-                        class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground"
+                        class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-background dark:text-foreground"
                     ></textarea>
                     <InputError :message="form.errors.itm_especificacao" />
                 </div>

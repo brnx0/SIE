@@ -167,7 +167,7 @@ const exportFilters = () => ({
                     <p class="text-sm text-slate-500 dark:text-slate-400">Gerencie as turmas da rede de ensino.</p>
                 </div>
                 <Link v-if="!isReadOnly" href="/turmas/create">
-                    <Button class="bg-indigo-600 text-white hover:bg-indigo-700">
+                    <Button class="bg-brand-600 text-white hover:bg-brand-700">
                         <Plus class="mr-2 size-4" /> Nova Turma
                     </Button>
                 </Link>
@@ -239,7 +239,7 @@ const exportFilters = () => ({
                             <td class="px-4 py-3">{{ t.serie?.ser_nome ?? '—' }}</td>
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-3">
-                                    <div class="grid size-9 place-items-center rounded-lg bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300">
+                                    <div class="grid size-9 place-items-center rounded-lg bg-brand-100 text-brand-700 dark:bg-brand-900/50 dark:text-brand-300">
                                         <BookOpen class="size-4" />
                                     </div>
                                     <span class="font-semibold">{{ t.tur_nome }}</span>
@@ -275,7 +275,7 @@ const exportFilters = () => ({
                         <template v-else>Nenhum registro</template>
                     </span>
                     <div v-if="turmas.last_page > 1" class="flex flex-wrap gap-1">
-                        <Link v-for="(link, i) in turmas.links" :key="i" :href="link.url ?? '#'" :class="['rounded-md px-3 py-1 text-xs', link.active ? 'bg-indigo-600 text-white' : 'border bg-background hover:bg-muted', !link.url && 'pointer-events-none opacity-40']" preserve-scroll><span v-html="link.label" /></Link>
+                        <Link v-for="(link, i) in turmas.links" :key="i" :href="link.url ?? '#'" :class="['rounded-md px-3 py-1 text-xs', link.active ? 'bg-brand-600 text-white' : 'border bg-background hover:bg-muted', !link.url && 'pointer-events-none opacity-40']" preserve-scroll><span v-html="link.label" /></Link>
                     </div>
                 </div>
             </div>

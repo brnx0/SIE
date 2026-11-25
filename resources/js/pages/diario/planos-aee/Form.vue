@@ -210,7 +210,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                         <Printer class="mr-2 size-4" /> Imprimir
                     </Button>
                     <Button v-if="!readonly" :disabled="form.processing"
-                        class="bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
+                        class="bg-brand-600 text-white hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400"
                         @click="submit">
                         <Save class="mr-2 size-4" /> Salvar
                     </Button>
@@ -330,7 +330,7 @@ const breadcrumbs: BreadcrumbItem[] = [
             <div class="flex justify-between border-t pt-4">
                 <Button variant="outline" @click="router.visit('/diario/planos-aee')">Voltar</Button>
                 <Button v-if="!readonly" :disabled="form.processing"
-                    class="bg-indigo-600 text-white hover:bg-indigo-700" @click="submit">
+                    class="bg-brand-600 text-white hover:bg-brand-700" @click="submit">
                     <Save class="mr-2 size-4" /> Salvar
                 </Button>
             </div>

@@ -31,7 +31,7 @@ const gerar = () => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="mx-auto w-[95%] py-6">
             <h1 class="mb-1 flex items-center gap-2 text-xl font-semibold">
-                <ScrollText class="size-5 text-indigo-600" /> Histórico Escolar / Certificado
+                <ScrollText class="size-5 text-brand-600" /> Histórico Escolar / Certificado
             </h1>
             <p class="mb-6 text-sm text-muted-foreground">
                 Busque o aluno e gere o PDF. O histórico inclui os anos do sistema e os lançados manualmente, e é emitido pela escola do último ano escolar do aluno.
@@ -46,7 +46,7 @@ const gerar = () => {
                     :min-chars="2"
                     placeholder="Digite o nome, matrícula ou CPF..." />
                 <div class="flex items-end justify-end">
-                    <Button :disabled="!alnId" class="bg-indigo-600 text-white hover:bg-indigo-700" @click="gerar">
+                    <Button :disabled="!alnId" class="bg-brand-600 text-white hover:bg-brand-700" @click="gerar">
                         <ScrollText class="mr-1 size-4" /> Gerar PDF
                     </Button>
                 </div>

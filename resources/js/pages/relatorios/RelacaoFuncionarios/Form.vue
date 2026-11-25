@@ -63,7 +63,7 @@ function gerar() {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="mx-auto w-[95%] py-6">
             <h1 class="text-xl font-semibold mb-1 flex items-center gap-2">
-                <UsersRound class="size-5 text-indigo-600" /> Relação de Funcionários
+                <UsersRound class="size-5 text-brand-600" /> Relação de Funcionários
             </h1>
             <p class="text-sm text-muted-foreground mb-6">
                 Relação de funcionários cadastrados com cargo, escolaridade e unidade de lotação. Filtros opcionais — vazio traz todos.
@@ -95,7 +95,7 @@ function gerar() {
                 </div>
 
                 <div class="sm:col-span-3 flex justify-end">
-                    <Button :disabled="gerando" class="bg-indigo-600 text-white hover:bg-indigo-700" @click="gerar">
+                    <Button :disabled="gerando" class="bg-brand-600 text-white hover:bg-brand-700" @click="gerar">
                         <Loader2 v-if="gerando" class="mr-1 size-4 animate-spin" />
                         Gerar Relatório
                     </Button>

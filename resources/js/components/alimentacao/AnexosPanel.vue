@@ -82,7 +82,7 @@ const dataBr = (iso: string | null) => (iso ? iso.slice(0, 10).split('-').revers
                     </tr>
                     <tr v-for="a in anexos" :key="a.anx_id" class="transition-colors hover:bg-muted/30">
                         <td class="w-10 px-4 py-3">
-                            <ImageIcon v-if="a.eh_imagem" class="size-5 text-indigo-500" />
+                            <ImageIcon v-if="a.eh_imagem" class="size-5 text-brand-500" />
                             <FileText v-else class="size-5 text-rose-500" />
                         </td>
                         <td class="px-2 py-3">
@@ -90,7 +90,7 @@ const dataBr = (iso: string | null) => (iso ? iso.slice(0, 10).split('-').revers
                                 :href="`${baseUrl}/${a.anx_id}`"
                                 target="_blank"
                                 rel="noopener"
-                                class="font-medium text-indigo-600 hover:underline dark:text-indigo-400"
+                                class="font-medium text-brand-600 hover:underline dark:text-brand-400"
                             >
                                 {{ a.anx_nome }}
                             </a>
@@ -160,7 +160,7 @@ const dataBr = (iso: string | null) => (iso ? iso.slice(0, 10).split('-').revers
                 <Button
                     type="button"
                     :disabled="form.processing"
-                    class="bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
+                    class="bg-brand-600 text-white hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400"
                     @click="enviar"
                 >
                     <LoaderCircle v-if="form.processing" class="mr-2 size-4 animate-spin" />

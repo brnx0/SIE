@@ -172,7 +172,7 @@ const fmtHora = (h: string) => h.substring(0, 5);
             <h3 class="text-sm font-semibold">Grade de Horários por Etapa de Ensino</h3>
             <div class="flex items-center gap-2">
                 <RefreshButton />
-                <Button v-if="!showForm" type="button" size="sm" class="bg-indigo-600 hover:bg-indigo-700" @click="openForm()">
+                <Button v-if="!showForm" type="button" size="sm" class="bg-brand-600 hover:bg-brand-700" @click="openForm()">
                     <Plus class="mr-2 size-4" /> Novo Horário
                 </Button>
             </div>
@@ -222,7 +222,7 @@ const fmtHora = (h: string) => h.substring(0, 5);
 
             <div class="mt-4 flex justify-end gap-2">
                 <Button type="button" variant="outline" size="sm" @click="cancelForm">Cancelar</Button>
-                <Button type="button" size="sm" class="bg-indigo-600 hover:bg-indigo-700" :disabled="processing" @click="submit">
+                <Button type="button" size="sm" class="bg-brand-600 hover:bg-brand-700" :disabled="processing" @click="submit">
                     <Loader2 v-if="processing" class="mr-2 size-4 animate-spin" />
                     Adicionar
                 </Button>
@@ -253,9 +253,9 @@ const fmtHora = (h: string) => h.substring(0, 5);
                         class="size-4 shrink-0 text-muted-foreground transition-transform"
                         :class="{ '-rotate-90': collapsed[segmento.seg_id] }"
                     />
-                    <Clock class="size-4 text-indigo-600" />
+                    <Clock class="size-4 text-brand-600" />
                     <span class="text-sm font-semibold">{{ segmento.seg_nome_reduzido }}</span>
-                    <span class="rounded bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300">
+                    <span class="rounded bg-brand-100 px-2 py-0.5 text-xs font-medium text-brand-700 dark:bg-brand-900/40 dark:text-brand-300">
                         {{ horarios.length }} tempo{{ horarios.length !== 1 ? 's' : '' }}
                     </span>
                 </div>
@@ -281,7 +281,7 @@ const fmtHora = (h: string) => h.substring(0, 5);
                 <tbody>
                     <!-- Linha em modo edição -->
                     <template v-for="grh in horarios" :key="grh.grh_id">
-                        <tr v-if="editingId === grh.grh_id" class="border-b bg-indigo-50/40 dark:bg-indigo-900/10 [&>td]:align-top">
+                        <tr v-if="editingId === grh.grh_id" class="border-b bg-brand-50/40 dark:bg-brand-900/10 [&>td]:align-top">
                             <td class="px-4 py-2">
                                 <Input
                                     v-model.number="editForm.grh_ordem"
@@ -321,7 +321,7 @@ const fmtHora = (h: string) => h.substring(0, 5);
                                         :disabled="editProcessing"
                                         @click="saveEdit(grh)"
                                     >
-                                        <Loader2 v-if="editProcessing" class="size-4 animate-spin text-indigo-500" />
+                                        <Loader2 v-if="editProcessing" class="size-4 animate-spin text-brand-500" />
                                         <Check v-else class="size-4 text-green-600" />
                                     </button>
                                     <button
@@ -340,7 +340,7 @@ const fmtHora = (h: string) => h.substring(0, 5);
                         <tr v-else class="border-b last:border-0 hover:bg-muted/20">
                             <td class="px-4 py-2 text-muted-foreground">{{ grh.grh_ordem }}º</td>
                             <td class="px-4 py-2">
-                                <span class="rounded bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300">
+                                <span class="rounded bg-brand-100 px-2 py-0.5 text-xs font-medium text-brand-700 dark:bg-brand-900/40 dark:text-brand-300">
                                     {{ turnoLabel(grh.grh_turno) }}
                                 </span>
                             </td>
@@ -353,7 +353,7 @@ const fmtHora = (h: string) => h.substring(0, 5);
                                         title="Editar"
                                         @click="startEdit(grh)"
                                     >
-                                        <Pencil class="size-4 text-indigo-500" />
+                                        <Pencil class="size-4 text-brand-500" />
                                     </button>
                                     <button
                                         type="button"

@@ -123,7 +123,7 @@ const refresh = () => {
 
         <div v-for="g in grupos" :key="g.ponto" class="overflow-hidden rounded-xl border bg-card shadow-sm">
             <div class="flex items-center gap-2 border-b bg-muted/40 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                <span class="grid size-5 place-items-center rounded-full bg-indigo-100 text-[10px] text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300">{{ g.ordem }}</span>
+                <span class="grid size-5 place-items-center rounded-full bg-brand-100 text-[10px] text-brand-700 dark:bg-brand-900/50 dark:text-brand-300">{{ g.ordem }}</span>
                 {{ g.ponto }}
             </div>
             <table class="w-full text-sm">
@@ -139,13 +139,13 @@ const refresh = () => {
                     <tr v-for="l in g.itens" :key="l.tdp_id" class="border-b last:border-0 hover:bg-muted/20">
                         <td class="px-4 py-2">
                             <span class="inline-flex items-center gap-1.5">
-                                <GraduationCap v-if="l.tipo === 'aluno'" class="size-3.5 text-indigo-500" />
-                                <UserPlus v-else class="size-3.5 text-fuchsia-500" />
+                                <GraduationCap v-if="l.tipo === 'aluno'" class="size-3.5 text-brand-500" />
+                                <UserPlus v-else class="size-3.5 text-sky-600" />
                                 {{ l.nome }}
                             </span>
                         </td>
                         <td class="px-4 py-2 text-center">
-                            <input type="checkbox" v-model="l.tdp_fl_embarcou" :disabled="bloqueado" class="size-4 accent-indigo-600 disabled:opacity-40" @change="onEmbarque(l)" />
+                            <input type="checkbox" v-model="l.tdp_fl_embarcou" :disabled="bloqueado" class="size-4 accent-brand-600 disabled:opacity-40" @change="onEmbarque(l)" />
                         </td>
                         <td class="px-4 py-2 text-center">
                             <input type="checkbox" v-model="l.tdp_fl_desembarcou" :disabled="bloqueado || !l.tdp_fl_embarcou" class="size-4 accent-emerald-600 disabled:opacity-40" />
@@ -159,7 +159,7 @@ const refresh = () => {
         </div>
 
         <div v-if="linhas.length > 0 && !bloqueado" class="flex justify-end">
-            <Button type="button" :disabled="processing" class="bg-indigo-600 text-white hover:bg-indigo-700" @click="salvar">
+            <Button type="button" :disabled="processing" class="bg-brand-600 text-white hover:bg-brand-700" @click="salvar">
                 <Loader2 v-if="processing" class="mr-2 size-4 animate-spin" /> Gravar chamada
             </Button>
         </div>

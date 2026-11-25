@@ -175,7 +175,7 @@ const trocar = () => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="mx-auto w-[95%] py-6">
             <h1 class="mb-1 flex items-center gap-2 text-xl font-semibold">
-                <ArrowRightLeft class="size-5 text-indigo-600" /> Troca entre Turmas
+                <ArrowRightLeft class="size-5 text-brand-600" /> Troca entre Turmas
             </h1>
             <p class="mb-6 text-sm text-muted-foreground">
                 Move ou troca alunos entre turmas da mesma série (mesma escola e etapa de ensino).
@@ -208,7 +208,7 @@ const trocar = () => {
                     </select>
                 </div>
                 <div class="flex items-end">
-                    <Button :disabled="!anlId || !escId || carregandoTurmas" class="bg-indigo-600 text-white hover:bg-indigo-700" @click="carregarTurmas">
+                    <Button :disabled="!anlId || !escId || carregandoTurmas" class="bg-brand-600 text-white hover:bg-brand-700" @click="carregarTurmas">
                         <Loader2 v-if="carregandoTurmas" class="mr-1 size-4 animate-spin" /> Carregar Turmas
                     </Button>
                 </div>
@@ -231,7 +231,7 @@ const trocar = () => {
                     <div class="flex items-center gap-2 self-end text-xs"><Switch :model-value="migrarFaltas" @update:model-value="migrarFaltas = $event" /> <span>Migrar faltas</span></div>
                     <div class="ml-auto flex items-center gap-2 self-end">
                         <Button size="sm" variant="outline" :disabled="processando || !turB || !selA.size" class="gap-1" @click="moverAB"><ArrowRight class="size-4" /> A→B</Button>
-                        <Button size="sm" :disabled="processando || !turA || !turB || (!selA.size && !selB.size)" class="gap-1 bg-indigo-600 text-white hover:bg-indigo-700" @click="trocar">
+                        <Button size="sm" :disabled="processando || !turA || !turB || (!selA.size && !selB.size)" class="gap-1 bg-brand-600 text-white hover:bg-brand-700" @click="trocar">
                             <Loader2 v-if="processando" class="size-4 animate-spin" /><ArrowRightLeft v-else class="size-4" /> Trocar
                         </Button>
                         <Button size="sm" variant="outline" :disabled="processando || !turA || !selB.size" class="gap-1" @click="moverBA"><ArrowLeft class="size-4" /> B→A</Button>
@@ -249,7 +249,7 @@ const trocar = () => {
                             </select>
                             <div v-if="turA" class="mb-2 text-xs text-muted-foreground">
                                 {{ turA.total_ativos }} aluno(s)<span v-if="turA.vagas !== null"> · <b :class="turA.vagas > 0 ? 'text-emerald-600' : 'text-rose-600'">{{ turA.vagas }} vaga(s)</b></span>
-                                <span v-if="turA.serie?.ser_fl_multi" class="ml-1 rounded bg-indigo-100 px-1.5 py-0.5 text-[10px] font-medium text-indigo-700 dark:bg-indigo-950/40">multi</span>
+                                <span v-if="turA.serie?.ser_fl_multi" class="ml-1 rounded bg-brand-100 px-1.5 py-0.5 text-[10px] font-medium text-brand-700 dark:bg-brand-950/40">multi</span>
                             </div>
                             <div v-if="carregandoA" class="py-8 text-center"><Loader2 class="mx-auto size-4 animate-spin" /></div>
                             <template v-else-if="turA">
@@ -279,7 +279,7 @@ const trocar = () => {
                             </select>
                             <div v-if="turB" class="mb-2 text-xs text-muted-foreground">
                                 {{ turB.total_ativos }} aluno(s)<span v-if="turB.vagas !== null"> · <b :class="turB.vagas > 0 ? 'text-emerald-600' : 'text-rose-600'">{{ turB.vagas }} vaga(s)</b></span>
-                                <span v-if="turB.serie?.ser_fl_multi" class="ml-1 rounded bg-indigo-100 px-1.5 py-0.5 text-[10px] font-medium text-indigo-700 dark:bg-indigo-950/40">multi</span>
+                                <span v-if="turB.serie?.ser_fl_multi" class="ml-1 rounded bg-brand-100 px-1.5 py-0.5 text-[10px] font-medium text-brand-700 dark:bg-brand-950/40">multi</span>
                             </div>
                             <div v-if="carregandoB" class="py-8 text-center"><Loader2 class="mx-auto size-4 animate-spin" /></div>
                             <template v-else-if="turB">

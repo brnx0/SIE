@@ -267,7 +267,7 @@ const cb = (field: keyof CensoFormData) => ({
             <Button
                 type="submit"
                 :disabled="form.processing"
-                class="bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
+                class="bg-brand-600 text-white hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400"
             >
                 <LoaderCircle v-if="form.processing" class="mr-2 size-4 animate-spin" />
                 <Save v-else class="mr-2 size-4" />
@@ -790,7 +790,7 @@ const cb = (field: keyof CensoFormData) => ({
                             ]" :key="opt.value"
                                 class="flex cursor-pointer items-center gap-2 rounded-lg border px-4 py-2.5"
                                 :class="form.cen_ppp === opt.value
-                                    ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300'
+                                    ? 'border-brand-500 bg-brand-50 text-brand-700 dark:bg-brand-900/30 dark:text-brand-300'
                                     : 'bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800'"
                             >
                                 <input

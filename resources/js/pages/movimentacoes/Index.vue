@@ -65,7 +65,7 @@ const formatDate = (iso: string | null) => {
             <div class="flex items-center justify-between mb-4">
                 <h1 class="text-xl font-semibold">Movimentações do Aluno</h1>
                 <Link href="/movimentacoes/create">
-                    <Button class="bg-indigo-600 text-white hover:bg-indigo-700">
+                    <Button class="bg-brand-600 text-white hover:bg-brand-700">
                         <Plus class="mr-1 size-4" /> Nova Movimentação
                     </Button>
                 </Link>
@@ -137,7 +137,7 @@ const formatDate = (iso: string | null) => {
                             <td class="px-4 py-3 text-xs">{{ mv.user?.name ?? '—' }}</td>
                             <td class="px-4 py-3">
                                 <Link :href="`/movimentacoes/${mv.mva_id}`" class="rounded p-1.5 hover:bg-muted inline-flex">
-                                    <Eye class="size-4 text-indigo-600" />
+                                    <Eye class="size-4 text-brand-600" />
                                 </Link>
                             </td>
                         </tr>

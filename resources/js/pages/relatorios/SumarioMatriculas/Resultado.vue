@@ -102,7 +102,7 @@ const dataEmissao = computed(() => {
                     <Link href="/relatorios/sumario-matriculas">
                         <Button variant="outline"><ArrowLeft class="mr-1 size-4" /> Voltar</Button>
                     </Link>
-                    <Button :disabled="!linhas.length" class="bg-indigo-600 text-white hover:bg-indigo-700" @click="imprimir">
+                    <Button :disabled="!linhas.length" class="bg-brand-600 text-white hover:bg-brand-700" @click="imprimir">
                         <Printer class="mr-1 size-4" /> Imprimir / PDF
                     </Button>
                 </div>
@@ -118,13 +118,13 @@ const dataEmissao = computed(() => {
             </div>
             <div v-else class="rounded-xl border bg-card shadow-sm overflow-x-auto">
                 <table class="w-full text-xs">
-                    <thead class="bg-indigo-50 dark:bg-indigo-900/30">
+                    <thead class="bg-brand-50 dark:bg-brand-900/30">
                         <tr>
-                            <th class="px-2 py-2 text-left sticky left-0 bg-indigo-50 dark:bg-indigo-900/30 z-10 min-w-[240px] whitespace-nowrap">ESCOLA</th>
+                            <th class="px-2 py-2 text-left sticky left-0 bg-brand-50 dark:bg-brand-900/30 z-10 min-w-[240px] whitespace-nowrap">ESCOLA</th>
                             <th v-for="s in series" :key="s.ser_id" class="px-2 py-2 text-center font-semibold" :title="s.seg_nome ?? ''">
                                 {{ s.ser_nome }}
                             </th>
-                            <th class="px-2 py-2 text-center bg-indigo-100 dark:bg-indigo-900/50">TOTAL</th>
+                            <th class="px-2 py-2 text-center bg-brand-100 dark:bg-brand-900/50">TOTAL</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y">
@@ -133,12 +133,12 @@ const dataEmissao = computed(() => {
                             <td v-for="(v, i) in l.valores" :key="`s-${l.esc_id}-${i}`" class="px-2 py-1.5 text-center tabular-nums">
                                 <span :class="v === 0 ? 'text-muted-foreground' : ''">{{ v }}</span>
                             </td>
-                            <td class="px-2 py-1.5 text-center font-semibold text-indigo-700">{{ l.total }}</td>
+                            <td class="px-2 py-1.5 text-center font-semibold text-brand-700">{{ l.total }}</td>
                         </tr>
                         <tr class="bg-muted/40 font-semibold">
                             <td class="px-2 py-1.5 sticky left-0 bg-muted/40 z-10">TOTAIS</td>
                             <td v-for="(v, i) in totaisColuna" :key="`s-tot-${i}`" class="px-2 py-1.5 text-center">{{ v }}</td>
-                            <td class="px-2 py-1.5 text-center text-indigo-800">{{ totalGeral }}</td>
+                            <td class="px-2 py-1.5 text-center text-brand-800">{{ totalGeral }}</td>
                         </tr>
                     </tbody>
                 </table>

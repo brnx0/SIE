@@ -335,7 +335,7 @@ const semVinculo = computed(() => props.anosLetivos.length === 0);
                     <button
                         v-if="painelVisivel"
                         type="button"
-                        class="text-xs font-medium text-indigo-600 hover:underline dark:text-indigo-400"
+                        class="text-xs font-medium text-brand-600 hover:underline dark:text-brand-400"
                         @click="contextoExpandido = false"
                     >
                         Recolher
@@ -393,9 +393,9 @@ const semVinculo = computed(() => props.anosLetivos.length === 0);
                             :class="[
                                 'flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition',
                                 moduloAtivo === m.key
-                                    ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300'
+                                    ? 'border-brand-500 bg-brand-50 text-brand-700 dark:bg-brand-950 dark:text-brand-300'
                                     : moduloPronto(m.req)
-                                        ? 'border-input text-foreground hover:border-indigo-300 hover:bg-muted/50'
+                                        ? 'border-input text-foreground hover:border-brand-300 hover:bg-muted/50'
                                         : 'cursor-not-allowed border-dashed border-input text-muted-foreground/50',
                             ]"
                             @click="selecionarModulo(m)"

@@ -70,7 +70,7 @@ onMounted(load);
                 <Button
                     type="button"
                     size="sm"
-                    class="bg-indigo-600 text-white hover:bg-indigo-700"
+                    class="bg-brand-600 text-white hover:bg-brand-700"
                     @click="modalOpen = true"
                 >
                     <UserPlus class="mr-1 size-4" /> Matricular Aluno
@@ -92,7 +92,7 @@ onMounted(load);
         </div>
         <div v-else class="overflow-hidden rounded-xl border bg-card shadow-sm">
             <table class="w-full text-sm">
-                <thead class="bg-indigo-600 text-white">
+                <thead class="bg-brand-600 text-white">
                     <tr>
                         <th class="px-4 py-2.5 text-left font-semibold">Nº Matrícula</th>
                         <th class="px-4 py-2.5 text-left font-semibold">Nome</th>

@@ -323,7 +323,7 @@ const semDisciplinasGrade = computed(() => (props.disciplinas ?? []).length === 
                     v-if="!showForm"
                     type="button"
                     size="sm"
-                    class="bg-indigo-600 hover:bg-indigo-700"
+                    class="bg-brand-600 hover:bg-brand-700"
                     :disabled="semDisciplinasGrade"
                     :title="semDisciplinasGrade ? 'Cadastre a grade desta série antes de adicionar indicadores' : ''"
                     @click="abrirCriar"
@@ -360,7 +360,7 @@ const semDisciplinasGrade = computed(() => (props.disciplinas ?? []).length === 
                         v-model="formData.ind_descricao"
                         maxlength="1000"
                         rows="3"
-                        class="flex w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-background dark:text-foreground"
+                        class="flex w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-background dark:text-foreground"
                         :class="{ 'border-red-500 ring-1 ring-red-500': errors.ind_descricao }"
                         placeholder="Descreva o indicador..."
                     />
@@ -380,7 +380,7 @@ const semDisciplinasGrade = computed(() => (props.disciplinas ?? []).length === 
                 <Button
                     type="button"
                     size="sm"
-                    class="bg-indigo-600 hover:bg-indigo-700"
+                    class="bg-brand-600 hover:bg-brand-700"
                     :disabled="processing || !formData.ind_descricao.trim()"
                     @click="salvar"
                 >
@@ -393,7 +393,7 @@ const semDisciplinasGrade = computed(() => (props.disciplinas ?? []).length === 
 
         <div class="overflow-x-auto">
             <table class="w-full text-left text-sm">
-                <thead class="bg-indigo-600 text-white">
+                <thead class="bg-brand-600 text-white">
                     <tr>
                         <th class="px-3 py-2 font-semibold">Descrição</th>
                         <th class="w-24 px-3 py-2 text-center font-semibold">Ativo</th>
@@ -413,7 +413,7 @@ const semDisciplinasGrade = computed(() => (props.disciplinas ?? []).length === 
                                 <span class="text-xs font-semibold uppercase tracking-wide text-slate-700 dark:text-slate-200">
                                     {{ g.dis_nome }}
                                 </span>
-                                <span class="ml-2 rounded-full bg-indigo-100 px-2 py-0.5 text-[10px] font-semibold text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300">
+                                <span class="ml-2 rounded-full bg-brand-100 px-2 py-0.5 text-[10px] font-semibold text-brand-700 dark:bg-brand-900/50 dark:text-brand-300">
                                     {{ g.itens.length }}
                                 </span>
                             </td>
@@ -516,7 +516,7 @@ const semDisciplinasGrade = computed(() => (props.disciplinas ?? []).length === 
                     <Button
                         type="button"
                         :disabled="!replicarOrigemId || replicarProcessando || replicarPreview.length === 0"
-                        class="bg-indigo-600 hover:bg-indigo-700"
+                        class="bg-brand-600 hover:bg-brand-700"
                         @click="replicar"
                     >
                         <LoaderCircle v-if="replicarProcessando" class="mr-2 size-4 animate-spin" />
@@ -565,7 +565,7 @@ const semDisciplinasGrade = computed(() => (props.disciplinas ?? []).length === 
                     <Button
                         type="button"
                         :disabled="!replicarAnoOrigem || replicarAnoProcessando"
-                        class="bg-indigo-600 hover:bg-indigo-700"
+                        class="bg-brand-600 hover:bg-brand-700"
                         @click="replicarAno"
                     >
                         <LoaderCircle v-if="replicarAnoProcessando" class="mr-2 size-4 animate-spin" />

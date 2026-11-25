@@ -100,7 +100,7 @@ onMounted(() => {
         <header class="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur dark:border-slate-800 dark:bg-slate-950/90">
             <div class="mx-auto flex w-[95%] max-w-7xl items-center justify-between gap-3 py-3">
                 <Link :href="route('home')" class="flex items-center gap-2">
-                    <div class="grid size-9 place-items-center rounded-lg bg-gradient-to-br from-indigo-600 to-fuchsia-600 text-white">
+                    <div class="grid size-9 place-items-center rounded-lg bg-gradient-to-br from-brand-600 to-brand-800 text-white">
                         <AppLogoIcon class="size-5" />
                     </div>
                     <div class="leading-tight">
@@ -123,7 +123,7 @@ onMounted(() => {
         </header>
 
         <!-- Hero + busca -->
-        <section class="border-b border-slate-200 bg-gradient-to-br from-indigo-600 to-fuchsia-600 dark:border-slate-800">
+        <section class="border-b border-slate-200 bg-gradient-to-br from-brand-600 to-brand-800 dark:border-slate-800">
             <div class="mx-auto w-[95%] max-w-7xl py-8 text-white sm:py-10">
                 <h1 class="text-2xl font-semibold tracking-tight sm:text-3xl">Como podemos ajudar?</h1>
                 <p class="mt-1 text-sm text-white/80">Dúvidas sobre as telas e funcionalidades do sistema.</p>
@@ -178,7 +178,7 @@ onMounted(() => {
                                     class="w-full rounded-md px-2 py-1.5 text-left text-sm transition"
                                     :class="
                                         a.slug === artigoAtivoSlug
-                                            ? 'bg-indigo-50 font-medium text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300'
+                                            ? 'bg-brand-50 font-medium text-brand-700 dark:bg-brand-950/50 dark:text-brand-300'
                                             : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
                                     "
                                     @click="abrir(a.slug)"
@@ -200,7 +200,7 @@ onMounted(() => {
                     v-if="artigoAtivo"
                     class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-8"
                 >
-                    <p class="text-xs font-semibold uppercase tracking-wide text-indigo-600 dark:text-indigo-400">
+                    <p class="text-xs font-semibold uppercase tracking-wide text-brand-600 dark:text-brand-400">
                         {{ artigoAtivo.secao }}
                     </p>
                     <h2 class="mt-1 text-2xl font-semibold tracking-tight">{{ artigoAtivo.titulo }}</h2>

@@ -71,7 +71,7 @@ function gerar() {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="mx-auto w-[95%] py-6">
             <h1 class="mb-1 flex items-center gap-2 text-xl font-semibold">
-                <CalendarClock class="size-5 text-indigo-600" /> Itens Próximos do Vencimento
+                <CalendarClock class="size-5 text-brand-600" /> Itens Próximos do Vencimento
             </h1>
             <p class="mb-6 text-sm text-muted-foreground">
                 Itens em estoque cujo lote vence dentro do prazo informado. Lote sem data de validade não entra no relatório.
@@ -82,7 +82,7 @@ function gerar() {
                     <FormLabel :required="true">Estoque</FormLabel>
                     <select
                         v-model="escopo"
-                        class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground"
+                        class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-background dark:text-foreground"
                     >
                         <option value="central">Estoque central</option>
                         <option value="escola">Uma unidade escolar</option>
@@ -102,13 +102,13 @@ function gerar() {
 
                 <div class="flex items-end">
                     <label class="flex cursor-pointer items-center gap-2 text-sm">
-                        <input v-model="incluirVencidos" type="checkbox" class="size-4 rounded border-input text-indigo-600 focus:ring-indigo-500" />
+                        <input v-model="incluirVencidos" type="checkbox" class="size-4 rounded border-input text-brand-600 focus:ring-brand-500" />
                         Incluir itens já vencidos
                     </label>
                 </div>
 
                 <div class="flex items-end justify-end sm:col-span-2 lg:col-span-3">
-                    <Button :disabled="!valido || gerando" class="bg-indigo-600 text-white hover:bg-indigo-700" @click="gerar">
+                    <Button :disabled="!valido || gerando" class="bg-brand-600 text-white hover:bg-brand-700" @click="gerar">
                         <Loader2 v-if="gerando" class="mr-1 size-4 animate-spin" /> Gerar Relatório
                     </Button>
                 </div>

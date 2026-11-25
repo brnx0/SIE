@@ -99,7 +99,7 @@ const faltaCadastro = !props.tiposVisita.length || !props.questionarios.length;
 
                         <div class="grid gap-2 sm:col-span-3">
                             <FormLabel for="vis_tpv_id" :required="true">Tipo de visita</FormLabel>
-                            <select id="vis_tpv_id" v-model="form.vis_tpv_id" class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground">
+                            <select id="vis_tpv_id" v-model="form.vis_tpv_id" class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-background dark:text-foreground">
                                 <option :value="null" disabled>Selecione...</option>
                                 <option v-for="t in tiposVisita" :key="t.tpv_id" :value="t.tpv_id">{{ t.tpv_nome }}</option>
                             </select>
@@ -108,7 +108,7 @@ const faltaCadastro = !props.tiposVisita.length || !props.questionarios.length;
 
                         <div class="grid gap-2 sm:col-span-3">
                             <FormLabel for="vis_tpq_id" :required="true">Questionário a aplicar</FormLabel>
-                            <select id="vis_tpq_id" v-model="form.vis_tpq_id" class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground">
+                            <select id="vis_tpq_id" v-model="form.vis_tpq_id" class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-background dark:text-foreground">
                                 <option :value="null" disabled>Selecione...</option>
                                 <option v-for="q in questionarios" :key="q.tpq_id" :value="q.tpq_id">
                                     {{ q.tpq_nome }} ({{ q.perguntas }} pergunta{{ q.perguntas !== 1 ? 's' : '' }})
@@ -153,7 +153,7 @@ const faltaCadastro = !props.tiposVisita.length || !props.questionarios.length;
                         <Button
                             type="submit"
                             :disabled="form.processing || !form.vis_esc_id || !form.vis_tpq_id"
-                            class="bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
+                            class="bg-brand-600 text-white hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400"
                         >
                             <LoaderCircle v-if="form.processing" class="mr-2 size-4 animate-spin" />
                             <CalendarPlus v-else class="mr-2 size-4" />

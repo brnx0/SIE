@@ -127,7 +127,7 @@ const municipioTermo = () => props.escola.municipio ?? (props.parametros?.munici
                     <Link href="/relatorios/termo-renovacao">
                         <Button variant="outline"><ArrowLeft class="mr-1 size-4" /> Voltar</Button>
                     </Link>
-                    <Button :disabled="!total" class="bg-indigo-600 text-white hover:bg-indigo-700" @click="imprimir">
+                    <Button :disabled="!total" class="bg-brand-600 text-white hover:bg-brand-700" @click="imprimir">
                         <Printer class="mr-1 size-4" /> Imprimir / PDF
                     </Button>
                 </div>

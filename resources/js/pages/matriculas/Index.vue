@@ -258,7 +258,7 @@ const onMatriculaSalva = () => {
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-const selectClass = 'flex h-10 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus:outline-none focus:ring-1 focus:ring-indigo-500';
+const selectClass = 'flex h-10 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus:outline-none focus:ring-1 focus:ring-brand-500';
 
 const labelSituacao = (s: string) => ({
     ABERTA:   { text: 'Aberta',   cls: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' },
@@ -360,12 +360,12 @@ const formatarNomeAluno = (a: AlunoResumo) => {
                         <FormLabel>Aluno a ser matriculado</FormLabel>
 
                         <!-- Aluno selecionado -->
-                        <div v-if="alunoSelecionado" class="flex items-center gap-2 rounded-md border border-indigo-300 bg-indigo-50 px-3 py-2 text-sm dark:border-indigo-700 dark:bg-indigo-900/20">
-                            <CheckCircle2 class="size-4 shrink-0 text-indigo-600" />
-                            <span class="flex-1 font-medium text-indigo-800 dark:text-indigo-200">
+                        <div v-if="alunoSelecionado" class="flex items-center gap-2 rounded-md border border-brand-300 bg-brand-50 px-3 py-2 text-sm dark:border-brand-700 dark:bg-brand-900/20">
+                            <CheckCircle2 class="size-4 shrink-0 text-brand-600" />
+                            <span class="flex-1 font-medium text-brand-800 dark:text-brand-200">
                                 {{ formatarNomeAluno(alunoSelecionado) }}
                             </span>
-                            <button type="button" @click="limparAluno" class="text-indigo-400 hover:text-indigo-700">
+                            <button type="button" @click="limparAluno" class="text-brand-400 hover:text-brand-700">
                                 <X class="size-4" />
                             </button>
                         </div>
@@ -377,7 +377,7 @@ const formatarNomeAluno = (a: AlunoResumo) => {
                                 v-model="alunoQuery"
                                 type="text"
                                 placeholder="Buscar por nome, matrícula ou CPF..."
-                                class="flex h-10 w-full rounded-md border border-input bg-background pl-9 pr-3 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                                class="flex h-10 w-full rounded-md border border-input bg-background pl-9 pr-3 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-brand-500"
                                 @blur="ocultarAlunoDropDepoisDoBlur"
                                 @focus="showAlunoDrop = alunoResultados.length > 0"
                             />
@@ -484,7 +484,7 @@ const formatarNomeAluno = (a: AlunoResumo) => {
                                 <col style="width:12%" />
                                 <col style="width:6%" />
                             </colgroup>
-                            <thead class="sticky top-0 z-10 bg-indigo-600 text-white">
+                            <thead class="sticky top-0 z-10 bg-brand-600 text-white">
                                 <tr>
                                     <th class="px-3 py-2.5 text-center font-semibold">Semestre</th>
                                     <th class="px-3 py-2.5 text-center font-semibold">Situação</th>
@@ -535,7 +535,7 @@ const formatarNomeAluno = (a: AlunoResumo) => {
                                             :disabled="turma.vagas_disponiveis === 0"
                                             :class="turma.vagas_disponiveis === 0
                                                 ? 'opacity-50 cursor-not-allowed'
-                                                : 'bg-indigo-600 hover:bg-indigo-700'"
+                                                : 'bg-brand-600 hover:bg-brand-700'"
                                             @click="abrirMatricula(turma)"
                                         >
                                             Matricular

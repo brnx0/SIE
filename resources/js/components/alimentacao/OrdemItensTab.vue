@@ -164,7 +164,7 @@ const valorPrevisto = computed(() => {
         <fieldset v-if="!isReadOnly && editavel" :disabled="form.processing" class="grid gap-4 rounded-lg border bg-muted/30 p-4 sm:grid-cols-8 sm:items-start">
             <div class="grid gap-2 sm:col-span-4">
                 <FormLabel for="cti_id" :required="true">Item do contrato</FormLabel>
-                <select id="cti_id" v-model="form.cti_id" class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground">
+                <select id="cti_id" v-model="form.cti_id" class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-background dark:text-foreground">
                     <option :value="null" disabled>Selecione o item...</option>
                     <option
                         v-for="i in itensContrato"
@@ -196,7 +196,7 @@ const valorPrevisto = computed(() => {
             </div>
 
             <div class="flex sm:col-span-1 sm:pt-7">
-                <Button type="button" class="w-full bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400" @click="adicionar">
+                <Button type="button" class="w-full bg-brand-600 text-white hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400" @click="adicionar">
                     <LoaderCircle v-if="form.processing" class="mr-2 size-4 animate-spin" />
                     <Plus v-else class="mr-2 size-4" />
                     Incluir

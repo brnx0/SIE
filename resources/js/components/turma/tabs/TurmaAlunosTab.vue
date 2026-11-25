@@ -69,7 +69,7 @@ onMounted(load);
 
         <div v-else class="overflow-x-auto">
             <table class="w-full text-sm">
-                <thead class="bg-indigo-600 text-white">
+                <thead class="bg-brand-600 text-white">
                     <tr>
                         <th class="px-4 py-2.5 text-left font-semibold">Nº Matrícula</th>
                         <th class="px-4 py-2.5 text-left font-semibold">Nome</th>

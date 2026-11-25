@@ -450,7 +450,7 @@ const toggleFuncaoSala = (funcao: string) => {
                                 <td class="px-4 py-2.5 font-medium">{{ adm.cargo?.crg_nome ?? '—' }}</td>
                                 <td class="px-4 py-2.5 text-muted-foreground tabular-nums">{{ formatDateBR(adm.adm_dt_admissao) }}</td>
                                 <td class="px-4 py-2.5 text-center">
-                                    <span class="rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300">
+                                    <span class="rounded-full bg-brand-100 px-2 py-0.5 text-xs font-medium text-brand-700 dark:bg-brand-900/40 dark:text-brand-300">
                                         {{ adm.lotacoes?.length ?? 0 }}
                                     </span>
                                 </td>
@@ -473,18 +473,18 @@ const toggleFuncaoSala = (funcao: string) => {
 
         <!-- ════════════ SEÇÃO 2 — LOTAÇÃO ════════════ -->
         <section class="overflow-hidden rounded-xl border bg-card shadow-sm">
-            <div class="flex items-center justify-between border-b border-l-4 border-l-indigo-600 bg-indigo-50/60 px-5 py-3 dark:bg-indigo-900/20">
+            <div class="flex items-center justify-between border-b border-l-4 border-l-brand-600 bg-brand-50/60 px-5 py-3 dark:bg-brand-900/20">
                 <div class="flex items-center gap-2">
-                    <MapPin class="size-4 text-indigo-700 dark:text-indigo-300" />
-                    <h3 class="text-sm font-semibold text-indigo-900 dark:text-indigo-200">Lotação</h3>
-                    <span class="rounded-full bg-indigo-600 px-2 py-0.5 text-xs font-medium text-white">
+                    <MapPin class="size-4 text-brand-700 dark:text-brand-300" />
+                    <h3 class="text-sm font-semibold text-brand-900 dark:text-brand-200">Lotação</h3>
+                    <span class="rounded-full bg-brand-600 px-2 py-0.5 text-xs font-medium text-white">
                         {{ lotacoesFlat.length }}
                     </span>
                 </div>
                 <Button
                     type="button"
                     size="sm"
-                    class="bg-indigo-600 text-white hover:bg-indigo-700"
+                    class="bg-brand-600 text-white hover:bg-brand-700"
                     :disabled="!admissoes.length"
                     @click="openNewLot"
                 >
@@ -510,7 +510,7 @@ const toggleFuncaoSala = (funcao: string) => {
                 </p>
 
                 <!-- Form Lotação -->
-                <div v-if="showLotForm" class="rounded-lg border border-indigo-200 bg-indigo-50/50 p-4 dark:border-indigo-800 dark:bg-indigo-900/20">
+                <div v-if="showLotForm" class="rounded-lg border border-brand-200 bg-brand-50/50 p-4 dark:border-brand-800 dark:bg-brand-900/20">
                     <div class="mb-3 flex items-center justify-between">
                         <h4 class="text-sm font-medium">{{ editingLotId ? 'Editar Lotação' : 'Nova Lotação' }}</h4>
                         <button type="button" class="rounded p-1 hover:bg-muted" @click="resetLotForm">
@@ -525,7 +525,7 @@ const toggleFuncaoSala = (funcao: string) => {
                             :value="lotAdmId ?? ''"
                             :disabled="!!editingLotId"
                             @change="(e: Event) => (lotAdmId = Number((e.target as HTMLSelectElement).value) || null)"
-                            class="h-10 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-60"
+                            class="h-10 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:cursor-not-allowed disabled:opacity-60"
                         >
                             <option value="">Selecione a admissão...</option>
                             <option v-for="adm in admissoes" :key="adm.adm_id" :value="adm.adm_id">
@@ -655,7 +655,7 @@ const toggleFuncaoSala = (funcao: string) => {
                             type="button"
                             size="sm"
                             :disabled="lotProcessing || exigeEscolaridade"
-                            class="bg-indigo-600 text-white hover:bg-indigo-700"
+                            class="bg-brand-600 text-white hover:bg-brand-700"
                             @click="submitLot"
                         >
                             <Loader2 v-if="lotProcessing" class="mr-1 size-4 animate-spin" />
@@ -700,7 +700,7 @@ const toggleFuncaoSala = (funcao: string) => {
                         </div>
                         <div class="flex gap-1">
                             <button type="button" class="rounded p-1.5 hover:bg-muted" title="Editar lotação" @click="openEditLot(adm.adm_id, lot)">
-                                <Edit3 class="size-4 text-indigo-600" />
+                                <Edit3 class="size-4 text-brand-600" />
                             </button>
                             <button type="button" class="rounded p-1.5 hover:bg-muted" title="Remover lotação" @click="deleteLot(adm.adm_id, lot)">
                                 <Trash2 class="size-4 text-rose-500" />

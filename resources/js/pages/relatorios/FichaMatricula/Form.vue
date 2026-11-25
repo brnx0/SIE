@@ -146,7 +146,7 @@ function gerarBranco() {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="mx-auto w-[95%] py-6">
             <h1 class="text-xl font-semibold mb-1 flex items-center gap-2">
-                <ClipboardList class="size-5 text-indigo-600" /> Ficha de Matrícula
+                <ClipboardList class="size-5 text-brand-600" /> Ficha de Matrícula
             </h1>
             <p class="text-sm text-muted-foreground mb-6">
                 Emite ficha completa de matrícula por aluno individual ou em lote por turma.
@@ -197,7 +197,7 @@ function gerarBranco() {
                     <Button variant="outline" :disabled="!escId || !anlId || gerando" @click="gerarBranco" title="Gera uma ficha vazia para preenchimento manual (só precisa de ano e escola).">
                         Gerar em branco
                     </Button>
-                    <Button :disabled="!escId || !anlId || !turId || gerando" class="bg-indigo-600 text-white hover:bg-indigo-700" @click="gerar">
+                    <Button :disabled="!escId || !anlId || !turId || gerando" class="bg-brand-600 text-white hover:bg-brand-700" @click="gerar">
                         <Loader2 v-if="gerando" class="mr-1 size-4 animate-spin" />
                         Gerar Ficha
                     </Button>

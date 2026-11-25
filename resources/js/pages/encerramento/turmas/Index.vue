@@ -242,7 +242,7 @@ const pendentesTurma = (t: TurmaLinha) => t.alunos.filter((a) => !podeEncerrar(a
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="mx-auto w-[95%] py-6">
             <h1 class="mb-1 flex items-center gap-2 text-xl font-semibold">
-                <Archive class="size-5 text-indigo-600" /> Encerramento de Turmas
+                <Archive class="size-5 text-brand-600" /> Encerramento de Turmas
             </h1>
             <p class="mb-6 text-sm text-muted-foreground">
                 Liste as turmas da escola. Acesse uma turma para ver a situação da matrícula e as notas de cada aluno.
@@ -270,7 +270,7 @@ const pendentesTurma = (t: TurmaLinha) => t.alunos.filter((a) => !podeEncerrar(a
                     />
                 </div>
                 <div class="flex items-end">
-                    <Button :disabled="!anlId || !escId || carregando" class="bg-indigo-600 text-white hover:bg-indigo-700" @click="listar">
+                    <Button :disabled="!anlId || !escId || carregando" class="bg-brand-600 text-white hover:bg-brand-700" @click="listar">
                         <Loader2 v-if="carregando" class="mr-1 size-4 animate-spin" />
                         Listar Turmas
                     </Button>
@@ -432,7 +432,7 @@ const pendentesTurma = (t: TurmaLinha) => t.alunos.filter((a) => !podeEncerrar(a
                                             <div v-if="a.matricula" class="text-[11px] text-muted-foreground">Matr. {{ a.matricula }}</div>
                                         </td>
                                         <td class="px-3 py-2">
-                                            <span :class="['rounded-full px-2 py-0.5 text-[11px] font-medium', a.encerrado ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300' : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300']">{{ a.situacao }}</span>
+                                            <span :class="['rounded-full px-2 py-0.5 text-[11px] font-medium', a.encerrado ? 'bg-brand-100 text-brand-700 dark:bg-brand-950/40 dark:text-brand-300' : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300']">{{ a.situacao }}</span>
                                             <span v-if="a.encerrado" class="ml-1 text-[10px] text-muted-foreground">(final)</span>
                                         </td>
                                         <td class="px-3 py-2">
@@ -442,7 +442,7 @@ const pendentesTurma = (t: TurmaLinha) => t.alunos.filter((a) => !podeEncerrar(a
                                             <button
                                                 v-if="a.status === 'pendente'"
                                                 type="button"
-                                                class="ml-2 text-[11px] font-medium text-indigo-600 hover:underline dark:text-indigo-400"
+                                                class="ml-2 text-[11px] font-medium text-brand-600 hover:underline dark:text-brand-400"
                                                 @click="pendenciasAbertas[a.aln_id] = !pendenciasAbertas[a.aln_id]"
                                             >
                                                 {{ pendenciasAbertas[a.aln_id] ? 'ocultar' : `ver ${a.pendencias.length} pendência(s)` }}

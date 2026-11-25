@@ -122,7 +122,7 @@ const remover = (p: PerguntaLinha) => {
                 </div>
                 <Button
                     v-if="!isReadOnly && questionarios.length"
-                    class="bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
+                    class="bg-brand-600 text-white hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400"
                     @click="abrirNova"
                 >
                     <Plus class="mr-2 size-4" /> Nova pergunta
@@ -141,11 +141,11 @@ const remover = (p: PerguntaLinha) => {
                     <Search class="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                     <Input v-model="search" placeholder="Buscar pergunta..." class="pl-9" />
                 </div>
-                <select v-model="tpqId" class="h-10 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground">
+                <select v-model="tpqId" class="h-10 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-background dark:text-foreground">
                     <option value="">Todos os questionários</option>
                     <option v-for="q in questionarios" :key="q.tpq_id" :value="String(q.tpq_id)">{{ q.tpq_nome }}</option>
                 </select>
-                <select v-model="situacao" class="h-10 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground">
+                <select v-model="situacao" class="h-10 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-background dark:text-foreground">
                     <option value="">Todas as situações</option>
                     <option value="ativo">Ativas</option>
                     <option value="inativo">Inativas</option>
@@ -162,7 +162,7 @@ const remover = (p: PerguntaLinha) => {
 
                 <div class="grid gap-2 sm:col-span-3">
                     <FormLabel for="prg_tpq_id" :required="true">Questionário</FormLabel>
-                    <select id="prg_tpq_id" v-model="form.prg_tpq_id" class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground">
+                    <select id="prg_tpq_id" v-model="form.prg_tpq_id" class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-background dark:text-foreground">
                         <option v-for="q in questionarios" :key="q.tpq_id" :value="q.tpq_id">{{ q.tpq_nome }}</option>
                     </select>
                     <InputError :message="form.errors.prg_tpq_id" />
@@ -170,7 +170,7 @@ const remover = (p: PerguntaLinha) => {
 
                 <div class="grid gap-2 sm:col-span-2">
                     <FormLabel for="prg_tipo_resposta" :required="true">Tipo de resposta</FormLabel>
-                    <select id="prg_tipo_resposta" v-model="form.prg_tipo_resposta" class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground">
+                    <select id="prg_tipo_resposta" v-model="form.prg_tipo_resposta" class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-background dark:text-foreground">
                         <option v-for="(label, valor) in tipos" :key="valor" :value="valor">{{ label }}</option>
                     </select>
                     <InputError :message="form.errors.prg_tipo_resposta" />
@@ -189,7 +189,7 @@ const remover = (p: PerguntaLinha) => {
                         v-model="form.prg_texto"
                         rows="2"
                         placeholder="Ex.: A cozinha está limpa e organizada?"
-                        class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground"
+                        class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-background dark:text-foreground"
                     ></textarea>
                     <InputError :message="form.errors.prg_texto" />
                 </div>
@@ -235,7 +235,7 @@ const remover = (p: PerguntaLinha) => {
                     <Button
                         type="button"
                         :disabled="form.processing"
-                        class="bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
+                        class="bg-brand-600 text-white hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400"
                         @click="salvar"
                     >
                         <LoaderCircle v-if="form.processing" class="mr-2 size-4 animate-spin" />
@@ -269,7 +269,7 @@ const remover = (p: PerguntaLinha) => {
                                 <td class="px-4 py-3 tabular-nums text-muted-foreground">{{ p.prg_ordem }}</td>
                                 <td class="px-4 py-3">
                                     <div class="flex items-start gap-3">
-                                        <div class="mt-0.5 grid size-8 shrink-0 place-items-center rounded-lg bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300">
+                                        <div class="mt-0.5 grid size-8 shrink-0 place-items-center rounded-lg bg-brand-100 text-brand-700 dark:bg-brand-900/50 dark:text-brand-300">
                                             <HelpCircle class="size-4" />
                                         </div>
                                         <div class="flex flex-col">
@@ -329,7 +329,7 @@ const remover = (p: PerguntaLinha) => {
 
                                         <div class="grid gap-2 sm:col-span-3">
                                             <FormLabel :required="true">Questionário</FormLabel>
-                                            <select v-model="form.prg_tpq_id" class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground">
+                                            <select v-model="form.prg_tpq_id" class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-background dark:text-foreground">
                                                 <option v-for="q in questionarios" :key="q.tpq_id" :value="q.tpq_id">{{ q.tpq_nome }}</option>
                                             </select>
                                             <InputError :message="form.errors.prg_tpq_id" />
@@ -340,7 +340,7 @@ const remover = (p: PerguntaLinha) => {
                                             <select
                                                 v-model="form.prg_tipo_resposta"
                                                 :disabled="p.usada"
-                                                class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-background dark:text-foreground"
+                                                class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-background dark:text-foreground"
                                             >
                                                 <option v-for="(label, valor) in tipos" :key="valor" :value="valor">{{ label }}</option>
                                             </select>
@@ -358,7 +358,7 @@ const remover = (p: PerguntaLinha) => {
                                             <textarea
                                                 v-model="form.prg_texto"
                                                 rows="2"
-                                                class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground"
+                                                class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-background dark:text-foreground"
                                             ></textarea>
                                             <InputError :message="form.errors.prg_texto" />
                                         </div>
@@ -399,7 +399,7 @@ const remover = (p: PerguntaLinha) => {
                                             <Button
                                                 type="button"
                                                 :disabled="form.processing"
-                                                class="bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
+                                                class="bg-brand-600 text-white hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400"
                                                 @click="salvar"
                                             >
                                                 <LoaderCircle v-if="form.processing" class="mr-2 size-4 animate-spin" />
@@ -421,7 +421,7 @@ const remover = (p: PerguntaLinha) => {
                         <template v-else>Nenhum registro</template>
                     </span>
                     <div v-if="perguntas.last_page > 1" class="flex flex-wrap gap-1">
-                        <a v-for="(link, i) in perguntas.links" :key="i" :href="link.url ?? '#'" v-html="link.label" :class="['rounded-md px-3 py-1 text-xs', link.active ? 'bg-indigo-600 text-white' : 'border bg-background hover:bg-muted', !link.url && 'pointer-events-none opacity-40']" />
+                        <a v-for="(link, i) in perguntas.links" :key="i" :href="link.url ?? '#'" v-html="link.label" :class="['rounded-md px-3 py-1 text-xs', link.active ? 'bg-brand-600 text-white' : 'border bg-background hover:bg-muted', !link.url && 'pointer-events-none opacity-40']" />
                     </div>
                 </div>
             </div>

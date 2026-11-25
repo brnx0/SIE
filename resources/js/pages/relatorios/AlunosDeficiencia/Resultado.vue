@@ -125,7 +125,7 @@ const dataEmissao = computed(() => {
                     <Link href="/relatorios/alunos-deficiencia">
                         <Button variant="outline"><ArrowLeft class="mr-1 size-4" /> Voltar</Button>
                     </Link>
-                    <Button :disabled="!total" class="bg-indigo-600 text-white hover:bg-indigo-700" @click="imprimir">
+                    <Button :disabled="!total" class="bg-brand-600 text-white hover:bg-brand-700" @click="imprimir">
                         <Printer class="mr-1 size-4" /> Imprimir / PDF
                     </Button>
                 </div>
@@ -142,7 +142,7 @@ const dataEmissao = computed(() => {
             </div>
 
             <div v-for="[esc, alunos] in grupos" :key="esc" class="mb-6 rounded-xl border bg-card shadow-sm overflow-hidden">
-                <div class="border-b bg-indigo-50 px-4 py-2 font-semibold text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-200">
+                <div class="border-b bg-brand-50 px-4 py-2 font-semibold text-brand-800 dark:bg-brand-900/30 dark:text-brand-200">
                     {{ esc }} <span class="text-xs font-normal text-muted-foreground">({{ alunos.length }} aluno{{ alunos.length !== 1 ? 's' : '' }})</span>
                 </div>
                 <div class="overflow-x-auto">

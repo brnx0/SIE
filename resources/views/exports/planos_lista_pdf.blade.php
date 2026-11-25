@@ -5,8 +5,8 @@
 <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: DejaVu Sans, sans-serif; font-size: 10px; color: #1e293b; }
-    .header { padding: 18px 24px 12px; border-bottom: 2px solid #6366f1; }
-    .header h1 { font-size: 18px; font-weight: 700; color: #4f46e5; }
+    .header { padding: 18px 24px 12px; border-bottom: 2px solid #2f6fb8; }
+    .header h1 { font-size: 18px; font-weight: 700; color: #1e4e8c; }
     .header p { font-size: 10px; color: #64748b; margin-top: 2px; }
     table { width: 100%; border-collapse: collapse; }
     thead th { background: #f1f5f9; padding: 7px 8px; text-align: left; font-size: 9px; text-transform: uppercase; letter-spacing: 0.05em; color: #475569; border-bottom: 1px solid #e2e8f0; }

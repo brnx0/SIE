@@ -154,7 +154,7 @@ const imprimir = () => window.print();
                             <td v-if="multi" class="px-3 py-1.5 text-muted-foreground">{{ a.segmento }}</td>
                             <td class="px-3 py-1.5 text-center tabular-nums">{{ a.base ?? '—' }} <span class="text-[10px] text-muted-foreground">{{ unidade(a.modo) }}</span></td>
                             <td class="px-3 py-1.5 text-center tabular-nums">{{ a.faltas }}</td>
-                            <td class="px-3 py-1.5 text-center tabular-nums" :class="a.faltas_justificadas ? 'text-indigo-700 dark:text-indigo-300' : 'text-muted-foreground'">{{ justTxt(a) }}</td>
+                            <td class="px-3 py-1.5 text-center tabular-nums" :class="a.faltas_justificadas ? 'text-brand-700 dark:text-brand-300' : 'text-muted-foreground'">{{ justTxt(a) }}</td>
                             <td class="px-3 py-1.5 text-center font-semibold tabular-nums" :class="a.frequencia !== null && a.frequencia < 75 ? 'text-rose-600' : 'text-emerald-600'">{{ freqTxt(a.frequencia) }}</td>
                             <td class="px-3 py-1.5">{{ a.situacao }}</td>
                         </tr>

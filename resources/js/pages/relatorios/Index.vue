@@ -59,10 +59,10 @@ const grupos = computed(() => {
                         v-for="rel in lista"
                         :key="rel.slug"
                         :href="rel.href ?? `/relatorios/${rel.slug}`"
-                        class="group rounded-xl border bg-card p-5 shadow-sm transition hover:border-indigo-500 hover:shadow-md"
+                        class="group rounded-xl border bg-card p-5 shadow-sm transition hover:border-brand-500 hover:shadow-md"
                     >
                         <div class="flex items-start gap-3">
-                            <div class="rounded-lg bg-indigo-100 p-2 text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white dark:bg-indigo-900/40">
+                            <div class="rounded-lg bg-brand-100 p-2 text-brand-600 group-hover:bg-brand-600 group-hover:text-white dark:bg-brand-900/40">
                                 <component :is="iconMap[rel.icone] ?? FileBarChart" class="size-5" />
                             </div>
                             <div class="flex-1">

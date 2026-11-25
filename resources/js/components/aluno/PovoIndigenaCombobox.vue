@@ -82,7 +82,7 @@ onBeforeUnmount(() => document.removeEventListener('mousedown', handleOutside));
             @click="openPanel"
         >
             <span v-if="selected" class="flex items-center gap-2 truncate">
-                <Feather class="size-4 text-fuchsia-600 dark:text-fuchsia-400" />
+                <Feather class="size-4 text-sky-700 dark:text-sky-400" />
                 <span class="truncate">{{ selected.pin_nome }}</span>
             </span>
             <span v-else class="text-muted-foreground">{{ placeholder ?? 'Buscar povo indígena...' }}</span>

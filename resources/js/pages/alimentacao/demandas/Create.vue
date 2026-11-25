@@ -91,7 +91,7 @@ const submit = () => {
 
                         <div class="grid gap-2 sm:col-span-3">
                             <FormLabel for="dmd_anl_id" :required="true">Ano letivo</FormLabel>
-                            <select id="dmd_anl_id" v-model="form.dmd_anl_id" class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground">
+                            <select id="dmd_anl_id" v-model="form.dmd_anl_id" class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-background dark:text-foreground">
                                 <option :value="null" disabled>Selecione...</option>
                                 <option v-for="a in anosLetivos" :key="a.anl_id" :value="a.anl_id">{{ a.anl_ano }}</option>
                             </select>
@@ -101,7 +101,7 @@ const submit = () => {
 
                         <div class="grid gap-2 sm:col-span-3">
                             <FormLabel for="dmd_mes" :required="true">Mês</FormLabel>
-                            <select id="dmd_mes" v-model="form.dmd_mes" class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground">
+                            <select id="dmd_mes" v-model="form.dmd_mes" class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-background dark:text-foreground">
                                 <option v-for="(nome, num) in meses" :key="num" :value="Number(num)">{{ nome }}</option>
                             </select>
                             <InputError :message="form.errors.dmd_mes" />
@@ -124,7 +124,7 @@ const submit = () => {
                         <Button
                             type="submit"
                             :disabled="form.processing || !form.dmd_esc_id || !form.dmd_anl_id"
-                            class="bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
+                            class="bg-brand-600 text-white hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400"
                         >
                             <LoaderCircle v-if="form.processing" class="mr-2 size-4 animate-spin" />
                             <Calculator v-else class="mr-2 size-4" />

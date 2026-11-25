@@ -92,7 +92,7 @@ const remove = (tup: TurmaProfessor) => {
         </div>
 
         <!-- Formulário de adição -->
-        <div v-if="showForm" class="rounded-xl border border-indigo-200 bg-indigo-50/50 p-5 shadow-sm dark:border-indigo-800 dark:bg-indigo-900/20">
+        <div v-if="showForm" class="rounded-xl border border-brand-200 bg-brand-50/50 p-5 shadow-sm dark:border-brand-800 dark:bg-brand-900/20">
             <div class="mb-4 flex items-center justify-between">
                 <h4 class="text-sm font-medium">Nova Alocação</h4>
                 <button type="button" class="rounded p-1 hover:bg-muted" @click="resetForm">
@@ -117,7 +117,7 @@ const remove = (tup: TurmaProfessor) => {
 
             <div class="mt-4 flex justify-end gap-2">
                 <Button type="button" variant="outline" size="sm" @click="resetForm">Cancelar</Button>
-                <Button type="button" size="sm" :disabled="processing" class="bg-indigo-600 text-white hover:bg-indigo-700" @click="submit">
+                <Button type="button" size="sm" :disabled="processing" class="bg-brand-600 text-white hover:bg-brand-700" @click="submit">
                     <Loader2 v-if="processing" class="mr-1 size-4 animate-spin" />
                     Adicionar
                 </Button>

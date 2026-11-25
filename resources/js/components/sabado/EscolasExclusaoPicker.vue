@@ -51,7 +51,7 @@ const limpar = () => emit('update:modelValue', []);
             >
                 <input
                     type="checkbox"
-                    class="size-3.5 shrink-0 rounded border-input accent-indigo-600"
+                    class="size-3.5 shrink-0 rounded border-input accent-brand-600"
                     :checked="selecionadas.has(e.esc_id)"
                     @change="toggle(e.esc_id)"
                 />

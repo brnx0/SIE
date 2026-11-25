@@ -30,7 +30,7 @@ const onAluno = (item: { id: number; label: string } | null) => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="mx-auto w-[95%] py-6">
             <h1 class="mb-1 flex items-center gap-2 text-xl font-semibold">
-                <GraduationCap class="size-5 text-indigo-600" /> Histórico Escolar
+                <GraduationCap class="size-5 text-brand-600" /> Histórico Escolar
             </h1>
             <p class="mb-4 text-sm text-muted-foreground">
                 Busque um aluno para ver e lançar anos do histórico escolar (escolaridade anterior / fora da rede).

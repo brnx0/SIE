@@ -214,7 +214,7 @@ const avaliados = computed(() => alunos.value.filter((a) => a.descricao.trim().l
                 <div class="flex items-center gap-2">
                     <h2 class="text-sm font-semibold text-slate-900 dark:text-slate-50">{{ titulo }}</h2>
                     <span
-                        class="rounded-full bg-indigo-50 px-2 py-0.5 text-[11px] font-medium text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300"
+                        class="rounded-full bg-brand-50 px-2 py-0.5 text-[11px] font-medium text-brand-700 dark:bg-brand-950 dark:text-brand-300"
                     >
                         {{ modo === 'por_aluno' ? 'Por aluno' : 'Por disciplina' }}
                     </span>
@@ -286,13 +286,13 @@ const avaliados = computed(() => alunos.value.filter((a) => a.descricao.trim().l
                     v-for="row in filtrados"
                     :key="row.aln_id"
                     class="overflow-hidden rounded-lg border bg-background transition-colors"
-                    :class="abertoId === row.aln_id ? 'border-indigo-300' : 'hover:border-indigo-200'"
+                    :class="abertoId === row.aln_id ? 'border-brand-300' : 'hover:border-brand-200'"
                 >
                     <!-- Cabeçalho clicável -->
                     <button type="button" class="flex w-full items-center justify-between gap-3 p-3 text-left" @click="abrir(row)">
                         <div class="flex min-w-0 items-center gap-3">
                             <div
-                                class="flex size-8 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-xs font-semibold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300"
+                                class="flex size-8 shrink-0 items-center justify-center rounded-full bg-brand-100 text-xs font-semibold text-brand-700 dark:bg-brand-950 dark:text-brand-300"
                             >
                                 {{ iniciais(row.aln_nome) }}
                             </div>
@@ -335,7 +335,7 @@ const avaliados = computed(() => alunos.value.filter((a) => a.descricao.trim().l
                             maxlength="20000"
                             :disabled="!podeLancar || row.bloqueado"
                             :placeholder="placeholder(row)"
-                            class="w-full resize-none overflow-y-auto rounded-md border bg-background p-2.5 text-sm leading-relaxed outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 disabled:cursor-not-allowed disabled:opacity-60 dark:focus:ring-indigo-950"
+                            class="w-full resize-none overflow-y-auto rounded-md border bg-background p-2.5 text-sm leading-relaxed outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100 disabled:cursor-not-allowed disabled:opacity-60 dark:focus:ring-brand-950"
                             @input="() => aoDigitar(row)"
                             @blur="salvar(row)"
                         />

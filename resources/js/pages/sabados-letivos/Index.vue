@@ -220,7 +220,7 @@ const selectedAno = computed(() =>
                     <Button
                         v-if="!showForm && anoLetivoId"
                         type="button"
-                        class="bg-indigo-600 hover:bg-indigo-700"
+                        class="bg-brand-600 hover:bg-brand-700"
                         @click="openForm"
                     >
                         <Plus class="mr-2 size-4" /> Adicionar Sábado
@@ -230,12 +230,12 @@ const selectedAno = computed(() =>
 
             <!-- Seletor de Ano Letivo + filtro de meses -->
             <div class="flex flex-wrap items-center gap-3 rounded-lg border bg-card px-4 py-3 shadow-sm">
-                <CalendarDays class="size-5 text-indigo-600 shrink-0" />
+                <CalendarDays class="size-5 text-brand-600 shrink-0" />
                 <label for="sel_ano" class="text-sm font-medium whitespace-nowrap">Ano Letivo:</label>
                 <select
                     id="sel_ano"
                     v-model="selectedAnoId"
-                    class="rounded-md border border-input bg-background px-3 py-1.5 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    class="rounded-md border border-input bg-background px-3 py-1.5 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                     @change="changeAno"
                 >
                     <option value="" disabled>Selecione...</option>
@@ -253,7 +253,7 @@ const selectedAno = computed(() =>
                     <button
                         type="button"
                         class="px-3 py-1.5 text-xs font-medium transition-colors"
-                        :class="!mostrarTodosMeses ? 'bg-indigo-600 text-white' : 'bg-background hover:bg-muted'"
+                        :class="!mostrarTodosMeses ? 'bg-brand-600 text-white' : 'bg-background hover:bg-muted'"
                         @click="mostrarTodosMeses = false"
                     >
                         Meses cadastrados
@@ -261,7 +261,7 @@ const selectedAno = computed(() =>
                     <button
                         type="button"
                         class="border-l border-input px-3 py-1.5 text-xs font-medium transition-colors"
-                        :class="mostrarTodosMeses ? 'bg-indigo-600 text-white' : 'bg-background hover:bg-muted'"
+                        :class="mostrarTodosMeses ? 'bg-brand-600 text-white' : 'bg-background hover:bg-muted'"
                         @click="mostrarTodosMeses = true"
                     >
                         Todos os meses
@@ -272,7 +272,7 @@ const selectedAno = computed(() =>
             <!-- Formulário de adição -->
             <div
                 v-if="showForm"
-                class="rounded-lg border border-indigo-200 bg-indigo-50/50 p-4 dark:border-indigo-800 dark:bg-indigo-900/20"
+                class="rounded-lg border border-brand-200 bg-brand-50/50 p-4 dark:border-brand-800 dark:bg-brand-900/20"
             >
                 <div class="mb-3 flex items-center justify-between">
                     <h4 class="text-sm font-semibold">Novo Sábado Letivo</h4>
@@ -292,7 +292,7 @@ const selectedAno = computed(() =>
                         <FormLabel :required="true">Data (sábado)</FormLabel>
                         <select
                             v-model="form.sbl_dt_sabado"
-                            class="h-9 rounded-md border border-input bg-background px-3 py-1.5 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-60"
+                            class="h-9 rounded-md border border-input bg-background px-3 py-1.5 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:cursor-not-allowed disabled:opacity-60"
                             :class="{ 'border-red-500': errors.sbl_dt_sabado }"
                             :disabled="opcoesSabado.length === 0"
                         >
@@ -311,7 +311,7 @@ const selectedAno = computed(() =>
                         <FormLabel :required="true">Referente ao dia da semana</FormLabel>
                         <select
                             v-model="form.sbl_dia_semana"
-                            class="h-9 rounded-md border border-input bg-background px-3 py-1.5 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            class="h-9 rounded-md border border-input bg-background px-3 py-1.5 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                             :class="{ 'border-red-500': errors.sbl_dia_semana }"
                         >
                             <option value="" disabled>Selecione...</option>
@@ -339,7 +339,7 @@ const selectedAno = computed(() =>
                     <Button
                         type="button"
                         size="sm"
-                        class="bg-indigo-600 hover:bg-indigo-700"
+                        class="bg-brand-600 hover:bg-brand-700"
                         :disabled="processing || !form.sbl_dt_sabado || !form.sbl_dia_semana"
                         @click="submit"
                     >
@@ -375,11 +375,11 @@ const selectedAno = computed(() =>
                     class="overflow-hidden rounded-xl border bg-card shadow-sm"
                 >
                     <!-- Cabeçalho do mês -->
-                    <div class="flex items-center gap-2 bg-indigo-600 px-4 py-2">
-                        <CalendarDays class="size-4 text-indigo-100" />
+                    <div class="flex items-center gap-2 bg-brand-600 px-4 py-2">
+                        <CalendarDays class="size-4 text-brand-100" />
                         <span class="text-sm font-semibold text-white">
                             {{ grupo.label }}
-                            <span class="ml-2 rounded-full bg-indigo-500 px-2 py-0.5 text-xs font-normal">
+                            <span class="ml-2 rounded-full bg-brand-500 px-2 py-0.5 text-xs font-normal">
                                 {{ grupo.items.length }} {{ grupo.items.length === 1 ? 'sábado' : 'sábados' }}
                             </span>
                         </span>
@@ -415,7 +415,7 @@ const selectedAno = computed(() =>
                                         {{ formatDate(s.sbl_dt_sabado) }}
                                     </td>
                                     <td class="px-4 py-2">
-                                        <span class="inline-flex items-center rounded-full bg-fuchsia-100 px-2.5 py-0.5 text-xs font-medium text-fuchsia-800 dark:bg-fuchsia-900/40 dark:text-fuchsia-300">
+                                        <span class="inline-flex items-center rounded-full bg-sky-100 px-2.5 py-0.5 text-xs font-medium text-sky-800 dark:bg-sky-900/40 dark:text-sky-300">
                                             {{ DIAS_SEMANA[s.sbl_dia_semana] }}
                                         </span>
                                     </td>
@@ -456,14 +456,14 @@ const selectedAno = computed(() =>
                                         </div>
                                     </td>
                                 </tr>
-                                <tr v-if="editId === s.sbl_id" class="bg-indigo-50/40 dark:bg-indigo-950/20">
+                                <tr v-if="editId === s.sbl_id" class="bg-brand-50/40 dark:bg-brand-950/20">
                                     <td colspan="4" class="px-4 py-3">
                                         <div class="grid gap-3 md:grid-cols-[14rem_1fr]">
                                             <div class="grid gap-1.5">
                                                 <FormLabel>Referente ao dia</FormLabel>
                                                 <select
                                                     v-model.number="editForm.sbl_dia_semana"
-                                                    class="h-9 rounded-md border border-input bg-background px-3 py-1.5 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                                    class="h-9 rounded-md border border-input bg-background px-3 py-1.5 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                                                 >
                                                     <option v-for="(label, num) in DIAS_SEMANA" :key="num" :value="Number(num)">{{ label }}</option>
                                                 </select>
@@ -475,7 +475,7 @@ const selectedAno = computed(() =>
                                         </div>
                                         <div class="mt-3 flex justify-end gap-2">
                                             <Button type="button" variant="outline" size="sm" @click="cancelEdit">Cancelar</Button>
-                                            <Button type="button" size="sm" class="bg-indigo-600 hover:bg-indigo-700" :disabled="editProcessing" @click="saveEdit(s)">
+                                            <Button type="button" size="sm" class="bg-brand-600 hover:bg-brand-700" :disabled="editProcessing" @click="saveEdit(s)">
                                                 <Loader2 v-if="editProcessing" class="mr-2 size-4 animate-spin" /> Salvar
                                             </Button>
                                         </div>

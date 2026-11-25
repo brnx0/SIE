@@ -107,7 +107,7 @@ const imprimir = () => window.print();
                         <div>
                             <span class="font-semibold">{{ t.turma }}</span>
                             <span v-if="t.turno" class="ml-2 text-xs text-muted-foreground">{{ t.turno }}</span>
-                            <span v-if="t.segmento" class="ml-2 rounded-full bg-indigo-50 px-2 py-0.5 text-[11px] font-medium text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300">{{ t.segmento }}</span>
+                            <span v-if="t.segmento" class="ml-2 rounded-full bg-brand-50 px-2 py-0.5 text-[11px] font-medium text-brand-700 dark:bg-brand-950/40 dark:text-brand-300">{{ t.segmento }}</span>
                         </div>
                         <span class="text-xs text-muted-foreground">{{ t.escola }} · {{ t.alunos.length }} aluno(s)</span>
                     </div>

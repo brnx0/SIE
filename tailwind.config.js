@@ -20,6 +20,20 @@ export default {
                 sm: 'calc(var(--radius) - 4px)',
             },
             colors: {
+                // Azul da marca (login, painel, menu). 600 = cor principal, 900 = marinho.
+                brand: {
+                    50: '#f1f6fc',
+                    100: '#e0ecf8',
+                    200: '#c3daf1',
+                    300: '#9fc4e8',
+                    400: '#5d9bd8',
+                    500: '#2f6fb8',
+                    600: '#1e4e8c',
+                    700: '#173f73',
+                    800: '#12335e',
+                    900: '#0c2a52',
+                    950: '#081627',
+                },
                 background: 'hsl(var(--background))',
                 foreground: 'hsl(var(--foreground))',
                 card: {

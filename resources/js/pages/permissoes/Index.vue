@@ -78,7 +78,7 @@ const ehInicioGrupo = (i: number) => i === 0 || linhas[i].tla_grupo !== linhas[i
                 </div>
                 <Button
                     :disabled="processing"
-                    class="bg-indigo-600 text-white hover:bg-indigo-700"
+                    class="bg-brand-600 text-white hover:bg-brand-700"
                     @click="salvar"
                 >
                     <LoaderCircle v-if="processing" class="mr-2 size-4 animate-spin" />
@@ -125,13 +125,13 @@ const ehInicioGrupo = (i: number) => i === 0 || linhas[i].tla_grupo !== linhas[i
                                 <td v-for="slug in roleSlugs" :key="slug" class="border-b px-2 py-2 text-center">
                                     <span
                                         v-if="slug === 'admin'"
-                                        class="inline-block rounded px-2 py-1 text-xs font-medium bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300"
+                                        class="inline-block rounded px-2 py-1 text-xs font-medium bg-brand-50 text-brand-700 dark:bg-brand-900/30 dark:text-brand-300"
                                         title="Administrador sempre tem acesso total"
                                     >Total</span>
                                     <select
                                         v-else
                                         v-model.number="linha.niveis[slug]"
-                                        :class="['rounded border-0 px-2 py-1 text-xs font-medium focus:ring-2 focus:ring-indigo-400', corNivel(linha.niveis[slug] ?? 0)]"
+                                        :class="['rounded border-0 px-2 py-1 text-xs font-medium focus:ring-2 focus:ring-brand-400', corNivel(linha.niveis[slug] ?? 0)]"
                                     >
                                         <option v-for="n in NIVEIS" :key="n.v" :value="n.v">{{ n.v }} — {{ n.label }}</option>
                                     </select>

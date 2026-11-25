@@ -140,7 +140,7 @@ const duplicarTodas = async () => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="mx-auto w-[95%] py-6">
             <h1 class="mb-1 flex items-center gap-2 text-xl font-semibold">
-                <CopyPlus class="size-5 text-indigo-600" /> Duplicar Turmas
+                <CopyPlus class="size-5 text-brand-600" /> Duplicar Turmas
             </h1>
             <p class="mb-6 text-sm text-muted-foreground">
                 Crie as turmas do ano seguinte a partir das turmas <strong>encerradas</strong> — sem precisar recriá-las manualmente. Cada turma só pode ser duplicada uma vez.
@@ -168,7 +168,7 @@ const duplicarTodas = async () => {
                     />
                 </div>
                 <div class="flex items-end">
-                    <Button :disabled="!anlId || !escId || carregando" class="bg-indigo-600 text-white hover:bg-indigo-700" @click="listar">
+                    <Button :disabled="!anlId || !escId || carregando" class="bg-brand-600 text-white hover:bg-brand-700" @click="listar">
                         <Loader2 v-if="carregando" class="mr-1 size-4 animate-spin" />
                         Listar Turmas
                     </Button>
@@ -192,7 +192,7 @@ const duplicarTodas = async () => {
                     <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
                         <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs">
                             <span class="font-medium text-muted-foreground">Legenda:</span>
-                            <span class="inline-flex items-center gap-1.5"><span class="size-3 rounded-full bg-indigo-500"></span> Disponível</span>
+                            <span class="inline-flex items-center gap-1.5"><span class="size-3 rounded-full bg-brand-500"></span> Disponível</span>
                             <span class="inline-flex items-center gap-1.5"><span class="size-3 rounded-full bg-emerald-500"></span> Já duplicada</span>
                         </div>
                         <div class="flex flex-wrap items-center gap-2">
@@ -203,7 +203,7 @@ const duplicarTodas = async () => {
                             <Button
                                 :disabled="!disponiveis || processandoTodas"
                                 :title="!disponiveis ? 'Nenhuma turma disponível' : `Duplicar ${disponiveis} turma(s) para ${proxAno}`"
-                                class="gap-1.5 bg-indigo-600 text-white hover:bg-indigo-700"
+                                class="gap-1.5 bg-brand-600 text-white hover:bg-brand-700"
                                 @click="duplicarTodas"
                             >
                                 <Loader2 v-if="processandoTodas" class="size-4 animate-spin" />
@@ -232,7 +232,7 @@ const duplicarTodas = async () => {
                                     <span v-if="t.segmento" class="text-muted-foreground">{{ t.segmento }}</span>
                                     <span aria-hidden="true" v-if="t.segmento">·</span>
                                     <span v-if="t.duplicada" class="inline-flex items-center gap-1 font-medium text-emerald-700 dark:text-emerald-300"><CheckCircle2 class="size-3.5" /> Já duplicada</span>
-                                    <span v-else class="inline-flex items-center gap-1 font-medium text-indigo-600 dark:text-indigo-300"><Copy class="size-3.5" /> Disponível</span>
+                                    <span v-else class="inline-flex items-center gap-1 font-medium text-brand-600 dark:text-brand-300"><Copy class="size-3.5" /> Disponível</span>
                                 </div>
                             </div>
                             <Button

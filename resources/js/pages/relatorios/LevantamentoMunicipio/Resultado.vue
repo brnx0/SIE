@@ -253,7 +253,7 @@ const exportarExcel = () => window.open(`/relatorios/levantamento-municipio/xlsx
                 </div>
                 <div class="rounded-xl border bg-card p-4 shadow-sm">
                     <div class="text-xs text-muted-foreground">Matriculados</div>
-                    <div class="text-2xl font-semibold tabular-nums text-indigo-600">{{ resumo.matriculados }}</div>
+                    <div class="text-2xl font-semibold tabular-nums text-brand-600">{{ resumo.matriculados }}</div>
                 </div>
                 <div class="rounded-xl border bg-card p-4 shadow-sm">
                     <div class="text-xs text-muted-foreground">Vagas livres</div>

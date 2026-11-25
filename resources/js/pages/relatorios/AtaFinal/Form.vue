@@ -78,7 +78,7 @@ function gerar() {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="mx-auto w-[95%] py-6">
             <h1 class="mb-1 flex items-center gap-2 text-xl font-semibold">
-                <ScrollText class="size-5 text-indigo-600" /> Ata Final do Encerramento
+                <ScrollText class="size-5 text-brand-600" /> Ata Final do Encerramento
             </h1>
             <p class="mb-6 text-sm text-muted-foreground">Nota final de cada disciplina e o resultado final do aluno. Lista <strong>todas as turmas</strong> e sinaliza as ainda <strong>não encerradas</strong>.</p>
 
@@ -100,7 +100,7 @@ function gerar() {
                     <span>Esta turma <strong>ainda não foi encerrada</strong>. A ata sai com as notas atuais, mas <strong>sem o resultado final</strong> dos alunos.</span>
                 </div>
                 <div class="flex items-end justify-end sm:col-span-2 lg:col-span-3">
-                    <Button :disabled="!escId || !anlId || !turId || gerando" class="bg-indigo-600 text-white hover:bg-indigo-700" @click="gerar">
+                    <Button :disabled="!escId || !anlId || !turId || gerando" class="bg-brand-600 text-white hover:bg-brand-700" @click="gerar">
                         <Loader2 v-if="gerando" class="mr-1 size-4 animate-spin" /> Gerar Ata
                     </Button>
                 </div>

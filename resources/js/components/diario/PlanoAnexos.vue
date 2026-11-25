@@ -131,12 +131,12 @@ const icone = (a: PlanoAnexo) => {
             <li v-for="a in anexos" :key="a.dax_id" class="flex items-center gap-3 rounded-lg border bg-background p-2">
                 <a :href="a.url" target="_blank" rel="noopener" class="shrink-0" :title="`Abrir ${a.nome}`">
                     <img v-if="a.eh_imagem" :src="a.url" :alt="a.nome" class="size-12 rounded object-cover" loading="lazy" />
-                    <span v-else class="flex size-12 items-center justify-center rounded bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-300">
+                    <span v-else class="flex size-12 items-center justify-center rounded bg-brand-50 text-brand-600 dark:bg-brand-950/50 dark:text-brand-300">
                         <component :is="icone(a)" class="size-6" />
                     </span>
                 </a>
                 <div class="min-w-0 flex-1">
-                    <a :href="a.url" target="_blank" rel="noopener" class="block truncate text-sm font-medium hover:text-indigo-600 hover:underline" :title="a.nome">
+                    <a :href="a.url" target="_blank" rel="noopener" class="block truncate text-sm font-medium hover:text-brand-600 hover:underline" :title="a.nome">
                         {{ a.nome }}
                     </a>
                     <div class="truncate text-[11px] text-muted-foreground">

@@ -83,7 +83,7 @@ function gerar() {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="mx-auto w-[95%] py-6">
             <h1 class="mb-1 flex items-center gap-2 text-xl font-semibold">
-                <Baby class="size-5 text-indigo-600" /> Relatório Final da Educação Infantil
+                <Baby class="size-5 text-brand-600" /> Relatório Final da Educação Infantil
             </h1>
             <p class="mb-6 text-sm text-muted-foreground">
                 Por turma de <strong>Educação Infantil</strong> (Creche/Pré-escola), 1 por página: matrícula, nome, data de nascimento e situação final.
@@ -104,7 +104,7 @@ function gerar() {
                     <LocalCombobox v-model="turId" :items="itemsTurma" :placeholder="!escId ? 'Selecione a escola primeiro' : (carregandoTurmas ? 'Carregando...' : 'Todas as turmas')" />
                 </div>
                 <div class="flex items-end justify-end sm:col-span-2 lg:col-span-3">
-                    <Button :disabled="!anlId || !escId || gerando" class="bg-indigo-600 text-white hover:bg-indigo-700" @click="gerar">
+                    <Button :disabled="!anlId || !escId || gerando" class="bg-brand-600 text-white hover:bg-brand-700" @click="gerar">
                         <Loader2 v-if="gerando" class="mr-1 size-4 animate-spin" /> Gerar Relatório
                     </Button>
                 </div>

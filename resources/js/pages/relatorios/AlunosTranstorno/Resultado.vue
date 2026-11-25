@@ -112,7 +112,7 @@ const imprimir = () => window.print();
                     <Link href="/relatorios/alunos-transtorno">
                         <Button variant="outline"><ArrowLeft class="mr-1 size-4" /> Voltar</Button>
                     </Link>
-                    <Button :disabled="!totais.total" class="bg-indigo-600 text-white hover:bg-indigo-700" @click="imprimir">
+                    <Button :disabled="!totais.total" class="bg-brand-600 text-white hover:bg-brand-700" @click="imprimir">
                         <Printer class="mr-1 size-4" /> Imprimir / PDF
                     </Button>
                 </div>
@@ -126,7 +126,7 @@ const imprimir = () => window.print();
                 </div>
                 <div v-for="c in colunasTranstornos" :key="c.key" class="rounded-xl border bg-card p-3 text-center shadow-sm">
                     <div class="text-xs text-muted-foreground">{{ c.label }}</div>
-                    <div class="text-xl font-semibold text-indigo-600">{{ totais[c.key] ?? 0 }}</div>
+                    <div class="text-xl font-semibold text-brand-600">{{ totais[c.key] ?? 0 }}</div>
                 </div>
             </div>
 
@@ -136,7 +136,7 @@ const imprimir = () => window.print();
 
             <div v-else class="overflow-x-auto rounded-xl border bg-card shadow-sm">
                 <table class="w-full text-sm">
-                    <thead class="bg-indigo-600 text-white">
+                    <thead class="bg-brand-600 text-white">
                         <tr>
                             <th class="px-3 py-2 text-left font-semibold whitespace-nowrap">INEP Turma</th>
                             <th class="px-3 py-2 text-left font-semibold">Escola</th>

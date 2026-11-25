@@ -229,7 +229,7 @@ const exportarExcel = () => {
                                 </tr>
                             </thead>
                             <tbody class="divide-y">
-                                <tr v-for="p in periodos" :key="`r-${p.chave}`" :class="p.chave === 'anual' ? 'bg-indigo-50/50 font-semibold dark:bg-indigo-950/20' : ''">
+                                <tr v-for="p in periodos" :key="`r-${p.chave}`" :class="p.chave === 'anual' ? 'bg-brand-50/50 font-semibold dark:bg-brand-950/20' : ''">
                                     <td class="px-3 py-2">{{ p.label }}</td>
                                     <td class="px-3 py-2 text-center tabular-nums">{{ rede.alunos }}</td>
                                     <td class="px-3 py-2 text-center tabular-nums">{{ rede.indices[p.chave].avaliados }}</td>
@@ -266,7 +266,7 @@ const exportarExcel = () => {
                             type="button"
                             :class="[
                                 'rounded-full border px-3 py-1 text-xs font-medium transition',
-                                periodoAtivo === p.chave ? 'border-indigo-600 bg-indigo-600 text-white' : 'border-input bg-background hover:border-indigo-300',
+                                periodoAtivo === p.chave ? 'border-brand-600 bg-brand-600 text-white' : 'border-input bg-background hover:border-brand-300',
                             ]"
                             @click="periodoAtivo = p.chave"
                         >

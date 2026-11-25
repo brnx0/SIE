@@ -217,7 +217,7 @@ const nomeTurmaDestino = (serId: number | null, turId: number | null): string =>
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="mx-auto w-[95%] py-6">
             <h1 class="mb-1 flex items-center gap-2 text-xl font-semibold">
-                <ArrowRight class="size-5 text-indigo-600" /> Confirmação de Renovação
+                <ArrowRight class="size-5 text-brand-600" /> Confirmação de Renovação
             </h1>
             <p class="mb-6 text-sm text-muted-foreground">
                 A partir das turmas <strong>encerradas</strong>, matricula no ano seguinte os alunos que marcaram interesse em renovar. Aprovado → série de promoção; reprovado → série de conservação.
@@ -244,7 +244,7 @@ const nomeTurmaDestino = (serId: number | null, turId: number | null): string =>
                     />
                 </div>
                 <div class="flex items-end">
-                    <Button :disabled="!anlId || !escId || carregando" class="bg-indigo-600 text-white hover:bg-indigo-700" @click="listar">
+                    <Button :disabled="!anlId || !escId || carregando" class="bg-brand-600 text-white hover:bg-brand-700" @click="listar">
                         <Loader2 v-if="carregando" class="mr-1 size-4 animate-spin" /> Listar Turmas
                     </Button>
                 </div>
@@ -270,12 +270,12 @@ const nomeTurmaDestino = (serId: number | null, turId: number | null): string =>
                     </div>
                     <div v-if="!turmasFiltradas.length" class="rounded-xl border bg-card py-10 text-center text-sm text-muted-foreground">Nenhuma turma encontrada.</div>
                     <div v-else class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                        <button v-for="t in turmasFiltradas" :key="t.tur_id" type="button" class="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-card p-4 text-left shadow-sm transition hover:border-indigo-300 hover:shadow-md dark:border-slate-800" @click="abrirTurma(t)">
+                        <button v-for="t in turmasFiltradas" :key="t.tur_id" type="button" class="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-card p-4 text-left shadow-sm transition hover:border-brand-300 hover:shadow-md dark:border-slate-800" @click="abrirTurma(t)">
                             <div class="min-w-0">
                                 <div class="truncate font-semibold">{{ t.serie ? `${t.serie} — ` : '' }}Turma {{ t.turma }}</div>
                                 <div v-if="t.segmento" class="mt-0.5 text-xs text-muted-foreground">{{ t.segmento }}</div>
                             </div>
-                            <span class="grid size-9 shrink-0 place-items-center rounded-full bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-300"><Users class="size-4" /></span>
+                            <span class="grid size-9 shrink-0 place-items-center rounded-full bg-brand-50 text-brand-600 dark:bg-brand-950/40 dark:text-brand-300"><Users class="size-4" /></span>
                         </button>
                     </div>
                 </template>

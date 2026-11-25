@@ -142,14 +142,14 @@ const validadeTexto = (l: SaldoLinha) => {
                 <div v-if="podeVerCentral" class="flex items-center gap-1 rounded-lg border bg-muted/40 p-1">
                     <button
                         type="button"
-                        :class="['rounded-md px-3 py-1.5 text-xs font-medium transition-colors', modo === 'central' ? 'bg-indigo-600 text-white' : 'text-muted-foreground hover:bg-muted']"
+                        :class="['rounded-md px-3 py-1.5 text-xs font-medium transition-colors', modo === 'central' ? 'bg-brand-600 text-white' : 'text-muted-foreground hover:bg-muted']"
                         @click="modo = 'central'"
                     >
                         Central
                     </button>
                     <button
                         type="button"
-                        :class="['rounded-md px-3 py-1.5 text-xs font-medium transition-colors', modo === 'escola' ? 'bg-indigo-600 text-white' : 'text-muted-foreground hover:bg-muted']"
+                        :class="['rounded-md px-3 py-1.5 text-xs font-medium transition-colors', modo === 'escola' ? 'bg-brand-600 text-white' : 'text-muted-foreground hover:bg-muted']"
                         @click="modo = 'escola'"
                     >
                         Escola
@@ -158,11 +158,11 @@ const validadeTexto = (l: SaldoLinha) => {
                 <div v-if="!podeVerCentral || modo === 'escola'" class="w-64">
                     <EscolaCombobox v-model="escId" :initial="escolaFiltro" placeholder="Buscar escola..." />
                 </div>
-                <select v-model="catId" class="h-10 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground">
+                <select v-model="catId" class="h-10 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-background dark:text-foreground">
                     <option value="">Todas as categorias</option>
                     <option v-for="c in categorias" :key="c.cat_id" :value="String(c.cat_id)">{{ c.cat_nome }}</option>
                 </select>
-                <select v-model="alerta" class="h-10 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-background dark:text-foreground">
+                <select v-model="alerta" class="h-10 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-background dark:text-foreground">
                     <option value="">Toda a validade</option>
                     <option value="vencendo">Vencem em 30 dias</option>
                     <option value="vencido">Vencidos</option>
@@ -196,7 +196,7 @@ const validadeTexto = (l: SaldoLinha) => {
                         <tr v-for="l in saldos.data" :key="l.sld_id" class="transition-colors hover:bg-muted/30">
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-3">
-                                    <div class="grid size-9 place-items-center rounded-lg bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300">
+                                    <div class="grid size-9 place-items-center rounded-lg bg-brand-100 text-brand-700 dark:bg-brand-900/50 dark:text-brand-300">
                                         <Package class="size-4" />
                                     </div>
                                     <div class="flex flex-col">
@@ -232,7 +232,7 @@ const validadeTexto = (l: SaldoLinha) => {
                         <template v-else>Nenhum registro</template>
                     </span>
                     <div v-if="saldos.last_page > 1" class="flex flex-wrap gap-1">
-                        <Link v-for="(link, i) in saldos.links" :key="i" :href="link.url ?? '#'" v-html="link.label" :class="['rounded-md px-3 py-1 text-xs', link.active ? 'bg-indigo-600 text-white' : 'border bg-background hover:bg-muted', !link.url && 'pointer-events-none opacity-40']" preserve-scroll />
+                        <Link v-for="(link, i) in saldos.links" :key="i" :href="link.url ?? '#'" v-html="link.label" :class="['rounded-md px-3 py-1 text-xs', link.active ? 'bg-brand-600 text-white' : 'border bg-background hover:bg-muted', !link.url && 'pointer-events-none opacity-40']" preserve-scroll />
                     </div>
                 </div>
             </div>

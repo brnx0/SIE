@@ -179,7 +179,7 @@ onMounted(fetchContexto);
 <template>
     <div class="rounded-xl border bg-card p-4 shadow-sm">
         <div class="mb-4 flex items-center gap-2">
-            <ClipboardList class="size-4 text-indigo-600" />
+            <ClipboardList class="size-4 text-brand-600" />
             <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-200">Avaliações descritivas</h3>
         </div>
 
@@ -212,7 +212,7 @@ onMounted(fetchContexto);
                         <span
                             class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
                             :class="(countPorAluno.get(a.aln_id) ?? 0) > 0
-                                ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300'
+                                ? 'bg-brand-50 text-brand-700 dark:bg-brand-950/40 dark:text-brand-300'
                                 : 'bg-muted text-muted-foreground'"
                         >
                             {{ countPorAluno.get(a.aln_id) ?? 0 }} avaliação(ões)
@@ -239,7 +239,7 @@ onMounted(fetchContexto);
                     v-if="!showForm && podeEditar"
                     type="button"
                     size="sm"
-                    class="bg-indigo-600 hover:bg-indigo-700"
+                    class="bg-brand-600 hover:bg-brand-700"
                     @click="openCreate"
                 >
                     <Plus class="mr-2 size-4" /> Nova Avaliação
@@ -268,7 +268,7 @@ onMounted(fetchContexto);
                     <Button type="button" variant="outline" size="sm" @click="cancel">
                         <X class="mr-2 size-4" /> Cancelar
                     </Button>
-                    <Button type="button" size="sm" class="bg-indigo-600 hover:bg-indigo-700" :disabled="processing" @click="save">
+                    <Button type="button" size="sm" class="bg-brand-600 hover:bg-brand-700" :disabled="processing" @click="save">
                         <LoaderCircle v-if="processing" class="mr-2 size-4 animate-spin" />
                         <Save v-else class="mr-2 size-4" />
                         Salvar

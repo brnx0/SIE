@@ -139,7 +139,7 @@ const dataEmissao = computed(() => {
                     <Link href="/relatorios/formacao-classes-aee">
                         <Button variant="outline"><ArrowLeft class="mr-1 size-4" /> Voltar</Button>
                     </Link>
-                    <Button :disabled="!total" class="bg-indigo-600 text-white hover:bg-indigo-700" @click="imprimir">
+                    <Button :disabled="!total" class="bg-brand-600 text-white hover:bg-brand-700" @click="imprimir">
                         <Printer class="mr-1 size-4" /> Imprimir / PDF
                     </Button>
                 </div>
@@ -183,7 +183,7 @@ const dataEmissao = computed(() => {
                             <td class="px-2 py-1.5 text-center">{{ l.expansao }}</td>
                             <td class="px-2 py-1.5 text-center">{{ l.rede }}</td>
                             <td class="px-2 py-1.5 text-center">{{ l.novos }}</td>
-                            <td class="px-2 py-1.5 text-center font-semibold text-indigo-700">{{ l.vagas }}</td>
+                            <td class="px-2 py-1.5 text-center font-semibold text-brand-700">{{ l.vagas }}</td>
                         </tr>
                         <tr class="bg-muted/30 font-semibold">
                             <td colspan="4" class="px-2 py-1.5">TOTAIS</td>
