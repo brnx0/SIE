@@ -36,6 +36,9 @@ class HistoricoEscolar
     /** Aprovado pelo Conselho — MF exibida sobe até a média de aprovação. */
     private const CONSELHO = 7;
 
+    /** Cache da média mínima por "ano letivo:escola" (ver mediaMinima()). */
+    private array $mediasMinimas = [];
+
     public function gerar(int $alnId): array
     {
         $aluno = Aluno::with('municipioNascimento:mun_id,mun_nome,mun_uf')->findOrFail($alnId);
