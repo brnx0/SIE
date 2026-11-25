@@ -31,7 +31,7 @@ import type { SharedData, SystemParams } from '@/types';
 import type { Municipio } from '@/types/aluno';
 import type { Bairro, Escola, EscolaFormData, GerenciaRegional } from '@/types/escola';
 import { Link, useForm, usePage } from '@inertiajs/vue3';
-import { Building2, Camera, ChevronLeft, ChevronRight, Loader2, LoaderCircle, Save, Trash2, Upload } from 'lucide-vue-next';
+import { Building2, Camera, ChevronLeft, ChevronRight, Loader2, LoaderCircle, Pencil, Save, Trash2, Upload } from 'lucide-vue-next';
 import EscolaSegmentosTab from '@/components/escola/tabs/EscolaSegmentosTab.vue';
 import EscolaCensoTab from '@/components/escola/tabs/EscolaCensoTab.vue';
 import type { AnoLetivoOption, EscolaSegmento } from '@/types/escola_segmento';
@@ -54,6 +54,12 @@ const props = defineProps<{
 }>();
 
 const page = usePage<SharedData>();
+
+// Modo consulta: ?view=1 força somente-leitura mesmo para quem pode editar
+// (o olho na listagem abre assim). readonly = sem permissão de edição OU view.
+const viewMode = computed(() => new URLSearchParams(page.url.split('?')[1] ?? '').get('view') === '1');
+const readonly = computed(() => isReadOnly.value || viewMode.value);
+
 const DEFAULT_PARAMS: SystemParams = {
     nome_pessoa_caixa_alta: true,
     nome_escola_caixa_alta: true,
@@ -314,7 +320,7 @@ const submitLabel = computed(() => (props.mode === 'create' ? 'Cadastrar escola'
 const segmentoEditando = ref(false);
 
 const submit = () => {
-    if (isReadOnly.value || segmentoEditando.value) return;
+    if (readonly.value || segmentoEditando.value) return;
     const opts = {
         onError: (errors: Record<string, string>) => {
             goToFirstErrorTab();
@@ -346,11 +352,19 @@ const isLast = computed(() => activeTab.value === TABS.value[TABS.value.length -
                 <Button type="button" variant="outline">Voltar para listagem</Button>
             </Link>
             <div class="flex items-center gap-3">
+                <span v-if="viewMode && !isReadOnly" class="text-xs font-medium text-muted-foreground">
+                    Modo consulta
+                </span>
+                <Link v-if="viewMode && !isReadOnly" :href="`/escolas/${initial?.esc_id}/edit`">
+                    <Button type="button" class="bg-sky-600 text-white hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-400">
+                        <Pencil class="mr-2 size-4" /> Editar
+                    </Button>
+                </Link>
                 <span v-if="segmentoEditando" class="text-xs font-medium text-amber-600 dark:text-amber-400">
                     Finalize a etapa de ensino antes de salvar a escola.
                 </span>
                 <Button
-                    v-if="!isReadOnly"
+                    v-if="!readonly"
                     type="submit"
                     :disabled="form.processing || segmentoEditando"
                     :title="segmentoEditando ? 'Finalize a edição da etapa de ensino primeiro' : ''"
@@ -371,7 +385,7 @@ const isLast = computed(() => activeTab.value === TABS.value[TABS.value.length -
                 <TabsTrigger v-if="mode === 'edit'" value="segmentos">4. Etapas de Ensino</TabsTrigger>
                 <TabsTrigger v-if="mode === 'edit'" value="censo">5. Censo</TabsTrigger>
             </TabsList>
-            <fieldset :disabled="isReadOnly" class="contents">
+            <fieldset :disabled="readonly" class="contents">
 
             <!-- Aba 1: Identificação -->
             <TabsContent value="identificacao" class="grid gap-6">
