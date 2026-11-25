@@ -32,6 +32,7 @@ import type { Municipio } from '@/types/aluno';
 import type { Bairro, Escola, EscolaFormData, GerenciaRegional } from '@/types/escola';
 import { Link, useForm, usePage } from '@inertiajs/vue3';
 import { Building2, Camera, ChevronLeft, ChevronRight, Loader2, LoaderCircle, Pencil, Save, Trash2, Upload } from 'lucide-vue-next';
+import ZoomableImage from '@/components/ZoomableImage.vue';
 import EscolaSegmentosTab from '@/components/escola/tabs/EscolaSegmentosTab.vue';
 import EscolaCensoTab from '@/components/escola/tabs/EscolaCensoTab.vue';
 import type { AnoLetivoOption, EscolaSegmento } from '@/types/escola_segmento';
@@ -397,7 +398,7 @@ const isLast = computed(() => activeTab.value === TABS.value[TABS.value.length -
                 <div class="flex flex-col items-center gap-4 rounded-xl border bg-card p-6 shadow-sm sm:flex-row sm:items-start sm:gap-6">
                     <div class="relative">
                         <div class="grid size-32 place-items-center overflow-hidden rounded-xl border-4 border-sky-100 bg-sky-50 dark:border-sky-900/40 dark:bg-sky-900/20">
-                            <img v-if="previewUrl" :src="previewUrl" alt="Logo" class="size-full object-cover" />
+                            <ZoomableImage v-if="previewUrl" :src="previewUrl" alt="Logo" />
                             <Building2 v-else class="size-12 text-sky-700 dark:text-sky-300" />
                         </div>
                         <button
