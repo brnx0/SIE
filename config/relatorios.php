@@ -17,9 +17,14 @@ return [
         'grupo' => 'secretaria',
         'icone' => 'FileCheck2',
     ],
-    // A Ata Final NÃO tem card aqui: sai pelo botão da tela de Encerramento de
-    // Turmas, no contexto da turma encerrada. A rota /relatorios/ata-final segue
-    // registrada e é o que aquele botão chama.
+    [
+        'slug' => 'ata-final',
+        'titulo' => 'Ata Final do Encerramento',
+        'descricao' => 'Por turma: nota final de cada disciplina e o resultado final do aluno (aprovado/reprovado). Lista todas as turmas e sinaliza as ainda não encerradas. Alunos que saíram não têm resultado.',
+        'categoria' => 'Secretaria Acadêmica',
+        'grupo' => 'secretaria',
+        'icone' => 'ScrollText',
+    ],
     [
         'slug' => 'final-educacao-infantil',
         'titulo' => 'Final da Educação Infantil',
