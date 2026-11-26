@@ -40,7 +40,8 @@ const { salvar: salvarFiltros } = useFiltrosListagem<Record<string, unknown>>('t
 watch(() => props.filters, (f) => salvarFiltros({ ...f }), { immediate: true, deep: true });
 
 const fEscId    = ref<number | ''>(props.filters.esc_id ?? '');
-const fAnlId    = ref<number | ''>(props.filters.anl_id ?? '');
+// Backend devolve 'all' quando o usuário escolheu "Todos os anos" → mapeia p/ '' no select.
+const fAnlId    = ref<number | ''>((props.filters.anl_id as unknown) === 'all' ? '' : (props.filters.anl_id ?? ''));
 const fTurno    = ref(props.filters.turno ?? '');
 const fSituacao = ref(props.filters.situacao ?? '');
 const perPage   = ref(props.filters.per_page ?? 10);
@@ -51,7 +52,8 @@ const apply = (resetPage = false) => {
     timer = setTimeout(() => {
         const params: Record<string, string | number> = { per_page: perPage.value };
         if (fEscId.value)    params.esc_id   = fEscId.value;
-        if (fAnlId.value)    params.anl_id   = fAnlId.value;
+        // Sempre envia anl_id: 'all' = "Todos os anos" (senão o backend força o ano mais recente).
+        params.anl_id = fAnlId.value === '' ? 'all' : fAnlId.value;
         if (fTurno.value)    params.turno    = fTurno.value;
         if (fSituacao.value) params.situacao = fSituacao.value;
         if (!resetPage)      params.page     = props.turmas.current_page;
@@ -75,7 +77,7 @@ const escolaItems = computed(() =>
 
 const exportFilters = () => ({
     esc_id:   fEscId.value || undefined,
-    anl_id:   fAnlId.value || undefined,
+    anl_id:   fAnlId.value === '' ? 'all' : fAnlId.value,
     turno:    fTurno.value || undefined,
     situacao: fSituacao.value || undefined,
 });
