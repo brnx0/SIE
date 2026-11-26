@@ -40,12 +40,12 @@ class HistoricoEscolarController extends Controller
         $html = view('exports.historico_escolar_pdf', ['h' => $dados])->render();
 
         $mpdf = new Mpdf([
-            'orientation'   => 'L',
+            'orientation'   => 'P',
             'format'        => 'A4',
-            'margin_top'    => 8,
-            'margin_bottom' => 8,
-            'margin_left'   => 8,
-            'margin_right'  => 8,
+            'margin_top'    => 10,
+            'margin_bottom' => 10,
+            'margin_left'   => 10,
+            'margin_right'  => 10,
             'tempDir'       => sys_get_temp_dir(),
         ]);
         $mpdf->WriteHTML($html);

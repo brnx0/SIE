@@ -235,7 +235,8 @@ class HistoricoEscolar
             'componentes' => $linhasMatriz,
             'relacao' => $relacao,
             'conceitual' => $conceitual,
-            'legenda' => DB::table('cfg_conceito')->orderBy('cnc_peso', 'desc')
+            // Legenda em ordem crescente de valor (ex.: R, S, H).
+            'legenda' => DB::table('cfg_conceito')->orderBy('cnc_peso')->orderBy('cnc_sigla')
                 ->get(['cnc_sigla', 'cnc_descricao'])->all(),
             'emissao' => [
                 'municipio_uf' => $this->municipioUf($emissora->esc_mun_id),

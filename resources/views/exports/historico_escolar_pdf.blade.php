@@ -25,9 +25,10 @@
     .rel td { text-align: left; }
     .rel td.val { text-align: center; }
     .legenda { font-size: 7pt; margin-top: 6px; }
-    .assin { margin-top: 26px; }
-    .assin td { text-align: center; padding-top: 18px; font-size: 8pt; }
-    .assin .linha { border-top: 0.5px solid #333; padding-top: 3px; }
+    .assin { margin-top: 8px; page-break-inside: avoid; }
+    .assin td { text-align: center; font-size: 8pt; }
+    .assin td.espaco { height: 18mm; }
+    .assin td.linha { border-top: 0.5px solid #333; padding-top: 3px; }
 </style>
 
 {{-- Cabeçalho da escola --}}
@@ -140,8 +141,13 @@
 <div class="center" style="margin-top:10px;">{{ $dash($h['emissao']['municipio_uf']) }}, {{ $h['emissao']['data'] }}</div>
 
 <table class="assin">
+    {{-- Espaço para a assinatura manual, com a linha logo acima de cada identificação. --}}
+    <tr><td class="espaco" colspan="5">&nbsp;</td></tr>
     <tr>
-        <td style="width:50%;"><div class="linha">Secretário(a) Escolar</div></td>
-        <td style="width:50%;"><div class="linha">Diretor(a) Escolar</div></td>
+        <td style="width:6%;"></td>
+        <td class="linha" style="width:38%;">Secretaria Escolar</td>
+        <td style="width:12%;"></td>
+        <td class="linha" style="width:38%;">Diretor(a)</td>
+        <td style="width:6%;"></td>
     </tr>
 </table>
