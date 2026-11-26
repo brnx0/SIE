@@ -33,7 +33,7 @@ Dentro do **Diário de Classe** (`/diario`), após selecionar turma, disciplina 
 
 ## Parametrização da unidade
 
-A coordenação pode definir, em **Diário Online › Cadastro › Parametrização de avaliações**, quais instrumentos cada unidade terá e o valor máximo de cada um (vale para toda a rede).
+A coordenação pode definir, em **Pedagógico › Cadastro › Parametrização de Avaliações**, quais instrumentos cada unidade terá e o valor máximo de cada um (vale para toda a rede).
 
 - Com a unidade parametrizada, a lista de instrumentos mostra só os definidos e o **valor já vem preenchido** ao escolher o instrumento.
 - Se os valores estiverem **bloqueados**, o campo Valor fica travado no valor definido pela coordenação.

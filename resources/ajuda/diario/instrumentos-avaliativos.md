@@ -13,7 +13,7 @@ Os **Instrumentos Avaliativos** são os tipos de avaliação que ficam disponív
 
 ## Como acessar
 
-Menu **Diário Online → Instrumentos Avaliativos** (endereço `/diario/instrumentos-avaliativos`).
+Menu **Pedagógico → Cadastro → Instrumentos Avaliativos** (endereço `/diario/instrumentos-avaliativos`).
 
 ## Passo a passo
 

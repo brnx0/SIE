@@ -214,7 +214,7 @@ const fmtDateTime = (d: string | null) =>
                         <tbody class="divide-y">
                             <tr v-if="!instrumentos.length">
                                 <td colspan="3" class="px-4 py-8 text-center text-muted-foreground">
-                                    Nenhum instrumento avaliativo ativo. Cadastre em Diário Online › Cadastro › Instrumentos Avaliativos.
+                                    Nenhum instrumento avaliativo ativo. Cadastre em Pedagógico › Cadastro › Instrumentos Avaliativos.
                                 </td>
                             </tr>
                             <tr

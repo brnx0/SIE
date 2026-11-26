@@ -68,12 +68,13 @@ class TelaPermissaoSeeder extends Seeder
         ['/diario', 'Diário de Classe', 'Diário', 19, [1, 2, 1, 0, 0, 0, 0, 2, 0, 0, 0]],
         ['/diario-aee', 'Diário AEE', 'Diário', 20, [1, 1, 0, 1, 0, 0, 0, 2, 0, 0, 0]],
         ['/diario-atividade', 'Diário Atividade', 'Diário', 21, [1, 1, 0, 0, 0, 0, 0, 2, 0, 1, 0]],
-        ['/diario/instrumentos-avaliativos', 'Instrumentos Avaliativos', 'Diário', 22, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
-        ['/sabados-letivos', 'Sábados Letivos', 'Diário', 23, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
+        ['/diario/instrumentos-avaliativos', 'Instrumentos Avaliativos', 'Pedagógico', 29, [1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0]],
+        // Calendário da rede inteira (sem recorte por escola): a secretaria da escola só consulta.
+        ['/sabados-letivos', 'Sábados Letivos', 'Secretaria Escolar', 34, [1, 1, 0, 0, 0, 0, 0, 2, 0, 0, 0]],
         // Nomenclaturas da avaliação diagnóstica (rede inteira): a coordenação pedagógica edita.
-        ['/diario/termos-diagnostico', 'Termos da Avaliação Diagnóstica', 'Diário', 23, [1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0]],
+        ['/diario/termos-diagnostico', 'Termos da Avaliação Diagnóstica', 'Pedagógico', 29, [1, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0]],
         // Instrumentos e valores das avaliações por unidade (rede inteira): coordenação pedagógica e administração.
-        ['/diario/parametrizacao-avaliacoes', 'Parametrização de Avaliações', 'Diário', 23, [1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0]],
+        ['/diario/parametrizacao-avaliacoes', 'Parametrização de Avaliações', 'Pedagógico', 29, [1, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0]],
         ['/diario/planos', 'Planos de Aula', 'Diário', 24, [1, 1, 1, 0, 2, 2, 0, 0, 2, 0, 0]],
         ['/diario/planos-aee', 'Planos de Aula AEE', 'Diário', 25, [1, 2, 0, 1, 0, 2, 0, 0, 2, 0, 0]],
         ['/relatorios-diario', 'Relatórios Diário', 'Diário', 26, [1, 1, 2, 2, 2, 2, 0, 2, 2, 0, 0, 0, 0, 2]],

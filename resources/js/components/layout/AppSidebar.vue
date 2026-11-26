@@ -92,15 +92,6 @@ const diarioMenu = [
             { title: 'Diário de Classe', href: '/diario' },
             { title: 'Diário AEE', href: '/diario-aee' },
             { title: 'Diário Atividade', href: '/diario-atividade' },
-            {
-                title: 'Cadastro',
-                children: [
-                    { title: 'Instrumentos Avaliativos', href: '/diario/instrumentos-avaliativos' },
-                    { title: 'Sábados Letivos', href: '/sabados-letivos' },
-                    { title: 'Termos da avaliação diagnóstica', href: '/diario/termos-diagnostico' },
-                    { title: 'Parametrização de avaliações', href: '/diario/parametrizacao-avaliacoes' },
-                ],
-            },
             { title: 'Planos de Aula', href: '/diario/planos' },
             { title: 'Planos de Aula AEE', href: '/diario/planos-aee' },
             { title: 'Relatórios', searchTitle: 'Relatórios do Diário', href: '/relatorios-diario' },
@@ -133,6 +124,14 @@ const coordenadorMenu = [
         children: [
             { title: 'Validação de Planos', href: '/coordenador/planos' },
             { title: 'Validação de Planos AEE', href: '/coordenador-interno/planos-aee' },
+            {
+                title: 'Cadastro',
+                children: [
+                    { title: 'Instrumentos Avaliativos', href: '/diario/instrumentos-avaliativos' },
+                    { title: 'Termos da Avaliação Diagnóstica', href: '/diario/termos-diagnostico' },
+                    { title: 'Parametrização de Avaliações', href: '/diario/parametrizacao-avaliacoes' },
+                ],
+            },
             { title: 'Relatórios', searchTitle: 'Relatórios Pedagógicos', href: '/relatorios-pedagogico' },
         ],
     },
@@ -153,6 +152,12 @@ const secretariaMenu = [
             },
             { title: 'Renovação de Matrícula', href: '/secretaria/renovacao-matricula' },
             { title: 'Motivo Baixa Frequência', href: '/secretaria/motivos-baixa-frequencia' },
+            {
+                title: 'Cadastro',
+                children: [
+                    { title: 'Sábados Letivos', href: '/sabados-letivos' },
+                ],
+            },
             { title: 'Relatórios', searchTitle: 'Relatórios da Secretaria', href: '/relatorios-secretaria' },
         ],
     },
