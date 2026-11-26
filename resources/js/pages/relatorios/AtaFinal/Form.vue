@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import FormLabel from '@/components/common/FormLabel.vue';
 import LocalCombobox from '@/components/common/LocalCombobox.vue';
 import type { BreadcrumbItem } from '@/types';
@@ -21,6 +22,7 @@ const { restaurar, salvar } = useFiltrosRelatorio('ata-final', {
     anl_id: null as number | null,
     esc_id: null as number | null,
     tur_id: null as number | null,
+    todas: false,
 });
 const salvos = restaurar();
 // Enquanto restaura, as cascatas ficam mudas (senão zeram o que foi restaurado).
@@ -29,6 +31,8 @@ let restaurando = true;
 const anlId = ref<number | null>(salvos.anl_id ?? props.anosLetivos[0]?.anl_id ?? null);
 const escId = ref<number | null>(salvos.esc_id ?? props.userEscola?.esc_id ?? null);
 const turId = ref<number | null>(null);
+// Lote: uma ata por turma, para todas as turmas da escola no ano.
+const todas = ref<boolean>(!!salvos.todas);
 
 const turmas = ref<{ tur_id: number; turma: string; encerrada: boolean }[]>([]);
 const carregandoTurmas = ref(false);
@@ -63,13 +67,16 @@ const itemsAno = computed(() => props.anosLetivos.map((a) => ({ id: a.anl_id, la
 const itemsEscola = computed(() => props.escolas.map((e) => ({ id: e.esc_id, label: e.esc_nome })));
 const itemsTurma = computed(() => turmas.value.map((t) => ({ id: t.tur_id, label: t.encerrada ? t.turma : `${t.turma} — não encerrada` })));
 const turmaSel = computed(() => turmas.value.find((t) => t.tur_id === turId.value) ?? null);
-const turmaNaoEncerrada = computed(() => !!turmaSel.value && !turmaSel.value.encerrada);
+const turmaNaoEncerrada = computed(() => !todas.value && !!turmaSel.value && !turmaSel.value.encerrada);
+const naoEncerradas = computed(() => turmas.value.filter((t) => !t.encerrada).length);
+const podeGerar = computed(() => !!escId.value && !!anlId.value && !carregandoTurmas.value && (todas.value ? turmas.value.length > 0 : !!turId.value));
 
 function gerar() {
-    if (!escId.value || !anlId.value || !turId.value) return;
-    salvar({ anl_id: anlId.value, esc_id: escId.value, tur_id: turId.value });
+    if (!podeGerar.value) return;
+    salvar({ anl_id: anlId.value, esc_id: escId.value, tur_id: turId.value, todas: todas.value });
     gerando.value = true;
-    router.get('/relatorios/ata-final/gerar', { anl_id: anlId.value, esc_id: escId.value, tur_id: turId.value }, { preserveScroll: true, onFinish: () => { gerando.value = false; } });
+    const filtro = todas.value ? { todas: 1 } : { tur_id: turId.value };
+    router.get('/relatorios/ata-final/gerar', { anl_id: anlId.value, esc_id: escId.value, ...filtro }, { preserveScroll: true, onFinish: () => { gerando.value = false; } });
 }
 </script>
 
@@ -92,16 +99,29 @@ function gerar() {
                     <LocalCombobox v-model="escId" :items="itemsEscola" placeholder="Selecione a escola..." />
                 </div>
                 <div class="grid gap-1.5">
-                    <FormLabel :required="true">Turma</FormLabel>
-                    <LocalCombobox v-model="turId" :items="itemsTurma" :placeholder="carregandoTurmas ? 'Carregando...' : (itemsTurma.length ? 'Selecione a turma...' : 'Nenhuma turma encontrada')" />
+                    <FormLabel :required="!todas">Turma</FormLabel>
+                    <LocalCombobox
+                        v-model="turId"
+                        :items="itemsTurma"
+                        :disabled="todas"
+                        :placeholder="carregandoTurmas ? 'Carregando...' : (todas ? 'Todas as turmas da escola' : (itemsTurma.length ? 'Selecione a turma...' : 'Nenhuma turma encontrada'))"
+                    />
+                    <label class="mt-1 flex cursor-pointer items-center gap-2 text-sm">
+                        <Checkbox v-model:checked="todas" />
+                        <span>Todas as turmas</span>
+                    </label>
+                </div>
+                <div v-if="todas && turmas.length" class="rounded-lg border border-brand-200 bg-brand-50 p-3 text-sm text-brand-900 sm:col-span-2 lg:col-span-3 dark:border-brand-900 dark:bg-brand-950/40 dark:text-brand-200">
+                    Serão geradas <strong>{{ turmas.length }} atas</strong>, uma por turma, em um único documento para impressão.
+                    <template v-if="naoEncerradas"> <strong>{{ naoEncerradas }}</strong> {{ naoEncerradas === 1 ? 'turma ainda não foi encerrada e sairá' : 'turmas ainda não foram encerradas e sairão' }} sem o resultado final.</template>
                 </div>
                 <div v-if="turmaNaoEncerrada" class="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 sm:col-span-2 lg:col-span-3 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
                     <TriangleAlert class="mt-0.5 size-4 shrink-0" />
                     <span>Esta turma <strong>ainda não foi encerrada</strong>. A ata sai com as notas atuais, mas <strong>sem o resultado final</strong> dos alunos.</span>
                 </div>
                 <div class="flex items-end justify-end sm:col-span-2 lg:col-span-3">
-                    <Button :disabled="!escId || !anlId || !turId || gerando" class="bg-brand-600 text-white hover:bg-brand-700" @click="gerar">
-                        <Loader2 v-if="gerando" class="mr-1 size-4 animate-spin" /> Gerar Ata
+                    <Button :disabled="!podeGerar || gerando" class="bg-brand-600 text-white hover:bg-brand-700" @click="gerar">
+                        <Loader2 v-if="gerando" class="mr-1 size-4 animate-spin" /> {{ todas ? 'Gerar Atas' : 'Gerar Ata' }}
                     </Button>
                 </div>
             </div>

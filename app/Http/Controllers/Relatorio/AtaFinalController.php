@@ -18,7 +18,7 @@ use Inertia\Inertia;
 use Inertia\Response;
 
 /**
- * Ata Final do Encerramento — por turma ENCERRADA: matriz alunos × disciplinas
+ * Ata Final do Encerramento — por turma (ou todas as turmas da escola no ano): matriz alunos × disciplinas
  * com a nota final de cada disciplina + o resultado final do aluno (situação de
  * encerramento). Aluno que saiu da turma é listado sem resultado final.
  */
@@ -75,14 +75,34 @@ class AtaFinalController extends Controller
         $data = $request->validate([
             'anl_id' => ['required', 'integer', 'exists:cfg_ano_letivo,anl_id'],
             'esc_id' => ['required', 'integer', 'exists:edu_escola,esc_id'],
-            'tur_id' => ['required', 'integer', 'exists:edu_turma,tur_id'],
+            'todas'  => ['nullable', 'boolean'],
+            'tur_id' => ['nullable', 'required_without:todas', 'integer', 'exists:edu_turma,tur_id'],
         ]);
-
-        $this->autorizarTurma((int) $data['tur_id']);
+        $todas = (bool) ($data['todas'] ?? false);
 
         $ano    = AnoLetivo::findOrFail($data['anl_id']);
         $escola = Escola::findOrFail($data['esc_id']);
-        $turma  = Turma::with('serie:ser_id,ser_nome')->findOrFail($data['tur_id']);
+
+        // Só turmas REGULAR da escola e do ano selecionados (mesmo recorte do combo).
+        $query = Turma::with('serie:ser_id,ser_nome')
+            ->where('tur_modalidade', 'REGULAR')
+            ->where('tur_anl_id', $data['anl_id'])
+            ->where('tur_esc_id', $data['esc_id']);
+
+        if ($todas) {
+            $this->autorizarLote((int) $data['esc_id']);
+            @set_time_limit(300);
+        } else {
+            $this->autorizarTurmaAta((int) $data['tur_id']);
+            $query->where('tur_id', $data['tur_id']);
+        }
+
+        $turmas = $query->get()
+            ->sortBy(fn (Turma $t) => mb_strtolower(($t->serie?->ser_nome ?? '') . ' ' . $t->tur_nome), SORT_NATURAL)
+            ->values();
+
+        // Turma avulsa que não é da escola/ano informados: não gera ata com cabeçalho trocado.
+        abort_if(! $todas && $turmas->isEmpty(), 404, 'Turma não encontrada nesta escola e ano letivo.');
 
         $uniIds = DB::table('cfg_unidade')->where('uni_anl_id', $data['anl_id'])->orderBy('uni_numero')->pluck('uni_id')->map(fn ($v) => (int) $v)->all();
 
@@ -91,6 +111,53 @@ class AtaFinalController extends Controller
         $mdeMedia = DB::table('cfg_media_escola')->where('mde_anl_id', $data['anl_id'])->where('mde_esc_id', $data['esc_id'])->value('mde_media');
         $mediaRef = $mdeMedia !== null ? (float) $mdeMedia : (float) $ano->anl_media_geral;
 
+        // Uma ata por turma. No lote, a falha de uma turma não derruba as demais.
+        $atas   = [];
+        $falhas = [];
+        foreach ($turmas as $turma) {
+            $nome = trim(($turma->serie?->ser_nome ? $turma->serie->ser_nome . ' - ' : '') . $turma->tur_nome);
+            try {
+                $atas[] = ['tur_id' => (int) $turma->tur_id, 'turma' => $nome, 'encerrada' => $turma->tur_situacao === 'ENCERRADA']
+                    + $this->montarAta($turma, $uniIds, $mediaRef);
+            } catch (\Throwable $e) {
+                if (! $todas) {
+                    throw $e;
+                }
+                report($e);
+                $falhas[] = ['turma' => $nome, 'erro' => 'Não foi possível gerar a ata desta turma.'];
+            }
+        }
+
+        $p = ParametroEntidade::first();
+
+        return Inertia::render('relatorios/AtaFinal/Resultado', [
+            'parametros' => $p ? [
+                'nome_entidade'      => $p->par_nome_entidade,
+                'msg_cab_secretaria' => $p->par_msg_cab_secretaria,
+                'msg_cab_estado'     => $p->par_msg_cab_estado,
+                'municipio'          => $p->municipio_label,
+                'logomarca_url'      => $p->par_logomarca_url,
+                'brasao_url'         => $p->par_brasao_url,
+                'texto_ata_final'    => $p->par_texto_ata_final,
+            ] : null,
+            'filtros' => [
+                'anl_ano'  => $ano->anl_ano,
+                'esc_nome' => $escola->esc_nome,
+                'todas'    => $todas,
+            ],
+            'atas'   => $atas,
+            'falhas' => $falhas,
+        ]);
+    }
+
+    /**
+     * Matriz alunos × disciplinas de UMA turma.
+     *
+     * @param  array<int,int>  $uniIds
+     * @return array{disciplinas: \Illuminate\Support\Collection, alunos: \Illuminate\Support\Collection}
+     */
+    private function montarAta(Turma $turma, array $uniIds, float $mediaRef): array
+    {
         $disciplinas = DB::table('edu_grade_disciplinar as gd')
             ->join('edu_disciplina as d', 'd.dis_id', '=', 'gd.grd_dis_id')
             ->where('gd.grd_ser_id', $turma->tur_ser_id)
@@ -167,35 +234,43 @@ class AtaFinalController extends Controller
                 ];
             });
 
-        $p = ParametroEntidade::first();
-
-        return Inertia::render('relatorios/AtaFinal/Resultado', [
-            'parametros' => $p ? [
-                'nome_entidade'      => $p->par_nome_entidade,
-                'msg_cab_secretaria' => $p->par_msg_cab_secretaria,
-                'msg_cab_estado'     => $p->par_msg_cab_estado,
-                'municipio'          => $p->municipio_label,
-                'logomarca_url'      => $p->par_logomarca_url,
-                'brasao_url'         => $p->par_brasao_url,
-                'texto_ata_final'    => $p->par_texto_ata_final,
-            ] : null,
-            'filtros' => [
-                'anl_ano'  => $ano->anl_ano,
-                'esc_nome' => $escola->esc_nome,
-                'turma'    => trim(($turma->serie?->ser_nome ? $turma->serie->ser_nome . ' - ' : '') . $turma->tur_nome),
-            ],
+        return [
             'disciplinas' => $disciplinas->pluck('dis_nome')->values(),
             'alunos'      => $alunos,
-        ]);
+        ];
     }
 
+    /** Escola liberada: admin, perfil de rede (sem filtro de lotação) ou escola na lotação do usuário. */
     private function autorizarEscola(int $escId): void
     {
         $user = auth()->user();
-        if ($user->isAdmin()) {
+        if ($user->isAdmin() || UserAccess::semFiltroLotacao($user)) {
             return;
         }
         $ids = UserAccess::escolasIds($user);
         abort_unless(is_array($ids) && in_array($escId, $ids, true), 403, 'Você não tem acesso a esta escola.');
+    }
+
+    /** Ata de uma turma: perfil de rede passa direto; os demais seguem a regra dos relatórios de nota. */
+    private function autorizarTurmaAta(int $turId): void
+    {
+        if (UserAccess::semFiltroLotacao(auth()->user())) {
+            return;
+        }
+        $this->autorizarTurma($turId);
+    }
+
+    /**
+     * Lote (todas as turmas da escola): só quem responde pela escola inteira —
+     * admin, perfil de rede ou secretaria com lotação nela. Professor fica na ata por turma.
+     */
+    private function autorizarLote(int $escId): void
+    {
+        $user = auth()->user();
+        if ($user->isAdmin() || UserAccess::semFiltroLotacao($user)) {
+            return;
+        }
+        abort_unless(UserAccess::acessoPorEscola($user), 403, 'Seu perfil só emite a ata por turma.');
+        $this->autorizarEscola($escId);
     }
 }
