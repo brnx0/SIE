@@ -13,6 +13,7 @@ use App\Models\Parametro\GradeHorario;
 use App\Models\Matricula\Matricula;
 use App\Models\Turma\Turma;
 use App\Support\UserAccess;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
@@ -87,6 +88,26 @@ class TurmaController extends Controller
         }
 
         return $this->exportCsv($turmas);
+    }
+
+    /**
+     * Registros vizinhos da turma na listagem (botões Anterior/Próximo do form).
+     * Recebe os mesmos filtros da listagem e usa a mesma consulta/ordenação,
+     * então a sequência é exatamente a que o usuário vê na lista.
+     */
+    public function vizinhos(Request $request, Turma $turma): JsonResponse
+    {
+        $user = auth()->user();
+
+        // Mesmo padrão da listagem: sem anl_id → maior ano cadastrado.
+        if ($request->input('anl_id') !== 'all' && ! $request->filled('anl_id')) {
+            $anlId = AnoLetivo::orderByDesc('anl_ano')->value('anl_id');
+            if ($anlId) {
+                $request->merge(['anl_id' => $anlId]);
+            }
+        }
+
+        return $this->vizinhosNaListagem($this->baseQuery($request, $user), 'tur_id', $turma->tur_id);
     }
 
     public function create(): Response
@@ -222,7 +243,8 @@ class TurmaController extends Controller
             ->orderBy('tur_anl_id', 'desc')
             ->orderBy('tur_esc_id')
             ->orderBy('tur_turno')
-            ->orderBy('tur_nome');
+            ->orderBy('tur_nome')
+            ->orderBy('tur_id'); // desempate: ordem estável na paginação e no Anterior/Próximo
     }
 
     private function exportCsv($turmas): StreamedResponse

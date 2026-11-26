@@ -205,6 +205,7 @@ Route::middleware(['auth', 'verified', 'tela'])->group(function () {
         ->except(['show']);
 
     Route::get('turmas/export', [TurmaController::class, 'export'])->name('turmas.export');
+    Route::get('turmas/{turma}/vizinhos', [TurmaController::class, 'vizinhos'])->whereNumber('turma')->name('turmas.vizinhos');
     Route::resource('turmas', TurmaController::class)->except(['show']);
     Route::prefix('turmas/{turma}/professores')->name('turmas.professores.')->group(function () {
         Route::post('/', [TurmaProfessorController::class, 'store'])->name('store');
@@ -224,6 +225,7 @@ Route::middleware(['auth', 'verified', 'tela'])->group(function () {
 
     // Turmas AEE (modalidade Atendimento Educacional Especializado)
     Route::get('turmas-aee/export', [TurmaAeeController::class, 'export'])->name('turmas-aee.export');
+    Route::get('turmas-aee/{turmaAee}/vizinhos', [TurmaAeeController::class, 'vizinhos'])->whereNumber('turmaAee')->name('turmas-aee.vizinhos');
     Route::resource('turmas-aee', TurmaAeeController::class)
         ->parameters(['turmas-aee' => 'turmaAee'])
         ->except(['show']);
@@ -443,6 +445,7 @@ Route::middleware(['auth', 'verified', 'tela'])->group(function () {
 
     // Turmas de Atividade
     Route::get('turmas-atividade/export', [TurmaAtividadeController::class, 'export'])->name('turmas-atividade.export');
+    Route::get('turmas-atividade/{turmaAtividade}/vizinhos', [TurmaAtividadeController::class, 'vizinhos'])->whereNumber('turmaAtividade')->name('turmas-atividade.vizinhos');
     Route::resource('turmas-atividade', TurmaAtividadeController::class)
         ->parameters(['turmas-atividade' => 'turmaAtividade'])
         ->except(['show']);

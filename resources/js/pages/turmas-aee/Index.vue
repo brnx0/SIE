@@ -12,6 +12,7 @@ import { TURNOS } from '@/types/turma';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { Accessibility, Eye, Pencil, Plus, Trash2 } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
+import { useFiltrosListagem } from '@/composables/useFiltrosListagem';
 import { usePermissao } from '@/composables/usePermissao';
 
 const { isReadOnly } = usePermissao();
@@ -32,6 +33,11 @@ const props = defineProps<{
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Turmas AEE', href: '/turmas-aee' }];
+
+// Guarda os filtros que a listagem está exibindo: o form usa esse snapshot
+// para a sequência dos botões Anterior/Próximo (RegistroNavegacao).
+const { salvar: salvarFiltros } = useFiltrosListagem<Record<string, unknown>>('turmas-aee');
+watch(() => props.filters, (f) => salvarFiltros({ ...f }), { immediate: true, deep: true });
 
 const fEscId    = ref<number | ''>(props.filters.esc_id ?? '');
 const fAnlId    = ref<number | ''>(props.filters.anl_id ?? '');

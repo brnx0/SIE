@@ -155,4 +155,26 @@ abstract class Controller
             }
         });
     }
+
+    /**
+     * Vizinhos de um registro na listagem (botões Anterior/Próximo dos forms).
+     * Recebe a MESMA consulta da listagem (filtros + ordenação) e devolve os ids
+     * anterior/próximo, a posição e o total. Registro fora do filtro → posicao null.
+     */
+    protected function vizinhosNaListagem($query, string $coluna, int $id): \Illuminate\Http\JsonResponse
+    {
+        $ids = $query->setEagerLoads([])->pluck($coluna)->all();
+        $pos = array_search($id, $ids, true);
+
+        if ($pos === false) {
+            return response()->json(['anterior' => null, 'proximo' => null, 'posicao' => null, 'total' => count($ids)]);
+        }
+
+        return response()->json([
+            'anterior' => $ids[$pos - 1] ?? null,
+            'proximo'  => $ids[$pos + 1] ?? null,
+            'posicao'  => $pos + 1,
+            'total'    => count($ids),
+        ]);
+    }
 }

@@ -9,6 +9,7 @@ use App\Models\Funcionario\Funcionario;
 use App\Models\Parametro\AnoLetivo;
 use App\Models\Turma\Turma;
 use App\Support\UserAccess;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
@@ -74,6 +75,19 @@ class TurmaAeeController extends Controller
         }
 
         return $this->exportCsv($turmas);
+    }
+
+    /** Registros vizinhos na listagem (botões Anterior/Próximo do form). */
+    public function vizinhos(Request $request, Turma $turmaAee): JsonResponse
+    {
+        $this->guardAee($turmaAee);
+
+        // Mesmo padrão da listagem: sem anl_id → maior ano cadastrado.
+        if (! $request->filled('anl_id') && ($anlId = AnoLetivo::orderByDesc('anl_ano')->value('anl_id'))) {
+            $request->merge(['anl_id' => $anlId]);
+        }
+
+        return $this->vizinhosNaListagem($this->baseQuery($request, auth()->user()), 'tur_id', $turmaAee->tur_id);
     }
 
     public function create(): Response
@@ -192,7 +206,8 @@ class TurmaAeeController extends Controller
             ->orderBy('tur_anl_id', 'desc')
             ->orderBy('tur_esc_id')
             ->orderBy('tur_turno')
-            ->orderBy('tur_nome');
+            ->orderBy('tur_nome')
+            ->orderBy('tur_id'); // desempate: ordem estável na paginação e no Anterior/Próximo
     }
 
     private function exportCsv($turmas): StreamedResponse

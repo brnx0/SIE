@@ -37,6 +37,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                 <p class="text-sm text-slate-500 dark:text-slate-400">{{ turma.escola?.esc_nome }}</p>
             </div>
             <TurmaAeeForm
+                :key="turma.tur_id"
                 mode="edit"
                 :initial="turmaComTotal"
                 :anos-letivos="anosLetivos"

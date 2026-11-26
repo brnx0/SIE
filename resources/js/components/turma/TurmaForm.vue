@@ -40,6 +40,8 @@ import { computed, ref, watch } from 'vue';
 import { usePermissao } from '@/composables/usePermissao';
 import { useViewMode } from '@/composables/useViewMode';
 import { useErrorFocus } from '@/composables/useErrorFocus';
+import { useFiltrosListagem } from '@/composables/useFiltrosListagem';
+import RegistroNavegacao from '@/components/common/RegistroNavegacao.vue';
 
 const { isReadOnly, hasRole } = usePermissao();
 const { viewMode, readonly } = useViewMode();
@@ -214,6 +216,26 @@ const submit = () => {
     }
 };
 
+// Filtros que a listagem de turmas deixou aplicados (mesmo snapshot e mesmo
+// formato de pages/turmas/Index.vue) → sequência do Anterior/Próximo.
+const filtrosListagem = (() => {
+    const s = useFiltrosListagem<Record<string, any>>('turmas').restaurar();
+    const p: Record<string, string | number> = {};
+    if (!s) return p; // listagem no padrão: o servidor assume o ano mais recente
+    if (s.esc_id) p.esc_id = s.esc_id;
+    p.anl_id = s.anl_id === '' || s.anl_id == null ? 'all' : s.anl_id;
+    if (s.turno) p.turno = s.turno;
+    if (s.situacao) p.situacao = s.situacao;
+    if (String(s.search ?? '').trim()) p.search = String(s.search).trim();
+    return p;
+})();
+
+// Desfaz o que foi digitado e volta aos dados gravados (libera o Anterior/Próximo).
+const cancelarEdicao = () => {
+    form.reset();
+    form.clearErrors();
+};
+
 const submitLabel = props.mode === 'create' ? 'Cadastrar Turma' : 'Salvar Alterações';
 
 const selectClass = (hasError: boolean) =>
@@ -230,6 +252,11 @@ const selectClass = (hasError: boolean) =>
                 </Button>
             </Link>
             <div class="flex items-center gap-2">
+                <RegistroNavegacao
+                    v-if="mode === 'edit' && initial?.tur_id"
+                    recurso="/turmas" :id="initial.tur_id" :params="filtrosListagem" :dirty="form.isDirty"
+                    class="mr-2"
+                />
                 <span v-if="viewMode && !isReadOnly" class="text-xs font-medium text-muted-foreground">
                     Modo consulta
                 </span>
@@ -238,6 +265,12 @@ const selectClass = (hasError: boolean) =>
                         Editar
                     </Button>
                 </Link>
+                <Button
+                    v-if="mode === 'edit' && !readonly && !encerrada && form.isDirty"
+                    type="button" variant="outline" :disabled="form.processing" @click="cancelarEdicao"
+                >
+                    Cancelar edição
+                </Button>
                 <Button v-if="!readonly && !encerrada" type="button" :disabled="form.processing" class="bg-brand-600 hover:bg-brand-700" @click="submit">
                     <LoaderCircle v-if="form.processing" class="mr-2 size-4 animate-spin" />
                     <Save v-else class="mr-2 size-4" />
