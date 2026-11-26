@@ -152,7 +152,7 @@ function gerar() {
 
                 <div class="grid gap-1.5">
                     <FormLabel>Escola</FormLabel>
-                    <LocalCombobox v-model="escId" :items="itemsEscola" :disabled="!isAdmin && !!userEscola" placeholder="Todas as escolas" />
+                    <LocalCombobox v-model="escId" :items="itemsEscola" :disabled="!isAdmin && escolas.length <= 1" placeholder="Todas as escolas" />
                 </div>
 
                 <div class="grid gap-1.5">

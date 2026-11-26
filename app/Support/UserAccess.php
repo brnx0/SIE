@@ -72,6 +72,22 @@ class UserAccess
     }
 
     /**
+     * Escolas a que o usuário fica restrito num relatório com escola OPCIONAL:
+     * as da lotação ativa, ou null quando não há recorte a aplicar (perfil de
+     * rede ou usuário sem lotação, que já viam a rede inteira com o filtro vazio).
+     *
+     * Uso: ->when(UserAccess::escolasRestritas($user), fn ($q, $ids) => $q->whereIn('tur_esc_id', $ids))
+     *
+     * @return array<int,int>|null
+     */
+    public static function escolasRestritas(?User $user): ?array
+    {
+        $ids = self::escolasIds($user);
+
+        return is_array($ids) && $ids !== [] ? $ids : null;
+    }
+
+    /**
      * Collection de escolas visíveis para o usuário (para popular combos).
      *
      * Admin → todas as ativas.

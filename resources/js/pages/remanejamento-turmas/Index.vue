@@ -195,7 +195,7 @@ const trocar = () => {
                     <LocalCombobox
                         :model-value="escId === '' ? null : escId"
                         :items="escolaItems"
-                        :disabled="!isAdmin && !!userEscola"
+                        :disabled="!isAdmin && escolas.length <= 1"
                         placeholder="Selecione..."
                         @update:model-value="(v) => (escId = v ?? '')"
                     />

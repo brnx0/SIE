@@ -63,6 +63,8 @@ class DadosAlunosTurmaController extends Controller
             ->where('tma_modalidade', Turma::MODALIDADE_REGULAR)
             ->where('tma_anl_id', $data['anl_id'])
             ->when(! empty($data['esc_id']), fn ($q) => $q->whereHas('turma', fn ($t) => $t->where('tur_esc_id', $data['esc_id'])))
+            // Escola em branco = só as escolas da lotação de quem emite (não a rede inteira).
+            ->when(UserAccess::escolasRestritas(auth()->user()), fn ($q, $ids) => $q->whereHas('turma', fn ($t) => $t->whereIn('tur_esc_id', $ids)))
             ->when(! empty($data['seg_id']), fn ($q) => $q->whereHas('turma', fn ($t) => $t->where('tur_seg_id', $data['seg_id'])))
             ->when(! empty($data['ser_id']), fn ($q) => $q->whereHas('turma', fn ($t) => $t->where('tur_ser_id', $data['ser_id'])))
             ->when(! empty($data['tur_id']), fn ($q) => $q->where('tma_tur_id', $data['tur_id']))

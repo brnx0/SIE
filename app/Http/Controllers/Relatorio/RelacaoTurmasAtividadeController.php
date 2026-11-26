@@ -51,6 +51,8 @@ class RelacaoTurmasAtividadeController extends Controller
             ->where('tur_modalidade', Turma::MODALIDADE_ATIVIDADE)
             ->where('tur_anl_id', $data['anl_id'])
             ->when(! empty($data['esc_id']), fn ($q) => $q->where('tur_esc_id', $data['esc_id']))
+            // Escola em branco = só as escolas da lotação de quem emite (não a rede inteira).
+            ->when(UserAccess::escolasRestritas(auth()->user()), fn ($q, $ids) => $q->whereIn('tur_esc_id', $ids))
             ->withCount([
                 'matriculas as qtd_alunos' => fn ($q) => $q->where('tma_situacao', Matricula::SITUACAO_ATIVA)
                     ->where('tma_modalidade', Turma::MODALIDADE_ATIVIDADE),

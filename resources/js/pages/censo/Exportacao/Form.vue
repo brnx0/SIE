@@ -54,7 +54,7 @@ function baixar() {
 
                 <div class="grid gap-1.5">
                     <FormLabel :required="true">Escola</FormLabel>
-                    <LocalCombobox v-model="escId" :items="itemsEscola" :disabled="!isAdmin && !!userEscola" placeholder="Selecione a escola..." />
+                    <LocalCombobox v-model="escId" :items="itemsEscola" :disabled="!isAdmin && escolas.length <= 1" placeholder="Selecione a escola..." />
                 </div>
 
                 <div class="sm:col-span-2 flex justify-end">

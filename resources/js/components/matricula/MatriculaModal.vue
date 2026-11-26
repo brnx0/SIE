@@ -640,10 +640,10 @@ const selectClass = 'flex h-10 w-full rounded-md border border-input bg-backgrou
                 <div class="grid gap-1.5">
                     <FormLabel for="tma_ser_id" :required="true" class="text-amber-800 dark:text-amber-200">
                        Série de origem do aluno (turma multi)
-                    </FormLabel>"
+                    </FormLabel>
                     <select
                         id="tma_ser_id"
-                        v-model="serieSelecionadaId""
+                        v-model="serieSelecionadaId"
                         class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-background dark:text-foreground"
                     >
                         <option :value="null" disabled>Selecione a série...</option>

@@ -50,7 +50,9 @@ class AlunosDeficienciaController extends Controller
             ->whereHas('turma', fn ($q) => $q
                 ->where('tur_anl_id', $data['anl_id'])
                 ->where('tur_modalidade', Turma::MODALIDADE_REGULAR)
-                ->when(! empty($data['esc_id']), fn ($q2) => $q2->where('tur_esc_id', $data['esc_id'])))
+                ->when(! empty($data['esc_id']), fn ($q2) => $q2->where('tur_esc_id', $data['esc_id']))
+                // Escola em branco = só as escolas da lotação de quem emite (não a rede inteira).
+                ->when(UserAccess::escolasRestritas(auth()->user()), fn ($q2, $ids) => $q2->whereIn('tur_esc_id', $ids)))
             ->whereHas('aluno.saude', fn ($s) => $s->where('als_fl_pcd', true))
             ->get();
 

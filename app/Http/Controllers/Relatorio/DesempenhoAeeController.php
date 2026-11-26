@@ -53,6 +53,7 @@ class DesempenhoAeeController extends Controller
                 ->where('tur_modalidade', Turma::MODALIDADE_AEE)
                 ->where('tur_anl_id', $data['anl_id'])
                 ->when(! empty($data['esc_id']), fn ($q) => $q->where('tur_esc_id', $data['esc_id']))
+                ->when(UserAccess::escolasRestritas(auth()->user()), fn ($q, $ids) => $q->whereIn('tur_esc_id', $ids))
                 ->orderBy('tur_nome')
                 ->get(['tur_id', 'tur_nome', 'tur_esc_id'])
         );
@@ -75,6 +76,8 @@ class DesempenhoAeeController extends Controller
             ->where('tur_modalidade', Turma::MODALIDADE_AEE)
             ->where('tur_anl_id', $data['anl_id'])
             ->when(! empty($data['esc_id']), fn ($q) => $q->where('tur_esc_id', $data['esc_id']))
+            // Escola em branco = só as escolas da lotação de quem emite (não a rede inteira).
+            ->when(UserAccess::escolasRestritas(auth()->user()), fn ($q, $ids) => $q->whereIn('tur_esc_id', $ids))
             ->when(! empty($data['tur_id']), fn ($q) => $q->where('tur_id', $data['tur_id']))
             ->orderBy('tur_nome')
             ->get();

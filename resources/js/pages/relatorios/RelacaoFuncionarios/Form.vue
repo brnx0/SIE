@@ -75,7 +75,7 @@ function gerar() {
                     <LocalCombobox
                         v-model="escId"
                         :items="itemsEscola"
-                        :disabled="!isAdmin && !!userEscola"
+                        :disabled="!isAdmin && escolas.length <= 1"
                         placeholder="Todas as unidades"
                     />
                 </div>
