@@ -16,7 +16,7 @@ Dois relatórios que acompanham o dia a dia da turma no diário:
 
 ## Como acessar
 
-Menu **Relatórios → Relatórios do Diário** e clique em **Diário de Frequência Mensal** ou **Conteúdo Ministrado**.
+Menu **Diário Online → Relatórios** e clique em **Diário de Frequência Mensal** ou **Conteúdo Ministrado**. O **Conteúdo Ministrado** também está em **Pedagógico → Relatórios**.
 
 ## Passo a passo
 
@@ -24,7 +24,7 @@ Menu **Relatórios → Relatórios do Diário** e clique em **Diário de Frequê
 2. Complete conforme o relatório:
    - **Frequência Mensal**: escolha o **Mês** (obrigatório).
    - **Conteúdo Ministrado**: o **Período** é opcional — deixe em branco para trazer todos os períodos.
-3. Clique em **Gerar**. O PDF abre em uma nova aba.
+3. Clique em **Gerar**. O resultado aparece na tela; use **Imprimir / PDF** para imprimir ou salvar em PDF.
 
 ## Avisos comuns
 

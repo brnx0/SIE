@@ -13,19 +13,21 @@ A **Renovação de Matrícula** permite à secretaria registrar, aluno por aluno
 
 ## Como acessar
 
-Menu **Secretaria → Renovação de Matrícula** (endereço `/secretaria/renovacao-matricula`).
+Menu **Secretaria Escolar → Renovação de Matrícula** (endereço `/secretaria/renovacao-matricula`).
 
-A secretaria opera apenas as escolas em que está lotada; o administrador, todas.
+A secretaria opera apenas as escolas em que está lotada; o administrador, todas. O item só aparece no menu para os perfis liberados em **Permissões de Telas**.
 
 ## Passo a passo
 
-1. Selecione **Ano Letivo** e **Escola**.
-2. Se quiser, filtre por **etapa de ensino** e escolha a **Turma**.
-3. A tela lista os **alunos ativos** da turma.
-4. Para cada aluno, marque **quer renovar** ou **não quer renovar**. A marcação é salva automaticamente.
+1. Selecione o **Ano Letivo** (já vem o ano em exercício) e a **Escola** — no campo de escola, digite para localizar pelo nome.
+2. Clique em **Listar Turmas**.
+3. Se quiser, filtre por **etapa de ensino** ou use **Buscar turma**, e clique na **turma** desejada.
+4. A tela lista os **alunos ativos** da turma.
+5. Para cada aluno, marque **Sim** (quer renovar) ou **Não** (não quer renovar). A marcação é salva automaticamente.
+6. Use **Turmas** (seta de voltar) para retornar à lista e escolher outra turma.
 
 ## Avisos comuns
 
-- Enquanto um aluno não é marcado, ele fica como **não informado**.
+- Enquanto um aluno não é marcado, ele fica como **não informado**. O alto da lista mostra quantos querem renovar e quantos ainda não foram informados.
 - Esta tela apenas **registra o interesse**; a matrícula no ano seguinte só é criada na tela de **Confirmação de Renovação**, após as turmas serem encerradas.
-- Aparecem apenas alunos com matrícula **ativa** na turma.
+- Aparecem apenas as turmas **regulares** e, nelas, os alunos com matrícula **ativa**.

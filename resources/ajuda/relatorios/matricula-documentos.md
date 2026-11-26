@@ -26,7 +26,7 @@ Menu **Relatórios → Central de Relatórios** e clique em **Ficha de Matrícul
    - Escolha a **Turma**.
    - No campo **Aluno**, escolha um aluno específico ou deixe em **Todos da turma** para emitir em lote.
 3. Para o **Sumário de Matrículas**, basta escolher o **Ano Letivo** — ele consolida todas as escolas e séries.
-4. Clique em **Gerar**. O PDF abre em uma nova aba.
+4. Clique em **Gerar**. O resultado aparece na tela; use **Imprimir / PDF** para imprimir ou salvar em PDF.
 
 ## Avisos comuns
 

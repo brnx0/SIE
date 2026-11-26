@@ -13,13 +13,13 @@ A **Auditoria** é a trilha de registro das alterações feitas no sistema. Para
 
 ## Como acessar
 
-Menu **Sistema → Auditoria** (endereço `/auditoria`). Tela restrita ao administrador.
+Menu **Sistema → Auditoria** (endereço `/auditoria`). Por padrão, apenas o administrador tem acesso; a liberação para outros perfis é feita em **Permissões de Telas**.
 
 ## Passo a passo
 
-1. Use os filtros para reduzir a lista: **usuário**, **entidade**, **ação**, **período** (de/até) e **busca** por texto.
+1. Use os filtros para reduzir a lista: **usuário**, **entidade**, **ação**, **período** (de/até) e **busca** por texto (usuário, entidade ou ação).
 2. Percorra os registros, do mais recente para o mais antigo.
-3. Abra um registro para ver os **campos alterados**, com o valor **de** e **para**.
+3. Clique em um registro para ver os **campos alterados**, com o valor **de** e **para**. A coluna **Alterações** indica quantos campos mudaram.
 
 ## Avisos comuns
 

@@ -13,25 +13,33 @@ A Central de Relatórios reúne todos os relatórios do sistema em um só lugar.
 
 Para facilitar, os relatórios ficam organizados em grupos:
 
-- **Central de Relatórios** (`/relatorios`) — visão geral com os relatórios mais usados de alunos e turmas.
-- **Relatórios Gerais** (`/relatorios-escola`) — relatórios do dia a dia da escola (deficiência, transtorno, dados de alunos, turmas AEE e de atividade).
-- **Relatórios do Diário** (`/relatorios-diario`) — boletim, notas, mapa de notas, frequência, conteúdo ministrado e afins.
-- **Relatórios da Secretaria** — documentos acadêmicos da secretaria (ex.: Ata Final).
-- **Relatórios Pedagógicos** — acompanhamento pedagógico.
-- **Relatórios de Encerramento** — relatórios do fim do ano letivo (atas e situação final).
+- **Central de Relatórios** (`/relatorios`) — alunos por turma e por escola, ficha e declarações de matrícula, declaração de conclusão, formação de classes por escola, sumário de matrículas e pendências de encerramento e renovação.
+- **Relatórios Gerais** (`/relatorios-escola`) — relatórios do dia a dia da rede e da escola: deficiência, transtorno, dados de alunos, turmas AEE e de atividade, equipe gestora, distorção idade-série, índices de aprovação, relação de escolas e de funcionários.
+- **Relatórios do Diário** (`/relatorios-diario`) — boletim, notas, mapa de notas, frequência, conteúdo ministrado, parecer descritivo e afins.
+- **Relatórios da Secretaria** (`/relatorios-secretaria`) — documentos da secretaria escolar: Histórico Escolar / Certificado, Termo de Renovação de Matrícula, Ata Final do Encerramento e Final da Educação Infantil.
+- **Relatórios Pedagógicos** (`/relatorios-pedagogico`) — acompanhamento pedagógico: Mapa de Notas e Conteúdo Ministrado.
+- **Relatórios do Censo** (`/relatorios-censo`) — críticas e exportação do Censo Escolar.
 
 O mesmo relatório pode aparecer em mais de um grupo, para você encontrá-lo com facilidade.
 
 ## Como acessar
 
-Pelo menu lateral, abra **Relatórios** e escolha o grupo desejado. Na tela do grupo, clique no cartão do relatório que você quer gerar.
+Cada grupo fica no menu do setor a que pertence:
+
+- **Relatórios → Central de Relatórios** e **Relatórios → Relatórios Gerais**;
+- **Diário Online → Relatórios** (Relatórios do Diário);
+- **Secretaria Escolar → Relatórios** (Relatórios da Secretaria);
+- **Pedagógico → Relatórios** (Relatórios Pedagógicos);
+- **Censo → Relatórios do Censo**.
+
+Na tela do grupo, clique no cartão do relatório que você quer gerar. Você só vê os grupos e os cartões que o seu perfil tem permissão para abrir.
 
 ## Passo a passo
 
 1. Escolha o grupo e clique no relatório.
 2. Preencha os filtros pedidos (normalmente Ano Letivo, Escola e Turma; alguns pedem também período, disciplina ou aluno). Os campos marcados são obrigatórios.
-3. Clique em **Gerar** (ou **Exportar** para planilha).
-4. O relatório abre em uma nova aba, pronto para visualizar, salvar ou imprimir.
+3. Clique em **Gerar**.
+4. O resultado aparece na tela; use **Imprimir / PDF** para imprimir ou salvar em PDF. Alguns relatórios também têm botão para exportar em planilha (Excel).
 
 ## Avisos comuns
 

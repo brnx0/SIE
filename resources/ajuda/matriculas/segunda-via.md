@@ -13,7 +13,7 @@ Tela para reemitir o **Comprovante de Matrícula** de um aluno já matriculado. 
 
 ## Como acessar
 
-Menu **Matrículas → 2ª Via Comprovante**.
+Menu **Matrículas → 2ª Via Comprovante** (endereço `/matriculas/segunda-via`).
 
 ## Passo a passo
 

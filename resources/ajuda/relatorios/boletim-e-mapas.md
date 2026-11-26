@@ -18,7 +18,7 @@ Um conjunto de relatórios de notas, todos gerados a partir do que foi lançado 
 
 ## Como acessar
 
-Menu **Relatórios → Relatórios do Diário** e clique no cartão do relatório desejado.
+Menu **Diário Online → Relatórios** e clique no cartão do relatório desejado. O **Mapa de Notas** também está em **Pedagógico → Relatórios**.
 
 ## Passo a passo
 
@@ -28,7 +28,7 @@ Menu **Relatórios → Relatórios do Diário** e clique no cartão do relatóri
    - **Boletim Avaliativo**: **Disciplina** é opcional (em branco sai todas).
    - **Notas por Unidade**: **Período** é obrigatório.
    - **Mapa de Notas**: **Disciplina** e **Período** são obrigatórios.
-3. Clique em **Gerar**. O PDF abre em uma nova aba.
+3. Clique em **Gerar**. O resultado aparece na tela; use **Imprimir / PDF** para imprimir ou salvar em PDF.
 
 ## Avisos comuns
 

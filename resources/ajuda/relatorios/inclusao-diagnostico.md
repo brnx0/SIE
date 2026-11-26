@@ -18,7 +18,7 @@ Relatórios voltados à educação inclusiva e ao acompanhamento diagnóstico:
 
 ## Como acessar
 
-Menu **Relatórios → Relatórios Gerais** (Alunos com Deficiência, Alunos com Transtorno) ou **Relatórios do Diário** (Desempenho AEE, Avaliações por Diagnóstico).
+Menu **Relatórios → Relatórios Gerais** (Alunos com Deficiência, Alunos com Transtorno) ou **Diário Online → Relatórios** (Desempenho AEE, Avaliações por Diagnóstico).
 
 ## Passo a passo
 
@@ -27,7 +27,7 @@ Menu **Relatórios → Relatórios Gerais** (Alunos com Deficiência, Alunos com
    - **Alunos com Deficiência / Transtorno**: **Escola** é opcional; em **Transtorno** você pode filtrar ainda por **Etapa de Ensino** e **Série**.
    - **Desempenho AEE**: escolha a **Turma AEE** (opcional).
    - **Avaliações por Diagnóstico**: **Turma** e **Disciplina** são obrigatórias; o **Aluno** é opcional (deixe em **Todos** para a turma inteira).
-3. Clique em **Gerar**. O PDF abre em uma nova aba.
+3. Clique em **Gerar**. O resultado aparece na tela; use **Imprimir / PDF** para imprimir ou salvar em PDF.
 
 ## Avisos comuns
 

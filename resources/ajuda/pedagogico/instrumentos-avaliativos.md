@@ -1,8 +1,8 @@
 ---
 titulo: Instrumentos Avaliativos
-secao: Diário Online
-ordem_secao: 4
-ordem: 9
+secao: Pedagógico
+ordem_secao: 6
+ordem: 3
 resumo: Cadastro dos instrumentos de avaliação (prova, trabalho, recuperação) usados ao lançar notas.
 slug: instrumentos-avaliativos
 ---

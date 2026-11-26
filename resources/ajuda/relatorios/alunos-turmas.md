@@ -19,7 +19,7 @@ Relatórios que mostram a composição das turmas e os alunos matriculados:
 
 ## Como acessar
 
-Menu **Relatórios → Central de Relatórios** (Alunos por Turma, Formação de Classes) ou **Relatórios Gerais** (Dados de Alunos, Relação de Turmas AEE/Atividade).
+Menu **Relatórios → Central de Relatórios** (Alunos por Turma, Formação de Classes por Escola, Formação de Classes — AEE) ou **Relatórios → Relatórios Gerais** (Formação de Classes, Dados de Alunos por Turma, Relação de Turmas AEE e de Atividade).
 
 ## Passo a passo
 

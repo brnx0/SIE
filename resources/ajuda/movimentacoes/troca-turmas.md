@@ -13,13 +13,13 @@ Tela para mover ou trocar alunos em lote entre duas turmas da **mesma série** (
 
 ## Como acessar
 
-Menu **Movimentações → Troca entre Turmas**.
+Menu **Movimentações → Troca entre Turmas** (endereço `/remanejamento-turmas`).
 
 ## Passo a passo
 
 1. Selecione **Ano Letivo**, **Escola** e, se quiser, **Etapa de Ensino**, e clique em **Carregar Turmas**.
 2. No painel **Turma A**, escolha a primeira turma; os alunos aparecem com caixas de seleção.
-3. No painel **Turma B (mesma série de A)**, escolha a segunda turma. Só aparecem turmas da mesma série de A.
+3. No painel **Turma B (mesma série de A)**, escolha a segunda turma. Só aparecem turmas **abertas** da mesma série de A.
 4. Marque os alunos desejados em cada painel. Use o campo **Buscar** para localizar por nome ou matrícula.
 5. Escolha a ação:
    - **A→B**: move os marcados de A para B.
@@ -34,7 +34,8 @@ Menu **Movimentações → Troca entre Turmas**.
 
 ## Avisos comuns
 
-- **Só mesma série**: a turma B precisa ser da mesma série da turma A; por isso a lista de B é filtrada automaticamente.
+- **Só mesma série**: a turma B precisa ser da mesma série da turma A e estar com situação aberta; por isso a lista de B é filtrada automaticamente.
+- **Só turmas regulares**: turmas de AEE e de atividades não entram nesta tela.
 - **Turma sem vagas**: a operação é bloqueada se a turma de destino não comportar os alunos selecionados; a mensagem aparece no topo.
 - **Nenhum aluno marcado**: selecione ao menos um aluno antes de usar A→B, B→A ou Trocar.
 - **Sua escola**: se você atua em uma escola específica, ela já vem selecionada e você só remaneja turmas dela.
