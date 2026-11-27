@@ -21,6 +21,8 @@ class UpdateParametroEntidadeRequest extends FormRequest
             'par_mun_id' => ['nullable', 'integer', 'exists:edu_municipio,mun_id'],
             'par_logomarca' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,svg', 'max:5120'],
             'par_brasao' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,svg', 'max:5120'],
+            'remover_logomarca' => ['nullable', 'boolean'],
+            'remover_brasao' => ['nullable', 'boolean'],
 
             'par_fl_nome_pessoa_caixa_alta' => ['boolean'],
             'par_fl_nome_escola_caixa_alta' => ['boolean'],

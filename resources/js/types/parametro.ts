@@ -255,6 +255,8 @@ export interface ParametroEntidadeFormData {
     par_mun_id: number | null;
     par_logomarca: File | null;
     par_brasao: File | null;
+    remover_logomarca: boolean;
+    remover_brasao: boolean;
     par_fl_nome_pessoa_caixa_alta: boolean;
     par_fl_nome_escola_caixa_alta: boolean;
     par_fl_alertar_homonimos: boolean;

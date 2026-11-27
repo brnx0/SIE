@@ -85,13 +85,17 @@ class ParametroController extends Controller
         $entidade = ParametroEntidade::firstOrFail();
 
         DB::transaction(function () use ($request, $entidade) {
-            $data = $request->safe()->except(['par_logomarca', 'par_brasao']);
+            $data = $request->safe()->except(['par_logomarca', 'par_brasao', 'remover_logomarca', 'remover_brasao']);
 
             if ($request->hasFile('par_logomarca')) {
                 if ($entidade->par_logomarca) {
                     Storage::disk('public')->delete($entidade->par_logomarca);
                 }
                 $data['par_logomarca'] = $request->file('par_logomarca')->store('parametros', 'public');
+            } elseif ($request->boolean('remover_logomarca') && $entidade->par_logomarca) {
+                // Botão "Remover": apaga o arquivo e limpa a coluna.
+                Storage::disk('public')->delete($entidade->par_logomarca);
+                $data['par_logomarca'] = null;
             }
 
             if ($request->hasFile('par_brasao')) {
@@ -99,6 +103,9 @@ class ParametroController extends Controller
                     Storage::disk('public')->delete($entidade->par_brasao);
                 }
                 $data['par_brasao'] = $request->file('par_brasao')->store('parametros', 'public');
+            } elseif ($request->boolean('remover_brasao') && $entidade->par_brasao) {
+                Storage::disk('public')->delete($entidade->par_brasao);
+                $data['par_brasao'] = null;
             }
 
             $entidade->update($data);

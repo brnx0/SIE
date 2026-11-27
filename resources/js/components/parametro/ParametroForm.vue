@@ -75,6 +75,9 @@ const form = useForm<ParametroEntidadeFormData>({
     par_mun_id: props.initial.par_mun_id ?? null,
     par_logomarca: null,
     par_brasao: null,
+    // Remover a imagem gravada (efetivado ao salvar; ignorado se um novo arquivo for enviado).
+    remover_logomarca: false,
+    remover_brasao: false,
     par_fl_nome_pessoa_caixa_alta: props.initial.par_fl_nome_pessoa_caixa_alta ?? true,
     par_fl_nome_escola_caixa_alta: props.initial.par_fl_nome_escola_caixa_alta ?? true,
     par_fl_alertar_homonimos: props.initial.par_fl_alertar_homonimos ?? false,
@@ -113,15 +116,18 @@ const onLogoChange = (e: Event) => {
         if (erro) { push('error', erro); target.value = ''; return; }
     }
     form.par_logomarca = file;
+    if (file) form.remover_logomarca = false;
     if (logoObjectUrl) { URL.revokeObjectURL(logoObjectUrl); logoObjectUrl = null; }
     if (file) { logoObjectUrl = URL.createObjectURL(file); logoPreview.value = logoObjectUrl; }
-    else logoPreview.value = props.initial.par_logomarca_url ?? null;
+    else logoPreview.value = form.remover_logomarca ? null : (props.initial.par_logomarca_url ?? null);
 };
 
 const clearLogo = () => {
     form.par_logomarca = null;
     if (logoObjectUrl) { URL.revokeObjectURL(logoObjectUrl); logoObjectUrl = null; }
-    logoPreview.value = props.initial.par_logomarca_url ?? null;
+    // Sem arquivo novo pendente → marca a imagem gravada para remoção ao salvar.
+    form.remover_logomarca = !!props.initial.par_logomarca;
+    logoPreview.value = null;
     if (logoInput.value) logoInput.value.value = '';
 };
 
@@ -137,15 +143,17 @@ const onBrasaoChange = (e: Event) => {
         if (erro) { push('error', erro); target.value = ''; return; }
     }
     form.par_brasao = file;
+    if (file) form.remover_brasao = false;
     if (brasaoObjectUrl) { URL.revokeObjectURL(brasaoObjectUrl); brasaoObjectUrl = null; }
     if (file) { brasaoObjectUrl = URL.createObjectURL(file); brasaoPreview.value = brasaoObjectUrl; }
-    else brasaoPreview.value = props.initial.par_brasao_url ?? null;
+    else brasaoPreview.value = form.remover_brasao ? null : (props.initial.par_brasao_url ?? null);
 };
 
 const clearBrasao = () => {
     form.par_brasao = null;
     if (brasaoObjectUrl) { URL.revokeObjectURL(brasaoObjectUrl); brasaoObjectUrl = null; }
-    brasaoPreview.value = props.initial.par_brasao_url ?? null;
+    form.remover_brasao = !!props.initial.par_brasao;
+    brasaoPreview.value = null;
     if (brasaoInput.value) brasaoInput.value.value = '';
 };
 
@@ -243,12 +251,13 @@ const fmtDateTime = (s?: string | null) => {
                                 <div class="flex flex-wrap gap-2">
                                     <Button type="button" variant="outline" size="sm" @click="logoInput?.click()">
                                         <Upload class="mr-2 size-4" />
-                                        {{ form.par_logomarca || initial.par_logomarca ? 'Trocar' : 'Selecionar' }}
+                                        {{ form.par_logomarca || (initial.par_logomarca && !form.remover_logomarca) ? 'Trocar' : 'Selecionar' }}
                                     </Button>
                                     <Button v-if="form.par_logomarca || logoPreview" type="button" variant="ghost" size="sm" class="text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:hover:bg-rose-900/30" @click="clearLogo">
                                         <Trash2 class="mr-2 size-4" /> Remover
                                     </Button>
                                 </div>
+                                <p v-if="form.remover_logomarca" class="text-xs text-amber-700 dark:text-amber-400">A logomarca será removida ao salvar.</p>
                                 <InputError :message="(form.errors as Record<string, string>)['par_logomarca']" />
                             </div>
                         </div>
@@ -270,12 +279,13 @@ const fmtDateTime = (s?: string | null) => {
                                 <div class="flex flex-wrap gap-2">
                                     <Button type="button" variant="outline" size="sm" @click="brasaoInput?.click()">
                                         <Upload class="mr-2 size-4" />
-                                        {{ form.par_brasao || initial.par_brasao ? 'Trocar' : 'Selecionar' }}
+                                        {{ form.par_brasao || (initial.par_brasao && !form.remover_brasao) ? 'Trocar' : 'Selecionar' }}
                                     </Button>
                                     <Button v-if="form.par_brasao || brasaoPreview" type="button" variant="ghost" size="sm" class="text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:hover:bg-rose-900/30" @click="clearBrasao">
                                         <Trash2 class="mr-2 size-4" /> Remover
                                     </Button>
                                 </div>
+                                <p v-if="form.remover_brasao" class="text-xs text-amber-700 dark:text-amber-400">O brasão será removido ao salvar.</p>
                                 <InputError :message="(form.errors as Record<string, string>)['par_brasao']" />
                             </div>
                         </div>
